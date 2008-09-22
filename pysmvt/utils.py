@@ -169,13 +169,11 @@ def call_appmod_dbinits(singlemod=None):
             except ImportError:
                 pass
         
-def call_appmod_inits(singlemod=None):
-    for module in rc.application.settings.modules:
-        if singlemod == module or singlemod == '':
-            try:
-                rc.application.loader.appmod_names('%s.actions' % module, 'appmod_init')()
-            except ImportError:
-                pass
+def call_appmod_inits(module):
+    """ call the initilization methods on an AM """
+    callables = rc.application.loader.appmod_names('%s.settings' % module, 'appmod_inits')
+    for tocall in tolist(callables):
+            tocall()
         
 def log_info(msg):
     rc.application.logger.info(msg)
