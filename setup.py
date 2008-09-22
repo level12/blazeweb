@@ -12,10 +12,9 @@ setup (
     version = "0.1",
     packages = find_packages(exclude=["ez_setup"]),
     install_requires = [
+        'Beaker==1.0.1',
+        'FormEncode==1.0.1',
         "Werkzeug==0.3.1",
-        "SQLAlchemy==0.4.6",
-        "Jinja2>=2.0",
-        "Elixir==0.5.2",
-        "FormAlchemy"
+        "SQLAlchemy==0.5.0rc1"
         ]
 )
