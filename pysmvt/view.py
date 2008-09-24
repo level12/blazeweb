@@ -120,7 +120,7 @@ class RespondingViewBase(ViewBase):
         if isinstance(self.retval, BaseResponse):
             rc.response = self.retval
         else:
-            rc.response.response = self.retval
+            rc.response.data = self.retval
 
 class HtmlPageViewBase(RespondingViewBase):
     def __init__(self, modulePath, endpoint, args):
