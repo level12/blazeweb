@@ -165,7 +165,9 @@ def call_appmod_dbinits(singlemod=None):
     for module in rc.application.settings.modules:
         if singlemod == module or singlemod == '':
             try:
-                rc.application.loader.appmod_names('%s.actions' % module, 'appmod_dbinit')()
+                callables = rc.application.loader.appmod_names('%s.settings' % module, 'appmod_dbinits')
+                for tocall in tolist(callables):
+                    tocall()
             except ImportError:
                 pass
         
