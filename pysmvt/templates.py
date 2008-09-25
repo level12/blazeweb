@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from os import path
 from pysmvt.application import request_context as rc
+from pysmvt.utils import safe_strftime
 
 class JinjaBase(object):
     
@@ -25,7 +26,7 @@ class JinjaBase(object):
         except AttributeError:
             from jinja2 import Environment
             app.jinjaTemplateEnv = self.templateEnv = Environment(**self._jinjaEnvOptions)
-
+            app.jinjaTemplateEnv.filters['strftime'] = safe_strftime
         # setup the FileSystemLoader on each request
         from jinja2 import FileSystemLoader
         self.templateEnv.loader = FileSystemLoader([
