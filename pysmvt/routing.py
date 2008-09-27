@@ -7,6 +7,10 @@ def style_url(file, app = None):
     endpoint = 'styles'
     return url_for(endpoint, file=file, app=app)
 
+def js_url(file, app = None):
+    endpoint = 'javascript'
+    return url_for(endpoint, file=file, app=app)
+
 def index_url(url = None):
     from pysmvt.exceptions import TemplateException
     from werkzeug.exceptions import NotFound, MethodNotAllowed

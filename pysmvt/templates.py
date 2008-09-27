@@ -2,6 +2,7 @@
 from os import path
 from pysmvt.application import request_context as rc
 from pysmvt.utils import safe_strftime
+from jinja2 import FileSystemLoader, Environment
 
 class JinjaBase(object):
     
@@ -24,17 +25,24 @@ class JinjaBase(object):
         try:
             self.jinjaTemplateEnv = app.templateEnv
         except AttributeError:
-            from jinja2 import Environment
             app.jinjaTemplateEnv = self.templateEnv = Environment(**self._jinjaEnvOptions)
             app.jinjaTemplateEnv.filters['strftime'] = safe_strftime
-        # setup the FileSystemLoader on each request
-        from jinja2 import FileSystemLoader
-        self.templateEnv.loader = FileSystemLoader([
-                # templates in the module directory
+        
+        # create a hierarchy of template directories the file loader (below)
+        # can look to find the template
+        lookin_paths = [
+                # templates in the AM's template directory
                 path.join(viewsModulePath, 'templates'),
-                # tempaltes in the application directory
+                # templates in the application directory
                 path.join(app.baseDir, 'templates')
-             ])
+                ]
+        # templates in the supporting applications
+        for sapp in app.settings.supporting_apps:
+            sapp_dir = path.dirname(__import__(sapp).__file__)
+            lookin_paths.append(path.join(sapp_dir, 'templates'))
+
+        # setup the FileSystemLoader for each view that uses a template
+        self.templateEnv.loader = FileSystemLoader(lookin_paths)
         
     def setOptions(self):
         #jinja stuff has to be setup before we call parent init

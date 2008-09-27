@@ -152,15 +152,18 @@ class TemplateMixin(object):
     def init(self):
         self.assignTemplateFunctions()
         self.assignTemplateVariables()
-        self.templateName = None
+        self.template_name = None
         
     def assignTemplateFunctions(self):
-        from pysmvt.routing import style_url, index_url, url_for
+        from pysmvt.routing import style_url, index_url, url_for, js_url
         self.template.templateEnv.globals['url_for'] = url_for
         self.template.templateEnv.globals['style_url'] = style_url
+        self.template.templateEnv.globals['js_url'] = js_url
         self.template.templateEnv.globals['index_url'] = index_url
         self.template.templateEnv.globals['include_css'] = self.include_css
+        self.template.templateEnv.globals['include_js'] = self.include_js
         self.template.templateEnv.globals['page_css'] = self.page_css
+        self.template.templateEnv.globals['page_js'] = self.page_js
         self.template.templateEnv.globals['process_view'] = self.process_view
     
     def assignTemplateVariables(self):
@@ -172,28 +175,33 @@ class TemplateMixin(object):
     
     def include_css(self, filename=None):
         if filename == None:
-            filename = self.templateName + '.css'
+            filename = self.template_name + '.css'
         contents, filepath, reloadfunc = self.template.templateEnv.loader.get_source(self.template.templateEnv, filename)
-        # @todo: need to be a level higher so that the name of the application is displayed in the chopped
-        # path since we will eventually have more than one application in a hiearachy
-        # @todo: maybe only show the chopped path in "debug" mode
-        choppedPath = filepath.replace(rc.application.baseDir, '')
-        rc.respview.add_css("/********************* START: %s ****************/\n" % (choppedPath, ))
-        rc.respview.add_css(contents)
-        rc.respview.add_css("\n/********************* END: %s ****************/\n\n" % (choppedPath, ))
+        rc.respview.add_css(contents)    
+        return ''
+    
+    def include_js(self, filename=None):
+        if filename == None:
+            filename = self.template_name + '.js'
+        contents, filepath, reloadfunc = self.template.templateEnv.loader.get_source(self.template.templateEnv, filename)
+        rc.respview.add_js(contents)
         return ''
     
     def page_css(self, indent=8):
         #print rc.respview.css
         return reindent(''.join(rc.respview.css), indent).lstrip()
     
+    def page_js(self, indent=8):
+        #print rc.respview.css
+        return reindent(''.join(rc.respview.js), indent).lstrip()
+    
     def process_view(self, view, **kwargs):
         return rc.controller.call_view(view, kwargs)
             
     def handle_response(self):
-        if self.templateName == None:
-            self.templateName = self.__class__.__name__
-        self.template.templateName = self.templateName
+        if self.template_name == None:
+            self.template_name = self.__class__.__name__
+        self.template.templateName = self.template_name
         self.retval = self.template.render()
 
 class HtmlTemplatePage(HtmlPageViewBase, TemplateMixin):
