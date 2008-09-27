@@ -1,8 +1,8 @@
 
-from pysmvt.utils import reindent, auth_error, log_info, bad_request_error
+from pysmvt.utils import reindent, auth_error, log_info, bad_request_error, fatal_error
 from pysmvt.application import request_context as rc
 from pysmvt.templates import JinjaHtmlBase
-from pysmvt.exceptions import ActionError
+from pysmvt.exceptions import ActionError, UserError
 from werkzeug.wrappers import BaseResponse
 from werkzeug.exceptions import InternalServerError
 from werkzeug.utils import MultiDict
@@ -35,35 +35,38 @@ class ViewBase(object):
         
     def call_methods(self):
         
-        # call prep method if it exists
-        if hasattr(self, 'prep'):
-            getattr(self, 'prep')()           
-        
-        self.args_validation()
-
-        # linearize the MultiDict since most of the time we will not be
-        # interested in url or GET arguments with multiple values
-        # which can still be accessed if needed from self.args
-        argsdict = self.args.to_dict()
-        
-        # loop through all the calls requested
-        for call_details in self._call_methods_stack:
-            if hasattr(self, call_details['method_name']):
-                if call_details['assign_args']:
-                    getattr(self, call_details['method_name'])(**argsdict)
-                else:
-                    getattr(self, call_details['method_name'])()
-
         try:
+            # call prep method if it exists
+            if hasattr(self, 'prep'):
+                getattr(self, 'prep')()           
+            
+            self.args_validation()
+    
+            # linearize the MultiDict since most of the time we will not be
+            # interested in url or GET arguments with multiple values
+            # which can still be accessed if needed from self.args
+            argsdict = self.args.to_dict()
+            
+            # loop through all the calls requested
+            for call_details in self._call_methods_stack:
+                if hasattr(self, call_details['method_name']):
+                    if call_details['assign_args']:
+                        getattr(self, call_details['method_name'])(**argsdict)
+                    else:
+                        getattr(self, call_details['method_name'])()
+
             if rc.request.method == 'GET' and hasattr(self, 'get'):
                 self.get(**argsdict)
             elif rc.request.method == 'POST' and hasattr(self, 'post'):
                 self.post(**argsdict)
             else:
                 self.default(**argsdict)
+        except UserError, e:
+            rc.user.add_message('error', str(e))
+            fatal_error(orig_exception=e)
         except Exception, e:
             if rc.application.settings.trap_view_exceptions:
-                app_utils.fatal_error(orig_exception=e)
+                fatal_error(orig_exception=e)
             raise
     
     def args_validation(self):

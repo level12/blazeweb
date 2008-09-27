@@ -15,3 +15,7 @@ class ActionError(Exception):
     def __init__(self, type, description = ''):
         self.type = type
         self.description = description
+
+class UserError(Exception):
+    """ called when the system can not proceed b/c of a user error """
+    pass
