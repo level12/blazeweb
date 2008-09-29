@@ -11,6 +11,7 @@ request_context_manager = LocalManager([request_context])
 
 from pysmvt.controller import Controller
 from pysmvt.utils import Loader, Logger
+from pysmvt.database import load_models
 
 # The main web application inherits this.
 #
@@ -42,6 +43,9 @@ class Application(object):
         self.setup_logger()
         
         self.setup_controller()
+        
+        # make sure the DB model is loaded
+        self.load_db_model()
 
     def bind_to_context(self):
         """
@@ -90,3 +94,6 @@ class Application(object):
     
     def setup_loader(self):
         self.loader = Loader()
+    
+    def load_db_model(self):
+        load_models()

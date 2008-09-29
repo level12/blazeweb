@@ -1,6 +1,51 @@
 # -*- coding: utf-8 -*-
+import sys
 from pysmvt.application import request_context as rc
+from pysmvt.utils import traceback_depth
 from sqlalchemy.orm import sessionmaker, scoped_session
+import elixir
+
+def load_orm_models():
+    for module in rc.application.settings.modules:
+            try:
+                rc.application.loader.appmod_names('%s.model.orm' % module, [])
+            except ImportError:
+                # check the exception depth to make sure the import
+                # error we caught was just .model or .model.orm missing
+                _, _, tb = sys.exc_info()
+                # 2 = view class name wasn't found
+                # 3 = .model wasn't found
+                #print traceback_depth(tb)
+                if traceback_depth(tb) in (3,):
+                    pass
+                else:
+                    raise
+
+def load_metadata_models():
+    for module in rc.application.settings.modules:
+            try:
+                rc.application.loader.appmod_names('%s.model.metadata' % module, [])
+            except ImportError:
+                # check the exception depth to make sure the import
+                # error we caught was just .model or .model.orm missing
+                _, _, tb = sys.exc_info()
+                # 2 = view class name wasn't found
+                # 3 = .model wasn't found
+                #print traceback_depth(tb)
+                if traceback_depth(tb) in (3,):
+                    pass
+                else:
+                    raise
+
+def load_models():
+    # load all the ORM objects
+    load_orm_models()
+    
+    # now setup ORM metadata
+    elixir.setup_all()
+    
+    # now load metadata
+    load_metadata_models()
 
 def get_engine():
     if hasattr(rc.application, 'dbEngine') == False :

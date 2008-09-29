@@ -144,8 +144,15 @@ class Controller(object):
                 # load the routes from the module
                 self._add_routing_rules(routes)
             except ImportError, e:
-                print e
-                pass
+                # check the exception depth to make sure the import
+                # error we caught was just a missing .settings
+                _, _, tb = sys.exc_info()
+                # 3 = .model wasn't found
+                #print traceback_depth(tb)
+                if traceback_depth(tb) in [3]:
+                    pass
+                else:
+                    raise
     
     def _add_routing_rules(self, rules):
         try:

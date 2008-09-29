@@ -153,14 +153,6 @@ def pprint( stuff, indent = 4):
     pp = PrettyPrinter(indent=indent)
     print pp.pprint(stuff)
 
-def load_appmod_models(singlemod=None):
-    for module in rc.application.settings.modules:
-        if singlemod == module or singlemod == '':
-            try:
-                rc.application.loader.appmod_names('%s.model' % module, [])
-            except ImportError:
-                pass
-
 def call_appmod_dbinits(singlemod=None):
     for module in rc.application.settings.modules:
         if singlemod == module or singlemod == '':
@@ -173,9 +165,20 @@ def call_appmod_dbinits(singlemod=None):
         
 def call_appmod_inits(module):
     """ call the initilization methods on an AM """
-    callables = rc.application.loader.appmod_names('%s.settings' % module, 'appmod_inits')
-    for tocall in tolist(callables):
-            tocall()
+    if not module:
+        raise ValueError('"module" parameter must not be empty')
+    try:
+        callables = rc.application.loader.appmod_names('%s.settings' % module, 'appmod_inits')
+        for tocall in tolist(callables):
+                tocall()
+    except ImportError, e:
+        # check the exception depth to make sure the import
+        # error we caught was a missing settings.appmod_inits
+        _, _, tb = sys.exc_info()
+        if traceback_depth(tb) == 2:
+            pass
+        else:
+            raise
         
 def log_info(msg):
     rc.application.logger.info(msg)
