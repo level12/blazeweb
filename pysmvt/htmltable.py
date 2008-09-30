@@ -135,8 +135,9 @@ class Col(object):
         # attribute style
         try:
             return getattr(self.crow, name)
-        except AttributeError:
-            pass
+        except AttributeError, e:
+            if ("object has no attribute '%s'" % name) not in str(e):
+                raise
         
         # can't figure out how to get value
         raise TypeError('could not retrieve value from row, unrecognized row type')
