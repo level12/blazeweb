@@ -4,6 +4,8 @@ from pprint import PrettyPrinter
 from pysmvt.application import request_context as rc
 from pysmvt.application import request_context_manager as rcm
 from werkzeug.debug.tbtools import get_current_traceback
+from formencode.validators import URL
+from formencode import Invalid
 
 def reindent(s, numspaces):
     """ reinidents a string (s) by the given number of spaces (numspaces) """
@@ -25,7 +27,15 @@ def urlslug(s, length=None):
         return s[:length-1].rstrip('-')
     else:
         return s
-    
+
+def isurl(s):
+    u = URL(add_http=False)
+    try:
+        u.to_python(s)
+        return True
+    except Invalid:
+        return False
+
 class Loader(object):
     """
         gets references to python modules in the application.  Used instead of
@@ -50,16 +60,18 @@ class Loader(object):
             self.module_refs[dotted_location] = cMod
         return cMod
     
-    def appmod_names(self, from_dotted_loc, to_import, scope = None):
+    def appmod_names(self, from_dotted_loc, to_import=None, scope = None):
         """ locate a python module (.py) in an Application Module """       
         return self.app_names('modules.%s' % from_dotted_loc, to_import, scope)
     
-    def app_names(self, from_dotted_loc, to_import, scope = None):
+    def app_names(self, from_dotted_loc, to_import=None, scope = None):
         """ get one or more objects from a python module (.py) in our main app
             or one of our supporting apps """
         retval = []
         to_import = tolist(to_import)
         module = self.app_module(from_dotted_loc)
+        if to_import==None:
+            return module
         for name_to_import in to_import:
             if hasattr(module, name_to_import):
                 retval.append(getattr(module, name_to_import))

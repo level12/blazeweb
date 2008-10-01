@@ -9,7 +9,7 @@
     t.last_edited = DateTime('Last Updated')
     t.render(dic_or_list)
 """
-from pysmvt.utils import OrderedProperties
+from pysmvt.utils import OrderedProperties, isurl
 from pysmvt.routing import url_for
 from webhelpers.html import HTML, literal
 from webhelpers.html.tags import link_to
@@ -146,22 +146,20 @@ class Col(object):
         return self.extract(key)
 
 class Link(Col):
-    def __init__(self, header, endpoint, *args, **kwargs):
+    def __init__(self, header, urlfrom='url', **kwargs):
         Col.__init__(self, header, **kwargs)
-        self.endpoint = endpoint
-        self.for_url_names = args
+        self.urlfrom = urlfrom
         self._link_attrs = {}
         
     def process(self, key):
-        # convert the list of url arg names along with their values from
-        # the current row into a dictionary usable by url_for()
-        url_args = dict([(name, self.extract(name)) for name in self.for_url_names])
-        url = url_for(self.endpoint, **url_args)
-        return link_to(self.extract(key), url, **self._link_attrs)
+        url = self.extract(self.urlfrom)
+        if url is not None and isurl(url):
+            return link_to(self.extract(key), url, **self._link_attrs)
+        return self.extract(key)
     
     def attrs(self, **kwargs):
         self._link_attrs = kwargs
-        # this is made to be taked onto the initial instantiation, so
+        # this is made to be tacked onto the initial instantiation, so
         # make sure we return the instance
         return self
 
