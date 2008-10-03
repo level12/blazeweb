@@ -6,6 +6,7 @@ from pysmvt.application import request_context_manager as rcm
 from werkzeug.debug.tbtools import get_current_traceback
 from formencode.validators import URL
 from formencode import Invalid
+from markdown2 import markdown
 
 def reindent(s, numspaces):
     """ reinidents a string (s) by the given number of spaces (numspaces) """
@@ -70,7 +71,7 @@ class Loader(object):
         retval = []
         to_import = tolist(to_import)
         module = self.app_module(from_dotted_loc)
-        if to_import==None:
+        if len(to_import) == 0:
             return module
         for name_to_import in to_import:
             if hasattr(module, name_to_import):
@@ -145,7 +146,7 @@ def bad_request_error(dev_desc = None):
     rc.controller.forward(rc.application.settings.bad_request_error_endpoint)
 
 # from sqlalchemy
-def tolist(x, default=None):
+def tolist(x, default=[]):
     if x is None:
         return default
     if not isinstance(x, (list, tuple)):
