@@ -213,7 +213,7 @@ class TrueFalse(YesNo):
         YesNo.__init__(self, header, reverse, true, false, **kwargs)
 
 class DateTime(Col):
-    def __init__(self, header, format='%m/%d/%y %H:%I', on_none='', **kwargs):
+    def __init__(self, header, format='%m/%d/%y %H:%M', on_none='', **kwargs):
         Col.__init__(self, header, **kwargs)
         self.format = format
         self.on_none = on_none
