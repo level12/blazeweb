@@ -6,7 +6,7 @@ from pysmvt.user import SessionUser
 from pysmvt import routing
 from werkzeug import ClosingIterator, SharedDataMiddleware, MultiDict
 from werkzeug.routing import Map, Submount
-from werkzeug.exceptions import HTTPException, NotFound
+from werkzeug.exceptions import HTTPException, NotFound, InternalServerError
 import werkzeug.utils
 from beaker.middleware import SessionMiddleware
 
@@ -53,6 +53,7 @@ class Controller(object):
         self.bind_to_context()
         rc.view_queue = []
         request = Request(environ)
+        response = None
         
         rc.session = environ['beaker.session']
         self._setup_user()
@@ -85,25 +86,30 @@ class Controller(object):
             # with a proper redirect status code and location header
             # before RedirectException is thrown
             response = rc.response
-        
-        # save the user session
-        rc.session.save()
-        
+        except Exception, e:
+            rc.application.logger.debug('uncaught exception detected in controller: %s' % str(e))
+            raise
+        finally:
+            # save the user session
+            rc.session.save()
+
+            # rollback any uncommitted database transactions.  We assume that
+            # an explicit commit will be issued and anything leftover was accidental
+            get_dbsession().rollback()
+            
+            # make sure we get a new session for the next request
+            get_dbsession_cls().remove()
+            
+            # do we have a response?  If not, then there was an exception
+            # that prevented the response from being set.  
+            if not response and rc.application.settings.hide_exceptions:
+                response = InternalServerError()
+            
+            # handle context local cleanup
+            rcm.cleanup()
+            
         # send response and perform request cleanup
-        return ClosingIterator(
-            response(environ, start_response),
-            [
-                # rollback any uncommitted database transactions.  We assume that
-                # an explicit commit will be issued and anything leftover was accidental
-                get_dbsession().rollback,
-                
-                # make sure we get a new session for the next request
-                get_dbsession_cls().remove,
-                
-                # handle context local cleanup
-                rcm.cleanup
-            ]
-        )
+        return response(environ, start_response)
     
     def _inner_requests_wrapper(self, endpoint, args):
         # this loop allows us to handle forwards
