@@ -100,13 +100,14 @@ class Controller(object):
             # make sure we get a new session for the next request
             get_dbsession_cls().remove()
             
-            # do we have a response?  If not, then there was an exception
-            # that prevented the response from being set.  
-            if not response and rc.application.settings.hide_exceptions:
-                response = InternalServerError()
-            
-            # handle context local cleanup
-            rcm.cleanup()
+            try: 
+                # do we have a response?  If not, then there was an exception
+                # that prevented the response from being set.  
+                if not response and rc.application.settings.hide_exceptions:
+                    return InternalServerError()(environ, start_response)
+            finally:
+                # handle context local cleanup
+                rcm.cleanup()
             
         # send response and perform request cleanup
         return response(environ, start_response)
