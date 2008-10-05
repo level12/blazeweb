@@ -164,7 +164,7 @@ def toset(x):
 
 def pprint( stuff, indent = 4):
     pp = PrettyPrinter(indent=indent)
-    print pp.pprint(stuff)
+    pp.pprint(stuff)
 
 def call_appmod_dbinits(singlemod=None):
     for module in rc.application.settings.modules:

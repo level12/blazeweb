@@ -1,5 +1,5 @@
 
-from pysmvt.utils import reindent, auth_error, log_info, bad_request_error, fatal_error
+from pysmvt.utils import reindent, auth_error, log_info, bad_request_error, fatal_error, urlslug
 from pysmvt.application import request_context as rc
 from pysmvt.templates import JinjaHtmlBase
 from pysmvt.exceptions import ActionError, UserError
@@ -7,6 +7,7 @@ from werkzeug.wrappers import BaseResponse
 from werkzeug.exceptions import InternalServerError
 from werkzeug.utils import MultiDict
 import formencode
+from pprint import PrettyPrinter
 rc.application.loader.app_names('utils', 'fatal_error', globals())
 
 class ViewBase(object):
@@ -168,6 +169,11 @@ class TemplateMixin(object):
         self.template.templateEnv.globals['page_css'] = self.page_css
         self.template.templateEnv.globals['page_js'] = self.page_js
         self.template.templateEnv.globals['process_view'] = self.process_view
+        self.template.templateEnv.filters['urlslug'] = urlslug
+        self.template.templateEnv.filters['pprint'] = self.filter_pprint
+    
+    def filter_pprint(self, value, indent=1, width=80, depth=None):
+        return '<pre class="pretty_print">%s</pre>' % PrettyPrinter(indent, width, depth).pformat(value)
     
     def assignTemplateVariables(self):
         self.template.assign('application', rc.application)
