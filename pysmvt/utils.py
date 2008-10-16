@@ -286,7 +286,7 @@ class OrderedProperties(object):
 
     def __getattr__(self, key):
         try:
-            return self._dict[key]
+            return self._data[key]
         except KeyError:
             raise AttributeError(key)
 
@@ -389,3 +389,24 @@ class OrderedDict(dict):
         item = dict.popitem(self)
         self._list.remove(item[0])
         return item
+
+class QuickSettings(OrderedProperties):
+    def __init__(self, initialize=True):
+        self._locked = False
+        OrderedProperties.__init__(self, initialize)
+    
+    def lock(self):
+        self._locked = True
+        for child in self._data.values():
+            if isinstance(child, QuickSettings):
+                child.lock()
+    
+    def __getattr__(self, key):
+        if not self._data.has_key(key):
+            if not self._locked:
+                self._data[key] = QuickSettings()
+            else:
+                raise AttributeError('attribute %s not found (object is locked)' % key)
+        return self._data[key]
+    
+
