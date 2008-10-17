@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 import elixir
 
 def load_orm_models():
-    for module in rc.application.settings.modules:
+    for module in rc.application.settings.modules.keys():
             try:
                 rc.application.loader.appmod_names('%s.model.orm' % module, [])
             except ImportError:
@@ -22,7 +22,7 @@ def load_orm_models():
                     raise
 
 def load_metadata_models():
-    for module in rc.application.settings.modules:
+    for module in rc.application.settings.modules.keys():
             try:
                 rc.application.loader.appmod_names('%s.model.metadata' % module, [])
             except ImportError:
@@ -50,7 +50,7 @@ def load_models():
 def get_engine():
     if hasattr(rc.application, 'dbEngine') == False :
         from sqlalchemy import create_engine
-        rc.application.dbEngine = create_engine(rc.application.settings.dbUri, echo=rc.application.settings.dbEcho)   
+        rc.application.dbEngine = create_engine(rc.application.settings.db.uri, echo=rc.application.settings.db.echo)   
     
     return rc.application.dbEngine
 

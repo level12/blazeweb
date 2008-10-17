@@ -103,7 +103,7 @@ class Controller(object):
             try: 
                 # do we have a response?  If not, then there was an exception
                 # that prevented the response from being set.  
-                if not response and rc.application.settings.hide_exceptions:
+                if not response and rc.application.settings.controller.hide_exceptions:
                     return InternalServerError()(environ, start_response)
             finally:
                 # handle context local cleanup
@@ -141,10 +141,10 @@ class Controller(object):
             from module settings """
        
         # application routes
-        self._add_routing_rules(rc.application.settings.routes)
+        self._add_routing_rules(rc.application.settings.routing.routes)
        
         # module routes        
-        for module in rc.application.settings.modules:
+        for module in rc.application.settings.modules.keys():
             try:
                 rc.application.loader.appmod_names('%s.settings' % module, 'routes', globals())
                 
@@ -163,10 +163,10 @@ class Controller(object):
     
     def _add_routing_rules(self, rules):
         try:
-            if len(rc.application.settings.route_prefix) > 1:
+            if len(rc.application.settings.routing.prefix) > 1:
                 # prefix the routes with the prefix in the app settings class
                 from werkzeug.routing import Submount
-                self._route_map.add(Submount( rc.application.settings.route_prefix, rules ))
+                self._route_map.add(Submount( rc.application.settings.routing.prefix, rules ))
             else:
                 raise AttributeError
         except AttributeError:
@@ -226,7 +226,7 @@ class Controller(object):
         self._dispatch = SharedDataMiddleware( self._dispatch, static_map)
     
     def _setup_session_middleware(self):
-        self._dispatch = SessionMiddleware(self._dispatch, **rc.application.settings.beaker)
+        self._dispatch = SessionMiddleware(self._dispatch, **dict(rc.application.settings.beaker))
 
     def _setup_user(self):
         rc.user = SessionUser()

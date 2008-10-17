@@ -66,7 +66,7 @@ class ViewBase(object):
             rc.user.add_message('error', str(e))
             fatal_error(orig_exception=e)
         except Exception, e:
-            if rc.application.settings.trap_view_exceptions:
+            if rc.application.settings.views.trap_exceptions:
                 fatal_error(orig_exception=e)
             raise
     

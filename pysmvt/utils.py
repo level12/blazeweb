@@ -123,7 +123,7 @@ def fatal_error(user_desc = None, dev_desc = None, orig_exception = None):
         rc.user.add_message('error', user_desc)
         
     # forward to fatal error view
-    rc.controller.forward(rc.application.settings.sys_error_endpoint)
+    rc.controller.forward(rc.application.settings.endpoint.sys_error)
 
 def auth_error(user_desc = None, dev_desc = None):
     # log stuff
@@ -135,7 +135,7 @@ def auth_error(user_desc = None, dev_desc = None):
         rc.user.add_message('error', user_desc)
         
     # forward to fatal error view
-    rc.controller.forward(rc.application.settings.sys_auth_error_endpoint)
+    rc.controller.forward(rc.application.settings.endpoint.sys_auth_error)
 
 def bad_request_error(dev_desc = None):
     # log stuff
@@ -143,7 +143,7 @@ def bad_request_error(dev_desc = None):
         rc.application.logger.debug('bad request error: %s', dev_desc)
         
     # forward to fatal error view
-    rc.controller.forward(rc.application.settings.bad_request_error_endpoint)
+    rc.controller.forward(rc.application.settings.endpoint.bad_request_error)
 
 # from sqlalchemy
 def tolist(x, default=[]):
@@ -167,7 +167,7 @@ def pprint( stuff, indent = 4):
     pp.pprint(stuff)
 
 def call_appmod_dbinits(singlemod=None):
-    for module in rc.application.settings.modules:
+    for module in rc.application.settings.modules.keys():
         if singlemod == module or singlemod == '':
             try:
                 callables = rc.application.loader.appmod_names('%s.settings' % module, 'appmod_dbinits')
@@ -209,13 +209,13 @@ class Logger(object):
         self.alogger = alogger
     
     def debug(self, msg, *args, **kwargs):
-        if 'debug' in rc.application.settings.logging_levels:
+        if 'debug' in rc.application.settings.logging.levels:
             d = {'request_ident':rc.ident}
             kwargs['extra'] = d
             self.dlogger.debug(msg, *args, **kwargs)
     
     def info(self, msg):
-        if 'info' in rc.application.settings.logging_levels:
+        if 'info' in rc.application.settings.logging.levels:
             d = {'request_ident':rc.ident}
             self.ilogger.info(msg, extra = d)
     

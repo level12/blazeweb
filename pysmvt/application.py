@@ -37,7 +37,7 @@ class Application(object):
         self.staticDir = path.join(self.baseDir, 'static')
         
         # load settings class from the settings module
-        self.settings = getattr(settings, self.profile.capitalize())(self.baseDir)
+        self.settings = getattr(settings, self.profile.capitalize())()
         
         # application logging object      
         self.setup_logger()
@@ -69,7 +69,7 @@ class Application(object):
         # debug logger to put debug logs in one file
         dlogger = logging.getLogger('webapp.debug')
         dlogger.setLevel(logging.DEBUG)
-        fhd = logging.FileHandler(path.join(self.settings.logsDir, 'debug.log'))
+        fhd = logging.FileHandler(path.join(self.settings.dirs.logs, 'debug.log'))
         #fhd.setLevel(logging.DEBUG)
         fhd.setFormatter(formatter)
         dlogger.addHandler(fhd)
@@ -77,7 +77,7 @@ class Application(object):
         # info logger to put info logs in another file
         ilogger = logging.getLogger('webapp.info')
         ilogger.setLevel(logging.INFO)
-        fhi = logging.FileHandler(path.join(self.settings.logsDir, 'info.log'))
+        fhi = logging.FileHandler(path.join(self.settings.dirs.logs, 'info.log'))
         #fhi.setLevel(logging.INFO)
         fhi.setFormatter(formatter)
         ilogger.addHandler(fhi)
@@ -85,7 +85,7 @@ class Application(object):
         # application logger to put application logs in another file
         alogger = logging.getLogger('webapp.application')
         alogger.setLevel(9)
-        fha = logging.FileHandler(path.join(self.settings.logsDir, 'application.log'))
+        fha = logging.FileHandler(path.join(self.settings.dirs.logs, 'application.log'))
         #fhi.setLevel(logging.INFO)
         fha.setFormatter(formatter)
         alogger.addHandler(fha)

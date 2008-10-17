@@ -19,8 +19,8 @@ def index_url(url = None):
     try:
         if url == None :
             try:
-                if len(rc.application.settings.route_prefix) > 1:
-                   url = '/%s/' % (rc.application.settings.route_prefix.strip('/'), )
+                if len(rc.application.settings.routing.prefix) > 1:
+                   url = '/%s/' % (rc.application.settings.routing.prefix.strip('/'), )
                 else:
                     raise AttributeError
             except AttributeError:
@@ -41,8 +41,8 @@ def index_url(url = None):
 
 def add_prefix(path):
     try:
-        if len(rc.application.settings.route_prefix) > 1:
-           path = '/%s/%s' % (rc.application.settings.route_prefix.strip('/'), path.lstrip('/'))
+        if len(rc.application.settings.routing.prefix) > 1:
+           path = '/%s/%s' % (rc.application.settings.routing.prefix.strip('/'), path.lstrip('/'))
         else:
             raise AttributeError
     except AttributeError:
