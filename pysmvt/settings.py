@@ -67,3 +67,38 @@ class Base(QuickSettings):
         self.views.trap_exceptions = False
         self.controller.hide_exceptions = False
         
+        #######################################################################
+        # EMAIL ADDRESSES
+        #######################################################################
+        self.emails.server_from = 'root@localhost'
+        self.emails.default_from = 'root@localhost'
+        self.emails.reply_to = ''
+        # recipient defaults.  Should be able to accept a list of email addresses
+        # ('foo@example.com', 'bar@example.com') or a double list of names/email
+        # addresses (('Full Name', 'foo@example.com'), ('Full Name', 'bar@example.com'))
+        self.emails.cc = None
+        self.emails.bcc = None
+        # programmers who would get system level notifications (code
+        # broke, exception notifications, etc.)
+        self.emails.programmers = None
+        # a list of emails that will be used to override every email sent
+        # by the system.  Useful for debugging.
+        self.emails.overrides = None
+        # people who would get application level notifications (payment recieved,
+        # action needed, etc.)
+        self.emails.admins = None
+        
+        #######################################################################
+        # EMAIL
+        #######################################################################
+        self.smtp.host = 'localhost'
+        self.smtp.port = 25
+        self.smtp.user = ''
+        self.smtp.password = ''
+        self.smtp.use_tls = False
+        
+        #######################################################################
+        # ENCODING
+        #######################################################################
+        self.default_charset = 'utf-8'
+        
