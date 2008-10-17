@@ -97,7 +97,7 @@ class Controller(object):
             # an explicit commit will be issued and anything leftover was accidental
             get_dbsession().rollback()
             
-            # make sure we get a new session for the next request
+            # make sure we get a new DB session for the next request
             get_dbsession_cls().remove()
             
             try: 

@@ -70,20 +70,21 @@ class Base(QuickSettings):
         #######################################################################
         # EMAIL ADDRESSES
         #######################################################################
-        self.emails.server_from = 'root@localhost'
-        self.emails.default_from = 'root@localhost'
+        self.emails.from_server = 'root@localhost'
+        self.emails.from_default = 'root@localhost'
         self.emails.reply_to = ''
-        # recipient defaults.  Should be able to accept a list of email addresses
-        # ('foo@example.com', 'bar@example.com') or a double list of names/email
-        # addresses (('Full Name', 'foo@example.com'), ('Full Name', 'bar@example.com'))
-        self.emails.cc = None
-        self.emails.bcc = None
+        # recipient defaults.  Should be a list of email addresses
+        # ('foo@example.com', 'bar@example.com')
+        self.emails.cc_always = None
+        self.emails.cc_defaults = None
+        self.emails.bcc_always = None
+        self.emails.bcc_defaults = None
         # programmers who would get system level notifications (code
         # broke, exception notifications, etc.)
         self.emails.programmers = None
-        # a list of emails that will be used to override every email sent
+        # a single or list of emails that will be used to override every email sent
         # by the system.  Useful for debugging.
-        self.emails.overrides = None
+        self.emails.override = None
         # people who would get application level notifications (payment recieved,
         # action needed, etc.)
         self.emails.admins = None

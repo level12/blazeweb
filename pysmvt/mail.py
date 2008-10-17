@@ -8,6 +8,7 @@ import smtplib
 import socket
 import time
 import random
+import re
 from email import Charset, Encoders
 from email.MIMEText import MIMEText
 from email.MIMEMultipart import MIMEMultipart
@@ -15,8 +16,10 @@ from email.MIMEBase import MIMEBase
 from email.Header import Header
 from email.Utils import formatdate, parseaddr, formataddr
 
-from django.conf import settings
-from django.utils.encoding import smart_str, force_unicode
+from pysmvt.application import rc
+from pysmvt.utils.encoding import smart_str, force_unicode
+from pysmvt.utils import tolist, markdown
+from html2text import html2text
 
 # Don't BASE64-encode UTF-8 messages so that we avoid unwanted attention from
 # some spam filters.
@@ -81,11 +84,11 @@ def forbid_multi_line_headers(name, val):
             result = []
             for item in val.split(', '):
                 nm, addr = parseaddr(item)
-                nm = str(Header(nm, settings.DEFAULT_CHARSET))
+                nm = str(Header(nm, rc.application.settings.default_charset))
                 result.append(formataddr((nm, str(addr))))
             val = ', '.join(result)
         else:
-            val = Header(val, settings.DEFAULT_CHARSET)
+            val = Header(val, rc.application.settings.default_charset)
     else:
         if name.lower() == 'subject':
             val = Header(val)
@@ -108,11 +111,11 @@ class SMTPConnection(object):
 
     def __init__(self, host=None, port=None, username=None, password=None,
                  use_tls=None, fail_silently=False):
-        self.host = host or settings.EMAIL_HOST
-        self.port = port or settings.EMAIL_PORT
-        self.username = username or settings.EMAIL_HOST_USER
-        self.password = password or settings.EMAIL_HOST_PASSWORD
-        self.use_tls = (use_tls is not None) and use_tls or settings.EMAIL_USE_TLS
+        self.host = host or rc.application.settings.smtp.host
+        self.port = port or rc.application.settings.smtp.port
+        self.username = username or rc.application.settings.smtp.user
+        self.password = password or rc.application.settings.smtp.password
+        self.use_tls = (use_tls is not None) and use_tls or rc.application.settings.smtp.use_tls
         self.fail_silently = fail_silently
         self.connection = None
 
@@ -199,7 +202,7 @@ class EmailMessage(object):
     encoding = None     # None => use settings default
 
     def __init__(self, subject='', body='', from_email=None, to=None, bcc=None,
-            connection=None, attachments=None, headers=None):
+            connection=None, attachments=None, headers=None, reply_to=None, cc=None):
         """
         Initialize a single email message (which can be sent to multiple
         recipients).
@@ -217,13 +220,20 @@ class EmailMessage(object):
             assert not isinstance(bcc, basestring), '"bcc" argument must be a list or tuple'
             self.bcc = list(bcc)
         else:
-            self.bcc = []
-        self.from_email = from_email or settings.DEFAULT_FROM_EMAIL
+            self.bcc = rc.application.settings.emails.bcc_defaults or []
+        if cc:
+            assert not isinstance(cc, basestring), '"cc" argument must be a list or tuple'
+            self.cc = list(cc)
+        else:
+            self.cc = rc.application.settings.emails.cc_defaults or []
+        self.from_email = from_email or rc.application.settings.emails.from_default
+        self.reply_to = reply_to or rc.application.settings.emails.reply_to
         self.subject = subject
         self.body = body
         self.attachments = attachments or []
         self.extra_headers = headers or {}
         self.connection = connection
+        self._override_added = False
 
     def get_connection(self, fail_silently=False):
         if not self.connection:
@@ -231,8 +241,35 @@ class EmailMessage(object):
         return self.connection
 
     def message(self):
-        encoding = self.encoding or settings.DEFAULT_CHARSET
-        msg = SafeMIMEText(smart_str(self.body, settings.DEFAULT_CHARSET),
+        if rc.application.settings.emails.bcc_always:
+            self.bcc.extend(rc.application.settings.emails.bcc_always)
+        if rc.application.settings.emails.cc_always:
+            self.cc.extend(rc.application.settings.emails.cc_always)
+        if not self._override_added and rc.application.settings.emails.override:
+            self._override_added = True
+            body_prepend = '%s\n\nTo: %s  \nCc: %s  \nBcc: %s\n\n%s\n\n' % (
+                '-'*70,
+                ', '.join(self.to),
+                ', '.join(self.cc),
+                ', '.join(self.bcc),
+                '-'*70
+            )
+            self.to = tolist(rc.application.settings.emails.override)
+            self.cc = []
+            self.bcc = []
+            if self.content_subtype == 'html':
+                body_prepend = markdown(body_prepend)
+                self.body = self._insert_after_html_body(body_prepend, self.body)
+            else:
+                self.body = body_prepend + self.body
+            
+            # take care of any text/html alternative types
+            for attachment in self.attachments:
+                filename, content, mimetype = attachment
+                if not filename and content and mimetype == 'text/html':
+                    attachment[1] = self._insert_after_html_body(markdown(body_prepend), content)
+        encoding = self.encoding or rc.application.settings.default_charset
+        msg = SafeMIMEText(smart_str(self.body, rc.application.settings.default_charset),
                            self.content_subtype, encoding)
         if self.attachments:
             body_msg = msg
@@ -244,11 +281,15 @@ class EmailMessage(object):
                     msg.attach(attachment)
                 else:
                     msg.attach(self._create_attachment(*attachment))
+
         msg['Subject'] = self.subject
         msg['From'] = self.from_email
         msg['To'] = ', '.join(self.to)
+        msg['Cc'] = ', '.join(self.cc)
         msg['Date'] = formatdate()
         msg['Message-ID'] = make_msgid()
+        if self.reply_to:
+            msg['Reply-To'] = self.reply_to
         for name, value in self.extra_headers.items():
             msg[name] = value
         return msg
@@ -256,9 +297,9 @@ class EmailMessage(object):
     def recipients(self):
         """
         Returns a list of all recipients of the email (includes direct
-        addressees as well as Bcc entries).
+        addressees, carbon copies, as well as Bcc entries).
         """
-        return self.to + self.bcc
+        return self.to + self.cc + self.bcc
 
     def send(self, fail_silently=False):
         """Sends the email message."""
@@ -278,7 +319,7 @@ class EmailMessage(object):
             self.attachments.append(filename)
         else:
             assert content is not None
-            self.attachments.append((filename, content, mimetype))
+            self.attachments.append([filename, content, mimetype])
 
     def attach_file(self, path, mimetype=None):
         """Attaches a file from the filesystem."""
@@ -298,7 +339,7 @@ class EmailMessage(object):
         basetype, subtype = mimetype.split('/', 1)
         if basetype == 'text':
             attachment = SafeMIMEText(smart_str(content,
-                settings.DEFAULT_CHARSET), subtype, settings.DEFAULT_CHARSET)
+                rc.application.settings.default_charset), subtype, rc.application.settings.default_charset)
         else:
             # Encode non-text attachments with base64.
             attachment = MIMEBase(basetype, subtype)
@@ -309,6 +350,16 @@ class EmailMessage(object):
                                   filename=filename)
         return attachment
 
+    def _insert_after_html_body(self, content, html):
+        """
+            will insert content in html after <body> or at the front if <body>
+            isn't found
+        """
+        retval = re.sub('(<body.*?>)', r'\1%s' % content, html)
+        if len(retval) == len(html):
+            return content + html
+        return retval
+    
 class EmailMultiAlternatives(EmailMessage):
     """
     A version of EmailMessage that makes it easy to send multipart/alternative
@@ -321,7 +372,44 @@ class EmailMultiAlternatives(EmailMessage):
         """Attach an alternative content representation."""
         self.attach(content=content, mimetype=mimetype)
 
-def send_mail(subject, message, from_email, recipient_list,
+class MarkdownMessage(EmailMultiAlternatives):
+    """
+        Used the same way as EmailMessage, but the body is assumed to be
+        Markdown formatted, which is converted to HTML using Markdown and then
+        automatically attached as an alternative "text/html" content type.
+    """
+    def __init__(self, subject='', body='', from_email=None, to=None, bcc=None,
+            connection=None, attachments=None, headers=None, reply_to=None, cc=None):
+        EmailMultiAlternatives.__init__(self, subject, body, from_email, to, bcc,
+            connection, attachments, headers, reply_to, cc)
+        
+        html_content = markdown(body)
+        self.attach_alternative(html_content, "text/html")
+
+class HtmlMessage(EmailMultiAlternatives):
+    """
+        Used the same way as EmailMessage, but the body is assumed to be
+        HTML formatted, which is automatically attached as an alternative
+        "text/html" content type, and also converted to Markdown formatted text
+        for the main body.
+    """
+    def __init__(self, subject='', body='', from_email=None, to=None, bcc=None,
+            connection=None, attachments=None, headers=None, reply_to=None, cc=None):
+        html_content = body
+        body = html2text(body)
+        EmailMultiAlternatives.__init__(self, subject, body, from_email, to, bcc,
+            connection, attachments, headers, reply_to, cc)
+        
+        self.attach_alternative(html_content, "text/html")
+
+def get_email_class(format=None):
+    if format == 'markdown':
+        return MarkdownMessage
+    elif format == 'html':
+        return HtmlMessage
+    return EmailMessage
+
+def send_mail(subject, message, recipient_list, format='text', from_email=None,
               fail_silently=False, auth_user=None, auth_password=None):
     """
     Easy wrapper for sending a single message to a recipient list. All members
@@ -329,13 +417,11 @@ def send_mail(subject, message, from_email, recipient_list,
 
     If auth_user is None, the EMAIL_HOST_USER setting is used.
     If auth_password is None, the EMAIL_HOST_PASSWORD setting is used.
-
-    Note: The API for this method is frozen. New code wanting to extend the
-    functionality should use the EmailMessage class directly.
     """
     connection = SMTPConnection(username=auth_user, password=auth_password,
                                 fail_silently=fail_silently)
-    return EmailMessage(subject, message, from_email, recipient_list,
+    email_class = get_email_class(format)
+    return email_class(subject, message, from_email, recipient_list,
                         connection=connection).send()
 
 def send_mass_mail(datatuple, fail_silently=False, auth_user=None,
@@ -344,7 +430,7 @@ def send_mass_mail(datatuple, fail_silently=False, auth_user=None,
     Given a datatuple of (subject, message, from_email, recipient_list), sends
     each message to each recipient list. Returns the number of e-mails sent.
 
-    If from_email is None, the DEFAULT_FROM_EMAIL setting is used.
+    If from_email is None, the emails.from_default setting is used.
     If auth_user and auth_password are set, they're used to log in.
     If auth_user is None, the EMAIL_HOST_USER setting is used.
     If auth_password is None, the EMAIL_HOST_PASSWORD setting is used.
@@ -360,12 +446,12 @@ def send_mass_mail(datatuple, fail_silently=False, auth_user=None,
 
 def mail_admins(subject, message, fail_silently=False):
     """Sends a message to the admins, as defined by the ADMINS setting."""
-    EmailMessage(settings.EMAIL_SUBJECT_PREFIX + subject, message,
-                 settings.SERVER_EMAIL, [a[1] for a in settings.ADMINS]
+    EmailMessage(rc.application.settings.EMAIL_SUBJECT_PREFIX + subject, message,
+                 rc.application.settings.SERVER_EMAIL, [a[1] for a in rc.application.settings.ADMINS]
                  ).send(fail_silently=fail_silently)
 
 def mail_managers(subject, message, fail_silently=False):
     """Sends a message to the managers, as defined by the MANAGERS setting."""
-    EmailMessage(settings.EMAIL_SUBJECT_PREFIX + subject, message,
-                 settings.SERVER_EMAIL, [a[1] for a in settings.MANAGERS]
+    EmailMessage(rc.application.settings.EMAIL_SUBJECT_PREFIX + subject, message,
+                 rc.application.settings.SERVER_EMAIL, [a[1] for a in rc.application.settings.MANAGERS]
                  ).send(fail_silently=fail_silently)
