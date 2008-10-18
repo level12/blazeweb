@@ -14,8 +14,9 @@ from pysmvt.mail import EmailMessage, BadHeaderError, EmailMultiAlternatives, \
     MarkdownMessage, HtmlMessage, send_mail
 from pysmvt.application import request_context_manager as rcm
 
-_send_live = True
-_to = 'randy@rcs-comp.com'
+# use these variables to send live emails
+_send_live = False
+_to = ''
 
 class TestEmail(unittest.TestCase):
     def setUp(self):
@@ -349,7 +350,7 @@ Content-Transfer-Encoding: quoted-printable
     document with a W3C url for the DTD.</p>
   </body>
 </html>"""
-        self.app.settings.emails.override = _to
+        self.app.settings.emails.override = _to or 'override@example.com'
         email = HtmlMessage('Subject', html_doc, 'from@example.com', ['to@example.com'])
         message = email.message()
         
