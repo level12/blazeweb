@@ -284,12 +284,21 @@ class EmailMessage(object):
 
         msg['Subject'] = self.subject
         msg['From'] = self.from_email
-        msg['To'] = ', '.join(self.to)
-        msg['Cc'] = ', '.join(self.cc)
-        msg['Date'] = formatdate()
-        msg['Message-ID'] = make_msgid()
+        if self.to:
+            msg['To'] = ', '.join(self.to)
+        if self.cc:
+            msg['Cc'] = ', '.join(self.cc)
+        
+        # Email header names are case-insensitive (RFC 2045), so we have to
+        # accommodate that when doing comparisons.
+        header_names = [key.lower() for key in self.extra_headers]
+        if 'date' not in header_names:
+            msg['Date'] = formatdate()
+        if 'message-id' not in header_names:
+            msg['Message-ID'] = make_msgid()
         if self.reply_to:
             msg['Reply-To'] = self.reply_to
+        
         for name, value in self.extra_headers.items():
             msg[name] = value
         return msg
@@ -409,7 +418,7 @@ def get_email_class(format=None):
         return HtmlMessage
     return EmailMessage
 
-def send_mail(subject, message, recipient_list, format='text', from_email=None,
+def send_mail(subject, message, recipient_list, from_email=None, format='text',
               fail_silently=False, auth_user=None, auth_password=None):
     """
     Easy wrapper for sending a single message to a recipient list. All members
@@ -424,7 +433,7 @@ def send_mail(subject, message, recipient_list, format='text', from_email=None,
     return email_class(subject, message, from_email, recipient_list,
                         connection=connection).send()
 
-def send_mass_mail(datatuple, fail_silently=False, auth_user=None,
+def send_mass_mail(datatuple, format='text', fail_silently=False, auth_user=None,
                    auth_password=None):
     """
     Given a datatuple of (subject, message, from_email, recipient_list), sends
@@ -440,18 +449,31 @@ def send_mass_mail(datatuple, fail_silently=False, auth_user=None,
     """
     connection = SMTPConnection(username=auth_user, password=auth_password,
                                 fail_silently=fail_silently)
-    messages = [EmailMessage(subject, message, sender, recipient)
+    email_class = get_email_class(format)
+    messages = [email_class(subject, message, sender, recipient)
                 for subject, message, sender, recipient in datatuple]
     return connection.send_messages(messages)
 
-def mail_admins(subject, message, fail_silently=False):
-    """Sends a message to the admins, as defined by the ADMINS setting."""
-    EmailMessage(rc.application.settings.EMAIL_SUBJECT_PREFIX + subject, message,
-                 rc.application.settings.SERVER_EMAIL, [a[1] for a in rc.application.settings.ADMINS]
-                 ).send(fail_silently=fail_silently)
+def _mail_admins(subject, message, format='text'):
+    """used for testing"""
+    email_class = get_email_class(format)
+    return email_class(rc.application.settings.email.subject_prefix + subject, message,
+                 rc.application.settings.emails.from_server, rc.application.settings.emails.admins
+            )
 
-def mail_managers(subject, message, fail_silently=False):
-    """Sends a message to the managers, as defined by the MANAGERS setting."""
-    EmailMessage(rc.application.settings.EMAIL_SUBJECT_PREFIX + subject, message,
-                 rc.application.settings.SERVER_EMAIL, [a[1] for a in rc.application.settings.MANAGERS]
-                 ).send(fail_silently=fail_silently)
+def mail_admins(subject, message, format='text', fail_silently=False):
+    """Sends a message to the programmers, as defined by the emails.programmers setting."""
+    return _mail_admins(subject, message, format).send(fail_silently=fail_silently)
+    
+
+def _mail_programmers(subject, message, format='text'):
+    """used for testing"""
+    email_class = get_email_class(format)
+    return email_class(rc.application.settings.email.subject_prefix + subject, message,
+                 rc.application.settings.emails.from_server, rc.application.settings.emails.programmers
+            )
+
+def mail_programmers(subject, message, format='text', fail_silently=False):
+    """Sends a message to the programmers, as defined by the emails.programmers setting."""
+    return _mail_programmers(subject, message, format).send(fail_silently=fail_silently)
+    

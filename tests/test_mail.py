@@ -11,7 +11,7 @@ rcsutils.setup_virtual_env('pysmvt-libs-trunk', __file__, '..')
 
 from pysmvttestapp.application import Webapp
 from pysmvt.mail import EmailMessage, BadHeaderError, EmailMultiAlternatives, \
-    MarkdownMessage, HtmlMessage, send_mail
+    MarkdownMessage, HtmlMessage, send_mail, _mail_programmers, _mail_admins
 from pysmvt.application import request_context_manager as rcm
 
 # use these variables to send live emails
@@ -60,6 +60,26 @@ class TestEmail(unittest.TestCase):
             assert 'Header values can\'t contain newlines' in str(e)
         else:
             self.fail("header injection allowed in from")
+    
+    def test_header_inj_reply_to(self):
+        email = EmailMessage('From Injection Test', 'Content', 'from@example.com', ['to@example.com'], reply_to='reply@example.com\nto:spam@example.com')
+        
+        try:
+            message = email.message()
+        except BadHeaderError, e:
+            assert 'Header values can\'t contain newlines' in str(e)
+        else:
+            self.fail("header injection allowed in reply_to")
+    
+    def test_header_inj_custom(self):
+        email = EmailMessage('From Injection Test', 'Content', 'from@example.com', ['to@example.com'], headers={'X-test':'reply@example.com\nto:spam@example.com'})
+        
+        try:
+            message = email.message()
+        except BadHeaderError, e:
+            assert 'Header values can\'t contain newlines' in str(e)
+        else:
+            self.fail("header injection allowed in custom header")
 
     def test_long_subj(self):
         # Test for space continuation character in long (ascii) subject headers (#7747)
@@ -224,7 +244,7 @@ class TestEmail(unittest.TestCase):
         assert message['Subject'].encode() == 'Subject'
         assert message['From'] == 'from@example.com'
         assert message['To'] == 'override@example.com'
-        assert message['Cc'] == ''
+        assert message['Cc'] == None
         assert email.recipients() == ['override@example.com']
         
         msg_body = '%s\n\nTo: to@example.com  =\n\nCc: cc@example.com  =\n\nBcc: bcc@example.com\n\n%s\n\nContent' % ('-'*70, '-'*70)
@@ -397,8 +417,38 @@ Bcc: </p>
         if _send_live:
             send_mail('test text email', 'email content', [_to])
             
-            send_mail('test markdown email', '**important** email content', [_to], 'markdown')
+            send_mail('test markdown email', '**important** email content', [_to], format='markdown')
             
+            send_mail('test markdown email', '<strong>important</strong> email content', [_to], format='markdown')
+    
+    def test_duplicate_headers(self):	
+        # Specifying dates or message-ids in the extra headers overrides the defaul
+        # values (#9233).
+
+        headers = {"date": "Fri, 09 Nov 2001 01:08:47 -0000", "Message-ID": "foo"}
+        email = EmailMessage('subject', 'content', 'from@example.com', ['to@example.com'], headers=headers)
+        assert email.message().as_string() == 'Content-Type: text/plain; charset="utf-8"\nMIME-Version: 1.0\nContent-Transfer-Encoding: quoted-printable\nSubject: subject\nFrom: from@example.com\nTo: to@example.com\ndate: Fri, 09 Nov 2001 01:08:47 -0000\nMessage-ID: foo\n\ncontent'
+    
+    def test_mail_programmers(self):
+        self.app.settings.email.subject_prefix = '[webapp] '
+        self.app.settings.emails.programmers = ('p1@example.com', 'p2@example.com')
+        email = _mail_programmers('programmers email subject', '**email body**', 'markdown')
+        msg = email.message()
+        
+        assert msg['Subject'] == '[webapp] programmers email subject'
+        assert email.recipients() == ['p1@example.com', 'p2@example.com']
+        assert '<p><strong>email body</strong></p>' in msg.as_string()
+            
+    def test_mail_admins(self):
+        self.app.settings.email.subject_prefix = '[webapp] '
+        self.app.settings.emails.admins = ('a1@example.com', 'a2@example.com')
+        email = _mail_admins('admins email subject', '**email body**', 'markdown')
+        msg = email.message()
+        
+        assert msg['Subject'] == '[webapp] admins email subject'
+        assert email.recipients() == ['a1@example.com', 'a2@example.com']
+        assert '<p><strong>email body</strong></p>' in msg.as_string()
+
     def tearDown(self):
         self.app = None
         rcm.cleanup()
