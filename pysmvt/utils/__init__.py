@@ -107,6 +107,14 @@ class Loader(object):
     def app(self, appname):
         return self._load_module(appname)
 
+def module_import(dotted_mod_name, from_list=None ):
+    calling_locals = sys._getframe(1).f_locals
+    rc.application.loader.appmod_names(dotted_mod_name, from_list, calling_locals)
+
+def app_import(dotted_app_name, from_list=None ):
+    calling_locals = sys._getframe(1).f_locals
+    rc.application.loader.app_names(dotted_app_name, from_list, calling_locals)
+
 def traceback_depth(tb):
     depth = 0
     while tb.tb_next is not None:
