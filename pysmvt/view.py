@@ -1,5 +1,6 @@
 
-from pysmvt.utils import reindent, auth_error, log_info, bad_request_error, fatal_error, urlslug
+from pysmvt.utils import reindent, auth_error, log_info, bad_request_error, \
+    fatal_error, urlslug, markdown
 from pysmvt.application import request_context as rc
 from pysmvt.templates import JinjaHtmlBase
 from pysmvt.exceptions import ActionError, UserError
@@ -171,6 +172,7 @@ class TemplateMixin(object):
         self.template.templateEnv.globals['process_view'] = self.process_view
         self.template.templateEnv.filters['urlslug'] = urlslug
         self.template.templateEnv.filters['pprint'] = self.filter_pprint
+        self.template.templateEnv.filters['markdown'] = markdown
     
     def filter_pprint(self, value, indent=1, width=80, depth=None):
         return '<pre class="pretty_print">%s</pre>' % PrettyPrinter(indent, width, depth).pformat(value)
