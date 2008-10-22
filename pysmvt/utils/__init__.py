@@ -235,7 +235,7 @@ def randchars(n = 12):
     charlist = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
     return ''.join(random.choice(charlist) for _ in range(n))
 
-def safe_strftime(value, format='%m/%d/%Y %H:%I', on_none=''):
+def safe_strftime(value, format='%m/%d/%Y %H:%M', on_none=''):
     if value is None:
         return on_none
     return value.strftime(format)

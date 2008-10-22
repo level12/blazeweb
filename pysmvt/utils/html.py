@@ -3,10 +3,10 @@
 import re
 import string
 
-from django.utils.safestring import SafeData, mark_safe
-from django.utils.encoding import force_unicode
-from django.utils.functional import allow_lazy
-from django.utils.http import urlquote
+from pysmvt.utils.safestring import SafeData, mark_safe
+from pysmvt.utils.encoding import force_unicode
+from pysmvt.utils.functional import allow_lazy
+from pysmvt.utils.http import urlquote
 
 # Configuration for urlize() function.
 LEADING_PUNCTUATION  = ['(', '<', '&lt;']
