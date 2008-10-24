@@ -7,6 +7,7 @@ from werkzeug.debug.tbtools import get_current_traceback
 from formencode.validators import URL
 from formencode import Invalid
 from markdown2 import markdown
+import re
 
 def reindent(s, numspaces):
     """ reinidents a string (s) by the given number of spaces (numspaces) """
@@ -29,12 +30,15 @@ def urlslug(s, length=None):
     else:
         return s
 
-def isurl(s):
-    u = URL(add_http=False)
+def isurl(s, require_tld=True):
+    u = URL(add_http=False, require_tld=require_tld)
     try:
         u.to_python(s)
         return True
     except Invalid:
+        url_local = re.compile(r'//localhost(:|/)').search(s)
+        if url_local is not None:
+            return True
         return False
 
 class Loader(object):
