@@ -14,7 +14,7 @@ class JinjaBase(object):
         # of putting them as class attributes b/c the class atrributes are
         # shared among instantiated classes
         self.templateName = None
-        self.templateExtension = None
+        self.tpl_extension = None
         self._templateValues = {}
         
                 
@@ -56,7 +56,7 @@ class JinjaBase(object):
             }
     
     def render(self):
-        template = self.templateEnv.get_template(self.templateName + '.' + self.templateExtension)
+        template = self.templateEnv.get_template(self.templateName + '.' + self.tpl_extension)
         return template.render(self._templateValues)
     
     def assign(self, key, value):
@@ -70,5 +70,5 @@ class JinjaHtmlBase(JinjaBase):
         JinjaBase.__init__(self, modulePath)
         
         #setup my own initilization values
-        self.templateExtension = 'html'
+        self.tpl_extension = 'html'
         

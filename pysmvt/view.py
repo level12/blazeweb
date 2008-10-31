@@ -3,7 +3,7 @@ from pysmvt.utils import reindent, auth_error, log_info, bad_request_error, \
     fatal_error, urlslug, markdown
 from pysmvt.utils.html import strip_tags
 from pysmvt.application import request_context as rc
-from pysmvt.templates import JinjaHtmlBase
+from pysmvt.templates import JinjaHtmlBase, JinjaBase
 from pysmvt.exceptions import ActionError, UserError
 from werkzeug.wrappers import BaseResponse
 from werkzeug.exceptions import InternalServerError
@@ -143,15 +143,6 @@ class HtmlPageViewBase(RespondingViewBase):
 class SnippetViewBase(ViewBase):
     def handle_response(self):
         return self.retval
-    
-class HtmlSnippetViewBase(ViewBase):
-
-    def __init__(self, modulePath, endpoint, args):
-        ViewBase.__init__(self, modulePath, endpoint, args)
-    
-    def handle_response(self):
-        #return our html
-        return self.retval
 
 class TemplateMixin(object):
     
@@ -228,7 +219,7 @@ class HtmlTemplatePage(HtmlPageViewBase, TemplateMixin):
         TemplateMixin.handle_response(self)
         super(HtmlTemplatePage, self).handle_response()
 
-class HtmlTemplateSnippet(HtmlSnippetViewBase, TemplateMixin):
+class HtmlTemplateSnippet(SnippetViewBase, TemplateMixin):
     
     def __init__(self, modulePath, endpoint, args):
         super(HtmlTemplateSnippet, self).__init__(modulePath, endpoint, args)
@@ -238,3 +229,15 @@ class HtmlTemplateSnippet(HtmlSnippetViewBase, TemplateMixin):
     def handle_response(self):
         TemplateMixin.handle_response(self)
         return super(HtmlTemplateSnippet, self).handle_response()
+
+class TextTemplateSnippet(SnippetViewBase, TemplateMixin):
+    
+    def __init__(self, modulePath, endpoint, args):
+        super(TextTemplateSnippet, self).__init__(modulePath, endpoint, args)
+        self.template = JinjaBase(modulePath)
+        self.template.tpl_extension = 'txt'
+        TemplateMixin.init(self)
+    
+    def handle_response(self):
+        TemplateMixin.handle_response(self)
+        return super(TextTemplateSnippet, self).handle_response()
