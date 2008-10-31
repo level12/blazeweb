@@ -31,6 +31,7 @@ class TestEmail(unittest.TestCase):
         assert message.get_payload() == 'Content'
         assert message['From'] == 'from@example.com'
         assert message['To'] == 'to@example.com'
+        assert email.recipients() == ['to@example.com']
     
     def test_multi_recip(self):
         email = EmailMessage('Subject', 'Content', 'from@example.com', ['to@example.com','other@example.com'])
@@ -40,6 +41,7 @@ class TestEmail(unittest.TestCase):
         assert message.get_payload() == 'Content'
         assert message['From'] == 'from@example.com'
         assert message['To'] == 'to@example.com, other@example.com'
+        assert email.recipients() == ['to@example.com', 'other@example.com']
     
     def test_header_inj_sub(self):
         email = EmailMessage('Subject\nInjection Test', 'Content', 'from@example.com', ['to@example.com'])
@@ -240,12 +242,31 @@ class TestEmail(unittest.TestCase):
         self.app.settings.emails.override = 'override@example.com'
         email = EmailMessage('Subject', 'Content', 'from@example.com', ['to@example.com'], cc=['cc@example.com'], bcc=['bcc@example.com'])
         message = email.message()
-        email.send()
+        
         assert message['Subject'].encode() == 'Subject'
         assert message['From'] == 'from@example.com'
         assert message['To'] == 'override@example.com'
         assert message['Cc'] == None
         assert email.recipients() == ['override@example.com']
+        
+        msg_body = '%s\n\nTo: to@example.com  =\n\nCc: cc@example.com  =\n\nBcc: bcc@example.com\n\n%s\n\nContent' % ('-'*70, '-'*70)
+        assert msg_body in message.as_string()
+    
+    def test_overrides_recipients_first(self):
+        """
+            Test overrides, but call recipients first just like the code does
+            when sending an email
+        """
+        
+        self.app.settings.emails.override = 'override@example.com'
+        email = EmailMessage('Subject', 'Content', 'from@example.com', ['to@example.com'], cc=['cc@example.com'], bcc=['bcc@example.com'])
+        assert email.recipients() == ['override@example.com']
+        
+        message = email.message()
+        assert message['Subject'].encode() == 'Subject'
+        assert message['From'] == 'from@example.com'
+        assert message['To'] == 'override@example.com'
+        assert message['Cc'] == None
         
         msg_body = '%s\n\nTo: to@example.com  =\n\nCc: cc@example.com  =\n\nBcc: bcc@example.com\n\n%s\n\nContent' % ('-'*70, '-'*70)
         assert msg_body in message.as_string()

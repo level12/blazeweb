@@ -245,29 +245,7 @@ class EmailMessage(object):
             self.bcc.extend(rc.application.settings.emails.bcc_always)
         if rc.application.settings.emails.cc_always:
             self.cc.extend(rc.application.settings.emails.cc_always)
-        if not self._override_added and rc.application.settings.emails.override:
-            self._override_added = True
-            body_prepend = '%s\n\nTo: %s  \nCc: %s  \nBcc: %s\n\n%s\n\n' % (
-                '-'*70,
-                ', '.join(self.to),
-                ', '.join(self.cc),
-                ', '.join(self.bcc),
-                '-'*70
-            )
-            self.to = tolist(rc.application.settings.emails.override)
-            self.cc = []
-            self.bcc = []
-            if self.content_subtype == 'html':
-                body_prepend = markdown(body_prepend)
-                self.body = self._insert_after_html_body(body_prepend, self.body)
-            else:
-                self.body = body_prepend + self.body
-            
-            # take care of any text/html alternative types
-            for attachment in self.attachments:
-                filename, content, mimetype = attachment
-                if not filename and content and mimetype == 'text/html':
-                    attachment[1] = self._insert_after_html_body(markdown(body_prepend), content)
+        self._perform_override()
         encoding = self.encoding or rc.application.settings.default_charset
         msg = SafeMIMEText(smart_str(self.body, rc.application.settings.default_charset),
                            self.content_subtype, encoding)
@@ -308,6 +286,7 @@ class EmailMessage(object):
         Returns a list of all recipients of the email (includes direct
         addressees, carbon copies, as well as Bcc entries).
         """
+        self._perform_override()
         return self.to + self.cc + self.bcc
 
     def send(self, fail_silently=False):
@@ -335,6 +314,31 @@ class EmailMessage(object):
         filename = os.path.basename(path)
         content = open(path, 'rb').read()
         self.attach(filename, content, mimetype)
+    
+    def _perform_override(self):
+        if not self._override_added and rc.application.settings.emails.override:
+            self._override_added = True
+            body_prepend = '%s\n\nTo: %s  \nCc: %s  \nBcc: %s\n\n%s\n\n' % (
+                '-'*70,
+                ', '.join(self.to),
+                ', '.join(self.cc),
+                ', '.join(self.bcc),
+                '-'*70
+            )
+            self.to = tolist(rc.application.settings.emails.override)
+            self.cc = []
+            self.bcc = []
+            if self.content_subtype == 'html':
+                body_prepend = markdown(body_prepend)
+                self.body = self._insert_after_html_body(body_prepend, self.body)
+            else:
+                self.body = body_prepend + self.body
+            
+            # take care of any text/html alternative types
+            for attachment in self.attachments:
+                filename, content, mimetype = attachment
+                if not filename and content and mimetype == 'text/html':
+                    attachment[1] = self._insert_after_html_body(markdown(body_prepend), content)
 
     def _create_attachment(self, filename, content, mimetype=None):
         """
