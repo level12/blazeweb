@@ -76,6 +76,8 @@ class Loader(object):
         to_import = tolist(to_import)
         module = self.app_module(from_dotted_loc)
         if len(to_import) == 0:
+            if scope is not None:
+                scope[module.__name__.split('.')[-1]] = module
             return module
         for name_to_import in to_import:
             if hasattr(module, name_to_import):
@@ -96,7 +98,8 @@ class Loader(object):
         apps_to_try = [rc.application.appPackage] + rc.application.settings.supporting_apps
         for app in apps_to_try:
             try:
-                module_to_load = '%s.%s' % (app, dotted_loc)        
+                module_to_load = '%s.%s' % (app, dotted_loc)
+                #print module_to_load
                 return self._load_module(module_to_load)
             except ImportError, e:
                 # if the import error wasn't for what we loaded, then
