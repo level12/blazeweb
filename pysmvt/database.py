@@ -3,6 +3,7 @@ import sys
 from pysmvt.application import request_context as rc
 from pysmvt.utils import traceback_depth
 from sqlalchemy.orm import sessionmaker, scoped_session
+from sqlalchemy import create_engine
 import elixir
 
 def load_orm_models():
@@ -48,23 +49,22 @@ def load_models():
     load_metadata_models()
 
 def get_engine():
-    if hasattr(rc.application, 'dbEngine') == False :
-        from sqlalchemy import create_engine
-        rc.application.dbEngine = create_engine(rc.application.settings.db.uri, echo=rc.application.settings.db.echo)   
+    if hasattr(rc, 'db_engine') == False :
+        rc.db_engine = create_engine(rc.application.settings.db.uri, echo=rc.application.settings.db.echo, strategy='threadlocal')   
     
-    return rc.application.dbEngine
+    return rc.db_engine
 
 def get_metadata():
     if hasattr(rc.application, 'dbMetaData') == False :
         from sqlalchemy import MetaData
         rc.application.dbMetaData = MetaData()
-        rc.application.dbMetaData.bind = get_engine()
         
     return rc.application.dbMetaData
 
 def get_session_cls():
     if hasattr(rc.application, 'db_scoped_session') == False :
-        rc.application.db_scoped_session = scoped_session(sessionmaker(get_engine()))
+        rc.application.db_scoped_session = scoped_session(sessionmaker())
+    rc.application.db_scoped_session.configure(bind=get_engine())
     return rc.application.db_scoped_session
 
 # an alias that can be used to avoid confusion when working in close
