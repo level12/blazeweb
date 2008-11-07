@@ -154,9 +154,8 @@ class Controller(object):
                 # check the exception depth to make sure the import
                 # error we caught was just a missing .settings
                 _, _, tb = sys.exc_info()
-                # 3 = .model wasn't found
-                #print traceback_depth(tb)
-                if traceback_depth(tb) in [3]:
+                # 3 = .settings wasn't found
+                if traceback_depth(tb) in [3] or 'cannot import name routes' in str(e):
                     pass
                 else:
                     raise
