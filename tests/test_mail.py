@@ -14,7 +14,8 @@ from pysmvt.mail import EmailMessage, BadHeaderError, EmailMultiAlternatives, \
     MarkdownMessage, HtmlMessage, send_mail, _mail_programmers, _mail_admins
 from pysmvt.application import request_context_manager as rcm
 
-# use these variables to send live emails
+# use these variables to send live emails which is needed to test
+# some of the send functions
 _send_live = False
 _to = ''
 
