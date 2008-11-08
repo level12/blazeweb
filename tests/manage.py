@@ -17,7 +17,7 @@ from pysmvt.script import *
 # application class
 def make_app():
     from pysmvttestapp.application import Webapp
-    return Webapp()
+    return Webapp('Testruns')
 
 def action_printpath():
     import sys

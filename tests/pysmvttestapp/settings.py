@@ -11,3 +11,19 @@ class Default(Base):
         
         # we are done adding variables to this settings object, so lock it
         self.lock()
+
+class Testruns(Base):
+    def __init__(self):
+        # call parent init to setup default settings
+        Base.__init__(self)
+        
+        self.modules.tests.enabled = True
+        
+        self.routing.routes.extend([
+            Rule('/', endpoint='tests:Index')
+        ])
+        
+        self.db.uri = 'sqlite:///'
+        
+        # we are done adding variables to this settings object, so lock it
+        self.lock()
