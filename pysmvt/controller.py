@@ -119,7 +119,7 @@ class Controller(object):
             rc.respview = None
             try: 
                 # call the view
-                self.call_view(endpoint, args)
+                self._call_view(endpoint, args)
                 break
             except ForwardException:
                 endpoint, args = rc.view_queue.pop()
@@ -146,10 +146,10 @@ class Controller(object):
         # module routes        
         for module in rc.application.settings.modules.keys():
             try:
-                rc.application.loader.appmod_names('%s.settings' % module, 'routes', globals())
-                
+                rc.application.loader.appmod_names('%s.settings' % module, 'Settings', globals())
+                s = Settings()
                 # load the routes from the module
-                self._add_routing_rules(routes)
+                self._add_routing_rules(s.routes)
             except ImportError, e:
                 # check the exception depth to make sure the import
                 # error we caught was just a missing .settings
@@ -172,7 +172,10 @@ class Controller(object):
             for rule in rules or ():
                 self._route_map.add(rule)
     
-    def call_view(self, endpoint, args ):
+    def call_view(self, endpoint, **kwargs):
+        return self._call_view(endpoint, kwargs)
+    
+    def _call_view(self, endpoint, args ):
         app_mod_name, vclassname = endpoint.split(':')
         
         try:

@@ -10,7 +10,12 @@ from werkzeug.exceptions import InternalServerError
 from werkzeug.utils import MultiDict
 import formencode
 from pprint import PrettyPrinter
-rc.application.loader.app_names('utils', 'fatal_error', globals())
+try: 
+    rc.application.loader.app_names('utils', 'fatal_error', globals())
+except ImportError, e:
+    if 'cannot import module utils' not in str(e):
+        raise
+    from pysmvt.utils import fatal_error
 
 class ViewBase(object):
     """
@@ -200,7 +205,7 @@ class TemplateMixin(object):
         return reindent(''.join(rc.respview.js), indent).lstrip()
     
     def process_view(self, view, **kwargs):
-        return rc.controller.call_view(view, kwargs)
+        return rc.controller._call_view(view, kwargs)
             
     def handle_response(self):
         if self.template_name == None:

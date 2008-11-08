@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from os import path
 import os
-import logging
 from werkzeug.routing import Rule
 from pysmvt.application import request_context as rc
 from pysmvt.utils import QuickSettings
@@ -63,7 +62,7 @@ class Base(QuickSettings):
         # LOGGING & DEBUG
         #######################################################################
         # currently support 'debug' & 'info'
-        self.logging.levels = logging.NOTSET
+        self.logging.levels = []
         self.views.trap_exceptions = False
         self.controller.hide_exceptions = False
         
