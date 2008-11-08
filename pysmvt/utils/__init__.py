@@ -435,6 +435,22 @@ class QuickSettings(OrderedProperties):
                 raise AttributeError("object has no attribute '%s' (object is locked)" % key)
         return self._data[key]
     
+    def update(self, ____sequence=None, **kwargs):
+        if ____sequence is not None:
+            if hasattr(____sequence, 'keys'):
+                for key in ____sequence.keys():
+                    try:
+                        self.get(key).update(____sequence[key])
+                    except (AttributeError, ValueError), e:
+                        if "object has no attribute 'update'" not in str(e) and "need more than 1 value to unpack" not in str(e):
+                            raise
+                        self.__setitem__(key, ____sequence[key])
+            else:
+                for key, value in ____sequence:
+                    self[key] = value
+        if kwargs:
+            self.update(kwargs)
+
 class ModulesSettings(QuickSettings):
     """
         a custom settings object for settings.modules.  The only difference

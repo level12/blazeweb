@@ -24,6 +24,13 @@ class Base(QuickSettings):
         # application modules from our application or supporting applications
         self.modules = ModulesSettings()
         self.modules.users.enabled = True
+        self.modules.users.var2 = 'not bar'
+        self.modules.users.routes = []
+        self.modules.users.level2.var2 = 'not bar'
+        self.modules.users.level3 = 'string value to merge'
+        self.modules.users.level4 = (('var2', 'not bar'), ('var3', 'baz'))
+        self.modules.users.level5.level1.var1.notlikely = 'foo'
+        self.modules.users.level5.level2.var1 = 'not_bar'
         self.modules.apputil.enabled = True
         self.modules.inactivemod.enabled = False
         
@@ -95,6 +102,36 @@ class Default(Base):
         self.logging.levels = ('info', 'debug')
         self.trap_view_exceptions = False
         self.hide_exceptions = False
+
+class UserSettings(QuickSettings):
+    
+    def __init__(self):
+        QuickSettings.__init__(self)
+        
+        self.routes = ([
+            '/test1',
+            '/test2',
+        ])
+        
+        self.var1 = 'foo'
+        self.var2 = 'bar'
+        
+        self.level2.var1 = 'foo'
+        self.level2.var2 = 'bar'
+        
+        self.level3.var1 = 'foo'
+        self.level3.var2 = 'bar'
+        
+        self.level4.var1 = 'foo'
+        self.level4.var2 = 'bar'
+        
+        self.level5.level1.var1 = 'foo'
+        self.level5.level2.var1 = 'bar'
+        self.level5.level2.var2 = 'baz'
+        self.level5.level3.var1 = 'bob'
+        
+        # no more values can be added
+        self.lock()
 
 class TestQuickSettings(unittest.TestCase):
 
@@ -223,6 +260,45 @@ class TestQuickSettings(unittest.TestCase):
         
         self.assertTrue( 'users' in s.modules)
         self.assertFalse( 'inactivemod' in s.modules)
+    
+    def test_merge(self):
+        s = Default()
+        us = UserSettings()
+        
+        try:
+            self.assertEqual(s.modules.users.var1, 'foo')
+        except AttributeError, e:
+            assert str(e) == "object has no attribute 'var1' (object is locked)"
+        else:
+            self.fail("expected AttributeError for 'var1'")
+    
+        self.assertEqual(s.modules.users.var2, 'not bar')
+        self.assertEqual(us.var2, 'bar')
+        self.assertEqual(len(us.routes), 2)
+        self.assertEqual(us.level2.var1, 'foo')
+        self.assertEqual(us.level2.var2, 'bar')
+        self.assertEqual(us.level3.var2, 'bar')
+        self.assertEqual(us.level4.var2, 'bar')
+        self.assertEqual(us.level5.level1.var1, 'foo')
+        self.assertEqual(us.level5.level2.var1, 'bar')
+        self.assertEqual(us.level5.level2.var2, 'baz')
+        self.assertEqual(us.level5.level3.var1, 'bob')
+        
+        us.update(s.modules.users)
+        s.modules['users'] = us
+        
+        self.assertEqual(s.modules.users.var2, 'not bar')
+        self.assertEqual(s.modules.users.var1, 'foo')
+        self.assertEqual(len(s.modules.users.routes), 0)
+        self.assertEqual(s.modules.users.level2.var1, 'foo')
+        self.assertEqual(s.modules.users.level2.var2, 'not bar')
+        self.assertEqual(s.modules.users.level3, 'string value to merge')
+        self.assertEqual(s.modules.users.level4.var1, 'foo')
+        self.assertEqual(s.modules.users.level4.var2, 'not bar')
+        self.assertEqual(s.modules.users.level4.var3, 'baz')
+        self.assertEqual(s.modules.users.level5.level1.var1.notlikely, 'foo')
+        self.assertEqual(s.modules.users.level5.level2.var1, 'not_bar')
+        self.assertEqual(s.modules.users.level5.level2.var2, 'baz')
         
 if __name__ == '__main__':
     unittest.main()
