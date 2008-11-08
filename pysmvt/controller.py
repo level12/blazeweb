@@ -14,7 +14,7 @@ from pysmvt.application import request_context as rc
 from pysmvt.application import request_context_manager as rcm
 
 from pysmvt.database import get_dbsession, get_dbsession_cls
-from pysmvt.utils import randchars, traceback_depth
+from pysmvt.utils import randchars, traceback_depth, log_info
 
 # Note: this controller is only instantiated per-process, not per request.
 # Therefore, anything that needs to be initialized per application/per process
@@ -50,6 +50,7 @@ class Controller(object):
         # creating a request object, propagating the application to the
         # current context and instanciating the database session.
         rc.ident = randchars()
+        log_info('controller dispatching for: %s' % environ['PATH_INFO'])
         self.bind_to_context()
         rc.view_queue = []
         request = Request(environ)
@@ -79,7 +80,7 @@ class Controller(object):
             
         except HTTPException, e:
             if endpoint is None:
-                rc.application.logger.debug('URL did not match with any Rules')
+                rc.application.logger.debug('URL (%s) did not match with any Rules' % environ['PATH_INFO'])
             response = e
         except RedirectException:
             # it is assumed that rc.response will have been set appropriately
@@ -109,7 +110,7 @@ class Controller(object):
                 # handle context local cleanup
                 rcm.cleanup()
             
-        # send response and perform request cleanup
+        # let our response object finish the WSGI request
         return response(environ, start_response)
     
     def _inner_requests_wrapper(self, endpoint, args):

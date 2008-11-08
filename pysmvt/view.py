@@ -4,12 +4,14 @@ from pysmvt.utils import reindent, auth_error, log_info, bad_request_error, \
 from pysmvt.utils.html import strip_tags
 from pysmvt.application import request_context as rc
 from pysmvt.templates import JinjaHtmlBase, JinjaBase
-from pysmvt.exceptions import ActionError, UserError
+from pysmvt.exceptions import ActionError, UserError, ProgrammingError
 from werkzeug.wrappers import BaseResponse
 from werkzeug.exceptions import InternalServerError
 from werkzeug.utils import MultiDict
 import formencode
 from pprint import PrettyPrinter
+from webhelpers.containers import NotGiven
+
 try: 
     rc.application.loader.app_names('utils', 'fatal_error', globals())
 except ImportError, e:
@@ -25,8 +27,8 @@ class ViewBase(object):
     def __init__(self, modulePath, endpoint, args):
         self.modulePath = modulePath
         # the view methods are responsible for filling self.retval
-        # with the response string
-        self.retval = ""
+        # with the response string or returning the value
+        self.retval = NotGiven
         # store the args MultiDict for access later
         if isinstance(args, MultiDict):
             self.args = args
@@ -64,11 +66,25 @@ class ViewBase(object):
                         getattr(self, call_details['method_name'])()
 
             if rc.request.method == 'GET' and hasattr(self, 'get'):
-                self.get(**argsdict)
+                retval = self.get(**argsdict)
             elif rc.request.method == 'POST' and hasattr(self, 'post'):
-                self.post(**argsdict)
+                retval = self.post(**argsdict)
             else:
-                self.default(**argsdict)
+                try:
+                    retval = self.default(**argsdict)
+                except AttributeError, e:
+                    if "'%s' object has no attribute 'default'" % self.__class__.__name__ in str(e):
+                        raise ProgrammingError('there were no "action" methods on the view class "%s".  Expecting get(), post(), or default()' % self._endpoint)
+                    else:
+                        raise
+                
+            # we allow the views to work on self.retval directly, so if it has
+            # been used, we do not replace it with the returned value.  If it
+            # hasn't been used, then we replace it with what was returned
+            # above
+            if self.retval is NotGiven:
+                self.retval = retval
+            
         except UserError, e:
             rc.user.add_message('error', str(e))
             fatal_error(orig_exception=e)
@@ -121,8 +137,8 @@ class RespondingViewBase(ViewBase):
     def __init__(self, modulePath, endpoint, args):
         ViewBase.__init__(self, modulePath, endpoint, args)
         if rc.respview is not None:
-            raise InternalServerError('Responding view intialized but one already exists.'
-                                      'Only one responding view is allowed per request.')
+            raise ProgrammingError('Responding view (%s) intialized but one already exists (%s).  '
+                                      'Only one responding view is allowed per request.' % (self._endpoint, rc.respview._endpoint))
         rc.respview = self
         
     def handle_response(self):

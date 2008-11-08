@@ -1,5 +1,5 @@
 
-from werkzeug.exceptions import HTTPException
+from werkzeug.exceptions import HTTPException, InternalServerError
 
 class TemplateException(HTTPException):
     code = 500
@@ -18,4 +18,10 @@ class ActionError(Exception):
 
 class UserError(Exception):
     """ called when the system can not proceed b/c of a user error """
+    pass
+
+class ProgrammingError(Exception):
+    """
+        raised when a programming error is detected
+    """
     pass

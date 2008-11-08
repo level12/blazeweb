@@ -10,7 +10,7 @@ request_context = rc = Local()
 request_context_manager = LocalManager([request_context])
 
 from pysmvt.controller import Controller
-from pysmvt.utils import Loader, Logger
+from pysmvt.utils import Loader, Logger, randhash
 from pysmvt.database import load_models
 
 # The main web application inherits this.
@@ -26,6 +26,8 @@ class Application(object):
 
     def __init__(self, settings, profile = 'default'):
         rc.application = self
+        
+        self._id = randhash()
         
         # a custom importer
         self.setup_loader()
@@ -63,11 +65,13 @@ class Application(object):
         self.controller = Controller()
     
     def setup_logger(self):
+        logger_prefix = '%s.%s' % (self.__class__.__name__, self._id)
+        
         formatter = logging.Formatter("%(asctime)s - %(request_ident)s - " \
            "%(message)s")
         
         # debug logger to put debug logs in one file
-        dlogger = logging.getLogger('webapp.debug')
+        dlogger = logging.getLogger('%s.debug' % logger_prefix)
         dlogger.setLevel(logging.DEBUG)
         fhd = logging.FileHandler(path.join(self.settings.dirs.logs, 'debug.log'))
         #fhd.setLevel(logging.DEBUG)
@@ -75,7 +79,7 @@ class Application(object):
         dlogger.addHandler(fhd)
         
         # info logger to put info logs in another file
-        ilogger = logging.getLogger('webapp.info')
+        ilogger = logging.getLogger('%s.info' % logger_prefix)
         ilogger.setLevel(logging.INFO)
         fhi = logging.FileHandler(path.join(self.settings.dirs.logs, 'info.log'))
         #fhi.setLevel(logging.INFO)
@@ -83,7 +87,7 @@ class Application(object):
         ilogger.addHandler(fhi)
         
         # application logger to put application logs in another file
-        alogger = logging.getLogger('webapp.application')
+        alogger = logging.getLogger('%s.application' % logger_prefix)
         alogger.setLevel(9)
         fha = logging.FileHandler(path.join(self.settings.dirs.logs, 'application.log'))
         #fhi.setLevel(logging.INFO)

@@ -1,5 +1,7 @@
 import sys
 import random
+import hashlib
+import time
 from pprint import PrettyPrinter
 from pysmvt.application import request_context as rc
 from pysmvt.application import request_context_manager as rcm
@@ -241,6 +243,9 @@ class Logger(object):
 def randchars(n = 12):
     charlist = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
     return ''.join(random.choice(charlist) for _ in range(n))
+
+def randhash():
+    return hashlib.md5(str(random.random()) + str(time.clock())).hexdigest()
 
 def safe_strftime(value, format='%m/%d/%Y %H:%M', on_none=''):
     if value is None:
