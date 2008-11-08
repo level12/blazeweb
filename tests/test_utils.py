@@ -10,7 +10,7 @@ import config
 rcsutils.setup_virtual_env('pysmvt-libs-trunk', __file__, '..')
 
 from pysmvt import application
-from pysmvt.utils import QuickSettings, pprint
+from pysmvt.utils import QuickSettings, pprint, ModulesSettings
 
 class Base(QuickSettings):
     
@@ -22,7 +22,10 @@ class Base(QuickSettings):
         self.name.short = 'short'
         
         # application modules from our application or supporting applications
-        self.modules = ['users', 'apputil']
+        self.modules = ModulesSettings()
+        self.modules.users.enabled = True
+        self.modules.apputil.enabled = True
+        self.modules.inactivemod.enabled = False
         
         #######################################################################
         # ROUTING
@@ -71,7 +74,10 @@ class Default(Base):
         self.supporting_apps = ['rcsappbase']
         
         # application modules from our application or supporting applications
-        self.modules.extend(['contentbase', 'lagcontent'])
+        self.unlock()
+        self.modules.contentbase.enabled = True
+        self.modules.lagcontent.enabled = True
+        self.lock()
         
         #######################################################################
         # ROUTING
@@ -117,7 +123,7 @@ class TestQuickSettings(unittest.TestCase):
         
         assert s.name.full == 'full'
         assert s.name.short == 'short'
-        assert s.modules == ['users', 'apputil','contentbase', 'lagcontent']
+        assert s.modules.keys() == ['users', 'apputil','contentbase', 'lagcontent']
         assert s.routing.routes == [1,2,3,4]
         
         assert s.db.echo == True
@@ -138,7 +144,7 @@ class TestQuickSettings(unittest.TestCase):
         try:
             foo = s.not_there
         except AttributeError, e:
-            assert str(e) == 'attribute not_there not found (object is locked)'
+            assert str(e) == "object has no attribute 'not_there' (object is locked)"
         else:
             self.fail("lock did not work, expected AttributeError")
         
@@ -146,10 +152,37 @@ class TestQuickSettings(unittest.TestCase):
         try:
             foo = s.db.not_there
         except AttributeError, e:
-            assert str(e) == 'attribute not_there not found (object is locked)'
+            assert str(e) == "object has no attribute 'not_there' (object is locked)"
         else:
             self.fail("lock did not work on child, expected AttributeError")
 
+    def test_unlock(self):
+        s = Default()
+        s.unlock()
+        
+        s.new_attr = 'new_attr'
+        s.db.new_attr = 'new_attr'
+        
+        assert s.db.new_attr == 'new_attr'
+        assert s.new_attr == 'new_attr'
+        
+        s.lock()
+        
+        try:
+            foo = s.not_there
+        except AttributeError, e:
+            assert str(e) == "object has no attribute 'not_there' (object is locked)"
+        else:
+            self.fail("lock did not work, expected AttributeError")
+        
+        # make sure lock went to children
+        try:
+            foo = s.db.not_there
+        except AttributeError, e:
+            assert str(e) == "object has no attribute 'not_there' (object is locked)"
+        else:
+            self.fail("lock did not work on child, expected AttributeError")
+        
     def test_dict_convert(self):
         s = Default()
         
@@ -160,6 +193,36 @@ class TestQuickSettings(unittest.TestCase):
         }
         
         assert dict(s.beaker) == d
+        assert s.beaker.todict() == d
+    
+    def test_modules(self):
+        s = Default()
+        
+        s.unlock()
+        try:
+            s.modules.badmod = False
+        except TypeError:
+            pass
+        else:
+            self.fail('expected TypeError when non QuickSettings object assigned to ModulesSettings object')
+        s.modules.fatfingeredmod.enabledd = True
+        s.lock()
+        
+        mods = ['users', 'apputil', 'contentbase', 'lagcontent']
+        allmods = ['users', 'apputil', 'inactivemod', 'contentbase', 'lagcontent', 'fatfingeredmod']
+        self.assertEqual( mods, s.modules.keys() )
+        self.assertEqual( allmods, s.modules.keys(showinactive=True) )
+        
+        self.assertEqual( len(mods), len([v for v in s.modules]))
+        self.assertEqual( len(mods), len(s.modules))
+        self.assertEqual( len(mods), len(s.modules.values()))
+        self.assertEqual( len(allmods), len(s.modules.values(showinactive=True)))
+        
+        self.assertEqual( len(mods), len(s.modules.todict()))
+        self.assertEqual( len(allmods), len(s.modules.todict(showinactive=True)))
+        
+        self.assertTrue( 'users' in s.modules)
+        self.assertFalse( 'inactivemod' in s.modules)
         
 if __name__ == '__main__':
     unittest.main()

@@ -290,8 +290,10 @@ class OrderedProperties(object):
             self.__dict__[item] = value
         # attributes added after initialization are stored in _data
         else:
-            self._data[item] = value
+            self._set_data_item(item, value)
 
+    def _set_data_item(self, item, value):
+        self._data[item] = value
 
     def __getstate__(self):
         return {'_data': self.__dict__['_data']}
@@ -325,6 +327,9 @@ class OrderedProperties(object):
 
     def clear(self):
         self._data.clear()
+    
+    def todict(self):
+        return self._data
 
 
 class OrderedDict(dict):
@@ -416,12 +421,65 @@ class QuickSettings(OrderedProperties):
             if isinstance(child, QuickSettings):
                 child.lock()
     
+    def unlock(self):
+        self._locked = False
+        for child in self._data.values():
+            if isinstance(child, QuickSettings):
+                child.unlock()
+    
     def __getattr__(self, key):
         if not self._data.has_key(key):
             if not self._locked:
                 self._data[key] = QuickSettings()
             else:
-                raise AttributeError('attribute %s not found (object is locked)' % key)
+                raise AttributeError("object has no attribute '%s' (object is locked)" % key)
         return self._data[key]
     
+class ModulesSettings(QuickSettings):
+    """
+        a custom settings object for settings.modules.  The only difference
+        is that when iterating over the object, only modules with
+        .enabled = True are returned.
+    """
+    def _set_data_item(self, item, value):
+        if not isinstance(value, QuickSettings):
+            raise TypeError('all values set on ModuleSettings must be a QuickSettings object')
+        QuickSettings._set_data_item(self, item, value)
 
+    def __len__(self):
+        return len(self.keys())
+
+    def iteritems(self, showinactive=False):
+        for k,v in self._data.iteritems():
+            try:
+                if showinactive or v.enabled == True:
+                    yield k,v
+            except AttributeError, e:
+                if "object has no attribute 'enabled'" not in str(e):
+                    raise
+            
+    def __iter__(self):
+        for v in self._data.values():
+            try:
+                if v.enabled == True:
+                    yield v
+            except AttributeError, e:
+                if "object has no attribute 'enabled'" not in str(e):
+                    raise
+
+    def __contains__(self, key):
+        return key in self.todict()
+
+    def keys(self, showinactive=False):
+        return [k for k,v in self.iteritems(showinactive)]
+    
+    def values(self, showinactive=False):
+        return [v for k,v in self.iteritems(showinactive)]
+    
+    def todict(self, showinactive=False):
+        if showinactive:
+            return self._data
+        d = OrderedDict()
+        for k,v in self.iteritems():
+            d[k] = v
+        return d
