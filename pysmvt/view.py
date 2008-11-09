@@ -5,6 +5,7 @@ from pysmvt.utils.html import strip_tags
 from pysmvt.application import request_context as rc
 from pysmvt.templates import JinjaHtmlBase, JinjaBase
 from pysmvt.exceptions import ActionError, UserError, ProgrammingError
+from pysmvt.wrappers import Response
 from werkzeug.wrappers import BaseResponse
 from werkzeug.exceptions import InternalServerError
 from werkzeug.utils import MultiDict
@@ -140,6 +141,10 @@ class RespondingViewBase(ViewBase):
             raise ProgrammingError('Responding view (%s) intialized but one already exists (%s).  '
                                       'Only one responding view is allowed per request.' % (self._endpoint, rc.respview._endpoint))
         rc.respview = self
+        self._init_response()
+        
+    def _init_response(self):
+        rc.response = Response()
         
     def handle_response(self):
         # @todo: we currently do redirects by returning a redirect exception
@@ -221,7 +226,7 @@ class TemplateMixin(object):
         return reindent(''.join(rc.respview.js), indent).lstrip()
     
     def process_view(self, view, **kwargs):
-        return rc.controller._call_view(view, kwargs)
+        return rc.controller._call_view(view, kwargs, 'template')
             
     def handle_response(self):
         if self.template_name == None:
@@ -250,6 +255,21 @@ class HtmlTemplateSnippet(SnippetViewBase, TemplateMixin):
     def handle_response(self):
         TemplateMixin.handle_response(self)
         return super(HtmlTemplateSnippet, self).handle_response()
+
+class TextTemplatePage(RespondingViewBase, TemplateMixin):
+    
+    def __init__(self, modulePath, endpoint, args):
+        super(TextTemplatePage, self).__init__(modulePath, endpoint, args)
+        self.template = JinjaBase(modulePath)
+        self.template.tpl_extension = 'txt'
+        TemplateMixin.init(self)
+            
+    def _init_response(self):
+        rc.response = Response(mimetype='text/plain')
+        
+    def handle_response(self):
+        TemplateMixin.handle_response(self)
+        return super(TextTemplatePage, self).handle_response()
 
 class TextTemplateSnippet(SnippetViewBase, TemplateMixin):
     

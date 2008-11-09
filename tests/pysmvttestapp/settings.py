@@ -25,5 +25,7 @@ class Testruns(Base):
         
         self.db.uri = 'sqlite:///'
         
+        self.logging.levels = ['debug']
+        
         # we are done adding variables to this settings object, so lock it
         self.lock()

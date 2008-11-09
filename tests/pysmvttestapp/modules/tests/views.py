@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from pysmvt.application import request_context as rc
-from pysmvt.view import RespondingViewBase, SnippetViewBase
+from pysmvt.view import RespondingViewBase, SnippetViewBase, TextTemplatePage, \
+    TextTemplateSnippet, HtmlTemplateSnippet, HtmlTemplatePage
 
 class Rvb(RespondingViewBase):
     
@@ -16,3 +17,77 @@ class RvbWithSnippet(RespondingViewBase):
     
     def default(self):
         self.retval = rc.controller.call_view('tests:HwSnippet')
+
+class Get(RespondingViewBase):
+    
+    def get(self):
+        self.retval = 'Hello World!'
+
+class Post(RespondingViewBase):
+    
+    def post(self):
+        return 'Hello World!'
+
+class Prep(RespondingViewBase):
+    def prep(self):
+        self.retval = 'Hello World!'
+        
+    def default(self):
+        pass
+
+class NoActionMethod(RespondingViewBase):
+    def prep(self):
+        self.retval = 'Hello World!'
+
+class TwoRespondingViews(RespondingViewBase):
+    
+    def default(self):
+        return rc.controller.call_view('tests:Rvb')
+
+class DoForward(RespondingViewBase):
+    def default(self):
+        rc.controller.forward('tests:ForwardTo')
+
+class ForwardTo(RespondingViewBase):
+    def default(self):
+        return 'forward to me'
+
+class BadForward(RespondingViewBase):
+    def default(self):
+        rc.controller.forward('tests:HwSnippet')
+
+class TextSnippet(TextTemplateSnippet):
+    def default(self):
+        pass
+
+class Text(TextTemplatePage):
+    def default(self):
+        pass
+
+class TextWithSnippet(TextTemplatePage):
+    def default(self):
+        self.assign('output',  rc.controller.call_view('tests:TextSnippet'))
+
+class TextWithSnippet2(TextTemplatePage):
+    def default(self):
+        pass
+
+class HtmlSnippet(HtmlTemplateSnippet):
+    def default(self):
+        pass
+
+class Html(HtmlTemplatePage):
+    def default(self):
+        pass
+
+class HtmlCssJs(HtmlTemplatePage):
+    def default(self):
+        pass
+
+#class TextWithSnippet(TextTemplatePage):
+#    def default(self):
+#        self.assign('output',  rc.controller.call_view('tests:TextSnippet'))
+#
+#class TextWithSnippet2(TextTemplatePage):
+#    def default(self):
+#        pass

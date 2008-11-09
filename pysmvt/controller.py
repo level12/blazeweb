@@ -1,7 +1,7 @@
 from os import path
 import sys
 from pysmvt.wrappers import Request, Response
-from pysmvt.exceptions import RedirectException, ForwardException
+from pysmvt.exceptions import RedirectException, ForwardException, ProgrammingError
 from pysmvt.user import SessionUser
 from pysmvt import routing
 from werkzeug import ClosingIterator, SharedDataMiddleware, MultiDict
@@ -14,7 +14,7 @@ from pysmvt.application import request_context as rc
 from pysmvt.application import request_context_manager as rcm
 
 from pysmvt.database import get_dbsession, get_dbsession_cls
-from pysmvt.utils import randchars, traceback_depth, log_info
+from pysmvt.utils import randchars, traceback_depth, log_info, log_debug
 
 # Note: this controller is only instantiated per-process, not per request.
 # Therefore, anything that needs to be initialized per application/per process
@@ -115,15 +115,17 @@ class Controller(object):
     
     def _inner_requests_wrapper(self, endpoint, args):
         # this loop allows us to handle forwards
+        called_from = 'client'
         while True:
-            rc.response = Response()
+            rc.response = None
             rc.respview = None
             try: 
                 # call the view
-                self._call_view(endpoint, args)
+                self._call_view(endpoint, args, called_from)
                 break
             except ForwardException:
                 endpoint, args = rc.view_queue.pop()
+                called_from = 'forward'
     
     def redirect(self, location, code=302):
         rc.response = werkzeug.utils.redirect(location, code)
@@ -174,13 +176,24 @@ class Controller(object):
                 self._route_map.add(rule)
     
     def call_view(self, endpoint, **kwargs):
-        return self._call_view(endpoint, kwargs)
+        return self._call_view(endpoint, kwargs, 'call_view')
     
-    def _call_view(self, endpoint, args ):
+    def _call_view(self, endpoint, args, called_from ):
+        """
+            called_from options: client, forward, call_view, template
+        """
+        from pysmvt.view import RespondingViewBase
+        
         app_mod_name, vclassname = endpoint.split(':')
         
         try:
             vklass = rc.application.loader.appmod_names('%s.views' % app_mod_name, vclassname)
+            if called_from in ('client', 'forward'):
+                if not issubclass(vklass, RespondingViewBase):
+                    if called_from == 'client':
+                        raise ProgrammingError('Route exists to non-RespondingViewBase view "%s"' % vklass.__name__)
+                    else:
+                        raise ProgrammingError('forward to non-RespondingViewBase view "%s"' % vklass.__name__)
         except ImportError, e:
             # if we find the module_to_load in the exception message,
             # we know the exception was thrown b/c that module
@@ -190,8 +203,9 @@ class Controller(object):
             # 2 = view class name wasn't found
             # 3 = view module wasn't found
             if traceback_depth(tb) in (2,3):
-                rc.application.logger.debug('Could not load "%s": %s', endpoint, str(e))
-                raise NotFound
+                msg = 'Could not load view "%s": %s' % (endpoint, str(e))
+                rc.application.logger.debug(msg)
+                raise ProgrammingError(msg)
             raise
         
         vmod_dir = path.dirname(sys.modules[vklass.__module__].__file__)
