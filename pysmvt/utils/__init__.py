@@ -179,8 +179,10 @@ def toset(x):
     else:
         return x
 
-def pprint( stuff, indent = 4):
+def pprint( stuff, indent = 4, asstr=False):
     pp = PrettyPrinter(indent=indent)
+    if asstr:
+        return pp.pformat(stuff)
     pp.pprint(stuff)
 
 def call_appmod_dbinits(singlemod=None):

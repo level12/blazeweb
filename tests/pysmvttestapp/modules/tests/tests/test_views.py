@@ -18,6 +18,7 @@ class TestViews(unittest.TestCase):
         
     def setUp(self):
         self.app = Webapp('Testruns')
+        #self.app.settings.logging.levels.append(('debug', 'info'))
         self.client = Client(self.app, BaseResponse)
         
     def tearDown(self):
@@ -84,7 +85,7 @@ class TestViews(unittest.TestCase):
             self.fail('should have gotten an exception b/c view does not have action method')
     
     def test_hideexception(self):
-        self.app.settings.controller.hide_exceptions = True
+        self.app.settings.exceptions.hide = True
         r = self.client.get('tests/noactionmethod')
         self.assertEqual(r.status, '500 INTERNAL SERVER ERROR')
         
@@ -162,7 +163,69 @@ class TestViews(unittest.TestCase):
         self.assertEqual(r.status, '200 OK')
         self.assertEqual(r.data, 'css\njs')
         self.assertEqual( dict(r.header_list)['Content-Type'], 'text/html; charset=utf-8' )
+    
+    def test_redirect(self):
+        r = self.client.get('tests/redirect')
+        
+        self.assertEqual(r.status_code, 302)
+        self.assertEqual(dict(r.header_list)['Location'], 'http://localhost/some/other/page')
+        
+    def test_permredirect(self):
+        r = self.client.get('tests/permredirect')
+        
+        self.assertEqual(r.status_code, 301)
+        self.assertEqual(dict(r.header_list)['Location'], 'http://localhost/some/other/page')
+        
+    def test_custredirect(self):
+        r = self.client.get('tests/custredirect')
+        
+        self.assertEqual(r.status_code, 303)
+        self.assertEqual(dict(r.header_list)['Location'], 'http://localhost/some/other/page')
+        
+    def test_heraise(self):
+        r = self.client.get('tests/heraise')
+        
+        self.assertEqual(r.status_code, 503)
+        assert 'server is temporarily unable' in r.data
+    
+    def test_errordoc(self):
+        self.app.settings.error_docs[503] = 'tests:Rvb'
+        r = self.client.get('tests/heraise')
+        
+        self.assertEqual(r.status_code, 503)
+        self.assertEqual(r.status, '503 SERVICE UNAVAILABLE')
+        self.assertEqual(r.data, 'Hello World!')
+
+    def test_errordocexc(self):
+        self.app.settings.error_docs[503] = 'tests:BadForward'
+        try:
+            r = self.client.get('tests/heraise')
+        except ProgrammingError, e:
+            self.assertTrue( 'forward to non-RespondingViewBase view "HwSnippet"' in str(e))
+        else:
+            self.fail('should have gotten an exception b/c we forwarded to a non-responding view')
+        
+        # now turn exception handling on, and we should see the original
+        # non-200 response since the exception created by tests:BadForward
+        # should have been turned into a 500 response, which the error docs
+        # handler won't accept
+        self.app.settings.exceptions.hide = True
+        r = self.client.get('tests/heraise')
+        
+        self.assertEqual(r.status_code, 503)
+        self.assertEqual(r.status, '503 SERVICE UNAVAILABLE')
+        assert 'server is temporarily unable' in r.data
+    
+    def test_forwardloop(self):
+        try:
+            r = self.client.get('tests/forwardloop')
+        except ProgrammingError, e:
+            self.assertTrue( 'forward loop detected:' in str(e))
+        else:
+            self.fail('excpected exception for a forward loop')
+    
 
 if __name__ == '__main__':
     unittest.main()
+    #unittest.TextTestRunner().run(TestViews('test_html'))
 

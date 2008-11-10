@@ -144,15 +144,14 @@ class RespondingViewBase(ViewBase):
         self._init_response()
         
     def _init_response(self):
-        rc.response = Response()
+        self.response = Response()
         
     def handle_response(self):
-        # @todo: we currently do redirects by returning a redirect exception
-        # which inherits from BaseResponse
         if isinstance(self.retval, BaseResponse):
-            rc.response = self.retval
+            return self.retval
         else:
-            rc.response.data = self.retval
+            self.response.data = self.retval
+            return self.response
 
 class HtmlPageViewBase(RespondingViewBase):
     def __init__(self, modulePath, endpoint, args):
@@ -243,7 +242,7 @@ class HtmlTemplatePage(HtmlPageViewBase, TemplateMixin):
     
     def handle_response(self):
         TemplateMixin.handle_response(self)
-        super(HtmlTemplatePage, self).handle_response()
+        return super(HtmlTemplatePage, self).handle_response()
 
 class HtmlTemplateSnippet(SnippetViewBase, TemplateMixin):
     
@@ -265,7 +264,7 @@ class TextTemplatePage(RespondingViewBase, TemplateMixin):
         TemplateMixin.init(self)
             
     def _init_response(self):
-        rc.response = Response(mimetype='text/plain')
+        self.response = Response(mimetype='text/plain')
         
     def handle_response(self):
         TemplateMixin.handle_response(self)

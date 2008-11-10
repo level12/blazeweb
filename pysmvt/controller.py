@@ -1,20 +1,24 @@
 from os import path
 import sys
+from traceback import format_exc
 from pysmvt.wrappers import Request, Response
 from pysmvt.exceptions import RedirectException, ForwardException, ProgrammingError
 from pysmvt.user import SessionUser
+from pysmvt.mail import mail_programmers
 from pysmvt import routing
 from werkzeug import ClosingIterator, SharedDataMiddleware, MultiDict
-from werkzeug.routing import Map, Submount
-from werkzeug.exceptions import HTTPException, NotFound, InternalServerError
+from werkzeug.routing import Map, Submount, RequestRedirect
+from werkzeug.exceptions import HTTPException, NotFound, InternalServerError, \
+    MethodNotAllowed
 import werkzeug.utils
+from werkzeug.debug import DebuggedApplication
 from beaker.middleware import SessionMiddleware
 
 from pysmvt.application import request_context as rc
 from pysmvt.application import request_context_manager as rcm
 
 from pysmvt.database import get_dbsession, get_dbsession_cls
-from pysmvt.utils import randchars, traceback_depth, log_info, log_debug
+from pysmvt.utils import randchars, traceback_depth, log_info, log_debug, pprint
 
 # Note: this controller is only instantiated per-process, not per request.
 # Therefore, anything that needs to be initialized per application/per process
@@ -45,94 +49,161 @@ class Controller(object):
         rc.controller = self
 
     def dispatch_request(self, environ, start_response):
-        """Dispatch an incoming request."""
-        # set up all the stuff we want to have for this request.  That is
-        # creating a request object, propagating the application to the
-        # current context and instanciating the database session.
-        rc.ident = randchars()
-        log_info('controller dispatching for: %s' % environ['PATH_INFO'])
-        self.bind_to_context()
-        rc.view_queue = []
-        request = Request(environ)
-        response = None
+        """
+            Dispatch an incoming request.  It looks like this:
+            - wsgi request setup
+                - response handling (loop)
+                    - non-200 response handler
+                        - exception handler (env, endpoint, args)
+                            - client request init -> endpoint & args
+                                - forward()
+                                    - call view
+                                + response cleanup
+                        + catch exceptions
+                            -- determine context (normal, xmlhttprequest)
+                            -- turn HttpExceptions into response objects
+                            -- handle based on context settings
+                                -- propogate
+                                -- turn into 500
+                                -- log
+                                -- email
+                                -- stack trace
+                                -- interactive stack trace
+                    + catch non-200 responses
+                        -- determine context (normal, xmlhttprequest)
+                        -- handle based on context settings
+                            -- pretty: endpoint & args -> exception handler
+                            -- minimal: pass-through
+                            -- json: convert response description to JSON
+            + wsgi request cleanup
+        """
         
+        # WSGI request setup
+        self.bind_to_context()
+        rc.ident = randchars()
+        rc.environ = environ
+        request = Request(environ)
         rc.session = environ['beaker.session']
         self._setup_user()
 
-        # bind the route map to the current environment
-        urls = self.urlAdapter = self._route_map.bind_to_environ(environ)
-
         try:
-            # initialize endpoint to avoid UnboundLocalError
-            endpoint = None
-            
-            # find the requested view based on the URL
-            endpoint, args = urls.match()
-            
-            # for the initial view, only URL arguments get sent
-            # to the view, GET arguments can be validated and merged in
-            # by the view later
-            
-            self._inner_requests_wrapper(endpoint, args)
-            
-            # the responding view should have prepared the response
-            response = rc.response
-            
-        except HTTPException, e:
-            if endpoint is None:
-                rc.application.logger.debug('URL (%s) did not match with any Rules' % environ['PATH_INFO'])
-            response = e
-        except RedirectException:
-            # it is assumed that rc.response will have been set appropriately
-            # with a proper redirect status code and location header
-            # before RedirectException is thrown
-            response = rc.response
-        except Exception, e:
-            rc.application.logger.debug('uncaught exception detected in controller: %s' % str(e))
-            raise
+            response = self._error_documents_handler(environ)
+            return response(environ, start_response)
         finally:
             # save the user session
             rc.session.save()
 
-            # rollback any uncommitted database transactions.  We assume that
-            # an explicit commit will be issued and anything leftover was accidental
-            get_dbsession().rollback()
-            
-            # make sure we get a new DB session for the next request
-            get_dbsession_cls().remove()
-            
-            try: 
-                # do we have a response?  If not, then there was an exception
-                # that prevented the response from being set.  
-                if not response and rc.application.settings.controller.hide_exceptions:
-                    return InternalServerError()(environ, start_response)
-            finally:
-                # handle context local cleanup
-                rcm.cleanup()
-            
-        # let our response object finish the WSGI request
-        return response(environ, start_response)
+            # handle context local cleanup
+            rcm.cleanup()
     
-    def _inner_requests_wrapper(self, endpoint, args):
+    def _error_documents_handler(self, environ):
+        response = self._exception_handing('client', environ)
+        def get_status_code(response):
+            if isinstance(response, HTTPException):
+                return response.code
+            else:
+                return response.status_code
+        code = get_status_code(response)
+        if code in rc.application.settings.error_docs:
+            handling_endpoint = rc.application.settings.error_docs.get(code)
+            rc.application.logger.info('error docs: handling code %d with %s' % (code, handling_endpoint))
+            new_response = self._exception_handing('error docs', endpoint=handling_endpoint)
+            # only take the new response if it completed succesfully.  If not,
+            # then we should just return the original response after logging the
+            # error
+            if get_status_code(new_response) == 200:
+                try:
+                    new_response.status_code = code
+                except AttributeError, e:
+                    if "object has no attribute 'status_code'" not in str(e):
+                        raise
+                    new_response.code = code
+                response = new_response
+            else:
+                rc.application.logger.debug('error docs: encountered non-200 status code response '
+                        '(%d) when trying to handle with %s' % (get_status_code(new_response), handling_endpoint))
+        return response
+    
+    def _exception_handing(self, called_from, environ = None, endpoint=None, args = {}):
+        try:
+            if environ:
+                endpoint, args = self._endpoint_args_from_env(environ)
+            response = self._inner_requests_wrapper(endpoint, args, called_from)
+        except HTTPException, e:
+            rc.application.logger.info('exception handling caught HTTPException "%s", sending as response' % e.__class__.__name__)
+            response = e
+        except RedirectException, e:
+            rc.application.logger.info('exception handling caught RedirectException')
+            response = rc.response
+        except Exception, e:
+            if rc.application.settings.exceptions.log:
+                rc.application.logger.debug('exception handling: %s' % str(e))
+            if rc.application.settings.exceptions.email:
+                trace = format_exc()
+                envstr = pprint(rc.environ, 4, True)
+                mail_programmers('exception encountered', '== TRACE ==\n\n%s\n\n== ENVIRON ==\n\n%s' % (trace, envstr))
+            if rc.application.settings.exceptions.hide:
+                # turn the exception into a 500 server response
+                response = InternalServerError()
+            else:
+                raise
+        return response
+    
+    def _endpoint_args_from_env(self, environ):
+        try:
+            # bind the route map to the current environment
+            urls = self._route_map.bind_to_environ(environ)
+            
+            # initialize endpoint to avoid UnboundLocalError
+            endpoint = None
+            
+            # find the requested view based on the URL
+            return urls.match()
+        
+        except (NotFound, MethodNotAllowed, RequestRedirect):
+            if endpoint is None:
+                rc.application.logger.info('URL (%s) generated HTTPException' % environ['PATH_INFO'])
+            raise
+    
+    def _inner_requests_wrapper(self, endpoint, args, called_from):
         # this loop allows us to handle forwards
-        called_from = 'client'
+        rc.forward_queue = [(endpoint, args)]
         while True:
             rc.response = None
             rc.respview = None
             try: 
                 # call the view
-                self._call_view(endpoint, args, called_from)
-                break
+                endpoint, args = rc.forward_queue[-1]
+                response = self._call_view(endpoint, args, called_from)
+                if not isinstance(response, Response):
+                    raise ProgrammingError('view %s did not return a response object' % endpoint)
+                return response
             except ForwardException:
-                endpoint, args = rc.view_queue.pop()
                 called_from = 'forward'
+            finally:                
+                # rollback any uncommitted database transactions.  We assume that
+                # an explicit commit will be issued and anything leftover was accidental
+                get_dbsession().rollback()
+                
+                # make sure we get a new DB session for the next request
+                get_dbsession_cls().remove()
     
-    def redirect(self, location, code=302):
+    def redirect(self, location, permanent=False, code=302 ):
+        """
+            location: URI to redirect to
+            permanent: if True, sets code to 301 HTTP status code
+            code: allows 303 or 307 redirects to be sent if needed, see
+                http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
+        """
+        if permanent:
+            code = 301
         rc.response = werkzeug.utils.redirect(location, code)
         raise RedirectException()
     
     def forward(self, endpoint, args = {}):
-        rc.view_queue.append((endpoint, args))
+        if len(rc.forward_queue) == 10:
+            raise ProgrammingError('forward loop detected: %s' % '->'.join([g[0] for g in rc.forward_queue]))
+        rc.forward_queue.append((endpoint, args))
         raise ForwardException
     
     def __call__(self, environ, start_response):
@@ -188,10 +259,12 @@ class Controller(object):
         
         try:
             vklass = rc.application.loader.appmod_names('%s.views' % app_mod_name, vclassname)
-            if called_from in ('client', 'forward'):
+            if called_from in ('client', 'forward', 'error docs'):
                 if not issubclass(vklass, RespondingViewBase):
                     if called_from == 'client':
                         raise ProgrammingError('Route exists to non-RespondingViewBase view "%s"' % vklass.__name__)
+                    elif called_from == 'error docs':
+                        raise ProgrammingError('Error document handling endpoint used non-RespondingViewBase view "%s"' % vklass.__name__)
                     else:
                         raise ProgrammingError('forward to non-RespondingViewBase view "%s"' % vklass.__name__)
         except ImportError, e:
@@ -222,15 +295,27 @@ class Controller(object):
         
         # last WSGI app to be called is our controllers dispatch_request function
         self._dispatch = self.dispatch_request
-        
-        # handles all of our static documents (CSS, JS, images, etc.)
-        self._setup_static_middleware()
-        
+
         # session middleware
         self._setup_session_middleware()
         
-        # free the context locals at the end of the request
+        # handle context locals
         self._dispatch = rcm.make_middleware(self._dispatch)
+                
+        # handles all of our static documents (CSS, JS, images, etc.)
+        self._setup_static_middleware()
+        
+        # handle debugging exceptions, this is called first to catch
+        # as many problems as possible
+        self._setup_debug_middleware()
+    
+    def _setup_debug_middleware(self):
+        if rc.application.settings.debugger.enabled:
+            if rc.application.settings.debugger.format == 'interactive':
+                evalex=True
+            else:
+                evalex=False
+            self._dispatch = DebuggedApplication(self._dispatch, evalex=evalex)
     
     def _setup_static_middleware(self):
         static_map = {

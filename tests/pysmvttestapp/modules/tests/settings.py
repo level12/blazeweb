@@ -25,6 +25,11 @@ class Settings(QuickSettings):
             Rule('/tests/noview', endpoint='tests:NotExistant'),
             Rule('/tests/html', endpoint='tests:Html'),
             Rule('/tests/htmlcssjs', endpoint='tests:HtmlCssJs'),
+            Rule('/tests/redirect', endpoint='tests:Redirect'),
+            Rule('/tests/permredirect', endpoint='tests:PermRedirect'),
+            Rule('/tests/custredirect', endpoint='tests:CustRedirect'),
+            Rule('/tests/heraise', endpoint='tests:HttpExceptionRaise'),
+            Rule('/tests/forwardloop', endpoint='tests:ForwardLoop'),
         ])
         
         # no more values can be added
