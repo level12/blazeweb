@@ -30,6 +30,16 @@ class Settings(QuickSettings):
             Rule('/tests/custredirect', endpoint='tests:CustRedirect'),
             Rule('/tests/heraise', endpoint='tests:HttpExceptionRaise'),
             Rule('/tests/forwardloop', endpoint='tests:ForwardLoop'),
+            Rule('/tests/urlargs', endpoint='tests:UrlArguments'),
+            Rule('/tests/urlargs/<int:anum>', endpoint='tests:UrlArguments'),
+            Rule('/tests/urlargs/<towho>', endpoint='tests:UrlArguments'),
+            Rule('/tests/getargs', endpoint='tests:GetArguments'),
+            Rule('/tests/getargs2', endpoint='tests:GetArguments2'),
+            Rule('/tests/getargs3', endpoint='tests:GetArguments3'),
+            Rule('/tests/reqgetargs', endpoint='tests:RequiredGetArguments'),
+            Rule('/tests/listgetargs', endpoint='tests:ListGetArguments'),
+            Rule('/tests/customvalidator', endpoint='tests:CustomValidator'),
+            Rule('/tests/badvalidator', endpoint='tests:BadValidator'),
         ])
         
         # no more values can be added

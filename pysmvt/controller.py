@@ -97,7 +97,7 @@ class Controller(object):
             rcm.cleanup()
     
     def _error_documents_handler(self, environ):
-        response = self._exception_handing('client', environ)
+        response = orig_resp = self._exception_handing('client', environ)
         def get_status_code(response):
             if isinstance(response, HTTPException):
                 return response.code
@@ -122,6 +122,14 @@ class Controller(object):
             else:
                 rc.application.logger.debug('error docs: encountered non-200 status code response '
                         '(%d) when trying to handle with %s' % (get_status_code(new_response), handling_endpoint))
+        if isinstance(response, HTTPException):
+            messages = rc.user.get_messages()
+            if messages:
+                msg_html = ['<h2>Error Details:</h2><ul>']
+                for msg in messages:
+                    msg_html.append('<li>(%s) %s</li>' % (msg.severity, msg.text))
+                msg_html.append('</ul>')
+                response.description = response.description + '\n'.join(msg_html)
         return response
     
     def _exception_handing(self, called_from, environ = None, endpoint=None, args = {}):

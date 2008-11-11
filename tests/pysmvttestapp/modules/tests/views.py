@@ -4,6 +4,7 @@ from pysmvt.application import request_context as rc
 from pysmvt.view import RespondingViewBase, SnippetViewBase, TextTemplatePage, \
     TextTemplateSnippet, HtmlTemplateSnippet, HtmlTemplatePage
 from werkzeug.exceptions import ServiceUnavailable
+from formencode.validators import UnicodeString, Int
 
 class Rvb(RespondingViewBase):
     
@@ -105,10 +106,79 @@ class ForwardLoop(RespondingViewBase):
     def default(self):
         rc.controller.forward('tests:ForwardLoop')
 
-#class TextWithSnippet(TextTemplatePage):
-#    def default(self):
-#        self.assign('output',  rc.controller.call_view('tests:TextSnippet'))
-#
-#class TextWithSnippet2(TextTemplatePage):
-#    def default(self):
-#        pass
+class UrlArguments(RespondingViewBase):
+    def default(self, towho='World', anum=None):
+        if anum==None:
+            return 'Hello %s!' % towho
+        else:
+            return 'Give me a name!'
+
+class GetArguments(RespondingViewBase):
+    def prep(self):
+        self.validate('towho', UnicodeString())
+
+    def default(self, greeting='Hello', towho='World', anum=None):
+        if anum==None:
+            return '%s %s!' % (greeting, towho)
+        else:
+            return 'Give me a name!'
+
+
+class GetArguments2(RespondingViewBase):
+    def prep(self):
+        self.validate('towho', UnicodeString())
+        self.validate('num', Int())
+
+    def default(self, towho='World', num=None):
+        if num:
+            return 'Hello %s, %d!' % (towho, num)
+        else:
+            return 'Hello %s!' % towho
+
+class GetArguments3(RespondingViewBase):
+    def prep(self):
+        self.validate('towho', UnicodeString())
+        self.validate('num', Int(), True)
+        self.validate('num2', Int(), 'num: must be an integer')
+        self.strict_args = True
+
+    def default(self, towho='World', num=None, num2=None):
+        if num:
+            return 'Hello %s, %d!' % (towho, num)
+        else:
+            return 'Hello %s!' % towho
+
+class RequiredGetArguments(RespondingViewBase):
+    def prep(self):
+        self.validate('towho', UnicodeString(), msg=True)
+        self.validate('num', Int, required=True, msg=True)
+        self.validate('num2', Int, strict=True, msg=True)
+        self.validate('num3', Int, msg=True)
+
+    def default(self, towho='World', num=None, num2=10, num3=10):
+        if num:
+            return 'Hello %s, %d %d %d!' % (towho, num, num2, num3)
+        
+class ListGetArguments(RespondingViewBase):
+    def prep(self):
+        self.validate('nums', Int(), msg=True, takes_list=True)
+
+    def default(self, nums=[]):
+        return str(nums)
+        
+class CustomValidator(RespondingViewBase):
+    def prep(self):
+        self.validate('num', self.validate_num)
+
+    def default(self, num=10):
+        return num
+    
+    def validate_num(self, value):
+        return int(value)
+        
+class BadValidator(RespondingViewBase):
+    def prep(self):
+        self.validate('num', 'notavalidator')
+
+    def default(self, num=10):
+        return num

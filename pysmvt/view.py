@@ -1,13 +1,13 @@
-
+import inspect
 from pysmvt.utils import reindent, auth_error, log_info, bad_request_error, \
-    fatal_error, urlslug, markdown
+    fatal_error, urlslug, markdown, log_debug
 from pysmvt.utils.html import strip_tags
 from pysmvt.application import request_context as rc
 from pysmvt.templates import JinjaHtmlBase, JinjaBase
 from pysmvt.exceptions import ActionError, UserError, ProgrammingError
 from pysmvt.wrappers import Response
 from werkzeug.wrappers import BaseResponse
-from werkzeug.exceptions import InternalServerError
+from werkzeug.exceptions import InternalServerError, BadRequest
 from werkzeug.utils import MultiDict
 import formencode
 from pprint import PrettyPrinter
@@ -41,6 +41,8 @@ class ViewBase(object):
         self._call_methods_stack = []
         # validators for GET arguments
         self.validators = []
+        # should we abort if the wrong GET args are sent?
+        self.strict_args = False
         
         log_info('%s view instantiated' % self.__class__.__name__)
         
@@ -53,10 +55,9 @@ class ViewBase(object):
             
             self.args_validation()
     
-            # linearize the MultiDict since most of the time we will not be
-            # interested in url or GET arguments with multiple values
-            # which can still be accessed if needed from self.args
-            argsdict = self.args.to_dict()
+            # linearize the MultiDict so that we can pass it into the functions
+            # as keywords
+            argsdict = self.args.to_dict(flat='selective')
             
             # loop through all the calls requested
             for call_details in self._call_methods_stack:
@@ -97,35 +98,59 @@ class ViewBase(object):
     def args_validation(self):
         invalid_args = []
         
-        for argname, validator, show_user_msg, msg, takes_list in self.validators:
-            # get the value from the request object MultiDict
-            if takes_list:
-                value = rc.request.args.getlist(argname)
-            else:
-                value = rc.request.args.get(argname)
-            
+        for argname, validator, show_msg, msg, takes_list, strict, required in self.validators:
+
             # validate the value
-            if isinstance(validator, formencode.Validator):
+            if formencode.is_validator(validator):
                 try:
-                    value = validator.to_python(value)
-                    if value != None:
+                    # get the value from the request object MultiDict
+                    if takes_list:
+                        value = rc.request.args.getlist(argname)
+                        value = [validator.to_python(v) for v in value]
+                    else:
+                        value = rc.request.args.get(argname)
+                        value = validator.to_python(value)
+                    if value:
                         if isinstance(value, list):
                             self.args.setlist(argname, value)
                         else:
                             self.args[argname] = value
+                    else:
+                        if required:
+                            #print '%s %s' % (argname, value)
+                            raise formencode.Invalid('argument required', value, None)
                 except formencode.Invalid, e:
+                    if strict:
+                        self.strict_args = True
                     invalid_args.append((argname, value))
-                    msg = (msg or e)
-                    if show_user_msg:
+                    if not msg:
+                        msg = '%s: %s' % (argname, e)
+                    if show_msg:
                         rc.user.add_message('error', msg)
             else:
-                TypeError('the validator must extend formencode.Validator')
+                raise TypeError('the validator must extend formencode.Validator')
 
         if len(invalid_args) > 0:
-            bad_request_error('%s had bad args: %s' % (self._endpoint, invalid_args))
+            log_debug('%s had bad args: %s' % (self._endpoint, invalid_args))
+            if self.strict_args:
+                raise BadRequest()
 
-    def validate(self, argname, validator, show_user_msg = False, msg='', takes_list = False):
-        self.validators.append((argname, validator, show_user_msg, msg, takes_list))
+    def validate(self, argname, validator, msg=False, strict=False, required=False, takes_list = False):
+        if msg:
+            show_msg = True
+        else:
+            show_msg = False
+        if msg == True:
+            msg = None
+        if required:
+            strict = True
+        if not formencode.is_validator(validator):
+            if callable(validator):
+                validator = formencode.validators.Wrapper(to_python=validator)
+            else:
+                raise TypeError('validator must be a Formencode validator or a callable')
+            
+        self.validators.append((argname, validator, show_msg, msg, takes_list, strict, required))
         
     def handle_response(self):
         raise NotImplementedError('ViewBase.handle_response() must be implemented in a subclass')

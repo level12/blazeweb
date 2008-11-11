@@ -223,9 +223,107 @@ class TestViews(unittest.TestCase):
             self.assertTrue( 'forward loop detected:' in str(e))
         else:
             self.fail('excpected exception for a forward loop')
+
+    def test_urlargs(self):
+        r = self.client.get('tests/urlargs')
+        
+        self.assertEqual(r.status, '200 OK')
+        self.assertEqual(r.data, 'Hello World!')
+        
+        r = self.client.get('tests/urlargs/fred')
+        
+        self.assertEqual(r.status, '200 OK')
+        self.assertEqual(r.data, 'Hello fred!')
+        
+        r = self.client.get('tests/urlargs/10')
+        
+        self.assertEqual(r.status, '200 OK')
+        self.assertEqual(r.data, 'Give me a name!')
     
+    def test_getargs(self):
+        
+        r = self.client.get('tests/getargs')
+        self.assertEqual(r.status, '200 OK')
+        self.assertEqual(r.data, 'Hello World!')
+        
+        r = self.client.get('tests/getargs?towho=fred&greeting=Hi&extra=bar')
+        self.assertEqual(r.status, '200 OK')
+        self.assertEqual(r.data, 'Hello fred!')
+
+    
+    def test_getargs2(self):
+        
+        r = self.client.get('tests/getargs2')
+        self.assertEqual(r.status, '200 OK')
+        self.assertEqual(r.data, 'Hello World!')
+        
+        r = self.client.get('tests/getargs2?towho=fred')
+        self.assertEqual(r.status, '200 OK')
+        self.assertEqual(r.data, 'Hello fred!')
+        
+        r = self.client.get('tests/getargs2?num=10')
+        self.assertEqual(r.status, '200 OK')
+        self.assertEqual(r.data, 'Hello World, 10!')
+        
+        r = self.client.get('tests/getargs2?num=ten')
+        self.assertEqual(r.status, '200 OK')
+        self.assertEqual(r.data, 'Hello World!')
+
+    
+    def test_getargs3(self):        
+        r = self.client.get('tests/getargs3?num=ten&num2=ten')
+        self.assertEqual(r.status_code, 400)
+        self.assertTrue('(error) num: must be an integer' in r.data)
+        self.assertTrue('(error) num: Please enter an integer value' in r.data)
+
+    def test_reqgetargs(self):
+        
+        r = self.client.get('/tests/reqgetargs?num=10&num2=10')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.data, 'Hello World, 10 10 10!')
+        
+        r = self.client.get('/tests/reqgetargs?num2=ten')
+        self.assertEqual(r.status_code, 400)
+        self.assertTrue('(error) num: argument required' in r.data)
+        self.assertTrue('(error) num2: Please enter an integer value' in r.data)
+        
+        r = self.client.get('tests/reqgetargs?num1&num=2')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.data, 'Hello World, 2 10 10!')
+    
+    def test_listgetargs(self):
+
+        r = self.client.get('tests/listgetargs?nums=1&nums=2')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.data, '[1, 2]')
+
+        r = self.client.get('tests/listgetargs?nums=ten&nums=2')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.data, '[]')
+    
+    def test_customvalidator(self):
+
+        r = self.client.get('tests/customvalidator?num=asek')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.data, '10')
+
+        r = self.client.get('tests/customvalidator')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.data, '10')
+
+        r = self.client.get('tests/customvalidator?num=5')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.data, '5')
+        
+    def test_badvalidator(self):
+        try:
+            r = self.client.get('tests/badvalidator')
+        except TypeError, e:
+            self.assertEqual( 'validator must be a Formencode validator or a callable', str(e))
+        else:
+            self.fail('excpected exception for bad validator')
 
 if __name__ == '__main__':
     unittest.main()
-    #unittest.TextTestRunner().run(TestViews('test_html'))
+    #unittest.TextTestRunner().run(TestViews('test_getargs'))
 
