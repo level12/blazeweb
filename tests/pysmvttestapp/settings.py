@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from os import path
 from werkzeug.routing import Rule
-from pysmvt.settings import Base
+from pysmvt.config import Base
 
 class Default(Base):
 
