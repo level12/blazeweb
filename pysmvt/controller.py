@@ -1,6 +1,7 @@
 from os import path
 import sys
 from traceback import format_exc
+from paste.registry import RegistryManager
 from pysmvt.wrappers import Request, Response
 from pysmvt.exceptions import RedirectException, ForwardException, ProgrammingError
 from pysmvt.user import SessionUser
@@ -16,9 +17,10 @@ from beaker.middleware import SessionMiddleware
 
 from pysmvt.application import request_context as rc
 from pysmvt.application import request_context_manager as rcm
-
+from pysmvt import settings
 from pysmvt.database import get_dbsession, get_dbsession_cls
 from pysmvt.utils import randchars, traceback_depth, log_info, log_debug, pprint
+
 
 # Note: this controller is only instantiated per-process, not per request.
 # Therefore, anything that needs to be initialized per application/per process
@@ -30,8 +32,10 @@ class Controller(object):
     appropriately
     """
 
-    def __init__(self):
+    def __init__(self, settings):
         rc.controller = self
+        
+        self.settings = settings
         
         # Routing Map
         self._route_map = Map()
@@ -79,6 +83,7 @@ class Controller(object):
         """
         
         # WSGI request setup
+        self._register_globals(environ)
         self.bind_to_context()
         rc.ident = randchars()
         rc.environ = environ
@@ -96,6 +101,11 @@ class Controller(object):
             # handle context local cleanup
             rcm.cleanup()
     
+    def _register_globals(self, environ):
+        obj = self.settings
+        if environ.has_key('paste.registry'):
+            environ['paste.registry'].register(settings, obj)
+    
     def _error_documents_handler(self, environ):
         response = orig_resp = self._exception_handing('client', environ)
         def get_status_code(response):
@@ -104,8 +114,8 @@ class Controller(object):
             else:
                 return response.status_code
         code = get_status_code(response)
-        if code in rc.application.settings.error_docs:
-            handling_endpoint = rc.application.settings.error_docs.get(code)
+        if code in settings.error_docs:
+            handling_endpoint = settings.error_docs.get(code)
             rc.application.logger.info('error docs: handling code %d with %s' % (code, handling_endpoint))
             new_response = self._exception_handing('error docs', endpoint=handling_endpoint)
             # only take the new response if it completed succesfully.  If not,
@@ -144,13 +154,13 @@ class Controller(object):
             rc.application.logger.info('exception handling caught RedirectException')
             response = rc.response
         except Exception, e:
-            if rc.application.settings.exceptions.log:
+            if settings.exceptions.log:
                 rc.application.logger.debug('exception handling: %s' % str(e))
-            if rc.application.settings.exceptions.email:
+            if settings.exceptions.email:
                 trace = format_exc()
                 envstr = pprint(rc.environ, 4, True)
                 mail_programmers('exception encountered', '== TRACE ==\n\n%s\n\n== ENVIRON ==\n\n%s' % (trace, envstr))
-            if rc.application.settings.exceptions.hide:
+            if settings.exceptions.hide:
                 # turn the exception into a 500 server response
                 response = InternalServerError()
             else:
@@ -223,10 +233,10 @@ class Controller(object):
             from module settings """
        
         # application routes
-        self._add_routing_rules(rc.application.settings.routing.routes)
+        self._add_routing_rules(self.settings.routing.routes)
        
         # module routes        
-        for module in rc.application.settings.modules.keys():
+        for module in self.settings.modules.keys():
             try:
                 rc.application.loader.appmod_names('%s.settings' % module, 'Settings', globals())
                 s = Settings()
@@ -244,10 +254,10 @@ class Controller(object):
     
     def _add_routing_rules(self, rules):
         try:
-            if len(rc.application.settings.routing.prefix) > 1:
+            if len(self.settings.routing.prefix) > 1:
                 # prefix the routes with the prefix in the app settings class
                 from werkzeug.routing import Submount
-                self._route_map.add(Submount( rc.application.settings.routing.prefix, rules ))
+                self._route_map.add(Submount( self.settings.routing.prefix, rules ))
             else:
                 raise AttributeError
         except AttributeError:
@@ -309,7 +319,11 @@ class Controller(object):
         
         # handle context locals
         self._dispatch = rcm.make_middleware(self._dispatch)
-                
+        
+        # stacked proxy objects allow us to do normal imports
+        # from common libraries with multiple applications
+        self._dispatch = RegistryManager(self._dispatch)
+        
         # handles all of our static documents (CSS, JS, images, etc.)
         self._setup_static_middleware()
         
@@ -318,8 +332,8 @@ class Controller(object):
         self._setup_debug_middleware()
     
     def _setup_debug_middleware(self):
-        if rc.application.settings.debugger.enabled:
-            if rc.application.settings.debugger.format == 'interactive':
+        if self.settings.debugger.enabled:
+            if self.settings.debugger.format == 'interactive':
                 evalex=True
             else:
                 evalex=False
@@ -329,14 +343,14 @@ class Controller(object):
         static_map = {
             routing.add_prefix('/static'):     rc.application.staticDir
         }
-        for app in rc.application.settings.supporting_apps:
+        for app in self.settings.supporting_apps:
             app_py_mod = rc.application.loader.app(app)
             fs_static_path = path.join(path.dirname(app_py_mod.__file__), 'static')
             static_map[routing.add_prefix('/%s/static' % app)] = fs_static_path
         self._dispatch = SharedDataMiddleware( self._dispatch, static_map)
     
     def _setup_session_middleware(self):
-        self._dispatch = SessionMiddleware(self._dispatch, **dict(rc.application.settings.beaker))
+        self._dispatch = SessionMiddleware(self._dispatch, **dict(self.settings.beaker))
 
     def _setup_user(self):
         rc.user = SessionUser()

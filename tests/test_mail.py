@@ -3,11 +3,12 @@ import os
 import os.path as path
 import rcsutils
 import config
+import sys
 
 # setup the virtual environment so that we can import specific versions
-# of system libraries but also ensure that our pysmvt module is what
-# we are pulling from
-rcsutils.setup_virtual_env('pysmvt-libs-trunk', __file__, '..')
+# of system libraries.  The first 
+rcsutils.setup_virtual_env(
+    'pysmvt-libs-trunk', __file__, '..', '../applications')
 
 from pysmvttestapp.application import Webapp
 from pysmvt.mail import EmailMessage, BadHeaderError, EmailMultiAlternatives, \

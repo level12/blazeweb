@@ -2,6 +2,7 @@ import sys
 import random
 import hashlib
 import time
+import re
 from pprint import PrettyPrinter
 from pysmvt.application import request_context as rc
 from pysmvt.application import request_context_manager as rcm
@@ -9,7 +10,6 @@ from werkzeug.debug.tbtools import get_current_traceback
 from formencode.validators import URL
 from formencode import Invalid
 from markdown2 import markdown
-import re
 
 def reindent(s, numspaces):
     """ reinidents a string (s) by the given number of spaces (numspaces) """

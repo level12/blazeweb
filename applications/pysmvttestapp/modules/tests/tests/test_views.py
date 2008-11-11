@@ -7,7 +7,7 @@ import copy
 # setup the virtual environment so that we can import specific versions
 # of system libraries but also ensure that our pysmvt module is what
 # we are pulling from
-rcsutils.setup_virtual_env('pysmvt-libs-trunk', __file__, '..', '..', '..', '..')
+rcsutils.setup_virtual_env('pysmvt-libs-trunk', __file__, '../../../..')
 
 from pysmvttestapp.application import Webapp
 from werkzeug import Client, BaseResponse

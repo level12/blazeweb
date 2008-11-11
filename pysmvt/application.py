@@ -62,7 +62,7 @@ class Application(object):
         return self.controller(environ, start_response)
     
     def setup_controller(self):
-        self.controller = Controller()
+        self.controller = Controller(self.settings)
     
     def setup_logger(self):
         logger_prefix = '%s.%s' % (self.__class__.__name__, self._id)
