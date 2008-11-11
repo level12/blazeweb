@@ -1,7 +1,7 @@
 from pysmvt.application import request_context as rc
 
 def url_for(endpoint, _external=False, **values):
-    return rc.controller.urlAdapter.build(endpoint, values, force_external=_external)
+    return rc.urladapter.build(endpoint, values, force_external=_external)
 
 def style_url(file, app = None):
     endpoint = 'styles'
@@ -26,7 +26,7 @@ def index_url(url = None):
             except AttributeError:
                 url = '/'
         
-        endpoint, args = rc.controller.urlAdapter.match( url )
+        endpoint, args = rc.urladapter.match( url )
         return url_for(endpoint, args)
     except NotFound:
         raise TemplateException('index_url(): the index url "%s" could not be located' % (url, ))

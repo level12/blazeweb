@@ -160,7 +160,7 @@ class Controller(object):
     def _endpoint_args_from_env(self, environ):
         try:
             # bind the route map to the current environment
-            urls = self._route_map.bind_to_environ(environ)
+            urls = rc.urladapter = self._route_map.bind_to_environ(environ)
             
             # initialize endpoint to avoid UnboundLocalError
             endpoint = None
