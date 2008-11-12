@@ -1,6 +1,6 @@
 import os
 import sys
-from pysmvt import ag
+from pysmvt import ag, appimport
 from pysmvt.utils.filesystem import mkblankfile
 from pysmvt.utils import pprint
 from werkzeug import script
@@ -56,7 +56,7 @@ def action_testrun(url=('u', '/'), show_body=('b', False), show_headers=('h', Fa
 def action_modcreate(name=('n', '')):
     """ used to create an application module's file structure"""
     app = _shell_init_func()['webapp']
-    ag.loader.app_names('modules', scope=globals())
+    modules = appimport('modules', globals=False)
     
     moddir = os.path.dirname(modules.__file__)
     newdir = os.path.join(moddir, name)

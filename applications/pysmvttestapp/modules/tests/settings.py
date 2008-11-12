@@ -40,6 +40,7 @@ class Settings(QuickSettings):
             Rule('/tests/listgetargs', endpoint='tests:ListGetArguments'),
             Rule('/tests/customvalidator', endpoint='tests:CustomValidator'),
             Rule('/tests/badvalidator', endpoint='tests:BadValidator'),
+            Rule('/tests/appfallback', endpoint='tests:InApp2'),
         ])
         
         # no more values can be added

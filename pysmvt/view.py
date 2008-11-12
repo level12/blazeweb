@@ -1,5 +1,5 @@
 import inspect
-from pysmvt import settings, user, ag, _getview, rg
+from pysmvt import settings, user, ag, _getview, rg, appimport
 from pysmvt.utils import reindent, auth_error, log_info, bad_request_error, \
     fatal_error, urlslug, markdown, log_debug
 from pysmvt.utils.html import strip_tags
@@ -13,10 +13,11 @@ import formencode
 from pprint import PrettyPrinter
 from webhelpers.containers import NotGiven
 
+# @@todo: this is a **really** bad way to do this
 try: 
-    ag.loader.app_names('utils', 'fatal_error', globals())
+    appimport('utils', 'fatal_error')
 except ImportError, e:
-    if 'cannot import module utils' not in str(e):
+    if 'cannot import "utils" with attribute "fatal_error"' not in str(e):
         raise
     from pysmvt.utils import fatal_error
 

@@ -13,7 +13,7 @@ from pysmvt import routing
 from pysmvt.controller import Controller
 from pysmvt.database import load_models
 from pysmvt.users import SessionUser
-from pysmvt.utils import Loader, Logger, randhash, Context
+from pysmvt.utils import Logger, randhash, Context
 
 # The main web application inherits this.
 #
@@ -35,9 +35,6 @@ class Application(object):
         self.ag = Context()
         self.bind_globals()
         try:
-            
-            # a custom importer
-            self.setup_loader()
             
             # application logging object      
             self.setup_logger()
@@ -165,9 +162,6 @@ class Application(object):
         #if loggers:
         ag.logger = Logger(*loggers)
     
-    def setup_loader(self):
-        ag.loader = Loader()
-    
     def load_db_model(self):
         load_models()
         
@@ -211,7 +205,7 @@ class Application(object):
             routing.add_prefix('/static'):     settings.dirs.static
         }
         for sapp in self.settings.supporting_apps:
-            app_py_mod = ag.loader.app(sapp)
+            app_py_mod = __import__(sapp)
             fs_static_path = path.join(path.dirname(app_py_mod.__file__), 'static')
             static_map[routing.add_prefix('/%s/static' % sapp)] = fs_static_path
         return SharedDataMiddleware(app, static_map)

@@ -4,7 +4,7 @@ import hashlib
 import time
 import re
 from pprint import PrettyPrinter
-from pysmvt import settings, user, ag, forward, rg
+from pysmvt import settings, user, ag, forward, rg, modimport
 from werkzeug.debug.tbtools import get_current_traceback
 from formencode.validators import URL
 from formencode import Invalid
@@ -41,87 +41,6 @@ def isurl(s, require_tld=True):
         if url_local is not None:
             return True
         return False
-
-class Loader(object):
-    """
-        gets references to python modules in the application.  Used instead of
-        `import` because application modules have to be application agnostic
-    """
-    
-    def __init__(self):
-        # will save module references
-        self.module_refs = {}
-    
-    def _load_module(self, dotted_location):
-        """
-            get a reference to a module and save in the application
-            
-            dotted_location = dotted location for something on Python Path
-        """
-        try:
-            cMod = self.module_refs[dotted_location]
-        except KeyError:
-            # The last [''] is very important!
-            cMod = __import__(dotted_location, globals(), locals(), [''])
-            self.module_refs[dotted_location] = cMod
-        return cMod
-    
-    def appmod_names(self, from_dotted_loc, to_import=None, scope = None):
-        """ locate a python module (.py) in an Application Module """       
-        return self.app_names('modules.%s' % from_dotted_loc, to_import, scope)
-    
-    def app_names(self, from_dotted_loc, to_import=None, scope = None):
-        """ get one or more objects from a python module (.py) in our main app
-            or one of our supporting apps """
-        retval = []
-        to_import = tolist(to_import)
-        module = self.app_module(from_dotted_loc)
-        if len(to_import) == 0:
-            if scope is not None:
-                scope[module.__name__.split('.')[-1]] = module
-            return module
-        for name_to_import in to_import:
-            if hasattr(module, name_to_import):
-                retval.append(getattr(module, name_to_import))
-                if scope is not None:
-                    scope[name_to_import] = getattr(module, name_to_import)
-            else:
-                raise ImportError('cannot import name %s' % name_to_import)
-        if len(retval) > 1:
-            return retval
-        if len(retval) == 1:
-            return retval.pop()
-        return
-    
-    def app_module(self, dotted_loc):
-        """ import a python module (.py) from dotted_loc in our main app or
-            one of our supporting apps """
-        apps_to_try = [settings.appname] + settings.supporting_apps
-        for app in apps_to_try:
-            try:
-                module_to_load = '%s.%s' % (app, dotted_loc)
-                #print module_to_load
-                return self._load_module(module_to_load)
-            except ImportError, e:
-                # if the import error wasn't for what we loaded, then
-                # there was in import error in the module we tried to import
-                # re-raise that exception
-                _, _, tb = sys.exc_info()
-                #print 'except: %d %s %s ' % (traceback_depth(tb), str(e), module_to_load)
-                if traceback_depth(tb) > 1:
-                    raise
-        raise ImportError('cannot import module %s' % dotted_loc)
-    
-    def app(self, appname):
-        return self._load_module(appname)
-
-def module_import(dotted_mod_name, from_list=None ):
-    calling_locals = sys._getframe(1).f_locals
-    return ag.loader.appmod_names(dotted_mod_name, from_list, calling_locals)
-
-def app_import(dotted_app_name, from_list=None ):
-    calling_locals = sys._getframe(1).f_locals
-    return ag.loader.app_names(dotted_app_name, from_list, calling_locals)
 
 def traceback_depth(tb):
     depth = 0
@@ -188,7 +107,7 @@ def call_appmod_dbinits(singlemod=None):
     for module in settings.modules.keys():
         if singlemod == module or singlemod == '':
             try:
-                callables = ag.loader.appmod_names('%s.settings' % module, 'appmod_dbinits')
+                callables = modimport('%s.settings' % module, 'appmod_dbinits', False)
                 for tocall in tolist(callables):
                     tocall()
             except ImportError:
@@ -199,7 +118,7 @@ def call_appmod_inits(module):
     if not module:
         raise ValueError('"module" parameter must not be empty')
     try:
-        callables = ag.loader.appmod_names('%s.settings' % module, 'appmod_inits')
+        callables = modimport('%s.settings' % module, 'appmod_inits', False)
         for tocall in tolist(callables):
                 tocall()
     except ImportError, e:

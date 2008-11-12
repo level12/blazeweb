@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
-from pysmvt import settings, ag
-from pysmvt.utils import traceback_depth, module_import
+from pysmvt import settings, ag, modimport
+from pysmvt.utils import traceback_depth
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy import create_engine
 import elixir
@@ -9,14 +9,14 @@ import elixir
 def load_orm_models():
     for module in settings.modules.keys():
             try:
-                module_import('%s.model.orm' % module, [])
+                modimport('%s.model.orm' % module, None, False)
             except ImportError:
                 # check the exception depth to make sure the import
                 # error we caught was just .model or .model.orm missing
                 _, _, tb = sys.exc_info()
-                # 4 = .model wasn't found
+                # 3 = .model wasn't found
                 #print traceback_depth(tb)
-                if traceback_depth(tb) in (4,):
+                if traceback_depth(tb) in (3,):
                     pass
                 else:
                     raise
@@ -24,14 +24,14 @@ def load_orm_models():
 def load_metadata_models():
     for module in settings.modules.keys():
             try:
-                module_import('%s.model.metadata' % module, [])
+                modimport('%s.model.metadata' % module, None, False)
             except ImportError:
                 # check the exception depth to make sure the import
                 # error we caught was just .model or .model.orm missing
                 _, _, tb = sys.exc_info()
-                # 4 = .model wasn't found
+                # 3 = .model wasn't found
                 #print traceback_depth(tb)
-                if traceback_depth(tb) in (4,):
+                if traceback_depth(tb) in (3,):
                     pass
                 else:
                     raise

@@ -1,25 +1,27 @@
 # -*- coding: utf-8 -*-
 from os import path
 from werkzeug.routing import Rule
-from pysmvt.config import Base
+from pysmvt.config import DefaultSettings
 
-class Default(Base):
+class Default(DefaultSettings):
 
-    def __init__(self):
+    def __init__(self, appname, basedir):
         # call parent init to setup default settings
-        Base.__init__(self)
+        DefaultSettings.__init__(self, appname, basedir)
         
         # we are done adding variables to this settings object, so lock it
         self.lock()
 
-class Testruns(Base):
-    def __init__(self):
+class Testruns(DefaultSettings):
+    def __init__(self, appname, basedir):
         # call parent init to setup default settings
-        Base.__init__(self)
+        DefaultSettings.__init__(self, appname, basedir)
         
         self.routing.routes.extend([
             Rule('/', endpoint='tests:Index')
         ])
+
+        self.modules.tests.enabled = True
         
         self.db.uri = 'sqlite:///'
         

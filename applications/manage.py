@@ -19,15 +19,6 @@ def make_app():
     from pysmvttestapp.application import Webapp
     return Webapp('Testruns')
 
-def action_printpath():
-    import sys
-    from rcsutils import pprint
-    app = make_app()
-    app.bind_to_context()
-    app.loader.app_names('modules')
-    #pprint(sys.path)
-    
-
 # main routine called when this module (file) is called directly
 # like:
 # > python manage.py

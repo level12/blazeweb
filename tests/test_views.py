@@ -3,6 +3,7 @@ import config
 
 from pysmvt import settings
 from pysmvttestapp.application import Webapp
+from pysmvttestapp2.application import Webapp as App2
 from werkzeug import Client, BaseResponse
 from pysmvt.exceptions import ProgrammingError
 
@@ -15,6 +16,7 @@ class TestViews(unittest.TestCase):
         
     def tearDown(self):
         self.client = None
+        self.app = None
     
     def test_responding_view_base(self):
         r = self.client.get('tests/rvb')
@@ -52,14 +54,14 @@ class TestViews(unittest.TestCase):
             r = self.client.get('tests/badmod')
             self.fail('should have got ProgrammingError since URL exists but module does not')
         except ProgrammingError, e:
-            self.assertEqual( 'Could not load view "fatfinger:NotExistant": cannot import module modules.fatfinger.views', str(e))
+            self.assertEqual( 'Could not load view "fatfinger:NotExistant": cannot import "modules.fatfinger.views" with attribute "NotExistant" from any application', str(e))
             
     def test_noview(self):
         try:
             r = self.client.get('tests/noview')
             self.fail('should have got ProgrammingError since URL exists but view does not')
         except ProgrammingError, e:
-            self.assertEqual( 'Could not load view "tests:NotExistant": cannot import name NotExistant', str(e))
+            self.assertEqual( 'Could not load view "tests:NotExistant": cannot import "modules.tests.views" with attribute "NotExistant" from any application', str(e))
             
     def test_prep(self):
         r = self.client.get('tests/prep')
@@ -323,7 +325,35 @@ class TestViews(unittest.TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.data, 'Hellow pysmvttestapp2!')
 
+    def test_app2(self):
+        # app2's test module won't have its settings imported
+        # b/c app1's settings module is blocking it.  Therefore, the
+        # route doesn't get added and we get a 404
+        r = self.client.get('tests/rvbapp2')
+        self.assertEqual(r.status_code, 404)
+        
+    def test_appfallback(self):
+        r = self.client.get('tests/appfallback')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.data, 'Hello app2!')
+        
+class TestApp2(unittest.TestCase):
+        
+    def setUp(self):
+        self.app = App2('Testruns')
+        #self.app.settings.logging.levels.append(('debug', 'info'))
+        self.client = Client(self.app, BaseResponse)
+        
+    def tearDown(self):
+        self.client = None
+        self.app = None
+        
+    def test_app2(self):
+        r = self.client.get('tests/rvbapp2')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.data, 'Hello app2!')
+
 if __name__ == '__main__':
-    unittest.main()
-    #unittest.TextTestRunner().run(TestViews('test_static'))
+    #unittest.main()
+    unittest.TextTestRunner().run(TestViews('test_redirect'))
 

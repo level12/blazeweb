@@ -7,12 +7,11 @@ from werkzeug.exceptions import HTTPException, NotFound, InternalServerError, \
     MethodNotAllowed
 import werkzeug.utils
 
-from pysmvt import settings, session, user, rg, ag, getview, _getview
+from pysmvt import settings, session, user, rg, ag, getview, _getview, modimport
 from pysmvt.database import get_dbsession, get_dbsession_cls
 from pysmvt.exceptions import ForwardException, ProgrammingError
 from pysmvt.mail import mail_programmers
-from pysmvt.utils import randchars, traceback_depth, log_info, log_debug, pprint, \
-    module_import
+from pysmvt.utils import randchars, traceback_depth, log_info, log_debug, pprint
 from pysmvt.wrappers import Request, Response
 
 # Note: this controller is only instantiated per-process, not per request.
@@ -200,7 +199,7 @@ class Controller(object):
         # module routes        
         for module in self.settings.modules.keys():
             try:
-                ag.loader.appmod_names('%s.settings' % module, 'Settings', globals())
+                Settings = modimport('%s.settings' % module, 'Settings', False)
                 s = Settings()
                 # load the routes from the module
                 self._add_routing_rules(s.routes)
