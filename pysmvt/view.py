@@ -1,5 +1,5 @@
 import inspect
-from pysmvt import settings, user
+from pysmvt import settings, user, ag, _getview
 from pysmvt.utils import reindent, auth_error, log_info, bad_request_error, \
     fatal_error, urlslug, markdown, log_debug
 from pysmvt.utils.html import strip_tags
@@ -15,7 +15,7 @@ from pprint import PrettyPrinter
 from webhelpers.containers import NotGiven
 
 try: 
-    rc.application.loader.app_names('utils', 'fatal_error', globals())
+    ag.loader.app_names('utils', 'fatal_error', globals())
 except ImportError, e:
     if 'cannot import module utils' not in str(e):
         raise
@@ -222,7 +222,7 @@ class TemplateMixin(object):
         return '<pre class="pretty_print">%s</pre>' % PrettyPrinter(indent, width, depth).pformat(value)
     
     def assignTemplateVariables(self):
-        self.template.assign('application', rc.application)
+        self.template.assign('settings', settings)
         self.template.assign('sesuser', user)
     
     def assign(self, key, value):
@@ -251,7 +251,7 @@ class TemplateMixin(object):
         return reindent(''.join(rc.respview.js), indent).lstrip()
     
     def process_view(self, view, **kwargs):
-        return rc.controller._call_view(view, kwargs, 'template')
+        return _getview(view, kwargs, 'template')
             
     def handle_response(self):
         if self.template_name == None:

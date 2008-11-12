@@ -5,8 +5,16 @@ class TemplateException(HTTPException):
     code = 500
     description = '<p>A fatal error occured while trying to process a template.</p>'
     
-class RedirectException(Exception):
-    pass
+class Redirect(HTTPException):
+    def __init__(self, location, code):
+        self.code = code
+        self.description = 'You are being redirected to: %s' % location
+        self.location = location
+        
+    def get_headers(self, environ):
+        """Get a list of headers."""
+        return [('Content-Type', 'text/html'),
+                ('Location', self.location)]
 
 class ForwardException(Exception):
     pass

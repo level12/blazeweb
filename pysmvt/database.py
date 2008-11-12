@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import sys
-from pysmvt import settings
+from pysmvt import settings, ag
 from pysmvt.application import request_context as rc
-from pysmvt.utils import traceback_depth
+from pysmvt.utils import traceback_depth, module_import
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy import create_engine
 import elixir
@@ -10,7 +10,7 @@ import elixir
 def load_orm_models():
     for module in settings.modules.keys():
             try:
-                rc.application.loader.appmod_names('%s.model.orm' % module, [])
+                module_import('%s.model.orm' % module, [])
             except ImportError:
                 # check the exception depth to make sure the import
                 # error we caught was just .model or .model.orm missing
@@ -26,7 +26,7 @@ def load_orm_models():
 def load_metadata_models():
     for module in settings.modules.keys():
             try:
-                rc.application.loader.appmod_names('%s.model.metadata' % module, [])
+                module_import('%s.model.metadata' % module, [])
             except ImportError:
                 # check the exception depth to make sure the import
                 # error we caught was just .model or .model.orm missing
@@ -56,17 +56,17 @@ def get_engine():
     return rc.db_engine
 
 def get_metadata():
-    if hasattr(rc.application, 'dbMetaData') == False :
+    if hasattr(ag, 'dbMetaData') == False :
         from sqlalchemy import MetaData
-        rc.application.dbMetaData = MetaData()
+        ag.dbMetaData = MetaData()
         
-    return rc.application.dbMetaData
+    return ag.dbMetaData
 
 def get_session_cls():
-    if hasattr(rc.application, 'db_scoped_session') == False :
-        rc.application.db_scoped_session = scoped_session(sessionmaker())
-    rc.application.db_scoped_session.configure(bind=get_engine())
-    return rc.application.db_scoped_session
+    if not ag.get('db_scoped_session', None):
+        ag.db_scoped_session = scoped_session(sessionmaker())
+    ag.db_scoped_session.configure(bind=get_engine())
+    return ag.db_scoped_session
 
 # an alias that can be used to avoid confusion when working in close
 # proximity to beaker sessions

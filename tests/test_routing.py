@@ -4,8 +4,8 @@ import unittest
 from pysmvt.routing import *
 
 class Routingsettings(config.Testruns):
-    def __init__(self, basedir):
-        config.Testruns.__init__(self, basedir)
+    def __init__(self, appname, basedir):
+        config.Testruns.__init__(self, appname, basedir)
         
         self.routing.routes.extend([
             Rule('/', endpoint='mod:Index'),
@@ -13,14 +13,14 @@ class Routingsettings(config.Testruns):
         ])
 
 class Prefixsettings(Routingsettings):
-    def __init__(self, basedir):
-        Routingsettings.__init__(self, basedir)
+    def __init__(self, appname, basedir):
+        Routingsettings.__init__(self, appname, basedir)
         
         self.routing.prefix = '/prefix'
 
 class Noindex(Routingsettings):
-    def __init__(self, basedir):
-        Routingsettings.__init__(self, basedir)
+    def __init__(self, appname, basedir):
+        Routingsettings.__init__(self, appname, basedir)
         
         self.routing.routes = [
             Rule('/url1', endpoint='mod:Url1'),

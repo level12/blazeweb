@@ -5,17 +5,17 @@ from pysmvt.config import DefaultSettings
 
 class Default(DefaultSettings):
 
-    def __init__(self):
+    def __init__(self, appname, basedir):
         # call parent init to setup default settings
-        DefaultSettings.__init__(self)
+        DefaultSettings.__init__(self, appname, basedir)
         
         # we are done adding variables to this settings object, so lock it
         self.lock()
 
 class Testruns(DefaultSettings):
-    def __init__(self, basedir):
+    def __init__(self, appname, basedir):
         # call parent init to setup default settings
-        DefaultSettings.__init__(self, basedir)
+        DefaultSettings.__init__(self, appname, basedir)
         
         self.modules.tests.enabled = True
         

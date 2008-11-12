@@ -16,8 +16,9 @@ import werkzeug
 from werkzeug import SharedDataMiddleware, DebuggedApplication
 from werkzeug.exceptions import HTTPException
 
-from pysmvt import settings, ag, session, rg, user
+from pysmvt import settings, ag, session, rg, user, app
 from pysmvt import routing
+from pysmvt.config import QuickSettings
 from pysmvt.controller import Controller
 from pysmvt.database import load_models
 from pysmvt.users import SessionUser
@@ -34,17 +35,16 @@ class Application(object):
     Our central WSGI application.
     """
 
-    def __init__(self, app_settings_mod, profile = 'default'):
-        rc.application = self
+    def __init__(self, appname, app_settings_mod, profile = 'default'):
         self._id = randhash()
-        self.setup_loader()
         self.profile = profile
         
         #calculate the web applications static directory
         self.staticDir = path.join(self.basedir, 'static')
     
         # load settings class from the settings module
-        self.settings = getattr(app_settings_mod, self.profile.capitalize())(self.basedir)
+        self.settings = getattr(app_settings_mod, self.profile.capitalize())(appname, self.basedir)
+        self.ag = QuickSettings()
         self.bind_globals()
         try:
             
@@ -65,32 +65,26 @@ class Application(object):
     
     def bind_globals(self):
         settings._push_object(self.settings)
-        ag._push_object(self)
+        ag._push_object(self.ag)
+        app._push_object(self)
     
     def release_globals(self):
         settings._pop_object(self.settings)
-        ag._pop_object(self)
+        ag._pop_object(self.ag)
+        app._pop_object(self)
     
     def bind_request_globals(self, environ):
         sesobj = beaker.session.Session(environ)
         session._push_object(sesobj)
         user._push_object(self.setup_user())
-        rg._push_object(object())
+        rg._push_object(QuickSettings())
     
     def release_request_globals(self):
         session._pop_object()
         user._pop_object()
         rg._pop_object()
-            
-    def bind_to_context(self):
-        """
-        Useful for the shell.  Binds the application to the current active
-        context.  It's automatically called by the shell command.
-        """
-        rc.application = self
     
     def __call__(self, environ, start_response):
-        self.bind_to_context()
         return self.dispatchto(environ, start_response)
     
     def dispatch(self, environ, start_response):
@@ -100,10 +94,11 @@ class Application(object):
     def registry_globals(self, environ):
         if environ.has_key('paste.registry'):
             environ['paste.registry'].register(settings, self.settings)
-            environ['paste.registry'].register(ag, self)
+            environ['paste.registry'].register(ag, self.ag)
+            environ['paste.registry'].register(app, self)
             environ['paste.registry'].register(session, environ['beaker.session'])
             environ['paste.registry'].register(user, self.setup_user())
-            environ['paste.registry'].register(rg, object())
+            environ['paste.registry'].register(rg, QuickSettings())
     
     def startrequest(self, url='/'):
         """
@@ -180,10 +175,10 @@ class Application(object):
             loggers.append(None)
         
         #if loggers:
-        self.logger = Logger(*loggers)
+        ag.logger = Logger(*loggers)
     
     def setup_loader(self):
-        self.loader = Loader()
+        ag.loader = Loader()
     
     def load_db_model(self):
         load_models()
@@ -227,10 +222,10 @@ class Application(object):
     
     def setup_static_middleware(self, app):
         static_map = {
-            routing.add_prefix('/static'):     rc.application.staticDir
+            routing.add_prefix('/static'):     settings.dirs.static
         }
         for app in self.settings.supporting_apps:
-            app_py_mod = rc.application.loader.app(app)
+            app_py_mod = self.loader.app(app)
             fs_static_path = path.join(path.dirname(app_py_mod.__file__), 'static')
             static_map[routing.add_prefix('/%s/static' % app)] = fs_static_path
         return SharedDataMiddleware( app, static_map)

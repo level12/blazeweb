@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from pysmvt.application import request_context as rc
+from pysmvt import getview, redirect, forward
 from pysmvt.view import RespondingViewBase, SnippetViewBase, TextTemplatePage, \
     TextTemplateSnippet, HtmlTemplateSnippet, HtmlTemplatePage
 from werkzeug.exceptions import ServiceUnavailable
@@ -18,7 +19,7 @@ class HwSnippet(SnippetViewBase):
 class RvbWithSnippet(RespondingViewBase):
     
     def default(self):
-        self.retval = rc.controller.call_view('tests:HwSnippet')
+        self.retval = getview('tests:HwSnippet')
 
 class Get(RespondingViewBase):
     
@@ -44,11 +45,11 @@ class NoActionMethod(RespondingViewBase):
 class TwoRespondingViews(RespondingViewBase):
     
     def default(self):
-        return rc.controller.call_view('tests:Rvb')
+        return getview('tests:Rvb')
 
 class DoForward(RespondingViewBase):
     def default(self):
-        rc.controller.forward('tests:ForwardTo')
+        forward('tests:ForwardTo')
 
 class ForwardTo(RespondingViewBase):
     def default(self):
@@ -56,7 +57,7 @@ class ForwardTo(RespondingViewBase):
 
 class BadForward(RespondingViewBase):
     def default(self):
-        rc.controller.forward('tests:HwSnippet')
+        forward('tests:HwSnippet')
 
 class TextSnippet(TextTemplateSnippet):
     def default(self):
@@ -68,7 +69,7 @@ class Text(TextTemplatePage):
 
 class TextWithSnippet(TextTemplatePage):
     def default(self):
-        self.assign('output',  rc.controller.call_view('tests:TextSnippet'))
+        self.assign('output',  getview('tests:TextSnippet'))
 
 class TextWithSnippet2(TextTemplatePage):
     def default(self):
@@ -88,15 +89,15 @@ class HtmlCssJs(HtmlTemplatePage):
     
 class Redirect(RespondingViewBase):
     def default(self):
-        rc.controller.redirect('some/other/page')
+        redirect('some/other/page')
 
 class PermRedirect(RespondingViewBase):
     def default(self):
-        rc.controller.redirect('some/other/page', permanent=True)
+        redirect('some/other/page', permanent=True)
 
 class CustRedirect(RespondingViewBase):
     def default(self):
-        rc.controller.redirect('some/other/page', code=303)
+        redirect('some/other/page', code=303)
 
 class HttpExceptionRaise(RespondingViewBase):
     def default(self):
@@ -104,7 +105,7 @@ class HttpExceptionRaise(RespondingViewBase):
 
 class ForwardLoop(RespondingViewBase):
     def default(self):
-        rc.controller.forward('tests:ForwardLoop')
+        forward('tests:ForwardLoop')
 
 class UrlArguments(RespondingViewBase):
     def default(self, towho='World', anum=None):

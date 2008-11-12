@@ -6,7 +6,7 @@ import re
 from pprint import PrettyPrinter
 from pysmvt.application import request_context as rc
 from pysmvt.application import request_context_manager as rcm
-from pysmvt import settings, user
+from pysmvt import settings, user, ag, forward
 from werkzeug.debug.tbtools import get_current_traceback
 from formencode.validators import URL
 from formencode import Invalid
@@ -98,7 +98,7 @@ class Loader(object):
     def app_module(self, dotted_loc):
         """ import a python module (.py) from dotted_loc in our main app or
             one of our supporting apps """
-        apps_to_try = [rc.application.appPackage] + settings.supporting_apps
+        apps_to_try = [settings.appname] + settings.supporting_apps
         for app in apps_to_try:
             try:
                 module_to_load = '%s.%s' % (app, dotted_loc)
@@ -119,11 +119,11 @@ class Loader(object):
 
 def module_import(dotted_mod_name, from_list=None ):
     calling_locals = sys._getframe(1).f_locals
-    rc.application.loader.appmod_names(dotted_mod_name, from_list, calling_locals)
+    return ag.loader.appmod_names(dotted_mod_name, from_list, calling_locals)
 
 def app_import(dotted_app_name, from_list=None ):
     calling_locals = sys._getframe(1).f_locals
-    rc.application.loader.app_names(dotted_app_name, from_list, calling_locals)
+    return ag.loader.app_names(dotted_app_name, from_list, calling_locals)
 
 def traceback_depth(tb):
     depth = 0
@@ -134,34 +134,34 @@ def traceback_depth(tb):
 
 def fatal_error(user_desc = None, dev_desc = None, orig_exception = None):
     # log stuff
-    rc.application.logger.debug('Fatal error: "%s" -- %s', dev_desc, str(orig_exception))
+    ag.logger.debug('Fatal error: "%s" -- %s', dev_desc, str(orig_exception))
     
     # set user message
     if user_desc != None:
         user.add_message('error', user_desc)
         
     # forward to fatal error view
-    rc.controller.forward(settings.endpoint.sys_error)
+    forward(settings.endpoint.sys_error)
 
 def auth_error(user_desc = None, dev_desc = None):
     # log stuff
     if dev_desc != None:
-        rc.application.logger.debug('Auth error: %s', dev_desc)
+        ag.logger.debug('Auth error: %s', dev_desc)
     
     # set user message
     if user_desc != None:
         user.add_message('error', user_desc)
         
     # forward to fatal error view
-    rc.controller.forward(settings.endpoint.sys_auth_error)
+    forward(settings.endpoint.sys_auth_error)
 
 def bad_request_error(dev_desc = None):
     # log stuff
     if dev_desc != None:
-        rc.application.logger.debug('bad request error: %s', dev_desc)
+        ag.logger.debug('bad request error: %s', dev_desc)
         
     # forward to fatal error view
-    rc.controller.forward(settings.endpoint.bad_request_error)
+    forward(settings.endpoint.bad_request_error)
 
 # from sqlalchemy
 def tolist(x, default=[]):
@@ -190,7 +190,7 @@ def call_appmod_dbinits(singlemod=None):
     for module in settings.modules.keys():
         if singlemod == module or singlemod == '':
             try:
-                callables = rc.application.loader.appmod_names('%s.settings' % module, 'appmod_dbinits')
+                callables = ag.loader.appmod_names('%s.settings' % module, 'appmod_dbinits')
                 for tocall in tolist(callables):
                     tocall()
             except ImportError:
@@ -201,7 +201,7 @@ def call_appmod_inits(module):
     if not module:
         raise ValueError('"module" parameter must not be empty')
     try:
-        callables = rc.application.loader.appmod_names('%s.settings' % module, 'appmod_inits')
+        callables = ag.loader.appmod_names('%s.settings' % module, 'appmod_inits')
         for tocall in tolist(callables):
                 tocall()
     except ImportError, e:
@@ -214,13 +214,13 @@ def call_appmod_inits(module):
             raise
         
 def log_info(msg):
-    rc.application.logger.info(msg)
+    ag.logger.info(msg)
 
 def log_debug(msg):
-    rc.application.logger.debug(msg)
+    ag.logger.debug(msg)
 
 def log_application(msg):
-    rc.application.logger.application(msg)
+    ag.logger.application(msg)
     
 class Logger(object):
     def __init__(self, dlogger, ilogger, alogger):

@@ -325,5 +325,5 @@ class TestViews(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-    #unittest.TextTestRunner().run(TestViews('test_getargs'))
+    #unittest.TextTestRunner().run(TestViews('test_responding_view_base'))
 

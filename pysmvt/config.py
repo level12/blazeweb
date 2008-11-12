@@ -97,8 +97,11 @@ class ModulesSettings(QuickSettings):
 
 class DefaultSettings(QuickSettings):
     
-    def __init__(self, basedir):
+    def __init__(self, appname,  basedir):
         QuickSettings.__init__(self)
+        
+        # name of the primary application
+        self.appname = appname
         
         # supporting applications
         self.supporting_apps = []
@@ -128,6 +131,8 @@ class DefaultSettings(QuickSettings):
         # DIRECTORIES required by PYSVMT
         #######################################################################
         self.dirs.writeable = path.join(basedir, 'writeable')
+        self.dirs.static = path.join(basedir, 'static')
+        self.dirs.templates = path.join(basedir, 'templates')
         self.dirs.data = path.join(self.dirs.writeable, 'data')
         self.dirs.logs = path.join(self.dirs.writeable, 'logs')
         self.dirs.tmp = path.join(self.dirs.writeable, 'tmp')
