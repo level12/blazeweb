@@ -38,16 +38,25 @@ from pysmvt.exceptions import Redirect, ProgrammingError, ForwardException
 
 def modimportauto(dotted_loc, from_list=None):
     """
-        set globals == False if you don't want the module imported
-        into the caller's global namespace
+        like `modimport`, but grabs the caller's globals and inserts
+        modules or objects into it, just like native `import`
     """
     globals = sys._getframe(1).f_globals
     modimport(dotted_loc, from_list, globals)
 
 def modimport(dotted_loc, from_list=None, globals = None ):
+    """
+        like `appimport`, but at the module instead of the app level.
+        
+        ex. modimport('tests.model.orm') == appimport('modules.tests.model.orm')
+    """
     return appimport('modules.%s' % dotted_loc, from_list, globals)
     
 def appimportauto(from_dotted_loc, from_list=None ):
+    """
+        like `appimport`, but grabs the caller's globals and inserts
+        modules or objects into it, just like native `import`
+    """
     globals = sys._getframe(1).f_globals
     appimport(from_dotted_loc, from_list, globals)
 
@@ -56,8 +65,26 @@ def appimport(from_dotted_loc, from_list=None, globals = None ):
         get one or more objects from a python module (.py) in our main app
         or one of our supporting apps
         
-        set globals == False if you don't want the module imported
-        into the caller's global namespace
+        from_dotted_loc: python dotted import path, minus the application
+        
+            appimportauto('utils') == import myapp.utils
+        
+        but if myapp.utils doesn't exist, might be this:
+        
+            appimportauto('utils') == import supportingapp.utils
+        
+        if you have a supporting app setup in settings.supporting_apps
+        
+        from_list: is a string or list of attributes to import from
+        `from_dotted_loc`:
+        
+            appimportauto('utils', 'helperfunc') == from myapp.utils import helperfunc
+            
+        globals: the callers globals().  If sent, imported modules and attributes
+        will be imported into caller's namespace.
+        
+        return value: module object, attribute object, or list of attribute objects
+        depending on `from_list`
     """
     from pysmvt.utils import tolist
     
