@@ -11,7 +11,6 @@ rcsutils.setup_virtual_env('pysmvt-libs-trunk', __file__, '../../../..')
 
 from pysmvttestapp.application import Webapp
 from werkzeug import Client, BaseResponse
-from pysmvt.application import request_context_manager as rcm
 from pysmvt.exceptions import ProgrammingError
 
 class TestViews(unittest.TestCase):
@@ -23,7 +22,6 @@ class TestViews(unittest.TestCase):
         
     def tearDown(self):
         self.client = None
-        rcm.cleanup()
     
     def test_responding_view_base(self):
         r = self.client.get('tests/rvb')

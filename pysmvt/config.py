@@ -2,7 +2,6 @@
 from os import path
 import os
 from werkzeug.routing import Rule
-from pysmvt.application import request_context as rc
 from pysmvt.utils import OrderedProperties
 
 class QuickSettings(OrderedProperties):

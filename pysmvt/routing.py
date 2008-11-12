@@ -1,5 +1,4 @@
-from pysmvt.application import request_context as rc
-from pysmvt import settings
+from pysmvt import settings, rg
 from werkzeug.routing import Rule
 
 __all__ = [

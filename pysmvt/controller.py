@@ -8,8 +8,6 @@ from werkzeug.exceptions import HTTPException, NotFound, InternalServerError, \
 import werkzeug.utils
 
 from pysmvt import settings, session, user, rg, ag, getview, _getview
-from pysmvt.application import request_context as rc
-from pysmvt.application import request_context_manager as rcm
 from pysmvt.database import get_dbsession, get_dbsession_cls
 from pysmvt.exceptions import ForwardException, ProgrammingError
 from pysmvt.mail import mail_programmers
@@ -79,15 +77,12 @@ class Controller(object):
         # WSGI request setup
         rg.ident = randchars()
         rg.environ = environ
-        # the request object binds itself to rc.request
+        # the request object binds itself to rg.request
         request = Request(environ)
         
     def _wsgi_request_cleanup(self):
         # save the user session
         session.save()
-
-        # handle context local cleanup
-        rcm.cleanup()
     
     def _response_setup(self):
         rg.respview = None

@@ -1,6 +1,5 @@
 import os
 import sys
-from pysmvt.application import request_context as rc
 from pysmvt.utils.filesystem import mkblankfile
 from pysmvt.utils import pprint
 from werkzeug import script

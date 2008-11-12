@@ -232,6 +232,15 @@ class TestQuickSettings(unittest.TestCase):
         assert dict(s.beaker) == d
         assert s.beaker.todict() == d
     
+    def test_hasattr(self):
+        s = Default()
+        
+        assert hasattr(s, 'alajsdf') == False
+        assert hasattr(s, 'alajsdf') == False
+        
+        s.unlock()
+        assert hasattr(s, 'alajsdf') == True        
+    
     def test_modules(self):
         s = Default()
         

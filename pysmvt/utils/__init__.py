@@ -4,8 +4,6 @@ import hashlib
 import time
 import re
 from pprint import PrettyPrinter
-from pysmvt.application import request_context as rc
-from pysmvt.application import request_context_manager as rcm
 from pysmvt import settings, user, ag, forward, rg
 from werkzeug.debug.tbtools import get_current_traceback
 from formencode.validators import URL

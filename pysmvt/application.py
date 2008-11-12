@@ -1,13 +1,5 @@
 from os import path
 import logging
-from werkzeug import LocalManager, Local
-
-# Setup some local objects that will ensure a thread safe per-request
-# environment for "global" variables.  I.e. they are objcts that allow us to
-# have "global" variables per request
-# rcontext = 
-request_context = rc = Local()
-request_context_manager = rcm = LocalManager([request_context])
 
 from paste.registry import RegistryManager
 from beaker.middleware import SessionMiddleware
@@ -196,9 +188,6 @@ class Application(object):
 
         # session middleware
         app = self.setup_session_middleware(app)
-        
-        # handle context locals
-        app = rcm.make_middleware(app)
         
         # stacked proxy objects allow us to do normal imports
         # from common libraries with multiple applications

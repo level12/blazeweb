@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from pysmvt.application import request_context as rc
+from pysmvt import rg
 from werkzeug import BaseRequest, BaseResponse
 
 class Request(BaseRequest):
@@ -14,7 +14,7 @@ class Request(BaseRequest):
         BaseRequest.__init__(self, environ, populate_request, shallow)
         
     def bind_to_context(self):
-        rc.request = self
+        rg.request = self
 
 
 class Response(BaseResponse):

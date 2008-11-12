@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from pysmvt.application import request_context as rc
 from pysmvt import getview, redirect, forward
 from pysmvt.view import RespondingViewBase, SnippetViewBase, TextTemplatePage, \
     TextTemplateSnippet, HtmlTemplateSnippet, HtmlTemplatePage

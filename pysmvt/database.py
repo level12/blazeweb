@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys
 from pysmvt import settings, ag
-from pysmvt.application import request_context as rc
 from pysmvt.utils import traceback_depth, module_import
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy import create_engine
@@ -50,17 +49,17 @@ def load_models():
     load_metadata_models()
 
 def get_engine():
-    if hasattr(rc, 'db_engine') == False :
-        rc.db_engine = create_engine(settings.db.uri, echo=settings.db.echo, strategy='threadlocal')   
+    if not ag.get('dbengine', None):
+        ag.dbengine = create_engine(settings.db.uri, echo=settings.db.echo, strategy='threadlocal')   
     
-    return rc.db_engine
+    return ag.dbengine
 
 def get_metadata():
-    if hasattr(ag, 'dbMetaData') == False :
+    if not ag.get('dbmetadata', None) == False :
         from sqlalchemy import MetaData
-        ag.dbMetaData = MetaData()
+        ag.dbmetadata = MetaData()
         
-    return ag.dbMetaData
+    return ag.dbmetadata
 
 def get_session_cls():
     if not ag.get('db_scoped_session', None):

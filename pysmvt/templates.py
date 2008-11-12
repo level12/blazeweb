@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from os import path
 from pysmvt import ag, settings
-from pysmvt.application import request_context as rc
 from pysmvt.utils import safe_strftime
 from jinja2 import FileSystemLoader, Environment
 

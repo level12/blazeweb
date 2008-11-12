@@ -3,7 +3,6 @@ from pysmvt import settings, user, ag, _getview, rg
 from pysmvt.utils import reindent, auth_error, log_info, bad_request_error, \
     fatal_error, urlslug, markdown, log_debug
 from pysmvt.utils.html import strip_tags
-from pysmvt.application import request_context as rc
 from pysmvt.templates import JinjaHtmlBase, JinjaBase
 from pysmvt.exceptions import ActionError, UserError, ProgrammingError
 from pysmvt.wrappers import Response
@@ -68,9 +67,9 @@ class ViewBase(object):
                     else:
                         getattr(self, call_details['method_name'])()
 
-            if rc.request.method == 'GET' and hasattr(self, 'get'):
+            if rg.request.method == 'GET' and hasattr(self, 'get'):
                 retval = self.get(**argsdict)
-            elif rc.request.method == 'POST' and hasattr(self, 'post'):
+            elif rg.request.method == 'POST' and hasattr(self, 'post'):
                 retval = self.post(**argsdict)
             else:
                 try:
@@ -106,10 +105,10 @@ class ViewBase(object):
                 try:
                     # get the value from the request object MultiDict
                     if takes_list:
-                        value = rc.request.args.getlist(argname)
+                        value = rg.request.args.getlist(argname)
                         value = [validator.to_python(v) for v in value]
                     else:
-                        value = rc.request.args.get(argname)
+                        value = rg.request.args.get(argname)
                         value = validator.to_python(value)
                     if value:
                         if isinstance(value, list):
