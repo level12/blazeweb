@@ -17,8 +17,6 @@ class Testruns(Base):
         # call parent init to setup default settings
         Base.__init__(self)
         
-        self.modules.tests.enabled = True
-        
         self.routing.routes.extend([
             Rule('/', endpoint='tests:Index')
         ])

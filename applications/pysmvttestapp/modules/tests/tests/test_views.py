@@ -326,8 +326,12 @@ class TestViews(unittest.TestCase):
         r = self.client.get('static/helloworld.html')
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.data, 'Hello World!')
+        
+        r = self.client.get('pysmvttestapp2/static/helloworld.html')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.data, 'Hellow pysmvttestapp2!')
 
 if __name__ == '__main__':
-    unittest.main()
-    #unittest.TextTestRunner().run(TestViews('test_static'))
+    #unittest.main()
+    unittest.TextTestRunner().run(TestViews('test_static'))
 
