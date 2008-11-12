@@ -107,7 +107,7 @@ def call_appmod_dbinits(singlemod=None):
     for module in settings.modules.keys():
         if singlemod == module or singlemod == '':
             try:
-                callables = modimport('%s.settings' % module, 'appmod_dbinits', False)
+                callables = modimport('%s.settings' % module, 'appmod_dbinits')
                 for tocall in tolist(callables):
                     tocall()
             except ImportError:
@@ -118,7 +118,7 @@ def call_appmod_inits(module):
     if not module:
         raise ValueError('"module" parameter must not be empty')
     try:
-        callables = modimport('%s.settings' % module, 'appmod_inits', False)
+        callables = modimport('%s.settings' % module, 'appmod_inits')
         for tocall in tolist(callables):
                 tocall()
     except ImportError, e:

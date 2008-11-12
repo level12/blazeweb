@@ -199,7 +199,7 @@ class Controller(object):
         # module routes        
         for module in self.settings.modules.keys():
             try:
-                Settings = modimport('%s.settings' % module, 'Settings', False)
+                Settings = modimport('%s.settings' % module, 'Settings')
                 s = Settings()
                 # load the routes from the module
                 self._add_routing_rules(s.routes)

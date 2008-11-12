@@ -9,7 +9,7 @@ import elixir
 def load_orm_models():
     for module in settings.modules.keys():
             try:
-                modimport('%s.model.orm' % module, None, False)
+                modimport('%s.model.orm' % module)
             except ImportError:
                 # check the exception depth to make sure the import
                 # error we caught was just .model or .model.orm missing
@@ -24,7 +24,7 @@ def load_orm_models():
 def load_metadata_models():
     for module in settings.modules.keys():
             try:
-                modimport('%s.model.metadata' % module, None, False)
+                modimport('%s.model.metadata' % module)
             except ImportError:
                 # check the exception depth to make sure the import
                 # error we caught was just .model or .model.orm missing

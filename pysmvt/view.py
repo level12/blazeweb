@@ -1,5 +1,5 @@
 import inspect
-from pysmvt import settings, user, ag, _getview, rg, appimport
+from pysmvt import settings, user, ag, _getview, rg, appimportauto
 from pysmvt.utils import reindent, auth_error, log_info, bad_request_error, \
     fatal_error, urlslug, markdown, log_debug
 from pysmvt.utils.html import strip_tags
@@ -15,7 +15,7 @@ from webhelpers.containers import NotGiven
 
 # @@todo: this is a **really** bad way to do this
 try: 
-    appimport('utils', 'fatal_error')
+    appimportauto('utils', 'fatal_error')
 except ImportError, e:
     if 'cannot import "utils" with attribute "fatal_error"' not in str(e):
         raise

@@ -56,7 +56,7 @@ def action_testrun(url=('u', '/'), show_body=('b', False), show_headers=('h', Fa
 def action_modcreate(name=('n', '')):
     """ used to create an application module's file structure"""
     app = _shell_init_func()['webapp']
-    modules = appimport('modules', globals=False)
+    modules = appimport('modules')
     
     moddir = os.path.dirname(modules.__file__)
     newdir = os.path.join(moddir, name)
