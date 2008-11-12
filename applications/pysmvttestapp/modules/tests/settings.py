@@ -1,6 +1,6 @@
 from werkzeug.routing import Rule
 
-from pysmvt.utils import QuickSettings, pprint
+from pysmvt.config import QuickSettings
 
 class Settings(QuickSettings):
     

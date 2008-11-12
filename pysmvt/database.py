@@ -49,20 +49,20 @@ def load_models():
     load_metadata_models()
 
 def get_engine():
-    if not ag.get('dbengine', None):
+    if hasattr(ag, 'dbengine') == False:
         ag.dbengine = create_engine(settings.db.uri, echo=settings.db.echo, strategy='threadlocal')   
     
     return ag.dbengine
 
 def get_metadata():
-    if not ag.get('dbmetadata', None) == False :
+    if hasattr(ag, 'dbmetadata') == False :
         from sqlalchemy import MetaData
         ag.dbmetadata = MetaData()
         
     return ag.dbmetadata
 
 def get_session_cls():
-    if not ag.get('db_scoped_session', None):
+    if hasattr(ag, 'db_scoped_session') == False:
         ag.db_scoped_session = scoped_session(sessionmaker())
     ag.db_scoped_session.configure(bind=get_engine())
     return ag.db_scoped_session

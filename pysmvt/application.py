@@ -10,11 +10,10 @@ from werkzeug.exceptions import HTTPException
 
 from pysmvt import settings, ag, session, rg, user, app
 from pysmvt import routing
-from pysmvt.config import QuickSettings
 from pysmvt.controller import Controller
 from pysmvt.database import load_models
 from pysmvt.users import SessionUser
-from pysmvt.utils import Loader, Logger, randhash
+from pysmvt.utils import Loader, Logger, randhash, Context
 
 # The main web application inherits this.
 #
@@ -36,7 +35,7 @@ class Application(object):
     
         # load settings class from the settings module
         self.settings = getattr(app_settings_mod, self.profile.capitalize())(appname, self.basedir)
-        self.ag = QuickSettings()
+        self.ag = Context()
         self.bind_globals()
         try:
             
@@ -69,7 +68,7 @@ class Application(object):
         sesobj = beaker.session.Session(environ)
         session._push_object(sesobj)
         user._push_object(self.setup_user())
-        rg._push_object(QuickSettings())
+        rg._push_object(Context())
     
     def release_request_globals(self):
         session._pop_object()
@@ -90,7 +89,7 @@ class Application(object):
             environ['paste.registry'].register(app, self)
             environ['paste.registry'].register(session, environ['beaker.session'])
             environ['paste.registry'].register(user, self.setup_user())
-            environ['paste.registry'].register(rg, QuickSettings())
+            environ['paste.registry'].register(rg, Context())
     
     def startrequest(self, url='/'):
         """

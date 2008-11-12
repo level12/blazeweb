@@ -2,7 +2,7 @@
 from os import path
 import os
 from werkzeug.routing import Rule
-from pysmvt.utils import OrderedProperties
+from pysmvt.utils import OrderedProperties, OrderedDict
 
 class QuickSettings(OrderedProperties):
     def __init__(self, initialize=True):

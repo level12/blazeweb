@@ -10,7 +10,8 @@ import config
 rcsutils.setup_virtual_env('pysmvt-libs-trunk', __file__, '..')
 
 from pysmvt import application
-from pysmvt.utils import QuickSettings, pprint, ModulesSettings
+from pysmvt.config import QuickSettings, ModulesSettings
+from pysmvt.utils import pprint
 
 class Base(QuickSettings):
     

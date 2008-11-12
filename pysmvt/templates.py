@@ -20,7 +20,7 @@ class JinjaBase(object):
         self.setOptions()
         
         # Setup Jinja template environment only once per process
-        if ag.get('templateEnv'):
+        if hasattr(ag, 'templateEnv'):
             self.jinjaTemplateEnv = ag.templateEnv
         else:
             ag.jinjaTemplateEnv = self.templateEnv = Environment(**self._jinjaEnvOptions)

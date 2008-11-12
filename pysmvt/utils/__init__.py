@@ -338,7 +338,6 @@ class OrderedProperties(object):
     def todict(self):
         return self._data
 
-
 class OrderedDict(dict):
     """A dict that returns keys/values/items in the order they were added."""
 
@@ -417,92 +416,8 @@ class OrderedDict(dict):
         self._list.remove(item[0])
         return item
 
-class QuickSettings(OrderedProperties):
-    def __init__(self, initialize=True):
-        self._locked = False
-        OrderedProperties.__init__(self, initialize)
-    
-    def lock(self):
-        self._locked = True
-        for child in self._data.values():
-            if isinstance(child, QuickSettings):
-                child.lock()
-    
-    def unlock(self):
-        self._locked = False
-        for child in self._data.values():
-            if isinstance(child, QuickSettings):
-                child.unlock()
-    
-    def __getattr__(self, key):
-        if not self._data.has_key(key):
-            if not self._locked:
-                self._data[key] = QuickSettings()
-            else:
-                raise AttributeError("object has no attribute '%s' (object is locked)" % key)
-        return self._data[key]
-    
-    def update(self, ____sequence=None, **kwargs):
-        if ____sequence is not None:
-            if hasattr(____sequence, 'keys'):
-                for key in ____sequence.keys():
-                    try:
-                        self.get(key).update(____sequence[key])
-                    except (AttributeError, ValueError), e:
-                        if "object has no attribute 'update'" not in str(e) and "need more than 1 value to unpack" not in str(e):
-                            raise
-                        self.__setitem__(key, ____sequence[key])
-            else:
-                for key, value in ____sequence:
-                    self[key] = value
-        if kwargs:
-            self.update(kwargs)
-
-class ModulesSettings(QuickSettings):
+class Context(object):
     """
-        a custom settings object for settings.modules.  The only difference
-        is that when iterating over the object, only modules with
-        .enabled = True are returned.
+        just a dummy object to hang attributes off of
     """
-    def _set_data_item(self, item, value):
-        if not isinstance(value, QuickSettings):
-            raise TypeError('all values set on ModuleSettings must be a QuickSettings object')
-        QuickSettings._set_data_item(self, item, value)
-
-    def __len__(self):
-        return len(self.keys())
-
-    def iteritems(self, showinactive=False):
-        for k,v in self._data.iteritems():
-            try:
-                if showinactive or v.enabled == True:
-                    yield k,v
-            except AttributeError, e:
-                if "object has no attribute 'enabled'" not in str(e):
-                    raise
-            
-    def __iter__(self):
-        for v in self._data.values():
-            try:
-                if v.enabled == True:
-                    yield v
-            except AttributeError, e:
-                if "object has no attribute 'enabled'" not in str(e):
-                    raise
-
-    def __contains__(self, key):
-        return key in self.todict()
-
-    def keys(self, showinactive=False):
-        return [k for k,v in self.iteritems(showinactive)]
-    
-    def values(self, showinactive=False):
-        return [v for k,v in self.iteritems(showinactive)]
-    
-    def todict(self, showinactive=False):
-        if showinactive:
-            return self._data
-        d = OrderedDict()
-        for k,v in self.iteritems():
-            d[k] = v
-        return d
+    pass
