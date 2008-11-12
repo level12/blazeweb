@@ -3,7 +3,7 @@ import rcsutils
 
 # setup the virtual environment so that we can import specific versions
 # of system libraries.  The first 
-rcsutils.setup_virtual_env('pysmvt-libs-trunk', __file__, '..')
+rcsutils.setup_virtual_env('pysmvt-libs-trunk', __file__, '..', '../applications')
 
 import config
 from pysmvt.application import Application
