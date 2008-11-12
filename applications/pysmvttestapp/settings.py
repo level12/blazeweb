@@ -17,6 +17,8 @@ class Testruns(DefaultSettings):
         # call parent init to setup default settings
         DefaultSettings.__init__(self, appname, basedir)
         
+        self.supporting_apps = ['pysmvttestapp2']
+        
         self.modules.tests.enabled = True
         
         self.routing.routes.extend([

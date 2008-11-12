@@ -9,6 +9,7 @@ import copy
 # we are pulling from
 rcsutils.setup_virtual_env('pysmvt-libs-trunk', __file__, '../../../..')
 
+from pysmvt import settings
 from pysmvttestapp.application import Webapp
 from werkzeug import Client, BaseResponse
 from pysmvt.exceptions import ProgrammingError
@@ -320,8 +321,13 @@ class TestViews(unittest.TestCase):
             self.assertEqual( 'validator must be a Formencode validator or a callable', str(e))
         else:
             self.fail('excpected exception for bad validator')
+        
+    def test_static(self):
+        r = self.client.get('static/helloworld.html')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.data, 'Hello World!')
 
 if __name__ == '__main__':
     unittest.main()
-    #unittest.TextTestRunner().run(TestViews('test_responding_view_base'))
+    #unittest.TextTestRunner().run(TestViews('test_static'))
 
