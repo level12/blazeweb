@@ -6,11 +6,14 @@ class SessionUser(object):
     def __init__(self):
         if 'user' not in session:
             session['user'] = self
-            session['user']._is_authenticated = False
-            session['user'].attributes = {}
-            session['user'].tokens = {}
             session['user'].messages = {}
-    
+            clear()
+
+    def clear(self):
+        session['user']._is_authenticated = False
+        session['user'].attributes = {}
+        session['user'].tokens = {}
+
     def set_attr(self, attribute, value):
         session['user'].attributes[attribute] = value
         
