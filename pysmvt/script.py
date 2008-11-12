@@ -78,11 +78,12 @@ def action_modcreate(name=('n', '')):
 def action_dbinit(module=('m', '')):
     """ used to create database objects & structure """
     app = _shell_init_func()['webapp']
-    from pysmvt.database import get_metadata
+    from pysmvt.database import get_metadata, get_engine
     from pysmvt.utils import call_appmod_dbinits
     from sqlitefktg4sa import auto_assign
 
     metadata = get_metadata()
+    metadata.bind = get_engine()
 
     # create foreign keys for SQLite
     auto_assign(metadata)
