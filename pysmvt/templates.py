@@ -34,7 +34,7 @@ class JinjaBase(object):
                 # templates in the AM's template directory
                 path.join(viewsModulePath, 'templates'),
                 # templates in the application directory
-                path.join(app.baseDir, 'templates')
+                path.join(app.basedir, 'templates')
                 ]
         # templates in the supporting applications
         for sapp in app.settings.supporting_apps:

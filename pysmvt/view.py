@@ -1,4 +1,5 @@
 import inspect
+from pysmvt import settings, user
 from pysmvt.utils import reindent, auth_error, log_info, bad_request_error, \
     fatal_error, urlslug, markdown, log_debug
 from pysmvt.utils.html import strip_tags
@@ -88,10 +89,10 @@ class ViewBase(object):
                 self.retval = retval
             
         except UserError, e:
-            rc.user.add_message('error', str(e))
+            user.add_message('error', str(e))
             fatal_error(orig_exception=e)
         except Exception, e:
-            if rc.application.settings.views.trap_exceptions:
+            if settings.views.trap_exceptions:
                 fatal_error(orig_exception=e)
             raise
     
@@ -126,7 +127,7 @@ class ViewBase(object):
                     if not msg:
                         msg = '%s: %s' % (argname, e)
                     if show_msg:
-                        rc.user.add_message('error', msg)
+                        user.add_message('error', msg)
             else:
                 raise TypeError('the validator must extend formencode.Validator')
 
@@ -222,7 +223,7 @@ class TemplateMixin(object):
     
     def assignTemplateVariables(self):
         self.template.assign('application', rc.application)
-        self.template.assign('sesuser', rc.user)
+        self.template.assign('sesuser', user)
     
     def assign(self, key, value):
         self.template.assign(key, value)

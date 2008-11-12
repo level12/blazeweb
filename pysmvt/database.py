@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys
+from pysmvt import settings
 from pysmvt.application import request_context as rc
 from pysmvt.utils import traceback_depth
 from sqlalchemy.orm import sessionmaker, scoped_session
@@ -7,7 +8,7 @@ from sqlalchemy import create_engine
 import elixir
 
 def load_orm_models():
-    for module in rc.application.settings.modules.keys():
+    for module in settings.modules.keys():
             try:
                 rc.application.loader.appmod_names('%s.model.orm' % module, [])
             except ImportError:
@@ -23,7 +24,7 @@ def load_orm_models():
                     raise
 
 def load_metadata_models():
-    for module in rc.application.settings.modules.keys():
+    for module in settings.modules.keys():
             try:
                 rc.application.loader.appmod_names('%s.model.metadata' % module, [])
             except ImportError:
@@ -50,7 +51,7 @@ def load_models():
 
 def get_engine():
     if hasattr(rc, 'db_engine') == False :
-        rc.db_engine = create_engine(rc.application.settings.db.uri, echo=rc.application.settings.db.echo, strategy='threadlocal')   
+        rc.db_engine = create_engine(settings.db.uri, echo=settings.db.echo, strategy='threadlocal')   
     
     return rc.db_engine
 

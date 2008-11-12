@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
 from os import path
 from werkzeug.routing import Rule
-from pysmvt.config import Base
+from pysmvt.config import DefaultSettings
 
-class Default(Base):
+class Default(DefaultSettings):
 
     def __init__(self):
         # call parent init to setup default settings
-        Base.__init__(self)
+        DefaultSettings.__init__(self)
         
         # we are done adding variables to this settings object, so lock it
         self.lock()
 
-class Testruns(Base):
-    def __init__(self):
+class Testruns(DefaultSettings):
+    def __init__(self, basedir):
         # call parent init to setup default settings
-        Base.__init__(self)
+        DefaultSettings.__init__(self, basedir)
         
         self.modules.tests.enabled = True
         

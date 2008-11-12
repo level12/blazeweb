@@ -11,7 +11,7 @@ class Webapp(Application):
     def __init__(self, profile='default'):
         
         #set the applications base file path
-        self.baseDir = path.dirname(path.abspath(__file__))
+        self.basedir = path.dirname(path.abspath(__file__))
         
         #set the name of the application's package
         self.appPackage = 'pysmvttestapp'

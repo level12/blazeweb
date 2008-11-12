@@ -1,19 +1,9 @@
 import unittest
-import os
-import os.path as path
-import rcsutils
 import config
-import sys
 
-# setup the virtual environment so that we can import specific versions
-# of system libraries.  The first 
-rcsutils.setup_virtual_env(
-    'pysmvt-libs-trunk', __file__, '..', '../applications')
-
-from pysmvttestapp.application import Webapp
+from pysmvt import settings
 from pysmvt.mail import EmailMessage, BadHeaderError, EmailMultiAlternatives, \
     MarkdownMessage, HtmlMessage, send_mail, _mail_programmers, _mail_admins
-from pysmvt.application import request_context_manager as rcm
 
 # use these variables to send live emails which is needed to test
 # some of the send functions
@@ -22,8 +12,11 @@ _to = ''
 
 class TestEmail(unittest.TestCase):
     def setUp(self):
-        self.app = Webapp()
+        config.init_settings()
     
+    def tearDown(self):
+        config.destroy_settings()
+
     def test_normal_ascii(self):
         """Test normal ascii character case"""
         email = EmailMessage('Subject', 'Content', 'from@example.com', ['to@example.com'])
@@ -122,7 +115,7 @@ class TestEmail(unittest.TestCase):
         assert message['Reply-To'] == 'replyto@example.com'
     
     def test_reply_to_default(self):
-        self.app.settings.emails.reply_to = 'replyto@example.com'
+        settings.emails.reply_to = 'replyto@example.com'
         email = EmailMessage('Subject', 'Content', to=['to@example.com'])
         message = email.message()
         
@@ -143,7 +136,7 @@ class TestEmail(unittest.TestCase):
         assert email.recipients() == ['to@example.com', 'bcc1@example.com', 'bcc2@example.com']
     
     def test_bcc_defaults(self):
-        self.app.settings.emails.bcc_defaults = ['bcc1@example.com', 'bcc2@example.com']
+        settings.emails.bcc_defaults = ['bcc1@example.com', 'bcc2@example.com']
         email = EmailMessage('Subject', 'Content', to=['to@example.com'])
         message = email.message()
         
@@ -174,7 +167,7 @@ class TestEmail(unittest.TestCase):
         assert email.recipients() == ['to@example.com', 'cc1@example.com', 'cc2@example.com']
     
     def test_cc_defaults(self):
-        self.app.settings.emails.cc_defaults = ['cc1@example.com', 'cc2@example.com']
+        settings.emails.cc_defaults = ['cc1@example.com', 'cc2@example.com']
         email = EmailMessage('Subject', 'Content', to=['to@example.com'])
         message = email.message()
         
@@ -196,7 +189,7 @@ class TestEmail(unittest.TestCase):
         assert email.recipients() == ['to@example.com', 'cc3@example.com']
         
     def test_bcc_always(self):
-        self.app.settings.emails.bcc_always = ['bcc1@example.com', 'bcc2@example.com']
+        settings.emails.bcc_always = ['bcc1@example.com', 'bcc2@example.com']
         email = EmailMessage('Subject', 'Content', to=['to@example.com'])
         message = email.message()
         
@@ -217,7 +210,7 @@ class TestEmail(unittest.TestCase):
     
         
     def test_cc_always(self):
-        self.app.settings.emails.cc_always = ['cc1@example.com', 'cc2@example.com']
+        settings.emails.cc_always = ['cc1@example.com', 'cc2@example.com']
         email = EmailMessage('Subject', 'Content', to=['to@example.com'])
         message = email.message()
         
@@ -241,7 +234,7 @@ class TestEmail(unittest.TestCase):
     def test_overrides(self):
         """Test overrides"""
         
-        self.app.settings.emails.override = 'override@example.com'
+        settings.emails.override = 'override@example.com'
         email = EmailMessage('Subject', 'Content', 'from@example.com', ['to@example.com'], cc=['cc@example.com'], bcc=['bcc@example.com'])
         message = email.message()
         
@@ -260,7 +253,7 @@ class TestEmail(unittest.TestCase):
             when sending an email
         """
         
-        self.app.settings.emails.override = 'override@example.com'
+        settings.emails.override = 'override@example.com'
         email = EmailMessage('Subject', 'Content', 'from@example.com', ['to@example.com'], cc=['cc@example.com'], bcc=['bcc@example.com'])
         assert email.recipients() == ['override@example.com']
         
@@ -348,7 +341,7 @@ Content-Transfer-Encoding: quoted-printable
     def test_html_overrides(self):
         """Test overrides with html content"""
         
-        self.app.settings.emails.override = 'override@example.com'
+        settings.emails.override = 'override@example.com'
         body = '<p>This is an <strong>important</strong> message.</p>'
         email = EmailMessage('Subject', body, 'from@example.com', ['to@example.com'], cc=['cc@example.com'], bcc=['bcc@example.com'])
         email.content_subtype = "html"  # Main content is now text/html
@@ -371,7 +364,7 @@ Content-Transfer-Encoding: quoted-printable
     document with a W3C url for the DTD.</p>
   </body>
 </html>"""
-        self.app.settings.emails.override = 'override@example.com'
+        settings.emails.override = 'override@example.com'
         email = EmailMessage('Subject', html_doc, 'from@example.com', ['to@example.com'], cc=['cc@example.com'], bcc=['bcc@example.com'])
         email.content_subtype = "html"  # Main content is now text/html
         message = email.message()
@@ -393,7 +386,7 @@ Content-Transfer-Encoding: quoted-printable
     document with a W3C url for the DTD.</p>
   </body>
 </html>"""
-        self.app.settings.emails.override = _to or 'override@example.com'
+        settings.emails.override = _to or 'override@example.com'
         email = HtmlMessage('Subject', html_doc, 'from@example.com', ['to@example.com'])
         message = email.message()
         
@@ -453,8 +446,8 @@ Bcc: </p>
         assert email.message().as_string() == 'Content-Type: text/plain; charset="utf-8"\nMIME-Version: 1.0\nContent-Transfer-Encoding: quoted-printable\nSubject: subject\nFrom: from@example.com\nTo: to@example.com\ndate: Fri, 09 Nov 2001 01:08:47 -0000\nMessage-ID: foo\n\ncontent'
     
     def test_mail_programmers(self):
-        self.app.settings.email.subject_prefix = '[webapp] '
-        self.app.settings.emails.programmers = ('p1@example.com', 'p2@example.com')
+        settings.email.subject_prefix = '[webapp] '
+        settings.emails.programmers = ('p1@example.com', 'p2@example.com')
         email = _mail_programmers('programmers email subject', '**email body**', 'markdown')
         msg = email.message()
         
@@ -463,8 +456,8 @@ Bcc: </p>
         assert '<p><strong>email body</strong></p>' in msg.as_string()
             
     def test_mail_admins(self):
-        self.app.settings.email.subject_prefix = '[webapp] '
-        self.app.settings.emails.admins = ('a1@example.com', 'a2@example.com')
+        settings.email.subject_prefix = '[webapp] '
+        settings.emails.admins = ('a1@example.com', 'a2@example.com')
         email = _mail_admins('admins email subject', '**email body**', 'markdown')
         msg = email.message()
         
@@ -472,9 +465,6 @@ Bcc: </p>
         assert email.recipients() == ['a1@example.com', 'a2@example.com']
         assert '<p><strong>email body</strong></p>' in msg.as_string()
 
-    def tearDown(self):
-        self.app = None
-        rcm.cleanup()
         
 if __name__ == '__main__':
     unittest.main()

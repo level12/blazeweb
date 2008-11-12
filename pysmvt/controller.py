@@ -1,26 +1,20 @@
 from os import path
 import sys
 from traceback import format_exc
-from paste.registry import RegistryManager
-from pysmvt.wrappers import Request, Response
-from pysmvt.exceptions import RedirectException, ForwardException, ProgrammingError
-from pysmvt.user import SessionUser
-from pysmvt.mail import mail_programmers
-from pysmvt import routing
-from werkzeug import ClosingIterator, SharedDataMiddleware, MultiDict
+
 from werkzeug.routing import Map, Submount, RequestRedirect
 from werkzeug.exceptions import HTTPException, NotFound, InternalServerError, \
     MethodNotAllowed
 import werkzeug.utils
-from werkzeug.debug import DebuggedApplication
-from beaker.middleware import SessionMiddleware
 
+from pysmvt import settings, session, user, rg
 from pysmvt.application import request_context as rc
 from pysmvt.application import request_context_manager as rcm
-from pysmvt import settings
 from pysmvt.database import get_dbsession, get_dbsession_cls
+from pysmvt.exceptions import RedirectException, ForwardException, ProgrammingError
+from pysmvt.mail import mail_programmers
 from pysmvt.utils import randchars, traceback_depth, log_info, log_debug, pprint
-
+from pysmvt.wrappers import Request, Response
 
 # Note: this controller is only instantiated per-process, not per request.
 # Therefore, anything that needs to be initialized per application/per process
@@ -42,8 +36,6 @@ class Controller(object):
         
         # load routes from the application and settings files
         self._init_routes()
-
-        self._setup_middleware()
 
     def bind_to_context(self):
         """
@@ -82,29 +74,40 @@ class Controller(object):
             + wsgi request cleanup
         """
         
-        # WSGI request setup
-        self._register_globals(environ)
-        self.bind_to_context()
-        rc.ident = randchars()
-        rc.environ = environ
-        request = Request(environ)
-        rc.session = environ['beaker.session']
-        self._setup_user()
+        self._wsgi_request_setup(environ)
 
         try:
             response = self._error_documents_handler(environ)
             return response(environ, start_response)
         finally:
-            # save the user session
-            rc.session.save()
-
-            # handle context local cleanup
-            rcm.cleanup()
+            self._wsgi_request_cleanup()
     
-    def _register_globals(self, environ):
-        obj = self.settings
-        if environ.has_key('paste.registry'):
-            environ['paste.registry'].register(settings, obj)
+    def _wsgi_request_setup(self, environ):
+        # WSGI request setup
+        self.bind_to_context()
+        rc.ident = randchars()
+        rc.environ = environ
+        # the request object binds itself to rc.request
+        request = Request(environ)
+        
+    def _wsgi_request_cleanup(self):
+        # save the user session
+        session.save()
+
+        # handle context local cleanup
+        rcm.cleanup()
+    
+    def _response_setup(self):
+        rc.response = None
+        rc.respview = None
+    
+    def _response_cleanup(self):
+        # rollback any uncommitted database transactions.  We assume that
+        # an explicit commit will be issued and anything leftover was accidental
+        get_dbsession().rollback()
+        
+        # make sure we get a new DB session for the next request
+        get_dbsession_cls().remove()
     
     def _error_documents_handler(self, environ):
         response = orig_resp = self._exception_handing('client', environ)
@@ -133,7 +136,7 @@ class Controller(object):
                 rc.application.logger.debug('error docs: encountered non-200 status code response '
                         '(%d) when trying to handle with %s' % (get_status_code(new_response), handling_endpoint))
         if isinstance(response, HTTPException):
-            messages = rc.user.get_messages()
+            messages = user.get_messages()
             if messages:
                 msg_html = ['<h2>Error Details:</h2><ul>']
                 for msg in messages:
@@ -182,13 +185,12 @@ class Controller(object):
             if endpoint is None:
                 rc.application.logger.info('URL (%s) generated HTTPException' % environ['PATH_INFO'])
             raise
-    
+        
     def _inner_requests_wrapper(self, endpoint, args, called_from):
         # this loop allows us to handle forwards
         rc.forward_queue = [(endpoint, args)]
         while True:
-            rc.response = None
-            rc.respview = None
+            self._response_setup()
             try: 
                 # call the view
                 endpoint, args = rc.forward_queue[-1]
@@ -198,13 +200,10 @@ class Controller(object):
                 return response
             except ForwardException:
                 called_from = 'forward'
-            finally:                
-                # rollback any uncommitted database transactions.  We assume that
-                # an explicit commit will be issued and anything leftover was accidental
-                get_dbsession().rollback()
-                
-                # make sure we get a new DB session for the next request
-                get_dbsession_cls().remove()
+            finally:
+                self._response_cleanup()
+    
+
     
     def redirect(self, location, permanent=False, code=302 ):
         """
@@ -226,7 +225,7 @@ class Controller(object):
     
     def __call__(self, environ, start_response):
         """Just forward a WSGI call to the first internal middleware."""
-        return self._dispatch(environ, start_response)
+        return self.dispatch_request(environ, start_response)
     
     def _init_routes(self):
         """ add routes to the main Map object from the application settings and
@@ -253,14 +252,10 @@ class Controller(object):
                     raise
     
     def _add_routing_rules(self, rules):
-        try:
-            if len(self.settings.routing.prefix) > 1:
-                # prefix the routes with the prefix in the app settings class
-                from werkzeug.routing import Submount
-                self._route_map.add(Submount( self.settings.routing.prefix, rules ))
-            else:
-                raise AttributeError
-        except AttributeError:
+        if self.settings.routing.prefix:
+            # prefix the routes with the prefix in the app settings class
+            self._route_map.add(Submount( self.settings.routing.prefix, rules ))
+        else:
             for rule in rules or ():
                 self._route_map.add(rule)
     
@@ -301,56 +296,8 @@ class Controller(object):
         
         vmod_dir = path.dirname(sys.modules[vklass.__module__].__file__)
         
-        # combine URL arguments and GET arguments into a single MultiDict
-        # of arguments
         oView = vklass(vmod_dir, endpoint, args )
         return oView()
-    
-    def _setup_middleware(self):
-        # apply our middlewares.   we apply the middlewars *inside* the
-        # application and not outside of it so that we never lose the
-        # reference to our application object.
-        
-        # last WSGI app to be called is our controllers dispatch_request function
-        self._dispatch = self.dispatch_request
 
-        # session middleware
-        self._setup_session_middleware()
-        
-        # handle context locals
-        self._dispatch = rcm.make_middleware(self._dispatch)
-        
-        # stacked proxy objects allow us to do normal imports
-        # from common libraries with multiple applications
-        self._dispatch = RegistryManager(self._dispatch)
-        
-        # handles all of our static documents (CSS, JS, images, etc.)
-        self._setup_static_middleware()
-        
-        # handle debugging exceptions, this is called first to catch
-        # as many problems as possible
-        self._setup_debug_middleware()
     
-    def _setup_debug_middleware(self):
-        if self.settings.debugger.enabled:
-            if self.settings.debugger.format == 'interactive':
-                evalex=True
-            else:
-                evalex=False
-            self._dispatch = DebuggedApplication(self._dispatch, evalex=evalex)
-    
-    def _setup_static_middleware(self):
-        static_map = {
-            routing.add_prefix('/static'):     rc.application.staticDir
-        }
-        for app in self.settings.supporting_apps:
-            app_py_mod = rc.application.loader.app(app)
-            fs_static_path = path.join(path.dirname(app_py_mod.__file__), 'static')
-            static_map[routing.add_prefix('/%s/static' % app)] = fs_static_path
-        self._dispatch = SharedDataMiddleware( self._dispatch, static_map)
-    
-    def _setup_session_middleware(self):
-        self._dispatch = SessionMiddleware(self._dispatch, **dict(self.settings.beaker))
 
-    def _setup_user(self):
-        rc.user = SessionUser()

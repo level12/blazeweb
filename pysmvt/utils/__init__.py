@@ -6,6 +6,7 @@ import re
 from pprint import PrettyPrinter
 from pysmvt.application import request_context as rc
 from pysmvt.application import request_context_manager as rcm
+from pysmvt import settings, user
 from werkzeug.debug.tbtools import get_current_traceback
 from formencode.validators import URL
 from formencode import Invalid
@@ -97,7 +98,7 @@ class Loader(object):
     def app_module(self, dotted_loc):
         """ import a python module (.py) from dotted_loc in our main app or
             one of our supporting apps """
-        apps_to_try = [rc.application.appPackage] + rc.application.settings.supporting_apps
+        apps_to_try = [rc.application.appPackage] + settings.supporting_apps
         for app in apps_to_try:
             try:
                 module_to_load = '%s.%s' % (app, dotted_loc)
@@ -137,10 +138,10 @@ def fatal_error(user_desc = None, dev_desc = None, orig_exception = None):
     
     # set user message
     if user_desc != None:
-        rc.user.add_message('error', user_desc)
+        user.add_message('error', user_desc)
         
     # forward to fatal error view
-    rc.controller.forward(rc.application.settings.endpoint.sys_error)
+    rc.controller.forward(settings.endpoint.sys_error)
 
 def auth_error(user_desc = None, dev_desc = None):
     # log stuff
@@ -149,10 +150,10 @@ def auth_error(user_desc = None, dev_desc = None):
     
     # set user message
     if user_desc != None:
-        rc.user.add_message('error', user_desc)
+        user.add_message('error', user_desc)
         
     # forward to fatal error view
-    rc.controller.forward(rc.application.settings.endpoint.sys_auth_error)
+    rc.controller.forward(settings.endpoint.sys_auth_error)
 
 def bad_request_error(dev_desc = None):
     # log stuff
@@ -160,7 +161,7 @@ def bad_request_error(dev_desc = None):
         rc.application.logger.debug('bad request error: %s', dev_desc)
         
     # forward to fatal error view
-    rc.controller.forward(rc.application.settings.endpoint.bad_request_error)
+    rc.controller.forward(settings.endpoint.bad_request_error)
 
 # from sqlalchemy
 def tolist(x, default=[]):
@@ -186,7 +187,7 @@ def pprint( stuff, indent = 4, asstr=False):
     pp.pprint(stuff)
 
 def call_appmod_dbinits(singlemod=None):
-    for module in rc.application.settings.modules.keys():
+    for module in settings.modules.keys():
         if singlemod == module or singlemod == '':
             try:
                 callables = rc.application.loader.appmod_names('%s.settings' % module, 'appmod_dbinits')
@@ -228,19 +229,20 @@ class Logger(object):
         self.alogger = alogger
     
     def debug(self, msg, *args, **kwargs):
-        if 'debug' in rc.application.settings.logging.levels:
+        if 'debug' in settings.logging.levels:
             d = {'request_ident':rc.ident}
             kwargs['extra'] = d
             self.dlogger.debug(msg, *args, **kwargs)
     
     def info(self, msg):
-        if 'info' in rc.application.settings.logging.levels:
+        if 'info' in settings.logging.levels:
             d = {'request_ident':rc.ident}
             self.ilogger.info(msg, extra = d)
     
     def application(self, msg):
-        d = {'request_ident':rc.ident}
-        self.alogger.log(9, msg, extra = d)
+        if 'info' in settings.logging.levels:
+            d = {'request_ident':rc.ident}
+            self.alogger.log(9, msg, extra = d)
         
 def randchars(n = 12):
     charlist = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'

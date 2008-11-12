@@ -16,7 +16,7 @@ from email.MIMEBase import MIMEBase
 from email.Header import Header
 from email.Utils import formatdate, parseaddr, formataddr
 
-from pysmvt.application import rc
+from pysmvt import settings
 from pysmvt.utils.encoding import smart_str, force_unicode
 from pysmvt.utils import tolist, markdown
 from html2text import html2text
@@ -84,11 +84,11 @@ def forbid_multi_line_headers(name, val):
             result = []
             for item in val.split(', '):
                 nm, addr = parseaddr(item)
-                nm = str(Header(nm, rc.application.settings.default_charset))
+                nm = str(Header(nm, settings.default_charset))
                 result.append(formataddr((nm, str(addr))))
             val = ', '.join(result)
         else:
-            val = Header(val, rc.application.settings.default_charset)
+            val = Header(val, settings.default_charset)
     else:
         if name.lower() == 'subject':
             val = Header(val)
@@ -111,11 +111,11 @@ class SMTPConnection(object):
 
     def __init__(self, host=None, port=None, username=None, password=None,
                  use_tls=None, fail_silently=False):
-        self.host = host or rc.application.settings.smtp.host
-        self.port = port or rc.application.settings.smtp.port
-        self.username = username or rc.application.settings.smtp.user
-        self.password = password or rc.application.settings.smtp.password
-        self.use_tls = (use_tls is not None) and use_tls or rc.application.settings.smtp.use_tls
+        self.host = host or settings.smtp.host
+        self.port = port or settings.smtp.port
+        self.username = username or settings.smtp.user
+        self.password = password or settings.smtp.password
+        self.use_tls = (use_tls is not None) and use_tls or settings.smtp.use_tls
         self.fail_silently = fail_silently
         self.connection = None
 
@@ -220,14 +220,14 @@ class EmailMessage(object):
             assert not isinstance(bcc, basestring), '"bcc" argument must be a list or tuple'
             self.bcc = list(bcc)
         else:
-            self.bcc = rc.application.settings.emails.bcc_defaults or []
+            self.bcc = settings.emails.bcc_defaults or []
         if cc:
             assert not isinstance(cc, basestring), '"cc" argument must be a list or tuple'
             self.cc = list(cc)
         else:
-            self.cc = rc.application.settings.emails.cc_defaults or []
-        self.from_email = from_email or rc.application.settings.emails.from_default
-        self.reply_to = reply_to or rc.application.settings.emails.reply_to
+            self.cc = settings.emails.cc_defaults or []
+        self.from_email = from_email or settings.emails.from_default
+        self.reply_to = reply_to or settings.emails.reply_to
         self.subject = subject
         self.body = body
         self.attachments = attachments or []
@@ -241,13 +241,13 @@ class EmailMessage(object):
         return self.connection
 
     def message(self):
-        if rc.application.settings.emails.bcc_always:
-            self.bcc.extend(rc.application.settings.emails.bcc_always)
-        if rc.application.settings.emails.cc_always:
-            self.cc.extend(rc.application.settings.emails.cc_always)
+        if settings.emails.bcc_always:
+            self.bcc.extend(settings.emails.bcc_always)
+        if settings.emails.cc_always:
+            self.cc.extend(settings.emails.cc_always)
         self._perform_override()
-        encoding = self.encoding or rc.application.settings.default_charset
-        msg = SafeMIMEText(smart_str(self.body, rc.application.settings.default_charset),
+        encoding = self.encoding or settings.default_charset
+        msg = SafeMIMEText(smart_str(self.body, settings.default_charset),
                            self.content_subtype, encoding)
         if self.attachments:
             body_msg = msg
@@ -316,7 +316,7 @@ class EmailMessage(object):
         self.attach(filename, content, mimetype)
     
     def _perform_override(self):
-        if not self._override_added and rc.application.settings.emails.override:
+        if not self._override_added and settings.emails.override:
             self._override_added = True
             body_prepend = '%s\n\nTo: %s  \nCc: %s  \nBcc: %s\n\n%s\n\n' % (
                 '-'*70,
@@ -325,7 +325,7 @@ class EmailMessage(object):
                 ', '.join(self.bcc),
                 '-'*70
             )
-            self.to = tolist(rc.application.settings.emails.override)
+            self.to = tolist(settings.emails.override)
             self.cc = []
             self.bcc = []
             if self.content_subtype == 'html':
@@ -352,7 +352,7 @@ class EmailMessage(object):
         basetype, subtype = mimetype.split('/', 1)
         if basetype == 'text':
             attachment = SafeMIMEText(smart_str(content,
-                rc.application.settings.default_charset), subtype, rc.application.settings.default_charset)
+                settings.default_charset), subtype, settings.default_charset)
         else:
             # Encode non-text attachments with base64.
             attachment = MIMEBase(basetype, subtype)
@@ -461,8 +461,8 @@ def send_mass_mail(datatuple, format='text', fail_silently=False, auth_user=None
 def _mail_admins(subject, message, format='text'):
     """used for testing"""
     email_class = get_email_class(format)
-    return email_class(rc.application.settings.email.subject_prefix + subject, message,
-                 rc.application.settings.emails.from_server, rc.application.settings.emails.admins
+    return email_class(settings.email.subject_prefix + subject, message,
+                 settings.emails.from_server, settings.emails.admins
             )
 
 def mail_admins(subject, message, format='text', fail_silently=False):
@@ -473,8 +473,8 @@ def mail_admins(subject, message, format='text', fail_silently=False):
 def _mail_programmers(subject, message, format='text'):
     """used for testing"""
     email_class = get_email_class(format)
-    return email_class(rc.application.settings.email.subject_prefix + subject, message,
-                 rc.application.settings.emails.from_server, rc.application.settings.emails.programmers
+    return email_class(settings.email.subject_prefix + subject, message,
+                 settings.emails.from_server, settings.emails.programmers
             )
 
 def mail_programmers(subject, message, format='text', fail_silently=False):

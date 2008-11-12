@@ -1,4 +1,15 @@
 from pysmvt.application import request_context as rc
+from pysmvt import settings
+from werkzeug.routing import Rule
+
+__all__ = [
+    'Rule',
+    'url_for',
+    'style_url',
+    'js_url',
+    'index_url',
+    'add_prefix'
+]
 
 def url_for(endpoint, _external=False, **values):
     return rc.urladapter.build(endpoint, values, force_external=_external)
@@ -12,39 +23,11 @@ def js_url(file, app = None):
     return url_for(endpoint, file=file, app=app)
 
 def index_url(url = None):
-    from pysmvt.exceptions import TemplateException
-    from werkzeug.exceptions import NotFound, MethodNotAllowed
-    from werkzeug.routing import RequestRedirect
-    
-    try:
-        if url == None :
-            try:
-                if len(rc.application.settings.routing.prefix) > 1:
-                   url = '/%s/' % (rc.application.settings.routing.prefix.strip('/'), )
-                else:
-                    raise AttributeError
-            except AttributeError:
-                url = '/'
-        
-        endpoint, args = rc.urladapter.match( url )
-        return url_for(endpoint, args)
-    except NotFound:
-        raise TemplateException('index_url(): the index url "%s" could not be located' % (url, ))
-    except MethodNotAllowed:
-        raise TemplateException('index_url(): MethodNotAllowed exception encountered')
-    except RequestRedirect, rr:
-        from urlparse import urlparse
-        path_part = urlparse(rr.new_url)[2]
-        if path_part == url :
-            raise TemplateException('index_url(): redirect loop encountered with url "%s"' % (url, ))
-        return index_url( path_part )
+    if settings.routing.prefix:
+       return '/%s/' % settings.routing.prefix.strip('/')
+    return '/'
 
 def add_prefix(path):
-    try:
-        if len(rc.application.settings.routing.prefix) > 1:
-           path = '/%s/%s' % (rc.application.settings.routing.prefix.strip('/'), path.lstrip('/'))
-        else:
-            raise AttributeError
-    except AttributeError:
-        pass
+    if settings.routing.prefix:
+        return '/%s/%s' % (settings.routing.prefix.strip('/'), path.lstrip('/'))
     return path

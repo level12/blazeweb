@@ -7,11 +7,21 @@ from werkzeug import LocalManager, Local
 # have "global" variables per request
 # rcontext = 
 request_context = rc = Local()
-request_context_manager = LocalManager([request_context])
+request_context_manager = rcm = LocalManager([request_context])
 
+from paste.registry import RegistryManager
+from beaker.middleware import SessionMiddleware
+import beaker.session
+import werkzeug
+from werkzeug import SharedDataMiddleware, DebuggedApplication
+from werkzeug.exceptions import HTTPException
+
+from pysmvt import settings, ag, session, rg, user
+from pysmvt import routing
 from pysmvt.controller import Controller
-from pysmvt.utils import Loader, Logger, randhash
 from pysmvt.database import load_models
+from pysmvt.users import SessionUser
+from pysmvt.utils import Loader, Logger, randhash
 
 # The main web application inherits this.
 #
@@ -24,31 +34,54 @@ class Application(object):
     Our central WSGI application.
     """
 
-    def __init__(self, settings, profile = 'default'):
+    def __init__(self, app_settings_mod, profile = 'default'):
         rc.application = self
-        
         self._id = randhash()
-        
-        # a custom importer
         self.setup_loader()
-        
-        # which settings profile do we use
         self.profile = profile
         
         #calculate the web applications static directory
-        self.staticDir = path.join(self.baseDir, 'static')
-        
+        self.staticDir = path.join(self.basedir, 'static')
+    
         # load settings class from the settings module
-        self.settings = getattr(settings, self.profile.capitalize())()
-        
-        # application logging object      
-        self.setup_logger()
-        
-        self.setup_controller()
-        
-        # make sure the DB model is loaded
-        self.load_db_model()
-
+        self.settings = getattr(app_settings_mod, self.profile.capitalize())(self.basedir)
+        self.bind_globals()
+        try:
+            
+            # a custom importer
+            self.setup_loader()
+            
+            # application logging object      
+            self.setup_logger()
+            
+            self.setup_controller()
+            
+            self.setup_middleware()
+            
+            # make sure the DB model is loaded
+            self.load_db_model()
+        finally:
+            self.release_globals()
+    
+    def bind_globals(self):
+        settings._push_object(self.settings)
+        ag._push_object(self)
+    
+    def release_globals(self):
+        settings._pop_object(self.settings)
+        ag._pop_object(self)
+    
+    def bind_request_globals(self, environ):
+        sesobj = beaker.session.Session(environ)
+        session._push_object(sesobj)
+        user._push_object(self.setup_user())
+        rg._push_object(object())
+    
+    def release_request_globals(self):
+        session._pop_object()
+        user._pop_object()
+        rg._pop_object()
+            
     def bind_to_context(self):
         """
         Useful for the shell.  Binds the application to the current active
@@ -58,46 +91,152 @@ class Application(object):
     
     def __call__(self, environ, start_response):
         self.bind_to_context()
-        """Just forward a WSGI call to the first internal middleware."""
+        return self.dispatchto(environ, start_response)
+    
+    def dispatch(self, environ, start_response):
+        self.registry_globals(environ)
         return self.controller(environ, start_response)
     
-    def setup_controller(self):
-        self.controller = Controller(self.settings)
+    def registry_globals(self, environ):
+        if environ.has_key('paste.registry'):
+            environ['paste.registry'].register(settings, self.settings)
+            environ['paste.registry'].register(ag, self)
+            environ['paste.registry'].register(session, environ['beaker.session'])
+            environ['paste.registry'].register(user, self.setup_user())
+            environ['paste.registry'].register(rg, object())
     
+    def startrequest(self, url='/'):
+        """
+            will fake a WSGI request with the given relative `url`
+            and initialize the controller up to the point where a view
+            would normally be called.  This is useful for testing purposes
+            as well console applications.  `endrequest()` should be called
+            when finished to properly cleanup the request.
+        """
+        environ = werkzeug.utils.create_environ(url)
+        self.bind_globals()
+        self.bind_request_globals(environ)
+        self.controller._wsgi_request_setup(environ)
+        try:
+            # we don't really care if the route doesn't exist, we just want to make
+            # sure the urladapter gets setup correctly so our url_for() based
+            # functions work
+            self.controller._endpoint_args_from_env(environ)
+        except HTTPException:
+            pass
+        self.controller._response_setup()
+    
+    def endrequest(self):
+        """
+            compliments startrequest() and should only be used as a compliment
+            for that function.
+        """
+        self.controller._response_cleanup()
+        self.controller._wsgi_request_cleanup()
+        self.release_request_globals()
+        self.release_globals()
+        
     def setup_logger(self):
         logger_prefix = '%s.%s' % (self.__class__.__name__, self._id)
         
         formatter = logging.Formatter("%(asctime)s - %(request_ident)s - " \
            "%(message)s")
         
-        # debug logger to put debug logs in one file
-        dlogger = logging.getLogger('%s.debug' % logger_prefix)
-        dlogger.setLevel(logging.DEBUG)
-        fhd = logging.FileHandler(path.join(self.settings.dirs.logs, 'debug.log'))
-        #fhd.setLevel(logging.DEBUG)
-        fhd.setFormatter(formatter)
-        dlogger.addHandler(fhd)
+        loggers = []
+        if 'debug' in settings.logging.levels:
+            # debug logger to put debug logs in one file
+            dlogger = logging.getLogger('%s.debug' % logger_prefix)
+            dlogger.setLevel(logging.DEBUG)
+            fhd = logging.FileHandler(path.join(settings.dirs.logs, 'debug.log'))
+            #fhd.setLevel(logging.DEBUG)
+            fhd.setFormatter(formatter)
+            dlogger.addHandler(fhd)
+            loggers.append(dlogger)
+        else:
+            loggers.append(None)
         
-        # info logger to put info logs in another file
-        ilogger = logging.getLogger('%s.info' % logger_prefix)
-        ilogger.setLevel(logging.INFO)
-        fhi = logging.FileHandler(path.join(self.settings.dirs.logs, 'info.log'))
-        #fhi.setLevel(logging.INFO)
-        fhi.setFormatter(formatter)
-        ilogger.addHandler(fhi)
+        if 'info' in settings.logging.levels:
+            # info logger to put info logs in another file
+            ilogger = logging.getLogger('%s.info' % logger_prefix)
+            ilogger.setLevel(logging.INFO)
+            fhi = logging.FileHandler(path.join(settings.dirs.logs, 'info.log'))
+            #fhi.setLevel(logging.INFO)
+            fhi.setFormatter(formatter)
+            ilogger.addHandler(fhi)
+            loggers.append(ilogger)
+        else:
+            loggers.append(None)
         
-        # application logger to put application logs in another file
-        alogger = logging.getLogger('%s.application' % logger_prefix)
-        alogger.setLevel(9)
-        fha = logging.FileHandler(path.join(self.settings.dirs.logs, 'application.log'))
-        #fhi.setLevel(logging.INFO)
-        fha.setFormatter(formatter)
-        alogger.addHandler(fha)
+        if 'appliction' in settings.logging.levels:
+            # application logger to put application logs in another file
+            alogger = logging.getLogger('%s.application' % logger_prefix)
+            alogger.setLevel(9)
+            fha = logging.FileHandler(path.join(settings.dirs.logs, 'application.log'))
+            #fhi.setLevel(logging.INFO)
+            fha.setFormatter(formatter)
+            alogger.addHandler(fha)
+            loggers.append(alogger)
+        else:
+            loggers.append(None)
         
-        self.logger = Logger(dlogger, ilogger, alogger)
+        #if loggers:
+        self.logger = Logger(*loggers)
     
     def setup_loader(self):
         self.loader = Loader()
     
     def load_db_model(self):
         load_models()
+        
+    def setup_controller(self):
+        self.controller = Controller(self.settings)
+    
+    def setup_middleware(self):
+        # apply our middlewares.   we apply the middlewars *inside* the
+        # application and not outside of it so that we never lose the
+        # reference to our application object.
+        
+        # last WSGI app to be called is our dispatch function
+        app = self.dispatch
+
+        # session middleware
+        app = self.setup_session_middleware(app)
+        
+        # handle context locals
+        app = rcm.make_middleware(app)
+        
+        # stacked proxy objects allow us to do normal imports
+        # from common libraries with multiple applications
+        app = RegistryManager(app)
+        
+        # handles all of our static documents (CSS, JS, images, etc.)
+        self.setup_static_middleware(app)
+        
+        # handle debugging exceptions, this is called first to catch
+        # as many problems as possible
+        self.dispatchto = self.setup_debug_middleware(app)
+    
+    def setup_debug_middleware(self, app):
+        if self.settings.debugger.enabled:
+            if self.settings.debugger.format == 'interactive':
+                evalex=True
+            else:
+                evalex=False
+            return DebuggedApplication(app, evalex=evalex)
+        return app
+    
+    def setup_static_middleware(self, app):
+        static_map = {
+            routing.add_prefix('/static'):     rc.application.staticDir
+        }
+        for app in self.settings.supporting_apps:
+            app_py_mod = rc.application.loader.app(app)
+            fs_static_path = path.join(path.dirname(app_py_mod.__file__), 'static')
+            static_map[routing.add_prefix('/%s/static' % app)] = fs_static_path
+        return SharedDataMiddleware( app, static_map)
+    
+    def setup_session_middleware(self, app):
+        return SessionMiddleware(app, **dict(self.settings.beaker))
+
+    def setup_user(self):
+        return SessionUser()

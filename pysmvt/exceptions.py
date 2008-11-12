@@ -25,3 +25,9 @@ class ProgrammingError(Exception):
         raised when a programming error is detected
     """
     pass
+
+class SettingsError(Exception):
+    """
+        raised when a settings error is detected
+    """
+    pass
