@@ -77,8 +77,8 @@ class Controller(object):
     
     def _wsgi_request_setup(self, environ):
         # WSGI request setup
-        rc.ident = randchars()
-        rc.environ = environ
+        rg.ident = randchars()
+        rg.environ = environ
         # the request object binds itself to rc.request
         request = Request(environ)
         
@@ -90,8 +90,7 @@ class Controller(object):
         rcm.cleanup()
     
     def _response_setup(self):
-        rc.response = None
-        rc.respview = None
+        rg.respview = None
     
     def _response_cleanup(self):
         # rollback any uncommitted database transactions.  We assume that
@@ -145,15 +144,12 @@ class Controller(object):
         except HTTPException, e:
             ag.logger.info('exception handling caught HTTPException "%s", sending as response' % e.__class__.__name__)
             response = e
-        #except RedirectException, e:
-        #    ag.logger.info('exception handling caught RedirectException')
-        #    response = rc.response
         except Exception, e:
             if settings.exceptions.log:
                 ag.logger.debug('exception handling: %s' % str(e))
             if settings.exceptions.email:
                 trace = format_exc()
-                envstr = pprint(rc.environ, 4, True)
+                envstr = pprint(rg.environ, 4, True)
                 mail_programmers('exception encountered', '== TRACE ==\n\n%s\n\n== ENVIRON ==\n\n%s' % (trace, envstr))
             if settings.exceptions.hide:
                 # turn the exception into a 500 server response
@@ -165,7 +161,7 @@ class Controller(object):
     def _endpoint_args_from_env(self, environ):
         try:
             # bind the route map to the current environment
-            urls = rc.urladapter = self._route_map.bind_to_environ(environ)
+            urls = rg.urladapter = self._route_map.bind_to_environ(environ)
             
             # initialize endpoint to avoid UnboundLocalError
             endpoint = None

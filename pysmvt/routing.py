@@ -12,7 +12,7 @@ __all__ = [
 ]
 
 def url_for(endpoint, _external=False, **values):
-    return rc.urladapter.build(endpoint, values, force_external=_external)
+    return rg.urladapter.build(endpoint, values, force_external=_external)
 
 def style_url(file, app = None):
     endpoint = 'styles'

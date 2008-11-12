@@ -1,5 +1,5 @@
 import inspect
-from pysmvt import settings, user, ag, _getview
+from pysmvt import settings, user, ag, _getview, rg
 from pysmvt.utils import reindent, auth_error, log_info, bad_request_error, \
     fatal_error, urlslug, markdown, log_debug
 from pysmvt.utils.html import strip_tags
@@ -163,10 +163,10 @@ class ViewBase(object):
 class RespondingViewBase(ViewBase):
     def __init__(self, modulePath, endpoint, args):
         ViewBase.__init__(self, modulePath, endpoint, args)
-        if rc.respview is not None:
+        if rg.respview is not None:
             raise ProgrammingError('Responding view (%s) intialized but one already exists (%s).  '
-                                      'Only one responding view is allowed per request.' % (self._endpoint, rc.respview._endpoint))
-        rc.respview = self
+                                      'Only one responding view is allowed per request.' % (self._endpoint, rg.respview._endpoint))
+        rg.respview = self
         self._init_response()
         
     def _init_response(self):
@@ -232,23 +232,23 @@ class TemplateMixin(object):
         if filename == None:
             filename = self.template_name + '.css'
         contents, filepath, reloadfunc = self.template.templateEnv.loader.get_source(self.template.templateEnv, filename)
-        rc.respview.add_css(contents)    
+        rg.respview.add_css(contents)    
         return ''
     
     def include_js(self, filename=None):
         if filename == None:
             filename = self.template_name + '.js'
         contents, filepath, reloadfunc = self.template.templateEnv.loader.get_source(self.template.templateEnv, filename)
-        rc.respview.add_js(contents)
+        rg.respview.add_js(contents)
         return ''
     
     def page_css(self, indent=8):
-        #print rc.respview.css
-        return reindent(''.join(rc.respview.css), indent).lstrip()
+        #print rg.respview.css
+        return reindent(''.join(rg.respview.css), indent).lstrip()
     
     def page_js(self, indent=8):
-        #print rc.respview.css
-        return reindent(''.join(rc.respview.js), indent).lstrip()
+        #print rg.respview.css
+        return reindent(''.join(rg.respview.js), indent).lstrip()
     
     def process_view(self, view, **kwargs):
         return _getview(view, kwargs, 'template')

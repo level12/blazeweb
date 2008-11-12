@@ -6,7 +6,7 @@ import re
 from pprint import PrettyPrinter
 from pysmvt.application import request_context as rc
 from pysmvt.application import request_context_manager as rcm
-from pysmvt import settings, user, ag, forward
+from pysmvt import settings, user, ag, forward, rg
 from werkzeug.debug.tbtools import get_current_traceback
 from formencode.validators import URL
 from formencode import Invalid
@@ -230,18 +230,18 @@ class Logger(object):
     
     def debug(self, msg, *args, **kwargs):
         if 'debug' in settings.logging.levels:
-            d = {'request_ident':rc.ident}
+            d = {'request_ident':rg.ident}
             kwargs['extra'] = d
             self.dlogger.debug(msg, *args, **kwargs)
     
     def info(self, msg):
         if 'info' in settings.logging.levels:
-            d = {'request_ident':rc.ident}
+            d = {'request_ident':rg.ident}
             self.ilogger.info(msg, extra = d)
     
     def application(self, msg):
         if 'info' in settings.logging.levels:
-            d = {'request_ident':rc.ident}
+            d = {'request_ident':rg.ident}
             self.alogger.log(9, msg, extra = d)
         
 def randchars(n = 12):
