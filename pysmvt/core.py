@@ -84,7 +84,10 @@ def appimport(from_dotted_loc, from_list=None, globals = None ):
         will be imported into caller's namespace.
         
         return value: module object, attribute object, or list of attribute objects
-        depending on `from_list`
+        depending on `from_list`:
+            appimport('utils') == <module 'utils'>
+            appimport('utils', 'helperfunc') == <func 'helperfunc'>
+            appimport('utils', ['a', 'b']) == [<func 'a'>, <func 'b'>]
     """
     from pysmvt.utils import tolist
     
