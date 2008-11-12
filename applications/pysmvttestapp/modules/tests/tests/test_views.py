@@ -332,6 +332,6 @@ class TestViews(unittest.TestCase):
         self.assertEqual(r.data, 'Hellow pysmvttestapp2!')
 
 if __name__ == '__main__':
-    #unittest.main()
-    unittest.TextTestRunner().run(TestViews('test_static'))
+    unittest.main()
+    #unittest.TextTestRunner().run(TestViews('test_static'))
 

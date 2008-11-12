@@ -1,5 +1,6 @@
 import os
 import sys
+from pysmvt import ag
 from pysmvt.utils.filesystem import mkblankfile
 from pysmvt.utils import pprint
 from werkzeug import script
@@ -15,7 +16,7 @@ def _shell_init_func():
     Called on shell initialization.  Adds useful stuff to the namespace.
     """
     app = _make_app()
-    app.bind_to_context()
+    app.bind_globals()
     return {
         'webapp': app
     }
@@ -55,7 +56,7 @@ def action_testrun(url=('u', '/'), show_body=('b', False), show_headers=('h', Fa
 def action_modcreate(name=('n', '')):
     """ used to create an application module's file structure"""
     app = _shell_init_func()['webapp']
-    app.loader.app_names('modules', scope=globals())
+    ag.loader.app_names('modules', scope=globals())
     
     moddir = os.path.dirname(modules.__file__)
     newdir = os.path.join(moddir, name)

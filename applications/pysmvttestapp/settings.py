@@ -20,6 +20,7 @@ class Testruns(DefaultSettings):
         self.supporting_apps = ['pysmvttestapp2']
         
         self.modules.tests.enabled = True
+        self.modules.nomodel.enabled = True
         
         self.routing.routes.extend([
             Rule('/', endpoint='tests:Index')

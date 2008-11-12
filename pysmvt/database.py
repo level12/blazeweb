@@ -14,10 +14,9 @@ def load_orm_models():
                 # check the exception depth to make sure the import
                 # error we caught was just .model or .model.orm missing
                 _, _, tb = sys.exc_info()
-                # 2 = view class name wasn't found
-                # 3 = .model wasn't found
+                # 4 = .model wasn't found
                 #print traceback_depth(tb)
-                if traceback_depth(tb) in (3,):
+                if traceback_depth(tb) in (4,):
                     pass
                 else:
                     raise
@@ -30,10 +29,9 @@ def load_metadata_models():
                 # check the exception depth to make sure the import
                 # error we caught was just .model or .model.orm missing
                 _, _, tb = sys.exc_info()
-                # 2 = view class name wasn't found
-                # 3 = .model wasn't found
+                # 4 = .model wasn't found
                 #print traceback_depth(tb)
-                if traceback_depth(tb) in (3,):
+                if traceback_depth(tb) in (4,):
                     pass
                 else:
                     raise

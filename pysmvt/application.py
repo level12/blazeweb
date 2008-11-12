@@ -210,10 +210,10 @@ class Application(object):
         static_map = {
             routing.add_prefix('/static'):     settings.dirs.static
         }
-        for app in self.settings.supporting_apps:
-            app_py_mod = ag.loader.app(app)
+        for sapp in self.settings.supporting_apps:
+            app_py_mod = ag.loader.app(sapp)
             fs_static_path = path.join(path.dirname(app_py_mod.__file__), 'static')
-            static_map[routing.add_prefix('/%s/static' % app)] = fs_static_path
+            static_map[routing.add_prefix('/%s/static' % sapp)] = fs_static_path
         return SharedDataMiddleware(app, static_map)
     
     def setup_session_middleware(self, app):
