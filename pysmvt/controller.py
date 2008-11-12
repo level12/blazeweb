@@ -212,6 +212,7 @@ class Controller(object):
                 if traceback_depth(tb) in [3] or 'cannot import name routes' in str(e):
                     pass
                 else:
+                    e.args = '%s (from %s.settings.py)' % (str(e), module), 
                     raise
     
     def _add_routing_rules(self, rules):

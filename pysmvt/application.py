@@ -29,9 +29,6 @@ class Application(object):
     def __init__(self, appname, app_settings_mod, profile = 'default'):
         self._id = randhash()
         self.profile = profile
-        
-        #calculate the web applications static directory
-        self.staticDir = path.join(self.basedir, 'static')
     
         # load settings class from the settings module
         self.settings = getattr(app_settings_mod, self.profile.capitalize())(appname, self.basedir)
@@ -193,7 +190,7 @@ class Application(object):
         app = RegistryManager(app)
         
         # handles all of our static documents (CSS, JS, images, etc.)
-        self.setup_static_middleware(app)
+        app = self.setup_static_middleware(app)
         
         # handle debugging exceptions, this is called first to catch
         # as many problems as possible
@@ -209,14 +206,15 @@ class Application(object):
         return app
     
     def setup_static_middleware(self, app):
+        #print settings.dirs.static
         static_map = {
             routing.add_prefix('/static'):     settings.dirs.static
         }
         for app in self.settings.supporting_apps:
-            app_py_mod = self.loader.app(app)
+            app_py_mod = ag.loader.app(app)
             fs_static_path = path.join(path.dirname(app_py_mod.__file__), 'static')
             static_map[routing.add_prefix('/%s/static' % app)] = fs_static_path
-        return SharedDataMiddleware( app, static_map)
+        return SharedDataMiddleware(app, static_map)
     
     def setup_session_middleware(self, app):
         return SessionMiddleware(app, **dict(self.settings.beaker))
