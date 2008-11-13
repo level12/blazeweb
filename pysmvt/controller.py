@@ -68,9 +68,10 @@ class Controller(object):
 
         try:
             response = self._error_documents_handler(environ)
+            self._wsgi_request_cleanup()
             return response(environ, start_response)
         finally:
-            self._wsgi_request_cleanup()
+            pass
     
     def _wsgi_request_setup(self, environ):
         # WSGI request setup
