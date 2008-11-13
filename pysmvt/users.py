@@ -7,7 +7,7 @@ class SessionUser(object):
         if 'user' not in session:
             session['user'] = self
             session['user'].messages = {}
-            clear()
+            self.clear()
 
     def clear(self):
         session['user']._is_authenticated = False
