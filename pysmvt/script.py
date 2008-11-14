@@ -16,7 +16,6 @@ def _shell_init_func():
     Called on shell initialization.  Adds useful stuff to the namespace.
     """
     app = _make_app()
-    app.bind_globals()
     return {
         'webapp': app
     }
