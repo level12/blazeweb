@@ -198,9 +198,9 @@ class DefaultSettings(QuickSettings):
         #######################################################################
         # the 'from' address used by mail_admins() and mail_programmers()
         # defaults if not set
-        self.emails.from_server = 'root@server'
+        self.emails.from_server = ''
         # the default 'from' address used if no from address is specified
-        self.emails.from_default = 'root@localhost'
+        self.emails.from_default = ''
         # a default reply-to header if one is not specified
         self.emails.reply_to = ''
         

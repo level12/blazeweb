@@ -51,6 +51,7 @@ class Testruns(DefaultSettings):
         self.debugger.format = 'interactive'
         
         
+        self.emails.from_default = 'root@localhost'
         self.emails.programmers = ['randy@rcs-comp.com']
         self.email.subject_prefix = '[pysvmt test app] '
         

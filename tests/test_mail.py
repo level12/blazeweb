@@ -6,6 +6,7 @@ import pysmvt.config
 from pysmvt.application import Application
 from pysmvt.mail import EmailMessage, BadHeaderError, EmailMultiAlternatives, \
     MarkdownMessage, HtmlMessage, send_mail, _mail_programmers, _mail_admins
+from pysmvt.exceptions import SettingsError
 
 # use these variables to send live emails which is needed to test
 # some of the send functions
@@ -451,6 +452,7 @@ Bcc: </p>
     def test_mail_programmers(self):
         settings.email.subject_prefix = '[webapp] '
         settings.emails.programmers = ('p1@example.com', 'p2@example.com')
+        
         email = _mail_programmers('programmers email subject', '**email body**', 'markdown')
         msg = email.message()
         
@@ -467,7 +469,36 @@ Bcc: </p>
         assert msg['Subject'] == '[webapp] admins email subject'
         assert email.recipients() == ['a1@example.com', 'a2@example.com']
         assert '<p><strong>email body</strong></p>' in msg.as_string()
+    
+    def test_nofrom(self):
+        settings.emails.from_default = ''
+        email = EmailMessage('Subject', 'Content', to=['to@example.com'])
+        
+        try:
+            message = email.message()
+            self.fail('expected SettingsError since from was not set')
+        except SettingsError, e:
+            assert 'email must have a from address' in str(e)
 
+    def test_adminfrom(self):
+        email = _mail_admins('admins email subject', '**email body**', 'markdown')
+        msg = email.message()
+        assert msg['From'] == 'root@localhost'
+        
+        settings.emails.from_server = 'server@localhost'
+        email = _mail_admins('admins email subject', '**email body**', 'markdown')
+        msg = email.message()
+        assert msg['From'] == 'server@localhost'
+
+    def test_programmersfrom(self):
+        email = _mail_programmers('programmers email subject', '**email body**', 'markdown')
+        msg = email.message()
+        assert msg['From'] == 'root@localhost'
+        
+        settings.emails.from_server = 'server@localhost'
+        email = _mail_programmers('programmers email subject', '**email body**', 'markdown')
+        msg = email.message()
+        assert msg['From'] == 'server@localhost'
         
 if __name__ == '__main__':
     unittest.main()

@@ -17,6 +17,7 @@ from email.Header import Header
 from email.Utils import formatdate, parseaddr, formataddr
 
 from pysmvt import settings
+from pysmvt.exceptions import SettingsError
 from pysmvt.utils.encoding import smart_str, force_unicode
 from pysmvt.utils import tolist, markdown
 from html2text import html2text
@@ -261,6 +262,8 @@ class EmailMessage(object):
                     msg.attach(self._create_attachment(*attachment))
 
         msg['Subject'] = self.subject
+        if not self.from_email:
+            raise SettingsError('email must have a from address or settings.emails.from_default must be set')
         msg['From'] = self.from_email
         if self.to:
             msg['To'] = ', '.join(self.to)
@@ -461,8 +464,9 @@ def send_mass_mail(datatuple, format='text', fail_silently=False, auth_user=None
 def _mail_admins(subject, message, format='text'):
     """used for testing"""
     email_class = get_email_class(format)
+    fromaddr = settings.emails.from_server or settings.emails.from_default
     return email_class(settings.email.subject_prefix + subject, message,
-                 settings.emails.from_server, settings.emails.admins
+                 fromaddr, settings.emails.admins
             )
 
 def mail_admins(subject, message, format='text', fail_silently=False):
@@ -473,8 +477,9 @@ def mail_admins(subject, message, format='text', fail_silently=False):
 def _mail_programmers(subject, message, format='text'):
     """used for testing"""
     email_class = get_email_class(format)
+    fromaddr = settings.emails.from_server or settings.emails.from_default
     return email_class(settings.email.subject_prefix + subject, message,
-                 settings.emails.from_server, settings.emails.programmers
+               fromaddr , settings.emails.programmers
             )
 
 def mail_programmers(subject, message, format='text', fail_silently=False):
