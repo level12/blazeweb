@@ -2,6 +2,8 @@ import unittest
 import config
 
 from pysmvt import settings
+import pysmvt.config
+from pysmvt.application import Application
 from pysmvt.mail import EmailMessage, BadHeaderError, EmailMultiAlternatives, \
     MarkdownMessage, HtmlMessage, send_mail, _mail_programmers, _mail_admins
 
@@ -12,10 +14,11 @@ _to = ''
 
 class TestEmail(unittest.TestCase):
     def setUp(self):
-        config.init_settings()
+        pysmvt.config.appinit(config, 'Testruns')
+        self.app = Application()
     
     def tearDown(self):
-        config.destroy_settings()
+        self.app = None
 
     def test_normal_ascii(self):
         """Test normal ascii character case"""

@@ -1,26 +1,28 @@
 import config
 import unittest
 
+from pysmvt.application import Application
+import pysmvt.config
 from pysmvt.routing import *
 
-class Routingsettings(config.Testruns):
-    def __init__(self, appname, basedir):
-        config.Testruns.__init__(self, appname, basedir)
+class RoutingSettings(config.Testruns):
+    def __init__(self):
+        config.Testruns.__init__(self)
         
         self.routing.routes.extend([
             Rule('/', endpoint='mod:Index'),
             Rule('/url1', endpoint='mod:Url1'),
         ])
 
-class Prefixsettings(Routingsettings):
-    def __init__(self, appname, basedir):
-        Routingsettings.__init__(self, appname, basedir)
+class Prefixsettings(RoutingSettings):
+    def __init__(self):
+        RoutingSettings.__init__(self)
         
         self.routing.prefix = '/prefix'
 
-class Noindex(Routingsettings):
-    def __init__(self, appname, basedir):
-        Routingsettings.__init__(self, appname, basedir)
+class Noindex(RoutingSettings):
+    def __init__(self):
+        RoutingSettings.__init__(self)
         
         self.routing.routes = [
             Rule('/url1', endpoint='mod:Url1'),
@@ -28,8 +30,8 @@ class Noindex(Routingsettings):
 
 class TestRouting(unittest.TestCase):
     def setUp(self):
-        thismod = __import__(__name__)
-        self.app = config.Testapp('RoutingSettings', thismod)
+        pysmvt.config.appinit(__import__(__name__), 'RoutingSettings')
+        self.app = Application()
         self.app.startrequest()
     
     def tearDown(self):
@@ -48,8 +50,8 @@ class TestRouting(unittest.TestCase):
 
 class TestPrefix(unittest.TestCase):
     def setUp(self):
-        thismod = __import__(__name__)
-        self.app = config.Testapp('Prefixsettings', thismod)
+        pysmvt.config.appinit(__import__(__name__), 'Prefixsettings')
+        self.app = Application()
         self.app.startrequest()
     
     def tearDown(self):
@@ -68,8 +70,8 @@ class TestPrefix(unittest.TestCase):
 
 class TestNoIndex(unittest.TestCase):
     def setUp(self):
-        thismod = __import__(__name__)
-        self.app = config.Testapp('Noindex', thismod)
+        pysmvt.config.appinit(__import__(__name__), 'Noindex')
+        self.app = Application()
         self.app.startrequest()
     
     def tearDown(self):

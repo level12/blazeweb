@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 from os import path
 import os
+from pysmvt import appimport, settings, ag
 from werkzeug.routing import Rule
-from pysmvt.utils import OrderedProperties, OrderedDict
+from pysmvt.utils import OrderedProperties, OrderedDict, Context
 
 class QuickSettings(OrderedProperties):
     def __init__(self, initialize=True):
@@ -253,3 +254,8 @@ class DefaultSettings(QuickSettings):
         # self.error_docs[404] = 'errorsmod:NotFound'
         self.error_docs
 
+def appinit(appsettings, profile='Default', **kwargs):
+    
+    Settings = getattr(appsettings, profile)
+    settings._push_object(Settings())
+    ag._push_object(Context())

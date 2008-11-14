@@ -26,33 +26,25 @@ class Application(object):
     Our central WSGI application.
     """
 
-    def __init__(self, appname, app_settings_mod, profile = 'default'):
+    def __init__(self):
         self._id = randhash()
-        self.profile = profile
     
-        # load settings class from the settings module
-        self.settings = getattr(app_settings_mod, self.profile.capitalize())(appname, self.basedir)
-        self.ag = Context()
-        self.bind_globals()
-        try:
-            
-            # application logging object      
-            self.setup_logger()
-            
-            self.setup_controller()
-            
-            self.setup_middleware()
-            
-            # make sure the DB model is loaded
-            self.load_db_model()
-        finally:
-            self.release_globals()
+        # keep local copies of these objects around for later
+        # when we need to bind them to the request
+        self.settings = settings._current_obj()
+        self.ag = ag._current_obj()
+
+        # application logging object      
+        self.setup_logger()
+        
+        self.setup_controller()
+        
+        self.setup_middleware()
+        
+        # make sure the DB model is loaded
+        self.load_db_model()
     
-    def bind_globals(self):
-        settings._push_object(self.settings)
-        ag._push_object(self.ag)
-    
-    def release_globals(self):
+    def __del__(self):
         settings._pop_object(self.settings)
         ag._pop_object(self.ag)
     
@@ -91,7 +83,6 @@ class Application(object):
             when finished to properly cleanup the request.
         """
         environ = werkzeug.utils.create_environ(url)
-        self.bind_globals()
         self.bind_request_globals(environ)
         self.controller._wsgi_request_setup(environ)
         try:
@@ -110,7 +101,6 @@ class Application(object):
         self.controller._response_cleanup()
         self.controller._wsgi_request_cleanup()
         self.release_request_globals()
-        self.release_globals()
         
     def setup_logger(self):
         logger_prefix = '%s.%s' % (self.__class__.__name__, self._id)

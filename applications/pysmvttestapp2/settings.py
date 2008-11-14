@@ -3,9 +3,12 @@ from os import path
 from werkzeug.routing import Rule
 from pysmvt.config import DefaultSettings
 
+appname = 'pysmvttestapp2'
+basedir = path.dirname(path.abspath(__file__))
+
 class Default(DefaultSettings):
 
-    def __init__(self, appname, basedir):
+    def __init__(self):
         # call parent init to setup default settings
         DefaultSettings.__init__(self, appname, basedir)
         
@@ -13,7 +16,7 @@ class Default(DefaultSettings):
         self.lock()
 
 class Testruns(DefaultSettings):
-    def __init__(self, appname, basedir):
+    def __init__(self):
         # call parent init to setup default settings
         DefaultSettings.__init__(self, appname, basedir)
         

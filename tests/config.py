@@ -10,10 +10,12 @@ from pysmvt.application import Application
 from pysmvt.config import DefaultSettings
 from pysmvt import settings
 
+basedir = path.dirname(path.abspath(__file__))
+
 class Testruns(DefaultSettings):
-    def __init__(self, appname, basedir):
+    def __init__(self):
         # call parent init to setup default settings
-        DefaultSettings.__init__(self, appname, basedir)
+        DefaultSettings.__init__(self, 'pysmvttestapp', basedir)
         
         self.db.uri = 'sqlite:///'
         
@@ -55,15 +57,13 @@ class Testruns(DefaultSettings):
         # we are done adding variables to this settings object, so lock it
         self.lock()
 
-class Testapp(Application):
+def makeapp(profile='Default', **kwargs):
     
-    def __init__(self, profile='TestRuns', module=config):
-        
-        #set the applications base file path
-        self.basedir = path.dirname(path.abspath(__file__))
-        
-        # initilize the application
-        Application.__init__(self, 'testapp', module, profile)
+    config.appinit(settings, profile, **kwargs)
+    
+    app = Application()
+    
+    return app
 
 def init_settings(customsettings=None):
     if customsettings:

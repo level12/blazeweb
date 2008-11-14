@@ -2,12 +2,15 @@ import config
 import unittest
 
 import pysmvttestapp.settings
+import pysmvt.config
 from pysmvt import appimport, modimport, modimportauto, appimportauto
-from pysmvttestapp.application import Webapp
+from pysmvt.application import Application
+import pysmvttestapp.settings
 
 class TestImports(unittest.TestCase):
     def setUp(self):
-        self.app = Webapp('Testruns')
+        pysmvt.config.appinit(pysmvttestapp.settings, 'Testruns')
+        self.app = Application()
         self.app.startrequest()
         self.todelete = []
         self.globals_len = len(globals())

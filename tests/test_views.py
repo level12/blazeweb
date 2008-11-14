@@ -2,15 +2,15 @@ import unittest
 import config 
 
 from pysmvt import settings
-from pysmvttestapp.application import Webapp
-from pysmvttestapp2.application import Webapp as App2
+from pysmvttestapp.commands import makeapp
+from pysmvttestapp2.commands import makeapp as makeapp2
 from werkzeug import Client, BaseResponse
 from pysmvt.exceptions import ProgrammingError
 
 class TestViews(unittest.TestCase):
         
     def setUp(self):
-        self.app = Webapp('Testruns')
+        self.app = makeapp('Testruns')
         #self.app.settings.logging.levels.append(('debug', 'info'))
         self.client = Client(self.app, BaseResponse)
         
@@ -340,7 +340,7 @@ class TestViews(unittest.TestCase):
 class TestApp2(unittest.TestCase):
         
     def setUp(self):
-        self.app = App2('Testruns')
+        self.app = makeapp2('Testruns')
         #self.app.settings.logging.levels.append(('debug', 'info'))
         self.client = Client(self.app, BaseResponse)
         
@@ -355,5 +355,5 @@ class TestApp2(unittest.TestCase):
 
 if __name__ == '__main__':
     #unittest.main()
-    unittest.TextTestRunner().run(TestViews('test_redirect'))
+    unittest.TextTestRunner().run(TestViews('test_responding_view_base'))
 
