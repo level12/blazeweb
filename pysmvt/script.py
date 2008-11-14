@@ -8,8 +8,8 @@ from werkzeug import script
 _calling_mod_locals = sys._getframe(1).f_locals
 
 ### helper functions
-def _make_app():
-    return _calling_mod_locals['make_app']()
+def _make_app(profile='Default'):
+    return _calling_mod_locals['make_app'](profile)
 
 def _shell_init_func():
     """
@@ -20,12 +20,26 @@ def _shell_init_func():
         'webapp': app
     }
 
+def make_runserver(app_factory, hostname='localhost', port=5000,
+                   use_reloader=False, use_debugger=False, use_evalex=True,
+                   threaded=False, processes=1, dnslookups=True):
+    """Returns an action callback that spawns a new wsgiref server."""
+    def action(profile='Default', hostname=('h', hostname), port=('p', port),
+               reloader=use_reloader, debugger=use_debugger,
+               evalex=use_evalex, threaded=threaded, processes=processes, dnslookups=dnslookups):
+        """Start a new development server."""
+        from werkzeug.serving import run_simple
+        app = app_factory(profile)
+        run_simple(hostname, port, app, reloader, debugger, evalex,
+                   None, 1, threaded, processes, dnslookups=dnslookups)
+    return action
+
 ### Werkzeug script functions
-action_runserver = script.make_runserver(_make_app, use_reloader=True)
 action_shell = script.make_shell(_shell_init_func)
 
-
 ### Action Functions
+action_runserver = make_runserver(_make_app, use_reloader=True)
+
 def action_testrun(url=('u', '/'), show_body=('b', False), show_headers=('h', False), show_all=('a', False)):
     """
         Loads the application and makes a request.  Useful for debugging
