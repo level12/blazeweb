@@ -30,11 +30,6 @@ class Testruns(DefaultSettings):
         #
         #  *** SET TO True FOR PRODUCTION ENVIRONMENTS ***
         self.exceptions.hide = False
-        # if true, an email will be sent using mail_programmers() whenever
-        # an exception is encountered
-        self.exceptions.email = False
-        # if True, will send exception details to the applications debug file
-        self.exceptions.log = True
         
         #######################################################################
         # DEBUGGING
