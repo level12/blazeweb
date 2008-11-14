@@ -11,7 +11,7 @@ class TestViews(unittest.TestCase):
         
     def setUp(self):
         self.app = makeapp('Testruns')
-        #self.app.settings.logging.levels.append(('debug', 'info'))
+        #settings.logging.levels.append(('debug', 'info'))
         self.client = Client(self.app, BaseResponse)
         
     def tearDown(self):
@@ -78,7 +78,7 @@ class TestViews(unittest.TestCase):
             self.fail('should have gotten an exception b/c view does not have action method')
     
     def test_hideexception(self):
-        self.app.settings.exceptions.hide = True
+        settings.exceptions.hide = True
         r = self.client.get('tests/noactionmethod')
         self.assertEqual(r.status, '500 INTERNAL SERVER ERROR')
         
@@ -182,7 +182,7 @@ class TestViews(unittest.TestCase):
         assert 'server is temporarily unable' in r.data
     
     def test_errordoc(self):
-        self.app.settings.error_docs[503] = 'tests:Rvb'
+        settings.error_docs[503] = 'tests:Rvb'
         r = self.client.get('tests/heraise')
         
         self.assertEqual(r.status_code, 503)
@@ -190,7 +190,7 @@ class TestViews(unittest.TestCase):
         self.assertEqual(r.data, 'Hello World!')
 
     def test_errordocexc(self):
-        self.app.settings.error_docs[503] = 'tests:BadForward'
+        settings.error_docs[503] = 'tests:BadForward'
         try:
             r = self.client.get('tests/heraise')
         except ProgrammingError, e:
@@ -202,7 +202,7 @@ class TestViews(unittest.TestCase):
         # non-200 response since the exception created by tests:BadForward
         # should have been turned into a 500 response, which the error docs
         # handler won't accept
-        self.app.settings.exceptions.hide = True
+        settings.exceptions.hide = True
         r = self.client.get('tests/heraise')
         
         self.assertEqual(r.status_code, 503)
@@ -341,7 +341,7 @@ class TestApp2(unittest.TestCase):
         
     def setUp(self):
         self.app = makeapp2('Testruns')
-        #self.app.settings.logging.levels.append(('debug', 'info'))
+        #settings.logging.levels.append(('debug', 'info'))
         self.client = Client(self.app, BaseResponse)
         
     def tearDown(self):
@@ -355,5 +355,6 @@ class TestApp2(unittest.TestCase):
 
 if __name__ == '__main__':
     #unittest.main()
-    unittest.TextTestRunner().run(TestViews('test_responding_view_base'))
+    tests = ['test_responding_view_base', 'test_responding_view_base_with_snippet']
+    unittest.TextTestRunner().run(unittest.TestSuite(map(TestViews, tests)))
 

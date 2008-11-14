@@ -1,8 +1,6 @@
 from os import path
 import logging
 
-from paste.registry import RegistryManager
-from beaker.middleware import SessionMiddleware
 import beaker.session
 import werkzeug
 from werkzeug import SharedDataMiddleware, DebuggedApplication
@@ -39,14 +37,13 @@ class Application(object):
         
         self.setup_controller()
         
-        self.setup_middleware()
-        
         # make sure the DB model is loaded
         self.load_db_model()
     
     def __del__(self):
-        settings._pop_object(self.settings)
-        ag._pop_object(self.ag)
+        #settings._pop_object(self.settings)
+        #ag._pop_object(self.ag)
+        pass
     
     def bind_request_globals(self, environ):
         sesobj = beaker.session.Session(environ)
@@ -60,7 +57,7 @@ class Application(object):
         rg._pop_object()
     
     def __call__(self, environ, start_response):
-        return self.dispatchto(environ, start_response)
+        return self.dispatch(environ, start_response)
     
     def dispatch(self, environ, start_response):
         self.registry_globals(environ)
@@ -154,50 +151,5 @@ class Application(object):
     def setup_controller(self):
         self.controller = Controller(self.settings)
     
-    def setup_middleware(self):
-        # apply our middlewares.   we apply the middlewars *inside* the
-        # application and not outside of it so that we never lose the
-        # reference to our application object.
-        
-        # last WSGI app to be called is our dispatch function
-        app = self.dispatch
-
-        # session middleware
-        app = self.setup_session_middleware(app)
-        
-        # stacked proxy objects allow us to do normal imports
-        # from common libraries with multiple applications
-        app = RegistryManager(app)
-        
-        # handles all of our static documents (CSS, JS, images, etc.)
-        app = self.setup_static_middleware(app)
-        
-        # handle debugging exceptions, this is called first to catch
-        # as many problems as possible
-        self.dispatchto = self.setup_debug_middleware(app)
-    
-    def setup_debug_middleware(self, app):
-        if self.settings.debugger.enabled:
-            if self.settings.debugger.format == 'interactive':
-                evalex=True
-            else:
-                evalex=False
-            return DebuggedApplication(app, evalex=evalex)
-        return app
-    
-    def setup_static_middleware(self, app):
-        #print settings.dirs.static
-        static_map = {
-            routing.add_prefix('/static'):     settings.dirs.static
-        }
-        for sapp in self.settings.supporting_apps:
-            app_py_mod = __import__(sapp)
-            fs_static_path = path.join(path.dirname(app_py_mod.__file__), 'static')
-            static_map[routing.add_prefix('/%s/static' % sapp)] = fs_static_path
-        return SharedDataMiddleware(app, static_map)
-    
-    def setup_session_middleware(self, app):
-        return SessionMiddleware(app, **dict(self.settings.beaker))
-
     def setup_user(self):
         return SessionUser()
