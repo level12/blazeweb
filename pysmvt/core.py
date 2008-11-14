@@ -4,7 +4,6 @@ from paste.registry import StackedObjectProxy
 
 __all__ = [
     'ag',
-    'app',
     'rg',
     'settings',
     'session',
@@ -22,8 +21,6 @@ __all__ = [
 # a "global" object for storing data and objects (like tcp connections or db
 # connections) across requests (application scope)
 ag = StackedObjectProxy(name="ag")
-# a reference to the main application object
-app = StackedObjectProxy(name="app")
 # the request "global" object, stores data and objects "globaly" during a request.  The
 # environment, urladapter, etc. get saved here. (request only)
 rg = StackedObjectProxy(name="rco")

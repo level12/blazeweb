@@ -84,10 +84,14 @@ class Controller(object):
         # save the user session
         session.save()
     
-    def _response_setup(self):
-        rg.respview = None
-    
     def _response_cleanup(self):
+        # if we do a forward, this would still be set, so we need to
+        # unset it
+        try: 
+            del rg.respview
+        except AttributeError:
+            pass
+        
         # rollback any uncommitted database transactions.  We assume that
         # an explicit commit will be issued and anything leftover was accidental
         get_dbsession().rollback()
@@ -173,7 +177,6 @@ class Controller(object):
         # this loop allows us to handle forwards
         rg.forward_queue = [(endpoint, args)]
         while True:
-            self._response_setup()
             try: 
                 # call the view
                 endpoint, args = rg.forward_queue[-1]

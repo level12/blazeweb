@@ -8,7 +8,7 @@ import werkzeug
 from werkzeug import SharedDataMiddleware, DebuggedApplication
 from werkzeug.exceptions import HTTPException
 
-from pysmvt import settings, ag, session, rg, user, app
+from pysmvt import settings, ag, session, rg, user
 from pysmvt import routing
 from pysmvt.controller import Controller
 from pysmvt.database import load_models
@@ -51,12 +51,10 @@ class Application(object):
     def bind_globals(self):
         settings._push_object(self.settings)
         ag._push_object(self.ag)
-        app._push_object(self)
     
     def release_globals(self):
         settings._pop_object(self.settings)
         ag._pop_object(self.ag)
-        app._pop_object(self)
     
     def bind_request_globals(self, environ):
         sesobj = beaker.session.Session(environ)
@@ -80,7 +78,6 @@ class Application(object):
         if environ.has_key('paste.registry'):
             environ['paste.registry'].register(settings, self.settings)
             environ['paste.registry'].register(ag, self.ag)
-            environ['paste.registry'].register(app, self)
             environ['paste.registry'].register(session, environ['beaker.session'])
             environ['paste.registry'].register(user, self.setup_user())
             environ['paste.registry'].register(rg, Context())
@@ -104,7 +101,6 @@ class Application(object):
             self.controller._endpoint_args_from_env(environ)
         except HTTPException:
             pass
-        self.controller._response_setup()
     
     def endrequest(self):
         """

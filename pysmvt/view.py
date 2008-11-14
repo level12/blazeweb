@@ -163,9 +163,9 @@ class ViewBase(object):
 class RespondingViewBase(ViewBase):
     def __init__(self, modulePath, endpoint, args):
         ViewBase.__init__(self, modulePath, endpoint, args)
-        if rg.respview is not None:
+        if hasattr(rg, 'respview'):
             raise ProgrammingError('Responding view (%s) intialized but one already exists (%s).  '
-                                      'Only one responding view is allowed per request.' % (self._endpoint, rg.respview._endpoint))
+                                      'Only one responding view is allowed per request.' % (endpoint, rg.respview._endpoint))
         rg.respview = self
         self._init_response()
         
