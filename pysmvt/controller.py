@@ -35,34 +35,6 @@ class Controller(object):
         self._init_routes()
 
     def dispatch_request(self, environ, start_response):
-        """
-            Dispatch an incoming request.  It looks like this:
-            - wsgi request setup
-                - response handling (loop)
-                    - non-200 response handler
-                        - exception handler (env, endpoint, args)
-                            - client request init -> endpoint & args
-                                - forward()
-                                    - call view
-                                + response cleanup
-                        + catch exceptions
-                            -- determine context (normal, xmlhttprequest)
-                            -- turn HttpExceptions into response objects
-                            -- handle based on context settings
-                                -- propogate
-                                -- turn into 500
-                                -- log
-                                -- email
-                                -- stack trace
-                                -- interactive stack trace
-                    + catch non-200 responses
-                        -- determine context (normal, xmlhttprequest)
-                        -- handle based on context settings
-                            -- pretty: endpoint & args -> exception handler
-                            -- minimal: pass-through
-                            -- json: convert response description to JSON
-            + wsgi request cleanup
-        """
         
         self._wsgi_request_setup(environ)
 
@@ -110,6 +82,7 @@ class Controller(object):
         if code in settings.error_docs:
             handling_endpoint = settings.error_docs.get(code)
             ag.logger.info('error docs: handling code %d with %s' % (code, handling_endpoint))
+            environ['pysmvt.controller.error_docs_handler.response'] = response
             new_response = self._exception_handing('error docs', endpoint=handling_endpoint)
             # only take the new response if it completed succesfully.  If not,
             # then we should just return the original response after logging the
