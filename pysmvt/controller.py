@@ -8,7 +8,6 @@ from werkzeug.exceptions import HTTPException, NotFound, InternalServerError, \
 import werkzeug.utils
 
 from pysmvt import settings, session, user, rg, ag, getview, _getview, modimport
-from pysmvt.database import get_dbsession, get_dbsession_cls
 from pysmvt.exceptions import ForwardException, ProgrammingError
 from pysmvt.mail import mail_programmers
 from pysmvt.utils import randchars, traceback_depth, log_info, log_debug, pprint
@@ -64,15 +63,14 @@ class Controller(object):
         except AttributeError:
             pass
         
-        # rollback any uncommitted database transactions.  We assume that
-        # an explicit commit will be issued and anything leftover was accidental
-        get_dbsession().rollback()
-        
-        # make sure we get a new DB session for the next request
-        get_dbsession_cls().remove()
+        # until we get the forward system outside the controller,
+        # we should rollback any changes not comitted to avoid
+        # unexpected bleed over
+        if rg.environ.has_key('sqlalchemy.sess'):
+            rg.environ['sqlalchemy.sess'].rollback()
     
     def _error_documents_handler(self, environ):
-        response = orig_resp = self._exception_handing('client', environ)
+        response = orig_resp = self._exception_handling('client', environ)
         def get_status_code(response):
             if isinstance(response, HTTPException):
                 return response.code
@@ -83,7 +81,7 @@ class Controller(object):
             handling_endpoint = settings.error_docs.get(code)
             ag.logger.info('error docs: handling code %d with %s' % (code, handling_endpoint))
             environ['pysmvt.controller.error_docs_handler.response'] = response
-            new_response = self._exception_handing('error docs', endpoint=handling_endpoint)
+            new_response = self._exception_handling('error docs', endpoint=handling_endpoint)
             # only take the new response if it completed succesfully.  If not,
             # then we should just return the original response after logging the
             # error
@@ -108,7 +106,7 @@ class Controller(object):
                 response.description = response.description + '\n'.join(msg_html)
         return response
     
-    def _exception_handing(self, called_from, environ = None, endpoint=None, args = {}):
+    def _exception_handling(self, called_from, environ = None, endpoint=None, args = {}):
         try:
             if environ:
                 endpoint, args = self._endpoint_args_from_env(environ)

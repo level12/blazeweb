@@ -1,9 +1,10 @@
 import os
 import sys
-from pysmvt import ag, appimport
-from pysmvt.utils.filesystem import mkblankfile
-from pysmvt.utils import pprint
-from werkzeug import script
+from pysmvt import ag, appimport, db, settings, modimport
+from pysmvt.utils.filesystem import mkpyfile
+from pysmvt.utils import pprint, tb_depth_in, traceback_depth
+from werkzeug import script, Client, BaseResponse
+from sqlitefktg4sa import auto_assign
 
 _calling_mod_locals = sys._getframe(1).f_locals
 
@@ -45,10 +46,10 @@ def action_testrun(url=('u', '/'), show_body=('b', False), show_headers=('h', Fa
         Loads the application and makes a request.  Useful for debugging
         with print statements
     """
-    from webapp.application import WebApp as wzhwApp
-    from werkzeug import Client, BaseResponse
     
-    c = Client(wzhwApp(), BaseResponse)
+    app = _shell_init_func()['webapp']
+    
+    c = Client(app, BaseResponse)
     
     #custom post
     #url = '/contributors/edit/10'
@@ -66,7 +67,7 @@ def action_testrun(url=('u', '/'), show_body=('b', False), show_headers=('h', Fa
         for respstr in resp.response:
             print respstr
 
-def action_modcreate(name=('n', '')):
+def action_createmod(name=('n', '')):
     """ used to create an application module's file structure"""
     app = _shell_init_func()['webapp']
     modules = appimport('modules')
@@ -81,37 +82,55 @@ def action_modcreate(name=('n', '')):
     for file in ('__init__.py', 'metadata.py', 'orm.py'):
         fpath = os.path.join(newdir, 'model', file)
         if not os.path.exists(fpath):
-            mkblankfile(fpath)
+            mkpyfile(fpath)
     for file in ('__init__.py', 'actions.py', 'forms.py', 'settings.py',
-                 'utils.py', 'views.py'):
+                 'utils.py', 'views.py', 'commands.py'):
         fpath = os.path.join(newdir, file)
         if not os.path.exists(fpath):
-            mkblankfile(fpath)
+            mkpyfile(fpath)
 
-def action_dbinit(module=('m', '')):
+def action_initdb(targetmod=('m', ''), sqlite_triggers=True):
     """ used to create database objects & structure """
     app = _shell_init_func()['webapp']
-    from pysmvt.database import get_metadata, get_engine
-    from pysmvt.utils import call_appmod_dbinits
-    from sqlitefktg4sa import auto_assign
-
-    metadata = get_metadata()
-    metadata.bind = get_engine()
 
     # create foreign keys for SQLite
-    auto_assign(metadata)
+    if sqlite_triggers:
+        auto_assign(db.meta, db.engine)
 
     # create the database objects
-    metadata.create_all()
-
+    db.meta.create_all(bind=db.engine)
+    
+    # add a session to the db
+    connection = db.engine.contextual_connect()
+    db.sess = db.Session(bind=connection)
+    
     # call each AM's appmod_dbinit()
-    call_appmod_dbinits(module)
+    for appmod in settings.modules.keys():
+        if targetmod == appmod or targetmod == '':
+            try:
+                callable = modimport('%s.commands' % appmod, 'init_db')
+                callable()
+            except ImportError:
+                if not tb_depth_in(3):
+                    raise
 
-def action_appmodinit(module=('m', '')):
-    """ used to create database objects & structure """
+def action_initmod(targetmod=('m', '')):
+    """
+        used to allow modules to do setup after they are installed.  Will call
+        a function init_db in a module's commands.py file.
+    """
     app = _shell_init_func()['webapp']
-    from pysmvt.database import get_metadata
-    from pysmvt.utils import call_appmod_inits
 
+    # add a session to the db if modules inits need it
+    connection = db.engine.contextual_connect()
+    db.sess = db.Session(bind=connection)
+    
     # call each AM's appmod_dbinit()
-    call_appmod_inits(module)
+    for appmod in settings.modules.keys():
+        if targetmod == appmod or targetmod == '':
+            try:
+                callable = modimport('%s.commands' % appmod, 'init_module')
+                callable()
+            except ImportError:
+                if not tb_depth_in(3):
+                    raise

@@ -7,6 +7,7 @@ from paste.registry import RegistryManager
 from paste.cascade import Cascade
 from pysmvt import config, settings
 from pysmvt.application import Application
+from pysmvt.middleware import ElixirApp
 from pysmvt import routing
 from werkzeug import SharedDataMiddleware
 import settings as settingsmod
@@ -17,7 +18,7 @@ def makeapp(profile='Default', **kwargs):
     
     app = Application()
     
-    #app = SqlalchemyManager(app)
+    app = ElixirApp(app)
     
     #app = ExceptionHandler(app)
     

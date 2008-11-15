@@ -15,7 +15,8 @@ __all__ = [
     'modimport',
     'appimport',
     'modimportauto',
-    'appimportauto'
+    'appimportauto',
+    'db'
 ]
 
 # a "global" object for storing data and objects (like tcp connections or db
@@ -30,6 +31,8 @@ settings = StackedObjectProxy(name="settings")
 session = StackedObjectProxy(name="session")
 # the user object (request only)
 user = StackedObjectProxy(name="user")
+# the db object (application scope)
+db = StackedObjectProxy(name="db")
 
 from pysmvt.exceptions import Redirect, ProgrammingError, ForwardException
 
@@ -158,7 +161,7 @@ def _import(dotted_location, attr=None):
             # re-raise that exception
             _, _, tb = sys.exc_info()
             #print 'except: %d %s %s ' % (traceback_depth(tb), str(e), module_to_load)
-            if traceback_depth(tb) > 1:
+            if traceback_depth(tb) > 0:
                 raise
     if attr:
         raise ImportError('cannot import "%s" with attribute "%s" from any application' % (dotted_location, attr))
@@ -174,7 +177,6 @@ def redirect(location, permanent=False, code=302 ):
     """
     if permanent:
         code = 301
-    print Redirect
     raise Redirect(location, code)
 
 def forward(endpoint, args = {}):

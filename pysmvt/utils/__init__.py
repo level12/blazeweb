@@ -42,7 +42,20 @@ def isurl(s, require_tld=True):
             return True
         return False
 
-def traceback_depth(tb):
+def tb_depth_in(depths):
+    """
+    looks at the current traceback to see if the depth of the traceback
+    matches any number in the depths list.  If a match is found, returns
+    True, else False.
+    """
+    depths = tolist(depths)
+    if traceback_depth() in depths:
+        return True
+    return False
+
+def traceback_depth(tb=None):
+    if tb == None:
+        _, _, tb = sys.exc_info()
     depth = 0
     while tb.tb_next is not None:
         depth += 1
@@ -102,33 +115,6 @@ def pprint( stuff, indent = 4, asstr=False):
     if asstr:
         return pp.pformat(stuff)
     pp.pprint(stuff)
-
-def call_appmod_dbinits(singlemod=None):
-    for module in settings.modules.keys():
-        if singlemod == module or singlemod == '':
-            try:
-                callables = modimport('%s.settings' % module, 'appmod_dbinits')
-                for tocall in tolist(callables):
-                    tocall()
-            except ImportError:
-                pass
-        
-def call_appmod_inits(module):
-    """ call the initilization methods on an AM """
-    if not module:
-        raise ValueError('"module" parameter must not be empty')
-    try:
-        callables = modimport('%s.settings' % module, 'appmod_inits')
-        for tocall in tolist(callables):
-                tocall()
-    except ImportError, e:
-        # check the exception depth to make sure the import
-        # error we caught was a missing settings.appmod_inits
-        _, _, tb = sys.exc_info()
-        if traceback_depth(tb) == 2:
-            pass
-        else:
-            raise
         
 def log_info(msg):
     ag.logger.info(msg)

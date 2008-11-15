@@ -9,7 +9,6 @@ from werkzeug.exceptions import HTTPException
 from pysmvt import settings, ag, session, rg, user
 from pysmvt import routing
 from pysmvt.controller import Controller
-from pysmvt.database import load_models
 from pysmvt.users import SessionUser
 from pysmvt.utils import Logger, randhash, Context
 
@@ -36,9 +35,6 @@ class Application(object):
         self.setup_logger()
         
         self.setup_controller()
-        
-        # make sure the DB model is loaded
-        self.load_db_model()
     
     def __del__(self):
         #settings._pop_object(self.settings)
@@ -145,9 +141,6 @@ class Application(object):
         #if loggers:
         ag.logger = Logger(*loggers)
     
-    def load_db_model(self):
-        load_models()
-        
     def setup_controller(self):
         self.controller = Controller(self.settings)
     

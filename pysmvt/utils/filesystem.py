@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
 
-def mkblankfile(path):
-    open(path, 'w').close()
+def mkpyfile(path):
+    file = open(path, 'w')
+    file.write('# -*- coding: utf-8 -*-\n')
+    file.close()
