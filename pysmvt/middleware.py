@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from pysmvt import db, settings, modimport
 from pysmvt.utils import tb_depth_in
-from sqlalchemy import create_engine, MetaData
+from sqlalchemy import engine_from_config, MetaData
 from sqlalchemy.orm import sessionmaker, scoped_session
 
 try:
@@ -11,10 +11,10 @@ except ImportError:
 
 class SQLAlchemyContainer(object):
     
-    def __init__(self, strategy):
-        self.engine = create_engine(settings.db.uri, echo=settings.db.echo, strategy=strategy)   
+    def __init__(self):
+        self.engine = engine_from_config(dict(settings.db), prefix='')   
         self.meta = MetaData()
-        self.Session = scoped_session(sessionmaker())
+        self.Session = scoped_session(sessionmaker(bind=self.engine))
     
     def get_session(self):
         return self.Session()
@@ -25,9 +25,9 @@ class SQLAlchemyApp(object):
         
         Setsup thread-local sessions and cleans them up per request
     """
-    def __init__(self, application, strategy='threadlocal'):
+    def __init__(self, application):
         self.application = application
-        self.container = SQLAlchemyContainer(strategy)
+        self.container = SQLAlchemyContainer()
         db._push_object(self.container)
         self.loadmodels()        
         
@@ -35,8 +35,7 @@ class SQLAlchemyApp(object):
         
         if environ.has_key('paste.registry'):
             environ['paste.registry'].register(db, self.container)
-        connection = self.container.engine.contextual_connect()
-        db.sess = self.container.Session(bind=connection)
+        db.sess = self.container.Session()
         environ['sqlalchemy.sess'] = db.sess
         try:
             return self.application(environ, start_response)
@@ -44,8 +43,6 @@ class SQLAlchemyApp(object):
             del environ['sqlalchemy.sess']
             db.sess = None
             db.Session.remove()
-            connection.close()
-            connection = None
     
     def loadmodels(self):
         for module in settings.modules.keys():

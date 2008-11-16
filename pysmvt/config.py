@@ -125,7 +125,7 @@ class DefaultSettings(QuickSettings):
         # DATABASE
         #######################################################################
         self.db.echo = False
-        self.db.uri = None
+        self.db.url = None
         
         #######################################################################
         # DIRECTORIES required by PYSVMT
