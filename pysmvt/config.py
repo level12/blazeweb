@@ -258,3 +258,11 @@ def appinit(appsettings, profile='Default', **kwargs):
     Settings = getattr(appsettings, profile)
     settings._push_object(Settings())
     ag._push_object(Context())
+
+def appslist(reverse=False):
+    if reverse:
+        apps = list(settings.supporting_apps)
+        apps.reverse()
+        apps.append(settings.appname)
+        return apps
+    return [settings.appname] + settings.supporting_apps
