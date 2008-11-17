@@ -112,13 +112,12 @@ class DefaultSettings(QuickSettings):
         #######################################################################
         # ROUTING
         #######################################################################
-        self.routing.routes = [
-            Rule('/static/<file>', endpoint='static', build_only=True),
-            Rule('/static/c/<file>', endpoint='styles', build_only=True),
-            Rule('/static/js/<file>', endpoint='javascript', build_only=True),
-            Rule('/<app>/static/c/<file>', endpoint='styles', build_only=True),
-            Rule('/<app>/static/js/<file>', endpoint='javascript', build_only=True)
-        ]
+        self.routing.routes = []
+        
+        # note that you shouldn't really need to use the routing prefix if
+        # SCRIPT_NAME and PATH_INFO are set correctly as the Werkzeug
+        # routing tools (both parsing rules and generating URLs) will
+        # take these environment variables into account.
         self.routing.prefix = ''
         
         #######################################################################
@@ -183,7 +182,7 @@ class DefaultSettings(QuickSettings):
         #          ******* SECURITY ALERT **********
         # setting inactive = True would allow ANYONE who has access to the server
         # to run arbitrary code.  ONLY use in an isolated development
-        # environment
+        # environment.
         self.debugger.enabled = True
         self.debugger.interactive = False
 
@@ -204,8 +203,9 @@ class DefaultSettings(QuickSettings):
         # a default reply-to header if one is not specified
         self.emails.reply_to = ''
         
-        # recipient defaults.  Should be a list of email addresses
-        # ('foo@example.com', 'bar@example.com')
+        ### recipient defaults.  Should be a list of email addresses
+        ### ('foo@example.com', 'bar@example.com')
+        
         # will always add theses cc's to every email sent
         self.emails.cc_always = None
         # default cc, but can be overriden
@@ -254,7 +254,10 @@ class DefaultSettings(QuickSettings):
         self.error_docs
 
 def appinit(appsettings, profile='Default', **kwargs):
-    
+    """
+        called to setup the application's settings
+        variable
+    """
     Settings = getattr(appsettings, profile)
     settings._push_object(Settings())
     ag._push_object(Context())
