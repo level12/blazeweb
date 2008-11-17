@@ -133,8 +133,12 @@ class Logger(object):
     
     def debug(self, msg, *args, **kwargs):
         if 'debug' in settings.logging.levels:
-            d = {'request_ident':rg.ident}
+            try:
+                d = {'request_ident':rg.ident}
+            except TypeError:
+                d = {'request_ident': 'n/a'}    
             kwargs['extra'] = d
+            
             self.dlogger.debug(msg, *args, **kwargs)
     
     def info(self, msg):

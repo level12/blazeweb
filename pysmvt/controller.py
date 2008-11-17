@@ -65,9 +65,15 @@ class Controller(object):
         
         # until we get the forward system outside the controller,
         # we should rollback any changes not comitted to avoid
-        # unexpected bleed over
-        if rg.environ.has_key('sqlalchemy.sess'):
-            rg.environ['sqlalchemy.sess'].rollback()
+        # unexpected bleed over when doing forwards
+        if rg.environ.get('sqlalchemy.sess', None):
+            # sqlalchemy sometimes throws errors here with sqlite about
+            # connections being shared across threads.  We also
+            # get problems with the connection no longer existing
+            try:
+                rg.environ['sqlalchemy.sess'].rollback()
+            except:
+                pass
     
     def _error_documents_handler(self, environ):
         response = orig_resp = self._exception_handling('client', environ)
