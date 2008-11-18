@@ -317,11 +317,11 @@ class TestViews(unittest.TestCase):
             self.fail('excpected exception for bad validator')
         
     def test_static(self):
-        r = self.client.get('static/helloworld.html')
+        r = self.client.get('helloworld.html')
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.data, 'Hello World!')
         
-        r = self.client.get('pysmvttestapp2/static/helloworld.html')
+        r = self.client.get('helloworld2.html')
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.data, 'Hellow pysmvttestapp2!')
 

@@ -8,7 +8,7 @@ from werkzeug.exceptions import HTTPException, NotFound, InternalServerError, \
 import werkzeug.utils
 
 from pysmvt import settings, session, user, rg, ag, getview, _getview, modimport
-from pysmvt.exceptions import ForwardException, ProgrammingError
+from pysmvt.exceptions import ForwardException, ProgrammingError, Redirect
 from pysmvt.mail import mail_programmers
 from pysmvt.utils import randchars, traceback_depth, log_info, log_debug, pprint
 from pysmvt.wrappers import Request, Response
@@ -102,14 +102,14 @@ class Controller(object):
             else:
                 ag.logger.debug('error docs: encountered non-200 status code response '
                         '(%d) when trying to handle with %s' % (get_status_code(new_response), handling_endpoint))
-            if isinstance(response, HTTPException):
-                messages = user.get_messages()
-                if messages:
-                    msg_html = ['<h2>Error Details:</h2><ul>']
-                    for msg in messages:
-                        msg_html.append('<li>(%s) %s</li>' % (msg.severity, msg.text))
-                    msg_html.append('</ul>')
-                    response.description = response.description + '\n'.join(msg_html)
+        if isinstance(response, HTTPException) and not isinstance(response, Redirect):
+            messages = user.get_messages()
+            if messages:
+                msg_html = ['<h2>Error Details:</h2><ul>']
+                for msg in messages:
+                    msg_html.append('<li>(%s) %s</li>' % (msg.severity, msg.text))
+                msg_html.append('</ul>')
+                response.description = response.description + '\n'.join(msg_html)
         return response
     
     def _exception_handling(self, called_from, environ = None, endpoint=None, args = {}):
