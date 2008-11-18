@@ -1,15 +1,21 @@
-from pysmvt import session
 import random
+from pysmvt import session
+import logging
+
+log = logging.getLogger(__name__)
 
 class SessionUser(object):
     
     def __init__(self):
+        log.debug('SessionUser initialized')
         if 'user' not in session:
+            log.debug('SessionUser object did not exist in session, initializing')
             session['user'] = self
             session['user'].messages = {}
             self.clear()
 
     def clear(self):
+        log.debug('SessionUser object getting cleared() of auth info')
         session['user']._is_authenticated = False
         session['user'].attributes = {}
         session['user'].tokens = {}
@@ -33,6 +39,7 @@ class SessionUser(object):
         return session['user'].tokens.has_key(token)
 
     def add_message(self, severity, text, ident = None):
+        log.debug('SessionUser message added')
         # generate random ident making sure random ident doesn't already
         # exist
         if ident is None:
@@ -43,8 +50,10 @@ class SessionUser(object):
         session['user'].messages[ident] = UserMessage(severity, text)
     
     def get_messages(self, clear = True):
+        log.debug('SessionUser messages retrieved: %d' % len(session['user'].messages))
         msgs = session['user'].messages.values()
         if clear:
+            log.debug('SessionUser messages cleared')
             session['user'].messages = {}
         return msgs
     

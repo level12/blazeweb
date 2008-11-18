@@ -1,5 +1,6 @@
 import sys
 from os import path
+import logging
 from paste.registry import StackedObjectProxy
 
 __all__ = [
@@ -175,8 +176,10 @@ def redirect(location, permanent=False, code=302 ):
         code: allows 303 or 307 redirects to be sent if needed, see
             http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
     """
+    log = logging.getLogger('pysmvt.core:redirect')
     if permanent:
         code = 301
+    log.debug('%d redirct to %s' % (code, location))
     raise Redirect(location, code)
 
 def forward(endpoint, args = {}):

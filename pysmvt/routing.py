@@ -15,13 +15,20 @@ __all__ = [
 def url_for(endpoint, _external=False, **values):
     return rg.urladapter.build(endpoint, values, force_external=_external)
 
+def static_url(endpoint, file, app = None):
+    """
+        all this does is remove app right now, but we are anticipating:
+        https://apache.rcslocal.com:8443/projects/pysmvt/ticket/40
+    """
+    return url_for(endpoint, file=file)
+
 def style_url(file, app = None):
     endpoint = 'styles'
-    return url_for(endpoint, file=file, app=app)
+    return static_url(endpoint, file=file, app=app)
 
 def js_url(file, app = None):
     endpoint = 'javascript'
-    return url_for(endpoint, file=file, app=app)
+    return static_url(endpoint, file=file, app=app)
 
 def index_url(full=False):
     

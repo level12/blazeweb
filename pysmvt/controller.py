@@ -102,14 +102,14 @@ class Controller(object):
             else:
                 ag.logger.debug('error docs: encountered non-200 status code response '
                         '(%d) when trying to handle with %s' % (get_status_code(new_response), handling_endpoint))
-        if isinstance(response, HTTPException):
-            messages = user.get_messages()
-            if messages:
-                msg_html = ['<h2>Error Details:</h2><ul>']
-                for msg in messages:
-                    msg_html.append('<li>(%s) %s</li>' % (msg.severity, msg.text))
-                msg_html.append('</ul>')
-                response.description = response.description + '\n'.join(msg_html)
+            if isinstance(response, HTTPException):
+                messages = user.get_messages()
+                if messages:
+                    msg_html = ['<h2>Error Details:</h2><ul>']
+                    for msg in messages:
+                        msg_html.append('<li>(%s) %s</li>' % (msg.severity, msg.text))
+                    msg_html.append('</ul>')
+                    response.description = response.description + '\n'.join(msg_html)
         return response
     
     def _exception_handling(self, called_from, environ = None, endpoint=None, args = {}):
