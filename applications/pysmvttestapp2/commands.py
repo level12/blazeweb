@@ -9,7 +9,7 @@ from pysmvt import config, settings
 from pysmvt.application import Application
 from pysmvt.middleware import ElixirApp
 from pysmvt import routing
-from werkzeug import SharedDataMiddleware
+from werkzeug import SharedDataMiddleware, DebuggedApplication
 import settings as settingsmod
 
 def makeapp(profile='Default', **kwargs):
@@ -30,19 +30,15 @@ def makeapp(profile='Default', **kwargs):
     
     app = RegistryManager(app)
     
-    # for serving plain html, css, images, etc.
-    static_map = {
-            routing.add_prefix('/static'):     settings.dirs.static
-        }
-    for sapp in settings.supporting_apps:
-        app_py_mod = __import__(sapp)
+    # serve static files from main app and supporting apps (need to reverse order b/c
+    # middleware stack is run in bottom up order).  This works b/c if a
+    # static file isn't found, the ShardDataMiddleware just forwards the request
+    # to the next app.
+    for appname in config.appslist(reverse=True):
+        app_py_mod = __import__(appname)
         fs_static_path = path.join(path.dirname(app_py_mod.__file__), 'static')
-        static_map[routing.add_prefix('/%s/static' % sapp)] = fs_static_path
-    staticapp = SharedDataMiddleware(app, static_map)
-    
-    # look for something in the static area first, if not found there, then
-    # forward on to the application stack
-    app = Cascade([staticapp, app])
+        static_map = {routing.add_prefix('/') : fs_static_path}
+        app = SharedDataMiddleware(app, static_map)
     
     # show nice stack traces and debug output if enabled
     if settings.debugger.enabled:

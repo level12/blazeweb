@@ -29,7 +29,7 @@ class Testruns(DefaultSettings):
             Rule('/', endpoint='tests:Index')
         ])
         
-        self.db.uri = 'sqlite:///'
+        self.db.url = 'sqlite:///'
         
         self.logging.levels = ['debug']
         

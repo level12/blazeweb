@@ -26,7 +26,7 @@ class Testruns(DefaultSettings):
 
         self.modules.tests.enabled = True
         
-        self.db.uri = 'sqlite:///'
+        self.db.url = 'sqlite:///'
         
         self.logging.levels = ['debug']
         
