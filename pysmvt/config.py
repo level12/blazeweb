@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from os import path
 import os
-from pysmvt import appimport, settings, ag
+from pysmvt import appimport, settings, ag, modimport
 from werkzeug.routing import Rule
-from pysmvt.utils import OrderedProperties, OrderedDict, Context
+from pysmvt.utils import OrderedProperties, OrderedDict, Context, tb_depth_in
 
 class QuickSettings(OrderedProperties):
     def __init__(self, initialize=True):
@@ -261,6 +261,22 @@ def appinit(appsettings, profile='Default', **kwargs):
     Settings = getattr(appsettings, profile)
     settings._push_object(Settings())
     ag._push_object(Context())
+    
+    # now we need to assign module settings to the main setting object
+    for module in settings.modules.keys():
+        try:
+            Settings = modimport('%s.settings' % module, 'Settings')
+            ms = Settings()
+            # update the module's settings with any module level settings made
+            # at the app level.  This allows us to override module settings
+            # in our applications settings.py file.
+            ms.update(settings.modules[module])
+            settings.modules[module] = ms
+        except:
+            # 3 = .settings or Settings wasn't found, which is ok.  Any other
+            # depth means a different import error, and we want to raise that
+            if not tb_depth_in(3):
+                raise
 
 def appslist(reverse=False):
     if reverse:

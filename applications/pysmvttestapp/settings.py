@@ -24,6 +24,7 @@ class Testruns(DefaultSettings):
         
         self.modules.tests.enabled = True
         self.modules.nomodel.enabled = True
+        self.modules.nosettings.enabled = True
         
         self.routing.routes.extend([
             Rule('/', endpoint='tests:Index')
@@ -66,6 +67,9 @@ class Testruns(DefaultSettings):
         
         self.emails.programmers = ['randy@rcs-comp.com']
         self.email.subject_prefix = '[pysvmt test app] '
+        
+        # a fake setting for testing
+        self.foo = 'bar'
         
         # we are done adding variables to this settings object, so lock it
         self.lock()

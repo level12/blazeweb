@@ -178,22 +178,9 @@ class Controller(object):
         self._add_routing_rules(self.settings.routing.routes)
        
         # module routes        
-        for module in self.settings.modules.keys():
-            try:
-                Settings = modimport('%s.settings' % module, 'Settings')
-                s = Settings()
-                # load the routes from the module
-                self._add_routing_rules(s.routes)
-            except ImportError, e:
-                # check the exception depth to make sure the import
-                # error we caught was just a missing .settings
-                _, _, tb = sys.exc_info()
-                # 3 = .settings wasn't found
-                if traceback_depth(tb) in [3] or 'cannot import name routes' in str(e):
-                    pass
-                else:
-                    e.args = '%s (from %s.settings.py)' % (str(e), module), 
-                    raise
+        for module in self.settings.modules:
+            if hasattr(module, 'routes'):
+                self._add_routing_rules(module.routes)
     
     def _add_routing_rules(self, rules):
         if self.settings.routing.prefix:

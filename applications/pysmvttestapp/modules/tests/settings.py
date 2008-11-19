@@ -43,5 +43,7 @@ class Settings(QuickSettings):
             Rule('/tests/appfallback', endpoint='tests:InApp2'),
         ])
         
+        self.foo = 'baz'
+        
         # no more values can be added
         self.lock()
