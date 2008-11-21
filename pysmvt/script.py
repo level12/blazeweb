@@ -105,8 +105,7 @@ def action_initdb(targetmod=('m', ''), sqlite_triggers=True):
     db.meta.create_all(bind=db.engine)
     
     # add a session to the db
-    connection = db.engine.contextual_connect()
-    db.sess = db.Session(bind=connection)
+    db.sess = db.Session()
     
     # call each AM's appmod_dbinit()
     for appmod in settings.modules.keys():
