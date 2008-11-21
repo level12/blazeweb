@@ -6,7 +6,7 @@ from pysmvt.utils import pprint, tb_depth_in, traceback_depth
 from werkzeug import script, Client, BaseResponse
 from sqlitefktg4sa import auto_assign
 
-_calling_mod_locals = sys._getframe(1).f_locals
+_calling_mod_locals = sys._getframe(1).f_globals
 
 ### helper functions
 def _make_app(profile='Default'):
@@ -94,10 +94,14 @@ def action_initdb(targetmod=('m', ''), sqlite_triggers=True):
     app = _shell_init_func()['webapp']
 
     # create foreign keys for SQLite
-    if sqlite_triggers:
+    if sqlite_triggers and not getattr(db.meta, 'triggers', False):
         auto_assign(db.meta, db.engine)
+        db.meta.triggers = True
 
     # create the database objects
+    #print db
+    #for t in db.meta.tables:
+    #    print t
     db.meta.create_all(bind=db.engine)
     
     # add a session to the db
@@ -122,8 +126,7 @@ def action_initmod(targetmod=('m', '')):
     app = _shell_init_func()['webapp']
 
     # add a session to the db if modules inits need it
-    connection = db.engine.contextual_connect()
-    db.sess = db.Session(bind=connection)
+    db.sess = db.Session()
     
     # call each AM's appmod_dbinit()
     for appmod in settings.modules.keys():
