@@ -259,11 +259,13 @@ class TemplateMixin(object):
             raise ProgrammingError("a view can only set template_name or template_file, not both")
         if self.template_name == None:
             self.template_name = self.__class__.__name__
-        self.template.templateName = self.template_name
         if self.template_file:
             name, ext = path.splitext(self.template_file)
             self.template.tpl_extension = ext.lstrip('.')
-            self.template.templateName = name
+            self.template_name = name
+        # need to set this as it affects the default names for including
+        # css and js
+        self.template.templateName = self.template_name
         self.retval = self.template.render()
 
 class HtmlTemplatePage(HtmlPageViewBase, TemplateMixin):

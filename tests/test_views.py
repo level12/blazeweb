@@ -377,6 +377,10 @@ class TestViews(unittest.TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.data, 'Hello mod level priority!')
         
+    def test_htmltemplatefileargcss(self):
+        r = self.client.get('tests/htmltemplatefileargcss')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.data, 'css\nHello File Arg!')
 
 class TestApp2(unittest.TestCase):
         

@@ -207,3 +207,7 @@ class ParentTemplateInheritance(HtmlTemplatePage):
 class ModLevelPriority(HtmlTemplatePage):
     def default(self):
         pass
+    
+class HtmlTemplateFileArgCss(HtmlTemplatePage):
+    def default(self):
+        self.template_file = 'fileargcss.html'
