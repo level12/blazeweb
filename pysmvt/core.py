@@ -196,7 +196,7 @@ def _getview(endpoint, args, called_from ):
         called_from options: client, forward, getview, template
     """
     from pysmvt.view import RespondingViewBase
-    from pysmvt.utils import traceback_depth
+    from pysmvt.utils import tb_depth_in
     
     app_mod_name, vclassname = endpoint.split(':')
     
@@ -211,12 +211,9 @@ def _getview(endpoint, args, called_from ):
                 else:
                     raise ProgrammingError('forward to non-RespondingViewBase view "%s"' % vklass.__name__)
     except ImportError, e:
-        # we check the stack trace depth to if it is an import
-        # error from the view module b/c we want that propogated
-        _, _, tb = sys.exc_info()
-        # 2 = view class name wasn't found
-        # 3 = view module wasn't found
-        if traceback_depth(tb) in (3,4):
+        # traceback depth of 3 indicates we can't find the module or we can't
+        # find the class in a module
+        if tb_depth_in(3):
             msg = 'Could not load view "%s": %s' % (endpoint, str(e))
             ag.logger.debug(msg)
             raise ProgrammingError(msg)
