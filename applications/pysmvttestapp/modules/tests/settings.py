@@ -41,6 +41,12 @@ class Settings(QuickSettings):
             Rule('/tests/customvalidator', endpoint='tests:CustomValidator'),
             Rule('/tests/badvalidator', endpoint='tests:BadValidator'),
             Rule('/tests/appfallback', endpoint='tests:InApp2'),
+            Rule('/tests/htmltemplateerror1', endpoint='tests:HtmlTemplateError1'),
+            Rule('/tests/htmltemplatefilearg', endpoint='tests:HtmlTemplateFileArg'),
+            Rule('/tests/templateinheritance', endpoint='tests:TemplateInheritance'),
+            Rule('/tests/parenttemplate', endpoint='tests:ParentTemplate'),
+            Rule('/tests/parenttemplateinheritance', endpoint='tests:ParentTemplateInheritance'),
+            Rule('/tests/modlevelpriority', endpoint='tests:ModLevelPriority'),
         ])
         
         self.foo = 'baz'

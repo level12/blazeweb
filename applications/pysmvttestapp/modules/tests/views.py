@@ -182,3 +182,28 @@ class BadValidator(RespondingViewBase):
 
     def default(self, num=10):
         return num
+
+class HtmlTemplateError1(HtmlTemplatePage):
+    def default(self):
+        self.template_name = 'test'
+        self.template_file = 'test'
+
+class HtmlTemplateFileArg(HtmlTemplatePage):
+    def default(self):
+        self.template_file = 'filearg.html'
+        
+class TemplateInheritance(HtmlTemplatePage):
+    def default(self):
+        pass
+    
+class ParentTemplate(HtmlTemplatePage):
+    def default(self):
+        pass
+    
+class ParentTemplateInheritance(HtmlTemplatePage):
+    def default(self):
+        pass
+    
+class ModLevelPriority(HtmlTemplatePage):
+    def default(self):
+        pass

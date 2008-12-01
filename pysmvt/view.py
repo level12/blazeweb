@@ -1,4 +1,4 @@
-import inspect
+from os import path
 from pysmvt import settings, user, ag, _getview, rg, appimportauto
 from pysmvt.utils import reindent, auth_error, log_info, bad_request_error, \
     fatal_error, urlslug, markdown, log_debug
@@ -201,6 +201,7 @@ class TemplateMixin(object):
         self.assignTemplateFunctions()
         self.assignTemplateVariables()
         self.template_name = None
+        self.template_file = None
         
     def assignTemplateFunctions(self):
         from pysmvt.routing import style_url, index_url, url_for, js_url
@@ -254,16 +255,22 @@ class TemplateMixin(object):
         return _getview(view, kwargs, 'template')
             
     def handle_response(self):
+        if self.template_name and self.template_file:
+            raise ProgrammingError("a view can only set template_name or template_file, not both")
         if self.template_name == None:
             self.template_name = self.__class__.__name__
         self.template.templateName = self.template_name
+        if self.template_file:
+            name, ext = path.splitext(self.template_file)
+            self.template.tpl_extension = ext.lstrip('.')
+            self.template.templateName = name
         self.retval = self.template.render()
 
 class HtmlTemplatePage(HtmlPageViewBase, TemplateMixin):
     
     def __init__(self, modulePath, endpoint, args):
         super(HtmlTemplatePage, self).__init__(modulePath, endpoint, args)
-        self.template = JinjaHtmlBase(modulePath)
+        self.template = JinjaHtmlBase(endpoint)
         TemplateMixin.init(self)
     
     def handle_response(self):
@@ -274,7 +281,7 @@ class HtmlTemplateSnippet(SnippetViewBase, TemplateMixin):
     
     def __init__(self, modulePath, endpoint, args):
         super(HtmlTemplateSnippet, self).__init__(modulePath, endpoint, args)
-        self.template = JinjaHtmlBase(modulePath)
+        self.template = JinjaHtmlBase(endpoint)
         TemplateMixin.init(self)
     
     def handle_response(self):
@@ -285,7 +292,7 @@ class TextTemplatePage(RespondingViewBase, TemplateMixin):
     
     def __init__(self, modulePath, endpoint, args):
         super(TextTemplatePage, self).__init__(modulePath, endpoint, args)
-        self.template = JinjaBase(modulePath)
+        self.template = JinjaBase(endpoint)
         self.template.tpl_extension = 'txt'
         TemplateMixin.init(self)
             
@@ -300,7 +307,7 @@ class TextTemplateSnippet(SnippetViewBase, TemplateMixin):
     
     def __init__(self, modulePath, endpoint, args):
         super(TextTemplateSnippet, self).__init__(modulePath, endpoint, args)
-        self.template = JinjaBase(modulePath)
+        self.template = JinjaBase(endpoint)
         self.template.tpl_extension = 'txt'
         TemplateMixin.init(self)
     

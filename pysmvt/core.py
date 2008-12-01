@@ -17,7 +17,8 @@ __all__ = [
     'appimport',
     'modimportauto',
     'appimportauto',
-    'db'
+    'db',
+    'appfilepath'
 ]
 
 # a "global" object for storing data and objects (like tcp connections or db
@@ -168,6 +169,45 @@ def _import(dotted_location, attr=None):
         raise ImportError('cannot import "%s" with attribute "%s" from any application' % (dotted_location, attr))
     else:
         raise ImportError('cannot import "%s" from any application' % dotted_location)
+
+def appfilepath(*args):
+    """
+        return the full path to the directory of `ppath` which is looked up
+        in a hierarchial fashion.  This allows us to "inherit" files from
+        supporting apps.
+        
+        example:
+        
+        appfilepath('myfile.txt')
+        
+        returns '/projects/myapp' if '/projects/myapp/myfile.txt' exists
+        returns '/projects/supportingapp' if '/projects/myapp/myfile.txt' does
+        not exist but '/projects/supportingapp/myfile.txt' exists
+    """
+    from pysmvt.config import appslist
+    from pysmvt.utils import tolist
+    
+    # the first time this function is used for this applicaiton, we need to
+    # do some setup
+    if not hasattr(ag, '_file_lookup_cache'):
+        ag._file_lookup_cache = dict()
+    
+    ppaths = args
+    
+    for ppath in ppaths:
+        ppath = path.normpath(ppath)
+        if ag._file_lookup_cache.has_key(ppath):
+            return ag._file_lookup_cache[ppath]
+        
+        for app in appslist():
+            app_dir = path.dirname(__import__(app).__file__)
+            fpath = path.join(app_dir, ppath)
+            if path.exists(fpath):
+                ag._file_lookup_cache[ppath] = fpath
+                return fpath
+    
+    raise ProgrammingError('could not locate "%s" in any application' % ppath)
+        
 
 def redirect(location, permanent=False, code=302 ):
     """

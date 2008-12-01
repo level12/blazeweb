@@ -336,7 +336,48 @@ class TestViews(unittest.TestCase):
         r = self.client.get('tests/appfallback')
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.data, 'Hello app2!')
+    
+    def test_htmltemplateerror1(self):
+        try:
+            r = self.client.get('tests/htmltemplateerror1')
+        except ProgrammingError, e:
+            self.assertEqual( 'a view can only set template_name or template_file, not both', str(e))
+        else:
+            self.fail('excpected exception for bad template arguments')
+    
+    def test_htmltemplatefilearg(self):
+        r = self.client.get('tests/htmltemplatefilearg')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.data, 'Hello File Arg!')
+    
+    def test_htmltemplateinheritance(self):
+        """ test inheritance at the module level from a supporting app """
+        r = self.client.get('tests/templateinheritance')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.data, 'Hello Template Inheritance!')
+
+    def test_parenttemplate(self):
+        """ test extending a template from the parent application """
+        r = self.client.get('tests/parenttemplate')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.data, 'Hello Parent Template!')
+
+    def test_parenttemplateinheritance(self):
+        """ test extending a template from a supporting app"""
+        r = self.client.get('tests/parenttemplateinheritance')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.data, 'Hello App2 Parent Template!')
         
+    def test_modlevelpriority(self):
+        """ make sure that when inheriting that a module level template in a
+            supporting app takes precidence over a template level app in the
+            main module
+        """
+        r = self.client.get('tests/modlevelpriority')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.data, 'Hello mod level priority!')
+        
+
 class TestApp2(unittest.TestCase):
         
     def setUp(self):
