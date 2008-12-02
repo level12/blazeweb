@@ -120,6 +120,13 @@ class DefaultSettings(QuickSettings):
         # take these environment variables into account.
         self.routing.prefix = ''
         
+        # the settings for the routine Map object:
+        self.routing.map.default_subdomain=''
+        self.routing.map.charset='utf-8'
+        self.routing.map.strict_slashes=True
+        self.routing.map.redirect_defaults=True
+        self.routing.map.converters=None
+        
         #######################################################################
         # DATABASE
         #######################################################################

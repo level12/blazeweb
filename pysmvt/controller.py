@@ -28,7 +28,7 @@ class Controller(object):
         self.settings = settings
         
         # Routing Map
-        self._route_map = Map()
+        self._route_map = Map(**settings.routing.map.todict())
         
         # load routes from the application and settings files
         self._init_routes()

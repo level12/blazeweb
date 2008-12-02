@@ -1,3 +1,4 @@
+from urlparse import urlparse
 from pysmvt import settings, rg
 from werkzeug.routing import Rule, RequestRedirect
 from werkzeug.exceptions import NotFound, MethodNotAllowed
@@ -44,8 +45,11 @@ def index_url(full=False):
         raise SettingsError('the index url "%s" could not be located' % url)
     except MethodNotAllowed :
         raise ProgrammingError('index_url(): MethodNotAllowed exception encountered')
-    except RequestRedirect:
-        raise SettingsError('the index url "%s" generated a redirect' % url)
+    except RequestRedirect, e:
+        if full:
+            return e.new_url
+        parts = urlparse(e.new_url)
+        return parts.path.lstrip('/')
 
 def add_prefix(path):
     if settings.routing.prefix:
