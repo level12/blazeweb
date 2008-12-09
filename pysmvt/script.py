@@ -12,11 +12,11 @@ _calling_mod_locals = sys._getframe(1).f_globals
 def _make_app(profile='Default'):
     return _calling_mod_locals['make_app'](profile)
 
-def _shell_init_func():
+def _shell_init_func(profile='Default'):
     """
     Called on shell initialization.  Adds useful stuff to the namespace.
     """
-    app = _make_app()
+    app = _make_app(profile)
     return {
         'webapp': app
     }
@@ -117,12 +117,12 @@ def action_initdb(targetmod=('m', ''), sqlite_triggers=True):
                 if not tb_depth_in(3):
                     raise
 
-def action_initmod(targetmod=('m', '')):
+def action_initmod(targetmod=('m', ''), profile=('p', 'Default')):
     """
         used to allow modules to do setup after they are installed.  Will call
         a function init_db in a module's commands.py file.
     """
-    app = _shell_init_func()['webapp']
+    app = _shell_init_func(profile)['webapp']
 
     # add a session to the db if modules inits need it
     db.sess = db.Session()
