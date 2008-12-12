@@ -153,7 +153,13 @@ class TestImports(unittest.TestCase):
         obj3 = imptests2.obj3
         self.assertEqual([obj1, obj3],
             appimport('imptests', ['obj1', 'obj3']))
-
+    
+    def test_list_only(self):
+        # don't load any modules first
+        appimport('imptests', ('obj3', 'obj1'))
+        # do a second run to make sure the cache is being pulled from
+        appimport('imptests', ('obj3', 'obj1'))
+        
 if __name__ == '__main__':
     #unittest.main()
     unittest.TextTestRunner().run(TestImports('test_callerglobals1'))

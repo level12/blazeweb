@@ -141,7 +141,7 @@ def _import(dotted_location, attr=None):
     if attr:
         cachekey = '%s:%s' % (dotted_location, attr)
         if ag._import_cache.get(cachekey):
-            return __import__(ag._import_cache.get(dotted_location), globals(), locals(), [attr])
+            return __import__(ag._import_cache.get(cachekey), globals(), locals(), [attr])
     else:
         cachekey = dotted_location
         if ag._import_cache.get(dotted_location):
