@@ -140,7 +140,20 @@ class TestImports(unittest.TestCase):
             modimport('tests.nothere')
         except ImportError, e:
             self.assertEqual(str(e), 'cannot import "modules.tests.nothere" from any application')
+    
+    def test_module_then_list(self):
+        """ getting module first should not affect attribute import later """
+        self.assertEqual( __import__('pysmvttestapp.imptests', fromlist=['']) ,
+                         appimport('imptests'))
         
+        # now try items from across different apps in the same from list
+        imptests = __import__('pysmvttestapp.imptests', fromlist=['obj1'])
+        imptests2 = __import__('pysmvttestapp2.imptests', fromlist=['obj2'])
+        obj1 = imptests.obj1
+        obj3 = imptests2.obj3
+        self.assertEqual([obj1, obj3],
+            appimport('imptests', ['obj1', 'obj3']))
+
 if __name__ == '__main__':
     #unittest.main()
     unittest.TextTestRunner().run(TestImports('test_callerglobals1'))

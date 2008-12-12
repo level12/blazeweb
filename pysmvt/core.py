@@ -140,30 +140,25 @@ def _import(dotted_location, attr=None):
     
     if attr:
         cachekey = '%s:%s' % (dotted_location, attr)
+        if ag._import_cache.get(cachekey):
+            return __import__(ag._import_cache.get(dotted_location), globals(), locals(), [attr])
     else:
         cachekey = dotted_location
-    
-    if ag._import_cache.get(dotted_location):
-        return __import__(ag._import_cache.get(dotted_location), globals(), locals(), [''])
-    
+        if ag._import_cache.get(dotted_location):
+            return __import__(ag._import_cache.get(dotted_location), globals(), locals(), [''])
+
     # if the module's location wasn't cached, or the module at that location
     # doesn't have the requested attribute, we need to search for the module
     apps_to_try = [settings.appname] + settings.supporting_apps
     for app in apps_to_try:
         try:
             pymodtoload = '%s.%s' % (app, dotted_location)
-            #print pymodtoload
             found = __import__(pymodtoload, globals(), locals(), [''])
             if attr is None or hasattr(found, attr):
                 ag._import_cache[cachekey] = pymodtoload
                 return found
         except ImportError:
-            # if the import error wasn't for what we loaded, then
-            # there was in import error in the module we tried to import
-            # re-raise that exception
-            _, _, tb = sys.exc_info()
-            #print 'except: %d %s %s ' % (traceback_depth(tb), str(e), module_to_load)
-            if traceback_depth(tb) > 0:
+            if traceback_depth() > 0:
                 raise
     if attr:
         raise ImportError('cannot import "%s" with attribute "%s" from any application' % (dotted_location, attr))
