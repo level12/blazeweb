@@ -167,7 +167,6 @@ class DefaultSettings(QuickSettings):
         #######################################################################
         # EXCEPTION HANDLING
         #######################################################################
-        self.views.trap_exceptions = False
         # if True, most exceptions will be caught and
         # turned into a 500 response, which will optionally be handled by
         # the error docs handler if setup for 500 errors
