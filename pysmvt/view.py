@@ -48,53 +48,44 @@ class ViewBase(object):
         log_info('%s view instantiated' % self.__class__.__name__)
         
     def call_methods(self):
-        
-        try:
-            # call prep method if it exists
-            if hasattr(self, 'prep'):
-                getattr(self, 'prep')()           
-            
-            self.args_validation()
-    
-            # linearize the MultiDict so that we can pass it into the functions
-            # as keywords
-            argsdict = self.args.to_dict(flat='selective')
-            
-            # loop through all the calls requested
-            for call_details in self._call_methods_stack:
-                if hasattr(self, call_details['method_name']):
-                    if call_details['assign_args']:
-                        getattr(self, call_details['method_name'])(**argsdict)
-                    else:
-                        getattr(self, call_details['method_name'])()
 
-            if rg.request.method == 'GET' and hasattr(self, 'get'):
-                retval = self.get(**argsdict)
-            elif rg.request.method == 'POST' and hasattr(self, 'post'):
-                retval = self.post(**argsdict)
-            else:
-                try:
-                    retval = self.default(**argsdict)
-                except AttributeError, e:
-                    if "'%s' object has no attribute 'default'" % self.__class__.__name__ in str(e):
-                        raise ProgrammingError('there were no "action" methods on the view class "%s".  Expecting get(), post(), or default()' % self._endpoint)
-                    else:
-                        raise
-                
-            # we allow the views to work on self.retval directly, so if it has
-            # been used, we do not replace it with the returned value.  If it
-            # hasn't been used, then we replace it with what was returned
-            # above
-            if self.retval is NotGiven:
-                self.retval = retval
+        # call prep method if it exists
+        if hasattr(self, 'prep'):
+            getattr(self, 'prep')()           
+        
+        self.args_validation()
+
+        # linearize the MultiDict so that we can pass it into the functions
+        # as keywords
+        argsdict = self.args.to_dict(flat='selective')
+        
+        # loop through all the calls requested
+        for call_details in self._call_methods_stack:
+            if hasattr(self, call_details['method_name']):
+                if call_details['assign_args']:
+                    getattr(self, call_details['method_name'])(**argsdict)
+                else:
+                    getattr(self, call_details['method_name'])()
+
+        if rg.request.method == 'GET' and hasattr(self, 'get'):
+            retval = self.get(**argsdict)
+        elif rg.request.method == 'POST' and hasattr(self, 'post'):
+            retval = self.post(**argsdict)
+        else:
+            try:
+                retval = self.default(**argsdict)
+            except AttributeError, e:
+                if "'%s' object has no attribute 'default'" % self.__class__.__name__ in str(e):
+                    raise ProgrammingError('there were no "action" methods on the view class "%s".  Expecting get(), post(), or default()' % self._endpoint)
+                else:
+                    raise
             
-        except UserError, e:
-            user.add_message('error', str(e))
-            fatal_error(orig_exception=e)
-        except Exception, e:
-            if settings.views.trap_exceptions:
-                fatal_error(orig_exception=e)
-            raise
+        # we allow the views to work on self.retval directly, so if it has
+        # been used, we do not replace it with the returned value.  If it
+        # hasn't been used, then we replace it with what was returned
+        # above
+        if self.retval is NotGiven:
+            self.retval = retval
     
     def args_validation(self):
         invalid_args = []
