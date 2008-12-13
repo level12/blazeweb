@@ -7,7 +7,6 @@ from paste.registry import RegistryManager
 from paste.cascade import Cascade
 from pysmvt import config, settings
 from pysmvt.application import Application
-from pysmvt.middleware import ElixirApp
 from pysmvt import routing
 from werkzeug import SharedDataMiddleware, DebuggedApplication
 import settings as settingsmod
@@ -17,14 +16,6 @@ def makeapp(profile='Default', **kwargs):
     config.appinit(settingsmod, profile, **kwargs)
     
     app = Application()
-    
-    app = ElixirApp(app)
-    
-    #app = ExceptionHandler(app)
-    
-    #app = ErrorDocuments(app)
-    
-    #app = ForwardHandler(app)
     
     app = SessionMiddleware(app, **dict(settings.beaker))
     

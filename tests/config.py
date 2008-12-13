@@ -1,14 +1,11 @@
 from os import path
-import rcsutils
-
-# setup the virtual environment so that we can import specific versions
-# of system libraries.  The first 
-rcsutils.setup_virtual_env('pysmvt-libs-trunk', __file__, '..', '../applications')
-
 import config
 from pysmvt.application import Application
 from pysmvt.config import DefaultSettings
 from pysmvt import settings
+
+from pysutils import prependsitedir
+prependsitedir(__file__, 'applications')
 
 basedir = path.dirname(path.abspath(__file__))
 

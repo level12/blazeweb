@@ -9,7 +9,7 @@ from pysmvt.application import Application
 from pysmvt.exceptions import ProgrammingError
 
 pysmvt_project_dir = path.dirname(path.dirname(pysmvt.__file__))
-apps_dir = path.join(pysmvt_project_dir, 'applications')
+apps_dir = path.join(pysmvt_project_dir, 'tests', 'applications')
 app1_dir = path.join(apps_dir, 'pysmvttestapp')
 app2_dir = path.join(apps_dir, 'pysmvttestapp2')
 

@@ -11,7 +11,7 @@ from werkzeug.exceptions import InternalServerError, BadRequest
 from werkzeug.utils import MultiDict
 import formencode
 from pprint import PrettyPrinter
-from webhelpers.containers import NotGiven
+from pysutils import NotGiven
 
 # @@todo: this is a **really** bad way to do this
 try: 
@@ -57,7 +57,7 @@ class ViewBase(object):
 
         # linearize the MultiDict so that we can pass it into the functions
         # as keywords
-        argsdict = self.args.to_dict(flat='selective')
+        argsdict = self.args.to_dict()
         
         # loop through all the calls requested
         for call_details in self._call_methods_stack:
@@ -103,10 +103,7 @@ class ViewBase(object):
                         value = rg.request.args.get(argname)
                         value = validator.to_python(value)
                     if value:
-                        if isinstance(value, list):
-                            self.args.setlist(argname, value)
-                        else:
-                            self.args[argname] = value
+                        self.args[argname] = value
                     else:
                         if required:
                             #print '%s %s' % (argname, value)

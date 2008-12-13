@@ -6,8 +6,6 @@ from pysmvt import settings
 import pysmvttestapp.settings
 from pysmvt.config import appslist, QuickSettings, ModulesSettings
 
-
-
 class Base(QuickSettings):
     
     def __init__(self):

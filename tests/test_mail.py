@@ -412,6 +412,7 @@ Bcc: =
 ----------------------------------------------------------------------
 
 This is a minimal [XHTML 1.0][1] document with a W3C url for the DTD.
+
    [1]: http://www.w3.org/TR/xhtml1/
 """
         html_part = \
