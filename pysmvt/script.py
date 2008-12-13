@@ -4,7 +4,6 @@ from pysmvt import ag, appimport, db, settings, modimport
 from pysmvt.utils.filesystem import mkpyfile
 from pysmvt.utils import pprint, tb_depth_in, traceback_depth
 from werkzeug import script, Client, BaseResponse
-from sqlitefktg4sa import auto_assign
 
 _calling_mod_locals = sys._getframe(1).f_globals
 
@@ -89,34 +88,6 @@ def action_createmod(name=('n', '')):
         if not os.path.exists(fpath):
             mkpyfile(fpath)
 
-def action_initdb(targetmod=('m', ''), sqlite_triggers=True):
-    """ used to create database objects & structure """
-    app = _shell_init_func()['webapp']
-
-    # create foreign keys for SQLite
-    if sqlite_triggers and not getattr(db.meta, 'triggers', False):
-        auto_assign(db.meta, db.engine)
-        db.meta.triggers = True
-
-    # create the database objects
-    #print db
-    #for t in db.meta.tables:
-    #    print t
-    db.meta.create_all(bind=db.engine)
-    
-    # add a session to the db
-    db.sess = db.Session()
-    
-    # call each AM's appmod_dbinit()
-    for appmod in settings.modules.keys():
-        if targetmod == appmod or targetmod == '':
-            try:
-                callable = modimport('%s.commands' % appmod, 'init_db')
-                callable()
-            except ImportError:
-                if not tb_depth_in(3):
-                    raise
-
 def action_initmod(targetmod=('m', ''), profile=('p', 'Default')):
     """
         used to allow modules to do setup after they are installed.  Will call
@@ -136,3 +107,7 @@ def action_initmod(targetmod=('m', ''), profile=('p', 'Default')):
             except ImportError:
                 if not tb_depth_in(3):
                     raise
+
+def main():
+    """ this is what our command line `pysmvt` calls to start """
+    print 'main called'
