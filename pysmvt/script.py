@@ -1,6 +1,9 @@
+# -*- coding: utf-8 -*-
 import os
 import sys
+from os import path
 from pysmvt import ag, appimport, db, settings, modimport
+import pysmvt.commands
 from pysmvt.utils.filesystem import mkpyfile
 from pysmvt.utils import pprint, tb_depth_in, traceback_depth
 from werkzeug import script, Client, BaseResponse
@@ -35,7 +38,7 @@ def make_runserver(app_factory, hostname='localhost', port=5000,
     return action
 
 ### Werkzeug script functions
-action_shell = script.make_shell(_shell_init_func)
+
 
 ### Action Functions
 action_runserver = make_runserver(_make_app, use_reloader=True)
@@ -110,4 +113,48 @@ def action_initmod(targetmod=('m', ''), profile=('p', 'Default')):
 
 def main():
     """ this is what our command line `pysmvt` calls to start """
-    print 'main called'
+    
+    # we first need to determine if we are running in an application context
+    # or not
+    script.run(_gather_actions())
+    
+def _gather_actions():
+    """
+        Ssearches all applications and application modules for available actions.
+        Searches from least signifcant to most signifcant so that the more
+        significant actions get precidence.
+    """
+    actions = {}
+    # we will always gather actions from the pysmvt commands module
+    actions.update(vars(pysmvt.commands))
+    if _is_application_context():
+        pass
+        # get commands from all applications (primary and supporting)
+        
+        # get commands from all modules in all applications
+    return actions
+
+def _is_application_context():
+    """
+        See if we can find a pysmvt application that we can instantiate if we
+        need to.  This will determine our "context".
+    """
+    app_name = _app_name()
+    if app_name:
+        # once we know the app name, we can try and import the Default
+        # settings
+        settings_mod = __import__('%s.settings' % app_name, globals(), locals(), ['Default'])
+        print settings_mod
+        return True
+    else:
+        return False
+
+def _app_name():
+    cwd = os.getcwd()
+    # every application has to have a settings.py file, see if it is in the cwd
+    settings_path = path.join(cwd, 'settings.py')
+    if path.exists(settings_path):
+        app_path = path.dirname(settings_path)
+        app_name = path.basename(app_path)
+        return app_name
+    return None
