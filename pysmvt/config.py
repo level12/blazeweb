@@ -2,7 +2,7 @@
 from os import path
 import os
 from pysmvt import appimport, settings, ag, modimport
-from werkzeug.routing import Rule
+from werkzeug.routing import Rule, Map, Submount
 from pysmvt.utils import OrderedProperties, OrderedDict, Context, tb_depth_in
 
 class QuickSettings(OrderedProperties):
@@ -112,7 +112,10 @@ class DefaultSettings(QuickSettings):
         #######################################################################
         # ROUTING
         #######################################################################
-        self.routing.routes = []
+        self.routing.routes = [
+            # a special route for testing purposes
+            Rule('/[pysmvt_test]', endpoint='[pysmvt_test]')
+        ]
         
         # note that you shouldn't really need to use the routing prefix if
         # SCRIPT_NAME and PATH_INFO are set correctly as the Werkzeug
@@ -191,12 +194,6 @@ class DefaultSettings(QuickSettings):
         # environment.
         self.debugger.enabled = True
         self.debugger.interactive = False
-
-        #######################################################################
-        # LOGGING
-        #######################################################################
-        # currently support 'debug' & 'info'
-        self.logging.levels = []
         
         #######################################################################
         # EMAIL ADDRESSES
@@ -259,12 +256,15 @@ class DefaultSettings(QuickSettings):
         # self.error_docs[404] = 'errorsmod:NotFound'
         self.error_docs
 
-def appinit(appsettings, profile='Default', **kwargs):
+def appinit(settings_mod=None, profile=None, settings_cls=None, **kwargs):
     """
         called to setup the application's settings
         variable
     """
-    Settings = getattr(appsettings, profile)
+    if settings_cls is None:
+        Settings = getattr(settings_mod, profile)
+    else:
+        Settings = settings_cls
     settings._push_object(Settings())
     ag._push_object(Context())
     
@@ -283,6 +283,28 @@ def appinit(appsettings, profile='Default', **kwargs):
             # depth means a different import error, and we want to raise that
             if not tb_depth_in(3):
                 raise
+    
+    ###
+    ### routing
+    ###
+    ag.route_map = Map(**settings.routing.map.todict())
+       
+    # application routes
+    _add_routing_rules(settings.routing.routes)
+   
+    # module routes        
+    for module in settings.modules:
+        if hasattr(module, 'routes'):
+            _add_routing_rules(module.routes)
+
+
+def _add_routing_rules(rules):
+    if settings.routing.prefix:
+        # prefix the routes with the prefix in the app settings class
+        ag.route_map.add(Submount( settings.routing.prefix, rules ))
+    else:
+        for rule in rules or ():
+            ag.route_map.add(rule)
 
 def appslist(reverse=False):
     if reverse:

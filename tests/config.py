@@ -1,7 +1,7 @@
 from os import path
-import config
+
 from pysmvt.application import Application
-from pysmvt.config import DefaultSettings
+from pysmvt.config import DefaultSettings, appinit
 from pysmvt import settings
 
 from pysutils import prependsitedir
@@ -41,8 +41,7 @@ class Testruns(DefaultSettings):
         # environment
         self.debugger.enabled = False
         self.debugger.format = 'interactive'
-        
-        
+                
         self.emails.from_default = 'root@localhost'
         self.emails.programmers = ['randy@rcs-comp.com']
         self.email.subject_prefix = '[pysvmt test app] '
@@ -50,13 +49,9 @@ class Testruns(DefaultSettings):
         # we are done adding variables to this settings object, so lock it
         self.lock()
 
-def makeapp(profile='Default', **kwargs):
-    
-    config.appinit(settings, profile, **kwargs)
-    
-    app = Application()
-    
-    return app
+def make_console(settings_cls=Testruns, **kwargs):
+    appinit(settings_cls=settings_cls, **kwargs)
+    return Application()
 
 def init_settings(customsettings=None):
     if customsettings:

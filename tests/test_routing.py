@@ -34,12 +34,11 @@ class Noindex(RoutingSettings):
 
 class TestRouting(unittest.TestCase):
     def setUp(self):
-        pysmvt.config.appinit(__import__(__name__).test_routing, 'RoutingSettings')
-        self.app = Application()
-        self.app.startrequest()
+        self.app = config.make_console(RoutingSettings)
+        self.app.start_request()
     
     def tearDown(self):
-        self.app.endrequest()
+        self.app.end_request()
         self.app = None
     
     def test_routes(self):
@@ -54,12 +53,11 @@ class TestRouting(unittest.TestCase):
 
 class TestPrefix(unittest.TestCase):
     def setUp(self):
-        pysmvt.config.appinit(__import__(__name__).test_routing, 'Prefixsettings')
-        self.app = Application()
-        self.app.startrequest()
+        self.app = config.make_console(Prefixsettings)
+        self.app.start_request()
     
     def tearDown(self):
-        self.app.endrequest()
+        self.app.end_request()
         self.app = None
     
     def test_routes(self):
@@ -74,12 +72,11 @@ class TestPrefix(unittest.TestCase):
 
 class TestNoIndex(unittest.TestCase):
     def setUp(self):
-        pysmvt.config.appinit(__import__(__name__).test_routing, 'Noindex')
-        self.app = Application()
-        self.app.startrequest()
+        self.app = config.make_console(Noindex)
+        self.app.start_request()
     
     def tearDown(self):
-        self.app.endrequest()
+        self.app.end_request()
         self.app = None
     
     def test_routes(self):

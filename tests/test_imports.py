@@ -1,7 +1,7 @@
 import config
 import unittest
 
-import pysmvttestapp.settings
+import pysmvttestapp.applications
 import pysmvt.config
 from pysmvt import appimport, modimport, modimportauto, appimportauto
 from pysmvt.application import Application
@@ -9,14 +9,13 @@ import pysmvttestapp.settings
 
 class TestImports(unittest.TestCase):
     def setUp(self):
-        pysmvt.config.appinit(pysmvttestapp.settings, 'Testruns')
-        self.app = Application()
-        self.app.startrequest()
+        self.app = pysmvttestapp.applications.make_console('Testruns')
+        self.app.start_request()
         self.todelete = []
         self.globals_len = len(globals())
         
     def tearDown(self):
-        self.app.endrequest()
+        self.app.end_request()
         self.app = None
         for key in self.todelete:
             del(globals()[key])

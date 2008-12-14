@@ -3,12 +3,15 @@ import random
 import hashlib
 import time
 import re
+import logging
 from pprint import PrettyPrinter
 from pysmvt import settings, user, ag, forward, rg, modimport
 from werkzeug.debug.tbtools import get_current_traceback
 from formencode.validators import URL
 from formencode import Invalid
 from markdown2 import markdown
+
+log = logging.getLogger(__name__)
 
 def reindent(s, numspaces):
     """ reinidents a string (s) by the given number of spaces (numspaces) """
@@ -64,7 +67,7 @@ def traceback_depth(tb=None):
 
 def fatal_error(user_desc = None, dev_desc = None, orig_exception = None):
     # log stuff
-    ag.logger.debug('Fatal error: "%s" -- %s', dev_desc, str(orig_exception))
+    log.info('Fatal error: "%s" -- %s', dev_desc, str(orig_exception))
     
     # set user message
     if user_desc != None:
@@ -76,7 +79,7 @@ def fatal_error(user_desc = None, dev_desc = None, orig_exception = None):
 def auth_error(user_desc = None, dev_desc = None):
     # log stuff
     if dev_desc != None:
-        ag.logger.debug('Auth error: %s', dev_desc)
+        log.info('Auth error: %s', dev_desc)
     
     # set user message
     if user_desc != None:
@@ -88,7 +91,7 @@ def auth_error(user_desc = None, dev_desc = None):
 def bad_request_error(dev_desc = None):
     # log stuff
     if dev_desc != None:
-        ag.logger.debug('bad request error: %s', dev_desc)
+        log.info('bad request error: %s', dev_desc)
         
     # forward to fatal error view
     forward(settings.endpoint.bad_request_error)
@@ -115,42 +118,7 @@ def pprint( stuff, indent = 4, asstr=False):
     if asstr:
         return pp.pformat(stuff)
     pp.pprint(stuff)
-        
-def log_info(msg):
-    ag.logger.info(msg)
 
-def log_debug(msg):
-    ag.logger.debug(msg)
-
-def log_application(msg):
-    ag.logger.application(msg)
-    
-class Logger(object):
-    def __init__(self, dlogger, ilogger, alogger):
-        self.dlogger = dlogger
-        self.ilogger = ilogger
-        self.alogger = alogger
-    
-    def debug(self, msg, *args, **kwargs):
-        if 'debug' in settings.logging.levels:
-            try:
-                d = {'request_ident':rg.ident}
-            except TypeError:
-                d = {'request_ident': 'n/a'}    
-            kwargs['extra'] = d
-            
-            self.dlogger.debug(msg, *args, **kwargs)
-    
-    def info(self, msg):
-        if 'info' in settings.logging.levels:
-            d = {'request_ident':rg.ident}
-            self.ilogger.info(msg, extra = d)
-    
-    def application(self, msg):
-        if 'info' in settings.logging.levels:
-            d = {'request_ident':rg.ident}
-            self.alogger.log(9, msg, extra = d)
-        
 def randchars(n = 12):
     charlist = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
     return ''.join(random.choice(charlist) for _ in range(n))

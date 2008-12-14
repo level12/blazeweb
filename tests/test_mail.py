@@ -15,8 +15,7 @@ _to = ''
 
 class TestEmail(unittest.TestCase):
     def setUp(self):
-        pysmvt.config.appinit(config, 'Testruns')
-        self.app = Application()
+        self.app = config.make_console()
     
     def tearDown(self):
         self.app = None

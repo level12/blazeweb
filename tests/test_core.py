@@ -2,10 +2,9 @@ from os import path
 import unittest
 import config
 
-import pysmvttestapp.settings
+import pysmvttestapp.applications
 import pysmvt
 from pysmvt import appfilepath
-from pysmvt.application import Application
 from pysmvt.exceptions import ProgrammingError
 
 pysmvt_project_dir = path.dirname(path.dirname(pysmvt.__file__))
@@ -15,12 +14,11 @@ app2_dir = path.join(apps_dir, 'pysmvttestapp2')
 
 class TestImports(unittest.TestCase):
     def setUp(self):
-        pysmvt.config.appinit(pysmvttestapp.settings, 'Testruns')
-        self.app = Application()
-        self.app.startrequest()
+        self.app = pysmvttestapp.applications.make_console('Testruns')
+        self.app.start_request()
         
     def tearDown(self):
-        self.app.endrequest()
+        self.app.end_request()
         self.app = None
         
     def test_locate1(self):

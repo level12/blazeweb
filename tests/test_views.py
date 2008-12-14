@@ -2,15 +2,15 @@ import unittest
 import config 
 
 from pysmvt import settings
-from pysmvttestapp.commands import makeapp
-from pysmvttestapp2.commands import makeapp as makeapp2
+from pysmvttestapp.applications import make_wsgi
+from pysmvttestapp2.applications import make_wsgi as make_wsgi2
 from werkzeug import Client, BaseResponse
 from pysmvt.exceptions import ProgrammingError
 
 class TestViews(unittest.TestCase):
         
     def setUp(self):
-        self.app = makeapp('Testruns')
+        self.app = make_wsgi('Testruns')
         #settings.logging.levels.append(('debug', 'info'))
         self.client = Client(self.app, BaseResponse)
         
@@ -385,7 +385,7 @@ class TestViews(unittest.TestCase):
 class TestApp2(unittest.TestCase):
         
     def setUp(self):
-        self.app = makeapp2('Testruns')
+        self.app = make_wsgi2('Testruns')
         #settings.logging.levels.append(('debug', 'info'))
         self.client = Client(self.app, BaseResponse)
         

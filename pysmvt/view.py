@@ -1,7 +1,8 @@
 from os import path
+import logging
 from pysmvt import settings, user, ag, _getview, rg, appimportauto
-from pysmvt.utils import reindent, auth_error, log_info, bad_request_error, \
-    fatal_error, urlslug, markdown, log_debug
+from pysmvt.utils import reindent, auth_error, bad_request_error, \
+    fatal_error, urlslug, markdown
 from pysmvt.utils.html import strip_tags
 from pysmvt.templates import JinjaHtmlBase, JinjaBase
 from pysmvt.exceptions import ActionError, UserError, ProgrammingError
@@ -12,6 +13,8 @@ from werkzeug.utils import MultiDict
 import formencode
 from pprint import PrettyPrinter
 from pysutils import NotGiven
+
+log = logging.getLogger(__name__)
 
 # @@todo: this is a **really** bad way to do this
 try: 
@@ -45,7 +48,7 @@ class ViewBase(object):
         # should we abort if the wrong GET args are sent?
         self.strict_args = False
         
-        log_info('%s view instantiated' % self.__class__.__name__)
+        log.debug('%s view instantiated', self.__class__.__name__)
         
     def call_methods(self):
 
@@ -120,7 +123,7 @@ class ViewBase(object):
                 raise TypeError('the validator must extend formencode.Validator')
 
         if len(invalid_args) > 0:
-            log_debug('%s had bad args: %s' % (self._endpoint, invalid_args))
+            log.debug('%s had bad args: %s', self._endpoint, invalid_args)
             if self.strict_args:
                 raise BadRequest()
 

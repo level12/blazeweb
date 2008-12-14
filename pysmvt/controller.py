@@ -1,6 +1,7 @@
 from os import path
 import sys
 from traceback import format_exc
+import logging
 
 from werkzeug.routing import Map, Submount, RequestRedirect
 from werkzeug.exceptions import HTTPException, NotFound, InternalServerError, \
@@ -10,8 +11,10 @@ import werkzeug.utils
 from pysmvt import settings, session, user, rg, ag, getview, _getview, modimport
 from pysmvt.exceptions import ForwardException, ProgrammingError, Redirect
 from pysmvt.mail import mail_programmers
-from pysmvt.utils import randchars, traceback_depth, log_info, log_debug, pprint
+from pysmvt.utils import randchars, traceback_depth, pprint
 from pysmvt.wrappers import Request, Response
+
+log = logging.getLogger(__name__)
 
 # Note: this controller is only instantiated per-process, not per request.
 # Therefore, anything that needs to be initialized per application/per process
@@ -26,12 +29,6 @@ class Controller(object):
     def __init__(self, settings):
         
         self.settings = settings
-        
-        # Routing Map
-        self._route_map = Map(**settings.routing.map.todict())
-        
-        # load routes from the application and settings files
-        self._init_routes()
 
     def dispatch_request(self, environ, start_response):
         
@@ -85,7 +82,7 @@ class Controller(object):
         code = get_status_code(response)
         if code in settings.error_docs:
             handling_endpoint = settings.error_docs.get(code)
-            ag.logger.info('error docs: handling code %d with %s' % (code, handling_endpoint))
+            log.debug('error docs: handling code %d with %s' % (code, handling_endpoint))
             environ['pysmvt.controller.error_docs_handler.response'] = response
             new_response = self._exception_handling('error docs', endpoint=handling_endpoint)
             # only take the new response if it completed succesfully.  If not,
@@ -100,7 +97,7 @@ class Controller(object):
                     new_response.code = code
                 response = new_response
             else:
-                ag.logger.debug('error docs: encountered non-200 status code response '
+                log.info('error docs: encountered non-200 status code response '
                         '(%d) when trying to handle with %s' % (get_status_code(new_response), handling_endpoint))
         if isinstance(response, HTTPException) and not isinstance(response, Redirect):
             messages = user.get_messages()
@@ -118,11 +115,11 @@ class Controller(object):
                 endpoint, args = self._endpoint_args_from_env(environ)
             response = self._inner_requests_wrapper(endpoint, args, called_from)
         except HTTPException, e:
-            ag.logger.info('exception handling caught HTTPException "%s", sending as response' % e.__class__.__name__)
+            log.debug('exception handling caught HTTPException "%s", sending as response' % e.__class__.__name__)
             response = e
         except Exception, e:
             if settings.exceptions.log:
-                ag.logger.debug('exception handling: %s' % str(e))
+                log.info('exception handling: %s' % str(e))
             if settings.exceptions.email:
                 trace = format_exc()
                 envstr = pprint(rg.environ, 4, True)
@@ -137,7 +134,7 @@ class Controller(object):
     def _endpoint_args_from_env(self, environ):
         try:
             # bind the route map to the current environment
-            urls = rg.urladapter = self._route_map.bind_to_environ(environ)
+            urls = ag.route_map.bind_to_environ(environ)
             
             # initialize endpoint to avoid UnboundLocalError
             endpoint = None
@@ -147,7 +144,7 @@ class Controller(object):
         
         except (NotFound, MethodNotAllowed, RequestRedirect):
             if endpoint is None:
-                ag.logger.info('URL (%s) generated HTTPException' % environ['PATH_INFO'])
+                log.debug('URL (%s) generated HTTPException' % environ['PATH_INFO'])
             raise
         
     def _inner_requests_wrapper(self, endpoint, args, called_from):
@@ -169,26 +166,6 @@ class Controller(object):
     def __call__(self, environ, start_response):
         """Just forward a WSGI call to the first internal middleware."""
         return self.dispatch_request(environ, start_response)
-    
-    def _init_routes(self):
-        """ add routes to the main Map object from the application settings and
-            from module settings """
-       
-        # application routes
-        self._add_routing_rules(self.settings.routing.routes)
-       
-        # module routes        
-        for module in self.settings.modules:
-            if hasattr(module, 'routes'):
-                self._add_routing_rules(module.routes)
-    
-    def _add_routing_rules(self, rules):
-        if self.settings.routing.prefix:
-            # prefix the routes with the prefix in the app settings class
-            self._route_map.add(Submount( self.settings.routing.prefix, rules ))
-        else:
-            for rule in rules or ():
-                self._route_map.add(rule)
 
     
 

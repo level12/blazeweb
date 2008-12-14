@@ -3,6 +3,7 @@ from os import path
 import logging
 from paste.registry import StackedObjectProxy
 
+log = logging.getLogger(__name__)
 __all__ = [
     'ag',
     'rg',
@@ -250,7 +251,7 @@ def _getview(endpoint, args, called_from ):
         # find the class in a module
         if tb_depth_in(3):
             msg = 'Could not load view "%s": %s' % (endpoint, str(e))
-            ag.logger.debug(msg)
+            log.info(msg)
             raise ProgrammingError(msg)
         raise
     
