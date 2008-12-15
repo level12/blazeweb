@@ -4,9 +4,11 @@ import sys
 from os import path
 from pysmvt import ag, appimport, db, settings, modimport
 import pysmvt.commands
+from pysmvt.config import appslist
 from pysmvt.utils.filesystem import mkpyfile
 from pysmvt.utils import pprint, tb_depth_in, traceback_depth
 from werkzeug import script, Client, BaseResponse
+from paste.util.multidict import MultiDict
 
 class UsageError(Exception):
     pass
@@ -27,7 +29,8 @@ def make_wsgi(profile):
     return appmod.make_wsgi(profile)
     
 def make_console(profile):
-    pass
+    appmod = prep_app(profile)
+    return appmod.make_console(profile)
 
 def _shell_init_func(profile='Default'):
     """
@@ -129,26 +132,48 @@ def action_initmod(targetmod=('m', ''), profile=('p', 'Default')):
 def main():
     """ this is what our command line `pysmvt` calls to start """
     try:
-        # we first need to determine if we are running in an application context
-        # or not
-        script.run(_gather_actions())
+        if _is_application_context():
+            # create an application and let everything run inside it's request
+            app = make_console('Default')
+            app.start_request()
+            _werkzeug_run()
+            app.end_request()
+        else:
+            _werkzeug_run()
     except UsageError, e:
         print 'Error: %s' % e
-    
+
+def _werkzeug_run():
+    script.run(_gather_actions())
+
 def _gather_actions():
     """
         Ssearches all applications and application modules for available actions.
         Searches from least signifcant to most signifcant so that the more
         significant actions get precidence.
     """
-    actions = {}
+    actions = MultiDict()
     # we will always gather actions from the pysmvt commands module
     actions.update(vars(pysmvt.commands))
     if _is_application_context():
-        pass
         # get commands from all applications (primary and supporting)
-        
-        # get commands from all modules in all applications
+        for app_name in appslist(reverse=True):
+            try:
+                cmd_mod = __import__('%s.commands' % app_name, globals(), locals(), [''])
+                actions.update(vars(cmd_mod))
+            except ImportError:
+                if tb_depth_in(0):
+                    pass
+                    
+            # get commands from all modules in all applications
+            for appmod in settings.modules.keys():
+                    try:
+                        cmd_mod = __import__('%s.modules.%s.commands' % (app_name, appmod), globals(), locals(), [''])
+                        actions.update(vars(cmd_mod))
+                    except ImportError:
+                        if not tb_depth_in(0):
+                            raise
+        ag.command_actions = actions
     return actions
 
 def _is_application_context():

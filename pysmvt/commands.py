@@ -3,6 +3,8 @@ import os
 from os import path
 from werkzeug.serving import run_simple
 from pysmvt.paster_tpl import ProjectTemplate, dummy_cmd
+from pysmvt import ag
+
 #
 #def make_runserver(app_factory, hostname=, port=5000,
 #                   use_reloader=False, use_debugger=False, use_evalex=True,
@@ -29,6 +31,7 @@ def action_serve(profile='Default', hostname=('h', 'localhost'), port=('p', 5000
 #    """ creates a new application module file structure """
 #    pass
 #
+
 # this action doesn't need an application context to function
 def action_project(projname='', template=('t', 'pysmvt'),
         interactive=True, verbose=True, overwrite=True):
@@ -46,7 +49,11 @@ def action_project(projname='', template=('t', 'pysmvt'),
     pt.check_vars(vars, cmd)
     pt.run(cmd, output_dir, vars)
 
-#@console
-#def action_broadcast(action='', _app=None ):
-#    """ calls all instances of action in all applications and modules """
-#    pass
+def action_broadcast(action=''):
+    """ calls all instances of broadcast_* actions in all applications and modules """
+    if not action:
+        print 'Error: `action` is required'
+        return
+    for key, callable in ag.command_actions.iteritems():
+        if key.startswith('broadcast_%s' % action):
+            callable()
