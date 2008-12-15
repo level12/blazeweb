@@ -134,7 +134,7 @@ class Controller(object):
     def _endpoint_args_from_env(self, environ):
         try:
             # bind the route map to the current environment
-            urls = ag.route_map.bind_to_environ(environ)
+            urls = rg.urladapter = ag.route_map.bind_to_environ(environ)
             
             # initialize endpoint to avoid UnboundLocalError
             endpoint = None

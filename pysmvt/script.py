@@ -8,11 +8,26 @@ from pysmvt.utils.filesystem import mkpyfile
 from pysmvt.utils import pprint, tb_depth_in, traceback_depth
 from werkzeug import script, Client, BaseResponse
 
-_calling_mod_locals = sys._getframe(1).f_globals
+class UsageError(Exception):
+    pass
 
 ### helper functions
 def _make_app(profile='Default'):
     return _calling_mod_locals['make_app'](profile)
+
+def prep_app(profile):
+    if not _is_application_context():
+        raise UsageError('this command must be run from inside an '
+                         'application\'s directory')
+    app_name = _app_name()
+    return __import__('%s.applications' % app_name, globals(), locals(), ['make_wsgi', 'make_console'])
+
+def make_wsgi(profile):
+    appmod = prep_app(profile)
+    return appmod.make_wsgi(profile)
+    
+def make_console(profile):
+    pass
 
 def _shell_init_func(profile='Default'):
     """
@@ -113,10 +128,12 @@ def action_initmod(targetmod=('m', ''), profile=('p', 'Default')):
 
 def main():
     """ this is what our command line `pysmvt` calls to start """
-    
-    # we first need to determine if we are running in an application context
-    # or not
-    script.run(_gather_actions())
+    try:
+        # we first need to determine if we are running in an application context
+        # or not
+        script.run(_gather_actions())
+    except UsageError, e:
+        print 'Error: %s' % e
     
 def _gather_actions():
     """
@@ -143,8 +160,7 @@ def _is_application_context():
     if app_name:
         # once we know the app name, we can try and import the Default
         # settings
-        settings_mod = __import__('%s.settings' % app_name, globals(), locals(), ['Default'])
-        print settings_mod
+        #settings_mod = __import__('%s.settings' % app_name, globals(), locals(), ['Default'])
         return True
     else:
         return False

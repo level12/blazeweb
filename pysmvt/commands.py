@@ -12,12 +12,14 @@ from pysmvt.paster_tpl import ProjectTemplate, dummy_cmd
 #    return action
 #
 #@wsgi(profile_by='position')
-#def action_serve(hostname=('h', 'localhost'), port=('p', 5000),
-#               reloader=True, debugger=False, evalex=True, 
-#               threaded=False, processes=1, dnslookups=True, _app=None):
-#        run_simple(hostname, port, _app, reloader, debugger, evalex,
-#                   None, 1, threaded, processes, dnslookups=dnslookups)
-#
+def action_serve(profile='Default', hostname=('h', 'localhost'), port=('p', 5000),
+               reloader=True, debugger=False, evalex=False, 
+               threaded=False, processes=1):
+    """ serve the application by starting a development http server """
+    from pysmvt.script import make_wsgi
+    run_simple(hostname, port, make_wsgi(profile), reloader, debugger, evalex,
+               None, 1, threaded, processes)
+
 #@console
 #def action_shell(_app=None):
 #    return script.make_shell(lambda: {'webapp':_app})
