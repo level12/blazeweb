@@ -27,6 +27,7 @@ setup(
         "jinja2>=2.1",
         "markdown2>=1.0.1.11",
         "Paste>=1.7.2",
+        "PasteScript>=1.7.3"
         "pysutils>=dev",
         "Werkzeug>=0.4"
     ],
