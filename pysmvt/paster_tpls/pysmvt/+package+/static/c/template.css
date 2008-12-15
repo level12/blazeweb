@@ -1,0 +1,145 @@
+body {
+    margin: 0;
+    padding: 0;
+    background: #eee;
+    text-align: center;
+}
+
+
+#page_wrapper {
+    width: 770px;
+    border: solid 1px gray;
+    margin: 10px auto 10px auto;
+    text-align: left;
+    background: white;
+}
+
+#page_header h1 {
+    height: 50px;
+    background: #999;
+    text-align: center;
+}
+
+#page_header h1 a {
+    color: white;
+}
+
+
+ul#top_nav {
+    margin: 0;
+    padding: .2em .5em .5em .5em;
+    list-style: none;
+    background: #000;
+}
+
+ul#top_nav li {
+    display: inline;
+}
+
+#page_body {
+    /* to make it expand around floated elements */
+    width: 100%;
+    overflow: hidden;
+    margin-top: 1.2em;
+    background: #fff;
+    margin: 0;
+    padding: 10px 0 25px 0;
+}
+
+#page_content {
+    margin: 0 10px 0 10px;
+}
+
+#page_footer { 
+    font-size: .9em;
+    margin: 0; 
+    padding:0.8em;
+    background: black;
+    color: #CABC74;
+}
+
+/*######################  NAVIGATION ###############################*/
+
+
+
+/* ############  TYPOGRAPHY ############### */
+
+p {
+    margin:0.2em 0 1.2em 0; 
+    padding:0.3em;
+}
+
+a, a:link, a:active {
+    color:#01238F; 
+    text-decoration:underline;
+}
+a:hover {
+    text-decoration:none;
+}
+a:visited {
+    color:#014D8F;
+}
+
+p.credits a, p.credits a:link, p.credits a:active,
+div.session_controls a, div.session_controls a:link, div.session_controls a:active {
+    color: blue;
+    text-decoration:underline;
+}
+p.credits a:hover, div.session_controls a:hover{
+    text-decoration:none;
+}
+
+ul#top_nav li a {
+    color: white;
+    text-decoration: underline;
+}
+
+ul#top_nav li a:hover {
+    text-decoration: none;
+}
+
+h1.title {
+    font-size: 2em;
+    text-align: left;
+    font-weight: bold;
+    margin: .5em 0 .8em 0;
+    font-family : "Times New Roman", Times, serif;
+}
+
+h2.title {
+    font-size: 1.3em;
+    font-weight: bold;
+    text-align: left;
+    margin: .4em 0 .7em 0;
+    font-family : "Times New Roman", Times, serif;
+    text-transform: capitalize;
+}
+
+div.content_box h2 {
+    color:#fff; 
+    font-size: 1.7em;
+    text-align: center;
+    margin: 0 0.0em 0.4em 0em; 
+    padding:0; 
+    font-family : "Times New Roman", Times, serif;
+    text-transform: lowercase;
+}
+
+div.content_box.first h2 {
+    margin-top: 0;
+}
+
+#page_content h2.sub_title {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+div.content_box h3 {
+    color:#fff; 
+    font-size: 1.1em;
+    text-align: left;
+    margin:0.2em 0.0em 0.4em 0em; 
+    padding:0; 
+    text-transform: capitalize;
+}
+

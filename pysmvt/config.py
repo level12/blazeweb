@@ -123,7 +123,7 @@ class DefaultSettings(QuickSettings):
         # take these environment variables into account.
         self.routing.prefix = ''
         
-        # the settings for the routine Map object:
+        # the settings for the Werkzeug routing Map object:
         self.routing.map.default_subdomain=''
         self.routing.map.charset='utf-8'
         self.routing.map.strict_slashes=True
@@ -152,7 +152,6 @@ class DefaultSettings(QuickSettings):
         # TEMPLATES
         #######################################################################
         self.template.default = 'default.html'
-        self.template.admin = 'admin.html'
         
         #######################################################################
         # SYSTEM VIEW ENDPOINTS
@@ -183,8 +182,8 @@ class DefaultSettings(QuickSettings):
         # to True will give a python command prompt in the stack trace
         #
         #          ******* SECURITY ALERT **********
-        # setting inactive = True would allow ANYONE who has access to the server
-        # to run arbitrary code.  ONLY use in an isolated development
+        # setting interactive = True would allow ANYONE who has http access to the 
+        # server to run arbitrary code.  ONLY use in an isolated development
         # environment.
         self.debugger.enabled = True
         self.debugger.interactive = False
@@ -277,6 +276,12 @@ def appinit(settings_mod=None, profile=None, settings_cls=None, **kwargs):
             # depth means a different import error, and we want to raise that
             if not tb_depth_in(3):
                 raise
+    
+    # lock the settings, this ensures that an attribute error is thrown if an
+    # attribute is accessed that doesn't exist.  Without the lock, a new attr
+    # would be created, which is undesirable since any "new" attribute at this
+    # point would probably be an accident
+    settings.lock()
     
     ###
     ### routing

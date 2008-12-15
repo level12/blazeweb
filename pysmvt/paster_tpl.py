@@ -25,13 +25,13 @@ class ProjectTemplate(Template):
     template_renderer = staticmethod(paste_script_template_renderer)
     summary = "A basic setuptools-enabled package"
     vars = [
-        var('version', 'Version (like 0.1)'),
         var('description', 'One-line description of the package'),
-        var('long_description', 'Multi-line description (in reST)'),
-        var('keywords', 'Space-separated keywords/tags'),
-        var('author', 'Author name'),
-        var('author_email', 'Author email'),
-        var('url', 'URL of homepage'),
-        var('license_name', 'License name'),
-        var('zip_safe', 'True/False: if the package can be distributed as a .zip file', default=False),
+        var('author', 'Your name'),
+        var('programmer_email', 'Your email'),
         ]
+    
+    def pre(self, command, output_dir, vars):
+        # convert user's name into a username var
+        author = vars['author']
+        vars['username'] = author.split(' ')[0].capitalize()
+        
