@@ -381,6 +381,16 @@ class TestViews(unittest.TestCase):
         r = self.client.get('tests/htmltemplatefileargcss')
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.data, 'css\nHello File Arg!')
+          
+    def test_disabled_module(self):
+        """ a disabled module should not be processed and therefore we should
+        get a 404"""
+        r = self.client.get('/disabled/notthere')
+        
+        self.assertEqual(r.status, '404 NOT FOUND')
+        self.assertTrue('Not Found' in r.data)
+        self.assertTrue('If you entered the URL manually please check your spelling and try again.' in r.data)
+
 
 class TestApp2(unittest.TestCase):
         

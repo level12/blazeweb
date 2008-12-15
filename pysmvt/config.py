@@ -107,7 +107,7 @@ class DefaultSettings(QuickSettings):
         self.supporting_apps = []
         
         # application modules from our application or supporting applications
-        self.modules
+        self.modules = ModulesSettings()
         
         #######################################################################
         # ROUTING
@@ -129,12 +129,6 @@ class DefaultSettings(QuickSettings):
         self.routing.map.strict_slashes=True
         self.routing.map.redirect_defaults=True
         self.routing.map.converters=None
-        
-        #######################################################################
-        # DATABASE
-        #######################################################################
-        self.db.echo = False
-        self.db.url = None
         
         #######################################################################
         # DIRECTORIES required by PYSVMT

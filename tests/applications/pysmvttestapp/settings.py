@@ -25,6 +25,7 @@ class Testruns(DefaultSettings):
         self.modules.tests.enabled = True
         self.modules.nomodel.enabled = True
         self.modules.nosettings.enabled = True
+        self.modules.disabled.enabled = False
         
         self.routing.routes.extend([
             Rule('/', endpoint='tests:Index')
