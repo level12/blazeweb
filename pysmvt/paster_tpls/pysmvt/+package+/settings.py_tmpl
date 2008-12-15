@@ -23,6 +23,10 @@ class Default(DefaultSettings):
         # ROUTING
         #######################################################################
         self.routing.routes.extend([
+            # used with pysmvt.routing.style_url|static_url|js_url
+            Rule('/<file>', endpoint='static', build_only=True),
+            Rule('/c/<file>', endpoint='styles', build_only=True),
+            Rule('/js/<file>', endpoint='javascript', build_only=True),
             Rule('/', defaults={}, endpoint='default:Index')
         ])
         
