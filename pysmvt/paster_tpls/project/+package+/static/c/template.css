@@ -1,0 +1,301 @@
+
+/****************************** TYPOGRAPHY **************************/
+/*  NOTE: This file should stay as non-site-specific as possible.
+**  It should be able to be dropped in from one app to another 
+**  with ZERO modification and very little extranious classes, etc.
+*/
+
+/* DEFAULT FONT SIZE */
+
+body {
+    font-size: 76%;
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+}
+	
+/*typography*/
+a {
+    text-decoration: underline;
+}
+
+a:hover {
+    text-decoration: none;
+}
+
+h1 {
+	font-size: 2.0em;
+	font-weight: normal;
+	margin-top: 0em;
+	margin-bottom: 0em;/*both set to zero and padding in header div is used intead to deal with compound ie pc problems that are beyound summary in a simple comment.*/
+	}
+h2 {
+	font-size: 1.7em;
+	margin: 1.2em 0em 1.2em 0em;
+	font-weight: normal;
+	}
+h3 {
+	font-size: 1.4em;
+	margin: 1.2em 0em 1.2em 0em;
+	font-weight: normal;
+	}
+h4 {
+	font-size: 1.2em;
+	margin: 1.2em 0em 1.2em 0em;
+	font-weight: bold;
+	}
+h5 {
+	font-size: 1.0em;
+	margin: 1.2em 0em 1.2em 0em;
+	font-weight: bold;
+	}
+h6 {
+	font-size: 0.8em;
+	margin: 1.2em 0em 1.2em 0em;
+	font-weight: bold;
+	}
+img {
+	border: 0;
+	}
+li {
+	font-size: 1.0em;
+	line-height: 1.4em;
+	}
+table {
+    font-size: 1em;
+}
+dt {
+    margin: 1em 0 0 1em;
+    font-weight: bold;
+}
+dd {
+    margin: .5em 0 .5em 2em;
+}
+p {
+	font-size: 1.0em;
+	line-height: 1.5em;
+	margin: 1.2em 0em 1.2em 0em;
+	}
+p.short {
+    font-size: 1.0em;
+	line-height: 1.1em;
+	margin: 0;
+}
+li > p {
+	margin-top: 0.2em;
+	}
+pre {/*moz 1.0/1.1/1.2.1, net 7.0/7.01 make this way too small, but i'm not going to go larger because monospace tends to run you into overflow pretty quick. prior moz and net are okay.*/
+	font-family: Courier New, Courier, Lucidatypewriter, Fixed, monospace;
+	font-size: 1.0em;
+	}
+strong, b {
+	font-weight: bold;
+	}
+
+
+/******************* TABLE GENERATOR *********************/
+
+table.dataTable {
+    width: 100%;
+    margin: 1em 0px .5em 0px;
+    color: black;
+}
+
+table.dataTable th, table.dataTable td{
+    padding: 2px 4px 2px 4px;
+    margin: 0px;
+}
+
+table.dataTable td {
+    vertical-align: top;
+}
+
+table.dataTable th {
+    font-weight: bold;
+    color: black;
+    background-color: rgb(211, 220, 227);
+    text-align: center;
+    border-bottom: solid 1px white;
+    border-right: solid 1px white;
+    border-top: solid 1px white;
+}
+
+table.dataTable td {
+    border-bottom: solid 1px white;
+    border-right: solid 1px white;
+}
+
+table.dataTable tr.even td{
+    background-color: #d5d5d5;
+}
+
+table.dataTable td, table.dataTable tr.odd td{
+    background-color: #e5e5e5;
+}
+
+table.dataTable .first_col {
+    border-left: solid 1px white;
+}
+
+table.manage td a.edit_link {
+    float: left;
+    background: url(../images/icons/b_edit.png);
+    height: 16px;
+    width: 16px;
+    text-indent: -1200px;
+    margin-left: 1em;
+}
+
+table.manage td a.delete_link {
+    float: left;
+    background: url(../images/icons/b_drop.png);
+    height: 16px;
+    width: 16px;
+    text-indent: -1200px;
+}
+
+
+/********************* Template Styles **********************************/
+body {
+    margin: 0;
+    padding: 0;
+    background: #eee;
+    text-align: center;
+}
+
+
+#page_wrapper {
+    width: 770px;
+    border: solid 1px gray;
+    margin: 10px auto 10px auto;
+    text-align: left;
+    background: white;
+}
+
+#page_header h1 {
+    height: 50px;
+    background: #999;
+    text-align: center;
+}
+
+#page_header h1 a {
+    color: white;
+}
+
+
+ul#top_nav {
+    margin: 0;
+    padding: .2em .5em .5em .5em;
+    list-style: none;
+    background: #000;
+}
+
+ul#top_nav li {
+    display: inline;
+}
+
+#page_body {
+    /* to make it expand around floated elements */
+    width: 100%;
+    overflow: hidden;
+    margin-top: 1.2em;
+    background: #fff;
+    margin: 0;
+    padding: 10px 0 25px 0;
+}
+
+#page_content {
+    margin: 0 10px 0 10px;
+}
+
+#page_footer { 
+    font-size: .9em;
+    margin: 0; 
+    padding:0.8em;
+    background: black;
+    color: #CABC74;
+}
+
+/*######################  NAVIGATION ###############################*/
+
+
+
+/* ############  TYPOGRAPHY ############### */
+
+p {
+    margin:0.2em 0 1.2em 0; 
+    padding:0.3em;
+}
+
+a, a:link, a:active {
+    color:#01238F; 
+    text-decoration:underline;
+}
+a:hover {
+    text-decoration:none;
+}
+a:visited {
+    color:#014D8F;
+}
+
+p.credits a, p.credits a:link, p.credits a:active,
+div.session_controls a, div.session_controls a:link, div.session_controls a:active {
+    color: blue;
+    text-decoration:underline;
+}
+p.credits a:hover, div.session_controls a:hover{
+    text-decoration:none;
+}
+
+ul#top_nav li a {
+    color: white;
+    text-decoration: underline;
+}
+
+ul#top_nav li a:hover {
+    text-decoration: none;
+}
+
+h1.title {
+    font-size: 2em;
+    text-align: left;
+    font-weight: bold;
+    margin: .5em 0 .8em 0;
+    font-family : "Times New Roman", Times, serif;
+}
+
+h2.title {
+    font-size: 1.3em;
+    font-weight: bold;
+    text-align: left;
+    margin: .4em 0 .7em 0;
+    font-family : "Times New Roman", Times, serif;
+    text-transform: capitalize;
+}
+
+div.content_box h2 {
+    color:#fff; 
+    font-size: 1.7em;
+    text-align: center;
+    margin: 0 0.0em 0.4em 0em; 
+    padding:0; 
+    font-family : "Times New Roman", Times, serif;
+    text-transform: lowercase;
+}
+
+div.content_box.first h2 {
+    margin-top: 0;
+}
+
+#page_content h2.sub_title {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+div.content_box h3 {
+    color:#fff; 
+    font-size: 1.1em;
+    text-align: left;
+    margin:0.2em 0.0em 0.4em 0em; 
+    padding:0; 
+    text-transform: capitalize;
+}
+
