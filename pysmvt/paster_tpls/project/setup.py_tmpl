@@ -17,6 +17,7 @@ setup(name={{repr(project)}},
       include_package_data=True,
       zip_safe=False,
       install_requires=[
+          'pysmvt>=dev'
           # -*- Extra requirements: -*-
       ],
       entry_points="""

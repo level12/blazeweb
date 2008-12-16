@@ -1,0 +1,2 @@
+recursive-include {{repr(project)}} *
+global-exclude *.pyc
