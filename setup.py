@@ -40,6 +40,7 @@ setup(
       ],
     license='BSD',
     packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
+    include_package_data=True,
     install_requires = [
         "Beaker>=1.1.2",
         "FormEncode>=1.2",
