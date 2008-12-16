@@ -47,11 +47,6 @@ class ModuleTemplate(Template):
         print '-'*70
         print 'self.modules.%s.enabled = True' % vars['modname']
 
-template_types = {
-    'pysmvt_project_template' : {'pysmvt': ProjectTemplate},
-    'pysmvt_module_template' : {'pysmvt': ModuleTemplate}
-}
-
 def run_template(interactive, verbose, overwrite, vars,
                  output_dir, tname, type):
     cmd = dummy_cmd(interactive, verbose, overwrite)
