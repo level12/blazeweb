@@ -1,2 +1,2 @@
-recursive-include {{repr(project)}} *
-global-exclude *.pyc
+recursive-include {{project}} *
+recursive-include libs *

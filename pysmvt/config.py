@@ -3,7 +3,7 @@ from os import path
 import os
 from pysmvt import appimport, settings, ag, modimport
 from werkzeug.routing import Rule, Map, Submount
-from pysmvt.utils import OrderedProperties, OrderedDict, Context, tb_depth_in,
+from pysmvt.utils import OrderedProperties, OrderedDict, Context, tb_depth_in
 from pysmvt.utils.filesystem import mkdirs
 
 class QuickSettings(OrderedProperties):
@@ -264,9 +264,9 @@ def appinit(settings_mod=None, profile=None, settings_cls=None, **kwargs):
     ag._push_object(Context())
     
     # create the writeable directories if they don't exist already
-    makedirs(settings.dirs.data, 0666)
-    makedirs(settings.dirs.logs, 0666)
-    makedirs(settings.dirs.tmp, 0666)
+    mkdirs(settings.dirs.data, 0666)
+    mkdirs(settings.dirs.logs, 0666)
+    mkdirs(settings.dirs.tmp, 0666)
     
     # now we need to assign module settings to the main setting object
     for module in settings.modules.keys():
