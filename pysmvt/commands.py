@@ -4,7 +4,7 @@ from os import path
 from werkzeug.serving import run_simple
 from werkzeug import Client, BaseResponse
 from pysmvt.paster_tpl import run_template
-from pysmvt import ag
+from pysmvt import ag, settings
 
 #
 #def make_runserver(app_factory, hostname=, port=5000,
@@ -35,7 +35,7 @@ def action_serve(profile='Default', hostname=('h', 'localhost'), port=('p', 5000
 
 # this action doesn't need an application context to function
 def action_project(projname='', template=('t', 'pysmvt'),
-        interactive=True, verbose=True, overwrite=True):
+        interactive=True, verbose=False, overwrite=True):
     """ creates a new project file structure """
     if not projname:
         print 'Error: `projname` is required'
@@ -48,11 +48,15 @@ def action_project(projname='', template=('t', 'pysmvt'),
                  output_dir, template, 'pysmvt_project_template')
 
 def action_module(modname='', template=('t', 'pysmvt'),
-        interactive=True, verbose=True, overwrite=True):
+        interactive=True, verbose=False, overwrite=True):
     """ creates a new module file structure """
     if not modname:
         print 'Error: `modname` is required'
         return
+    output_dir = path.join(settings.dirs.base, 'modules', modname)
+    vars = {'modname':modname}
+    run_template(interactive, verbose, overwrite, vars,
+                 output_dir, template, 'pysmvt_module_template')
 
 def action_broadcast(action=''):
     """ calls all instances of broadcast_* actions in all applications and modules """

@@ -41,6 +41,9 @@ setup(
     
     [pysmvt.pysmvt_project_template]
     pysmvt = pysmvt.paster_tpl:ProjectTemplate
+    
+    [pysmvt.pysmvt_module_template]
+    pysmvt = pysmvt.paster_tpl:ModuleTemplate
 
     """,
     zip_safe=False

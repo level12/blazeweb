@@ -21,7 +21,7 @@ def dummy_cmd(interactive, verbose, overwrite):
 class ProjectTemplate(Template):
 
     summary = 'Template for creating a basic pysmvt project'
-    _template_dir = ('pysmvt', 'paster_tpls/pysmvt')
+    _template_dir = ('pysmvt', 'paster_tpls/project')
     template_renderer = staticmethod(paste_script_template_renderer)
     vars = [
         var('description', 'One-line description of the package'),
@@ -39,6 +39,13 @@ class ModuleTemplate(Template):
     _template_dir = ('pysmvt', 'paster_tpls/module')
     template_renderer = staticmethod(paste_script_template_renderer)
     summary = "A pysmvt application module"
+    
+    def post(self, command, output_dir, vars):
+        print ''
+        print '-'*70
+        print 'Action Required: enabled module in settings.py'
+        print '-'*70
+        print 'self.modules.%s.enabled = True' % vars['modname']
 
 template_types = {
     'pysmvt_project_template' : {'pysmvt': ProjectTemplate},

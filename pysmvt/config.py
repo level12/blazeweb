@@ -133,6 +133,7 @@ class DefaultSettings(QuickSettings):
         #######################################################################
         # DIRECTORIES required by PYSVMT
         #######################################################################
+        self.dirs.base = basedir
         self.dirs.writeable = path.join(basedir, 'writeable')
         self.dirs.static = path.join(basedir, 'static')
         self.dirs.templates = path.join(basedir, 'templates')
