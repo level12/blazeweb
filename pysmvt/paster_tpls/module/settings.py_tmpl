@@ -8,5 +8,5 @@ class Settings(QuickSettings):
         QuickSettings.__init__(self)
 
         self.routes = [
-            Rule('/default', endpoint='default:Index'),
+            Rule('/{{modname}}', endpoint='{{modname}}:Index'),
         ]
