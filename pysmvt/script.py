@@ -1,21 +1,16 @@
 # -*- coding: utf-8 -*-
-import os
 import sys
+import os
 from os import path
-from pysmvt import ag, appimport, db, settings, modimport
+from pysmvt import ag, db, settings
 import pysmvt.commands
 from pysmvt.config import appslist
-from pysmvt.utils.filesystem import mkpyfile
-from pysmvt.utils import pprint, tb_depth_in, traceback_depth
-from werkzeug import script, Client, BaseResponse
+from pysmvt.utils import tb_depth_in
+from werkzeug import script
 from paste.util.multidict import MultiDict
 
 class UsageError(Exception):
     pass
-
-### helper functions
-def _make_app(profile='Default'):
-    return _calling_mod_locals['make_app'](profile)
 
 def prep_app(profile):
     if not _is_application_context():
@@ -41,100 +36,27 @@ def _shell_init_func(profile='Default'):
         'webapp': app
     }
 
-def make_runserver(app_factory, hostname='localhost', port=5000,
-                   use_reloader=False, use_debugger=False, use_evalex=True,
-                   threaded=False, processes=1, dnslookups=True):
-    """Returns an action callback that spawns a new wsgiref server."""
-    def action(profile='Default', hostname=('h', hostname), port=('p', port),
-               reloader=use_reloader, debugger=use_debugger,
-               evalex=use_evalex, threaded=threaded, processes=processes, dnslookups=dnslookups):
-        """Start a new development server."""
-        from werkzeug.serving import run_simple
-        app = app_factory(profile)
-        run_simple(hostname, port, app, reloader, debugger, evalex,
-                   None, 1, threaded, processes, dnslookups=dnslookups)
-    return action
-
-### Werkzeug script functions
-
-
-### Action Functions
-action_runserver = make_runserver(_make_app, use_reloader=True)
-
-def action_testrun(url=('u', '/'), show_body=('b', False), show_headers=('h', False), show_all=('a', False)):
-    """
-        Loads the application and makes a request.  Useful for debugging
-        with print statements
-    """
-    
-    app = _shell_init_func()['webapp']
-    
-    c = Client(app, BaseResponse)
-    
-    #custom post
-    #url = '/contributors/edit/10'
-    #data = 'name_prefix=&name_first=Randy&name_middle=&name_last=Syring&name_suffix=&organization_id=-2&url=&summary=&submit=Submit&contributor-form-submit-flag=submitted'
-    #ct = 'application/x-www-form-urlencoded'
-    #cl = len(data)
-    #resp = c.post(url, data=data, content_type = ct, content_length = cl)
-    resp = c.get(url)
-    
-    if show_headers or show_all:
-        print resp.status
-        print resp.headers
-    
-    if show_body or show_all:
-        for respstr in resp.response:
-            print respstr
-
-def action_createmod(name=('n', '')):
-    """ used to create an application module's file structure"""
-    app = _shell_init_func()['webapp']
-    modules = appimport('modules')
-    
-    moddir = os.path.dirname(modules.__file__)
-    newdir = os.path.join(moddir, name)
-    
-    dirs = (newdir, os.path.join(newdir, 'templates'), os.path.join(newdir, 'model'))
-    for dirpath in dirs:
-        if not os.path.exists(dirpath):
-            os.mkdir(dirpath)
-    for file in ('__init__.py', 'metadata.py', 'orm.py'):
-        fpath = os.path.join(newdir, 'model', file)
-        if not os.path.exists(fpath):
-            mkpyfile(fpath)
-    for file in ('__init__.py', 'actions.py', 'forms.py', 'settings.py',
-                 'utils.py', 'views.py', 'commands.py'):
-        fpath = os.path.join(newdir, file)
-        if not os.path.exists(fpath):
-            mkpyfile(fpath)
-
-def action_initmod(targetmod=('m', ''), profile=('p', 'Default')):
-    """
-        used to allow modules to do setup after they are installed.  Will call
-        a function init_db in a module's commands.py file.
-    """
-    app = _shell_init_func(profile)['webapp']
-
-    # add a session to the db if modules inits need it
-    db.sess = db.Session()
-    
-    # call each AM's appmod_dbinit()
-    for appmod in settings.modules.keys():
-        if targetmod == appmod or targetmod == '':
-            try:
-                callable = modimport('%s.commands' % appmod, 'init_module')
-                callable()
-            except ImportError:
-                if not tb_depth_in(3):
-                    raise
-
 def main():
     """ this is what our command line `pysmvt` calls to start """
+    # this first thing we need to do is look in the args for a -p argument
+    # which will tell us our profile.  This is a hack, but I don't know how
+    # to get around it at this point.  An application has to be loaded to get
+    # all the available actions, but when using initdb, having two applications
+    # fails b/c the meta data doesn't get loaded for the second application
+    try:
+        p_arg = sys.argv.index('-p')
+        profile = sys.argv[p_arg+1]
+        # remove the argument and value from sys.argv
+        sys.argv = sys.argv[:p_arg] + sys.argv[p_arg+2:]
+    except ValueError, e:
+        if 'list.index' not in str(e):
+            raise
+        profile = 'Default'
+    
     try:
         if _is_application_context():
             # create an application and let everything run inside it's request
-            app = make_console('Default')
+            app = make_console(profile)
             app.start_request()
             _werkzeug_run()
             app.end_request()

@@ -35,10 +35,13 @@ setup(
         "http://www.aaronsw.com/2002/html2text/html2text.py#egg=html2text-2.3",
         "https://svn.rcslocal.com:8443/svn/pysmvt/pysutils/trunk/#egg=pysutils-dev"
     ],
-    entry_points = {
-        'console_scripts': [
-            'pysmvt = pysmvt.script:main',
-        ],
-    },
+    entry_points="""
+    [console_scripts]
+    pysmvt = pysmvt.script:main
+    
+    [pysmvt.pysmvt_project_template]
+    pysmvt = pysmvt.paster_tpl:ProjectTemplate
+
+    """,
     zip_safe=False
 )

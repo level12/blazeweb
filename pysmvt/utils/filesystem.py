@@ -1,11 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
 
-def mkpyfile(path):
-    file = open(path, 'w')
-    file.write('# -*- coding: utf-8 -*-\n')
-    file.close()
-
 def mkdirs(newdir, mode=0777):
     """
         a "safe" verision of makedirs() that will only create the directory

@@ -33,16 +33,16 @@ class Application(object):
         # b/c we need to make sure the url adapter gets created
         rg.urladapter = ag.route_map.bind_to_environ(environ)
     
-    def end_request(self):
-        rg._pop_object()
-    
-    def __call__(self, callable, environ=None):
+    def console_dispatch(self, callable, environ=None):
         self.start_request(environ)
         try:
             callable()
         finally:
             self.end_request()
-
+    
+    def end_request(self):
+        rg._pop_object()
+        
 class WSGIApplication(Application):
 
     def __init__(self):

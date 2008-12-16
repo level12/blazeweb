@@ -2,7 +2,8 @@
 import os
 from os import path
 from werkzeug.serving import run_simple
-from pysmvt.paster_tpl import ProjectTemplate, dummy_cmd
+from werkzeug import Client, BaseResponse
+from pysmvt.paster_tpl import run_template
 from pysmvt import ag
 
 #
@@ -43,11 +44,15 @@ def action_project(projname='', template=('t', 'pysmvt'),
     vars = {'project': projname,
             'package': projname,
         }
-    cmd = dummy_cmd(interactive, verbose, overwrite)
-    pt = ProjectTemplate('pysmvt')
-    #pt = BasicPackage('basic')
-    pt.check_vars(vars, cmd)
-    pt.run(cmd, output_dir, vars)
+    run_template(interactive, verbose, overwrite, vars,
+                 output_dir, template, 'pysmvt_project_template')
+
+def action_module(modname='', template=('t', 'pysmvt'),
+        interactive=True, verbose=True, overwrite=True):
+    """ creates a new module file structure """
+    if not modname:
+        print 'Error: `modname` is required'
+        return
 
 def action_broadcast(action=''):
     """ calls all instances of broadcast_* actions in all applications and modules """
@@ -57,3 +62,29 @@ def action_broadcast(action=''):
     for key, callable in ag.command_actions.iteritems():
         if key.startswith('broadcast_%s' % action):
             callable()
+
+def action_testrun(url=('u', '/'), profile='Default', show_body=('b', False), show_headers=('h', False), show_all=('a', False)):
+    """
+        Loads the application and makes a request.  Useful for debugging
+        with print statements
+    """
+    from pysmvt.script import make_wsgi
+    app = make_wsgi(profile)
+    
+    c = Client(app, BaseResponse)
+    
+    #custom post
+    #url = '/contributors/edit/10'
+    #data = 'name_prefix=&name_first=Randy&name_middle=&name_last=Syring&name_suffix=&organization_id=-2&url=&summary=&submit=Submit&contributor-form-submit-flag=submitted'
+    #ct = 'application/x-www-form-urlencoded'
+    #cl = len(data)
+    #resp = c.post(url, data=data, content_type = ct, content_length = cl)
+    resp = c.get(url)
+    
+    if show_headers or show_all:
+        print resp.status
+        print resp.headers
+    
+    if show_body or show_all:
+        for respstr in resp.response:
+            print respstr
