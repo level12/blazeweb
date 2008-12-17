@@ -239,9 +239,11 @@ class DefaultSettings(QuickSettings):
         self.smtp.use_tls = False
         
         #######################################################################
-        # ENCODING
+        # OTHER DEFAULTS
         #######################################################################
         self.default_charset = 'utf-8'
+        self.default.file_mode = 0640
+        self.default.dir_mode = 0750
         
         #######################################################################
         # ERROR DOCUMENTS
@@ -264,9 +266,9 @@ def appinit(settings_mod=None, profile=None, settings_cls=None, **kwargs):
     ag._push_object(Context())
     
     # create the writeable directories if they don't exist already
-    mkdirs(settings.dirs.data, 0666)
-    mkdirs(settings.dirs.logs, 0666)
-    mkdirs(settings.dirs.tmp, 0666)
+    mkdirs(settings.dirs.data)
+    mkdirs(settings.dirs.logs)
+    mkdirs(settings.dirs.tmp)
     
     # now we need to assign module settings to the main setting object
     for module in settings.modules.keys():
