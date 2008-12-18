@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
 from os import path
 import os
+import logging
+import re
 from pysmvt import appimport, settings, ag, modimport
 from werkzeug.routing import Rule, Map, Submount
 from pysmvt.utils import OrderedProperties, OrderedDict, Context, tb_depth_in
 from pysmvt.utils.filesystem import mkdirs
+from pysmvt.exceptions import SettingsError
+from pysutils import case_us2cw, multi_pop
 
 class QuickSettings(OrderedProperties):
     def __init__(self, initialize=True):
@@ -264,6 +268,99 @@ def appinit(settings_mod=None, profile=None, settings_cls=None, **kwargs):
         Settings = settings_cls
     settings._push_object(Settings())
     ag._push_object(Context())
+
+    ## setup python logging based on settings configuration
+    level1map = {
+            'critical':logging.CRITICAL,
+            'fatal':logging.FATAL,
+            'error':logging.ERROR,
+            'warning':logging.WARNING,
+            'warn':logging.WARN,
+            'info':logging.INFO,
+            'debug':logging.DEBUG,
+        }
+    
+    keywords = 'enabled', 'filter', 'date_format', 'format'
+    # logging is only enabled if there is a logging key and it is not disabled
+    if settings.has_key('logging') and settings.logging.get('enabled', True):
+        for level1 in settings.logging.keys():
+            l1_value = settings.logging[level1]
+            
+            #print 'l1 %s:%s' % (level1, l1_value)
+            #setup our regular expression
+            p = re.compile(r'L\d\d?$')
+            match = p.match(level1)
+            if level1.lower() in level1map:
+                logger_level = level1map[level1.lower()]
+            elif match:
+                logger_level = int(match.group().lstrip('L'))
+                if logger_level < 0 or logger_level > 50:
+                    SettingsError('Invalid logging key: %s'%level1)
+            elif level1 in keywords:
+                if level1 == 'filter':
+                    default_filter = logging.Filter(settings.logging.filter)
+                    continue
+                elif level1 == 'format':
+                    default_format = logging.Formatter(settings.logging.format)
+                    continue
+                elif level1 == 'date_format':
+                    # need something here to set default_date_format
+                    continue
+                else:
+                    continue
+            else:
+                raise SettingsError('Invalid logging key: %s'%level1)
+            
+            # at this point, we know that this entry is actually
+            # a logging level.  Has this logging level been disabled?
+            if not l1_value.get('enabled', True):
+                continue
+            # we can now setup the logger for this level
+            logger = logging.getLogger()
+            logger.setLevel(logger_level)
+            
+            # this logging level can have default settings for all the handlers
+            # as well as having the handler definitions themselves
+            for l2_key in l1_value.keys():
+                l2_value = l1_value[l2_key]
+                #print 'l2 %s:%s' % (l2_key, l2_value.todict())
+                
+                # we don't want to add hanlders for keywords, so just continue
+                if l2_key in keywords:
+                    continue
+                
+                # l2_key is not in the keywords, so we assume it is a short
+                # handler name.  Convert that to an actual handler name
+                handler_name = case_us2cw(l2_key) + 'Handler'
+                if not hasattr(logging, handler_name):
+                    raise SettingsError('Invalid handler: %s'%l2_key)
+                    
+                # pop the keyword values out of the handler args
+                handler_args = l2_value.todict()
+                handler_kw = multi_pop(handler_args, *keywords)
+                
+                # has this handler been disabled?
+                if not handler_kw.get('enabled', True):
+                    continue
+       
+                # instantiate the handler with the args left over
+                handler = getattr(logging, handler_name)(**handler_args)
+                # determine filter/formatter settings from defaults
+                filter = (handler_kw.get('filter') or
+                          l1_value.get('filter') or
+                           settings.logging.get('filter'))
+                format = (handler_kw.get('format') or
+                          l1_value.get('format') or
+                           settings.logging.get('format'))
+                date_format = (handler_kw.get('date_format') or
+                          l1_value.get('date_format') or
+                           settings.logging.get('date_format'))
+
+                if filter:
+                    handler.addFilter(logging.Filter(filter))
+                if format or date_format:
+                    handler.setFormatter(logging.Formatter(format, date_format))
+                logger.addHandler(handler)
     
     # create the writeable directories if they don't exist already
     mkdirs(settings.dirs.data)
@@ -304,7 +401,6 @@ def appinit(settings_mod=None, profile=None, settings_cls=None, **kwargs):
     for module in settings.modules:
         if hasattr(module, 'routes'):
             _add_routing_rules(module.routes)
-
 
 def _add_routing_rules(rules):
     if settings.routing.prefix:
