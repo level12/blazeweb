@@ -377,7 +377,7 @@ def appinit(settings_mod=None, profile=None, settings_cls=None, **kwargs):
             # in our applications settings.py file.
             ms.update(settings.modules[module])
             settings.modules[module] = ms
-        except:
+        except ImportError:
             # 3 = .settings or Settings wasn't found, which is ok.  Any other
             # depth means a different import error, and we want to raise that
             if not tb_depth_in(3):
