@@ -33,8 +33,6 @@ class Testruns(DefaultSettings):
         
         self.db.url = 'sqlite:///'
         
-        self.logging.levels = ['debug']
-        
         #######################################################################
         # EXCEPTION HANDLING
         #######################################################################
