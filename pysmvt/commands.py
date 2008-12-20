@@ -5,9 +5,9 @@ from werkzeug.serving import run_simple
 from werkzeug import Client, BaseResponse
 from werkzeug.script import make_shell
 from pysmvt.paster_tpl import run_template
-from pysmvt import ag, settings, db
-from pysmvt.script import console_dispatch, make_wsgi, make_console
-from werkzeug.testapp import test_app
+from pysmvt import ag, settings
+from pysmvt.script import console_dispatch, make_wsgi, make_console, \
+    broadcast_actions
 
 def action_serve(profile='Default', hostname=('h', 'localhost'), port=('p', 5000),
                reloader=True, debugger=False, evalex=False, 
@@ -54,12 +54,15 @@ def action_module(modname='', template=('t', 'pysmvt'),
 
 @console_dispatch
 def action_broadcast(action_to_call=('a', '')):
-    """ calls all instances of broadcast_<action> in all applications and modules """
-    if not action:
+    """
+        calls all instances of broadcast_<action_to_call> in all applications
+        and modules
+    """
+    if not action_to_call:
         print 'Error: `action` is required'
         return
-    for key, callable in ag.command_actions.iteritems():
-        if key.startswith('broadcast_%s' % action):
+    for key, callable in broadcast_actions.iteritems():
+        if key == action_to_call:
             callable()
 
 def action_testrun(url=('u', '/'), profile='Default', show_body=('b', False), show_headers=('h', False), show_all=('a', False)):

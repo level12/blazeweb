@@ -10,6 +10,11 @@ from werkzeug import script
 from paste.util.multidict import MultiDict
 from decorator import FunctionMaker
 
+# we store this at the module level b/c it will only matter in an application
+# context and we don't have to worry about multiple applications when using
+# script functions
+broadcast_actions = MultiDict()
+
 class UsageError(Exception):
     pass
 
@@ -101,35 +106,43 @@ def _app_name():
         return app_name
     return None
 
-def _profile_last(caller, func=None):
-    """ decorate a decorator so that an additional 'profile' parameter is
-        added to the arg spec to be used by the decorator but not passed to
-        the decorated function.
-    """
-    if func is None: # returns a decorator
-        fun = FunctionMaker(caller)
-        first_arg = inspect.getargspec(caller)[0][0]
-        src = 'def %s(%s): return _call_(caller, %s)' % (
-            caller.__name__, first_arg, first_arg)
-        return fun.make(src, dict(caller=caller, _call_=_profile_last),
-                        undecorated=caller)
-    else: # returns a decorated function
-        fun = FunctionMaker(func)
-        if fun.signature:
-            profile_str = ', profile'
-        else:
-            profile_str = 'profile'
-        src = 'def %(name)s(%(signature)s' + profile_str + """):
-    return _call_(_func_, %(signature)s""" + profile_str + ')'
-        ret_func = fun.make(src, dict(_func_=func, _call_=caller), undecorated=func)
-        # add the default value for our 'profile' argument
-        if ret_func.func_defaults:
-            ret_func.func_defaults = ret_func.func_defaults + ('Default',)
-        else:
-            ret_func.func_defaults = ('Default',)
-        return ret_func
+class ProfileLast(object):
+    def __init__(self, is_broadcast):
+        self.is_broadcast = is_broadcast
+    
+    def __call__(self, caller, func=None):
+        """ decorate a decorator so that an additional 'profile' parameter is
+            added to the arg spec to be used by the decorator but not passed to
+            the decorated function.
+        """
+        if func is None: # returns a decorator
+            fun = FunctionMaker(caller)
+            first_arg = inspect.getargspec(caller)[0][0]
+            src = 'def %s(%s): return _call_(caller, %s)' % (
+                caller.__name__, first_arg, first_arg)
+            return fun.make(src, dict(caller=caller, _call_=self.__call__),
+                            undecorated=caller)
+        else: # returns a decorated function
+            if self.is_broadcast:
+                bcast_name = func.__name__.split('_').pop()
+                broadcast_actions.add(bcast_name, func)
+            fun = FunctionMaker(func)
+            if fun.signature:
+                profile_str = ', profile'
+            else:
+                profile_str = 'profile'
+            src = 'def %(name)s(%(signature)s' + profile_str + """):
+        return _call_(_func_, %(signature)s""" + profile_str + ')'
+            ret_func = fun.make(src, dict(_func_=func, _call_=caller), undecorated=func)
+            # add the default value for our 'profile' argument
+            if ret_func.func_defaults:
+                ret_func.func_defaults = ret_func.func_defaults + ('Default',)
+            else:
+                ret_func.func_defaults = ('Default',)
+            return ret_func
 
-@_profile_last
+
+@ProfileLast(False)
 def console_dispatch(f, *args):
     """
     A function intended to be a decorator for command actions that need to be
@@ -151,4 +164,25 @@ def console_dispatch(f, *args):
         f(*largs)
     app = make_console(profile)
     app.console_dispatch(dispatch_wrapper)
-    
+
+@ProfileLast(True)
+def console_broadcast(f, *args):
+    """
+        essentially the same as console_dispatch, except that the non-decorated
+        function gets added to a list of functions that are available for use
+        by `pysmvt broadcast`.  This is necessary because we currently can't
+        have more than one application instantiated per process or we run into
+        problems with sqlalchemy/elixir ORM objects not getting instantiated
+        for the second application.  since action_broadcast is already wrapped
+        by @console_dispatch, if the broadcast actions are also wrapped, then
+        it results in a double wrap and two applications and the db metadata
+        won't be right when using broadcast.
+        
+        If using broadcast is not desired, the action can be used normally.
+    """
+    largs = list(args)
+    profile = largs.pop()
+    def dispatch_wrapper():
+        f(*largs)
+    app = make_console(profile)
+    app.console_dispatch(dispatch_wrapper)
