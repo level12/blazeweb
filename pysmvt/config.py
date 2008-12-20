@@ -257,7 +257,7 @@ class DefaultSettings(QuickSettings):
         # self.error_docs[404] = 'errorsmod:NotFound'
         self.error_docs
 
-def appinit(settings_mod=None, profile=None, settings_cls=None, **kwargs):
+def appinit(settings_mod=None, profile=None, settings_cls=None):
     """
         called to setup the application's settings
         variable

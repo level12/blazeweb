@@ -7,9 +7,9 @@ from pysmvt import routing
 from werkzeug import SharedDataMiddleware, DebuggedApplication
 import settings as settingsmod
 
-def make_wsgi(profile='Default', **kwargs):
+def make_wsgi(profile='Default'):
     
-    config.appinit(settingsmod, profile, **kwargs)
+    config.appinit(settingsmod, profile)
     
     app = WSGIApplication()
     
@@ -33,6 +33,6 @@ def make_wsgi(profile='Default', **kwargs):
     
     return app
 
-def make_console(profile='Default', **kwargs):
-    config.appinit(settingsmod, profile, **kwargs)
+def make_console(profile='Default'):
+    config.appinit(settingsmod, profile)
     return Application()
