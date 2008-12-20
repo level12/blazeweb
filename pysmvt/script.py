@@ -79,7 +79,7 @@ def _gather_actions():
                     except ImportError:
                         if not tb_depth_in(0):
                             raise
-        ag.command_actions = actions
+    ag.command_actions = actions
     return actions
 
 def _is_application_context():
@@ -115,11 +115,18 @@ def _profile_last(caller, func=None):
                         undecorated=caller)
     else: # returns a decorated function
         fun = FunctionMaker(func)
-        src = """def %(name)s(%(signature)s, profile):
-    return _call_(_func_, %(signature)s, profile)"""
+        if fun.signature:
+            profile_str = ', profile'
+        else:
+            profile_str = 'profile'
+        src = 'def %(name)s(%(signature)s' + profile_str + """):
+    return _call_(_func_, %(signature)s""" + profile_str + ')'
         ret_func = fun.make(src, dict(_func_=func, _call_=caller), undecorated=func)
         # add the default value for our 'profile' argument
-        ret_func.func_defaults = ret_func.func_defaults + ('Default',)
+        if ret_func.func_defaults:
+            ret_func.func_defaults = ret_func.func_defaults + ('Default',)
+        else:
+            ret_func.func_defaults = ('Default',)
         return ret_func
 
 @_profile_last
