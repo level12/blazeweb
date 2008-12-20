@@ -63,6 +63,7 @@ def action_broadcast(action_to_call=('a', '')):
         return
     for key, callable in broadcast_actions.iteritems():
         if key == action_to_call:
+            print 'calling: %s' % callable.__name__
             callable()
 
 def action_testrun(url=('u', '/'), profile='Default', show_body=('b', False), show_headers=('h', False), show_all=('a', False)):

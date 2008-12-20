@@ -84,7 +84,6 @@ def _gather_actions():
                     except ImportError:
                         if not tb_depth_in(0):
                             raise
-    ag.command_actions = actions
     return actions
 
 def _is_application_context():
