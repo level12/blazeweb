@@ -43,7 +43,7 @@ setup(
     include_package_data=True,
     install_requires = [
         "Beaker>=1.1.2",
-        "decorator>=3.0.0"
+        "decorator>=3.0.0",
         "FormEncode>=1.2",
         "html2text>=1.2",
         "jinja2>=2.1",
