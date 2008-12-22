@@ -211,7 +211,9 @@ class TemplateMixin(object):
         self.template.templateEnv.filters['strip_tags'] = strip_tags
     
     def filter_pprint(self, value, indent=1, width=80, depth=None):
-        return '<pre class="pretty_print">%s</pre>' % PrettyPrinter(indent, width, depth).pformat(value)
+        toprint = PrettyPrinter(indent, width, depth).pformat(value)
+        toprint = self.template.templateEnv.filters['e'](toprint)
+        return '<pre class="pretty_print">%s</pre>' % toprint
     
     def assignTemplateVariables(self):
         self.template.assign('settings', settings)
