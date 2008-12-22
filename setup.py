@@ -7,6 +7,11 @@ django modularity (i.e. what they would call "apps").  If you want to try it out
 it would be best to start with `pysapp <http://pypi.python.org/pypi/pysapp/>`_
 which is a pysmvt "supporting application" that your projects can be built on.
 
+Questions & Comments
+---------------------
+
+Please visit: http://groups.google.com/group/pyslibs
+
 Current Status
 ---------------
 
