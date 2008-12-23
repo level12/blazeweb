@@ -58,6 +58,9 @@ def action_broadcast(action_to_call=('a', '')):
         calls all instances of broadcast_<action_to_call> in all applications
         and modules
     """
+    manual_broadcast(action_to_call)
+    
+def manual_broadcast(action_to_call):
     if not action_to_call:
         print 'Error: `action` is required'
         return

@@ -53,6 +53,13 @@ def main():
     except UsageError, e:
         print 'Error: %s' % e
 
+def testprep():
+    if _is_application_context():
+        # we have to at least appinit() with this application's settings
+        smod = _get_settings_mod()
+        appinit(smod, 'Default')
+        _gather_actions()
+
 def _werkzeug_run():
     script.run(_gather_actions())
 
