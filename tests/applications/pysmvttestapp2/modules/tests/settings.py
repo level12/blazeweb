@@ -9,6 +9,7 @@ class Settings(QuickSettings):
         
         self.routes = ([
             Rule('/tests/rvbapp2', endpoint='tests:Rvb'),
+            Rule('/tests/underscoretemplates', endpoint='tests:UnderscoreTemplates'),
         ])
         
         # no more values can be added

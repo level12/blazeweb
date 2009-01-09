@@ -13,3 +13,7 @@ class InApp2(RespondingViewBase):
     
     def default(self):
         self.retval = 'Hello app2!'
+
+class UnderscoreTemplates(HtmlTemplatePage):
+    def default(self):
+        pass

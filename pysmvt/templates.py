@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
 from os import path
+import logging
+from pysutils import case_cw2us
 from pysmvt import ag, settings, appfilepath
 from pysmvt.exceptions import ProgrammingError
 from pysmvt.utils import safe_strftime
 from jinja2 import FileSystemLoader, Environment, TemplateNotFound
 from jinja2.loaders import split_template_path
+
+log = logging.getLogger(__name__)
 
 class JinjaBase(object):
     
@@ -74,12 +78,33 @@ class AppTemplateLoader(FileSystemLoader):
         pieces = split_template_path(template)
         modppath = path.join('modules', self.modname, 'templates', *pieces)
         apppath = path.join('templates', *pieces)
+        log.debug('template modpath: %s', modppath)
+        log.debug('template apppath: %s', apppath)
         try:
             fpath = appfilepath(modppath, apppath)
         except ProgrammingError, e:
             if 'could not locate' in str(e):
-                raise TemplateNotFound(template)
-            raise
+                # in view.py, we default a template name to the name of the view class
+                # which results in a CapWordsFileName.  But file names should be
+                # underscore_notation.  This needs to be fixed in view.py eventually,
+                # but that requires us to update all our template file names.  So
+                # I am doing it here as a hack.  We can depricate the old later.
+                log.debug('could not locate template file, trying underscore version')
+                utemplate = case_cw2us(template)
+                if utemplate == template:
+                    log.debug('underscore version was the same')
+                    raise TemplateNotFound(template)
+                pieces = split_template_path(utemplate)
+                modppath = path.join('modules', self.modname, 'templates', *pieces)
+                apppath = path.join('templates', *pieces)
+                log.debug('utemplate modpath: %s', modppath)
+                log.debug('utemplate apppath: %s', apppath)
+                try:
+                    fpath = appfilepath(modppath, apppath)
+                except ProgrammingError, e:
+                    if 'could not locate' in str(e):
+                        raise TemplateNotFound(template)
+                    raise
         f = file(fpath)
         try:
             contents = f.read().decode(self.encoding)

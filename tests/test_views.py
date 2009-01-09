@@ -407,6 +407,13 @@ class TestApp2(unittest.TestCase):
         r = self.client.get('tests/rvbapp2')
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.data, 'Hello app2!')
+    
+    def test_underscore_templates(self):
+        r = self.client.get('tests/underscoretemplates')
+        
+        self.assertEqual(r.status, '200 OK')
+        self.assertEqual(r.data, 'Hello World!')
+        self.assertEqual( dict(r.header_list)['Content-Type'], 'text/html; charset=utf-8' )
 
 if __name__ == '__main__':
     #unittest.main()
