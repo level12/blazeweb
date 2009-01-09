@@ -62,5 +62,7 @@ class Testruns(DefaultSettings):
         self.emails.programmers = ['randy@rcs-comp.com']
         self.email.subject_prefix = '[pysvmt test app] '
         
+        #self.logging.debug.stream.filter = 'pysmvt.templates'
+        
         # we are done adding variables to this settings object, so lock it
         self.lock()

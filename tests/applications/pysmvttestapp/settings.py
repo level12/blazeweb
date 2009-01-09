@@ -70,5 +70,8 @@ class Testruns(DefaultSettings):
         # a fake setting for testing
         self.foo = 'bar'
         
+        # logging
+        #self.logging.debug.stream.filter = 'pysmvt'
+        
         # we are done adding variables to this settings object, so lock it
         self.lock()
