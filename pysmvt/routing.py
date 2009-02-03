@@ -13,8 +13,13 @@ __all__ = [
     'add_prefix'
 ]
 
-def url_for(endpoint, _external=False, **values):
-    return rg.urladapter.build(endpoint, values, force_external=_external)
+def url_for(endpoint, _external=False, _https=False, **values):
+    if _https:
+        _external = True
+    url = rg.urladapter.build(endpoint, values, force_external=_external)
+    if _https and url.startswith('http:'):
+        url = url.replace('http:', 'https:', 1)
+    return url
 
 def static_url(endpoint, file, app = None):
     """
