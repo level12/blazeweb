@@ -235,6 +235,7 @@ class EmailMessage(object):
         self.extra_headers = headers or {}
         self.connection = connection
         self._override_added = False
+        self._always_recipients_added = False
 
     def get_connection(self, fail_silently=False):
         if not self.connection:
@@ -242,10 +243,18 @@ class EmailMessage(object):
         return self.connection
 
     def message(self):
-        if settings.emails.bcc_always:
-            self.bcc.extend(settings.emails.bcc_always)
-        if settings.emails.cc_always:
-            self.cc.extend(settings.emails.cc_always)
+        if not self._always_recipients_added:
+            if settings.emails.bcc_always:
+                bcc_always = settings.emails.bcc_always
+                if isinstance(bcc_always, str):
+                    bcc_always = [bcc_always]
+                self.bcc.extend(bcc_always)
+            if settings.emails.cc_always:
+                cc_always = settings.emails.cc_always
+                if isinstance(cc_always, str):
+                    cc_always = [cc_always]
+                self.cc.extend(cc_always)
+            self._always_recipients_added = True
         self._perform_override()
         encoding = self.encoding or settings.default_charset
         msg = SafeMIMEText(smart_str(self.body, settings.default_charset),
@@ -289,6 +298,18 @@ class EmailMessage(object):
         Returns a list of all recipients of the email (includes direct
         addressees, carbon copies, as well as Bcc entries).
         """
+        if not self._always_recipients_added:
+            if settings.emails.bcc_always:
+                bcc_always = settings.emails.bcc_always
+                if isinstance(bcc_always, str):
+                    bcc_always = [bcc_always]
+                self.bcc.extend(bcc_always)
+            if settings.emails.cc_always:
+                cc_always = settings.emails.cc_always
+                if isinstance(cc_always, str):
+                    cc_always = [cc_always]
+                self.cc.extend(cc_always)
+            self._always_recipients_added = True
         self._perform_override()
         return self.to + self.cc + self.bcc
 
