@@ -243,18 +243,7 @@ class EmailMessage(object):
         return self.connection
 
     def message(self):
-        if not self._always_recipients_added:
-            if settings.emails.bcc_always:
-                bcc_always = settings.emails.bcc_always
-                if isinstance(bcc_always, str):
-                    bcc_always = [bcc_always]
-                self.bcc.extend(bcc_always)
-            if settings.emails.cc_always:
-                cc_always = settings.emails.cc_always
-                if isinstance(cc_always, str):
-                    cc_always = [cc_always]
-                self.cc.extend(cc_always)
-            self._always_recipients_added = True
+        self._extend_recipients()
         self._perform_override()
         encoding = self.encoding or settings.default_charset
         msg = SafeMIMEText(smart_str(self.body, settings.default_charset),
@@ -298,18 +287,7 @@ class EmailMessage(object):
         Returns a list of all recipients of the email (includes direct
         addressees, carbon copies, as well as Bcc entries).
         """
-        if not self._always_recipients_added:
-            if settings.emails.bcc_always:
-                bcc_always = settings.emails.bcc_always
-                if isinstance(bcc_always, str):
-                    bcc_always = [bcc_always]
-                self.bcc.extend(bcc_always)
-            if settings.emails.cc_always:
-                cc_always = settings.emails.cc_always
-                if isinstance(cc_always, str):
-                    cc_always = [cc_always]
-                self.cc.extend(cc_always)
-            self._always_recipients_added = True
+        self._extend_recipients()
         self._perform_override()
         return self.to + self.cc + self.bcc
 
@@ -363,6 +341,24 @@ class EmailMessage(object):
                 filename, content, mimetype = attachment
                 if not filename and content and mimetype == 'text/html':
                     attachment[1] = self._insert_after_html_body(markdown(body_prepend), content)
+
+    def _extend_recipients(self):
+        """
+        Adds the bcc_always and cc_always recipients to the lists
+        if they are specified in the app settings.
+        """
+        if not self._always_recipients_added:
+            if settings.emails.bcc_always:
+                bcc_always = settings.emails.bcc_always
+                if isinstance(bcc_always, str):
+                    bcc_always = [bcc_always]
+                self.bcc.extend(bcc_always)
+            if settings.emails.cc_always:
+                cc_always = settings.emails.cc_always
+                if isinstance(cc_always, str):
+                    cc_always = [cc_always]
+                self.cc.extend(cc_always)
+            self._always_recipients_added = True    
 
     def _create_attachment(self, filename, content, mimetype=None):
         """
