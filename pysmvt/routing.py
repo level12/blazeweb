@@ -20,7 +20,7 @@ def url_for(endpoint, _external=False, _https=False, **values):
     if _https and url.startswith('http:'):
         url = url.replace('http:', 'https:', 1)
     elif not _https and url.startswith('https:'):
-        url = rg.urladapter.build(endpoint, values, force_external=True)
+        # need to specify _external=True for this to fire
         url = url.replace('https:', 'http:', 1)
     return url
 
