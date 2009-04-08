@@ -51,6 +51,7 @@ class TestRouting(unittest.TestCase):
         self.assertEqual('/js/test.js', js_url('test.js', app='foo'))
         self.assertEqual('/', index_url())
         self.assertEqual('https://localhost/url1', url_for('mod:Url1', _https=True))
+        self.assertEqual('http://localhost/url1', url_for('mod:Url1', _https=False))
         
 
 class TestPrefix(unittest.TestCase):
@@ -72,6 +73,7 @@ class TestPrefix(unittest.TestCase):
         self.assertEqual('/prefix/js/test.js', js_url('test.js', app='foo'))
         self.assertEqual('/prefix/', index_url())
         self.assertEqual('https://localhost/prefix/url1', url_for('mod:Url1', _https=True))
+        self.assertEqual('http://localhost/prefix/url1', url_for('mod:Url1', _https=False))
 
 class TestNoIndex(unittest.TestCase):
     def setUp(self):
