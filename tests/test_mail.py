@@ -194,45 +194,45 @@ class TestEmail(unittest.TestCase):
     def test_bcc_always(self):
         settings.emails.bcc_always = ['bcc1@example.com', 'bcc2@example.com']
         email = EmailMessage('Subject', 'Content', to=['to@example.com'])
+
+        assert email.recipients() == ['to@example.com', 'bcc1@example.com', 'bcc2@example.com']
         message = email.message()
-        
         assert message['Subject'].encode() == 'Subject'
         assert message.get_payload() == 'Content'
         assert message['From'] == 'root@localhost'
         assert message['To'] == 'to@example.com'
-        assert email.recipients() == ['to@example.com', 'bcc1@example.com', 'bcc2@example.com']
         
         email = EmailMessage('Subject', 'Content', to=['to@example.com'], bcc=['bcc3@example.com'])
-        message = email.message()
         
+        assert email.recipients() == ['to@example.com',  'bcc3@example.com', 'bcc1@example.com', 'bcc2@example.com']
+        message = email.message()
         assert message['Subject'].encode() == 'Subject'
         assert message.get_payload() == 'Content'
         assert message['From'] == 'root@localhost'
         assert message['To'] == 'to@example.com'
-        assert email.recipients() == ['to@example.com',  'bcc3@example.com', 'bcc1@example.com', 'bcc2@example.com']
     
         
     def test_cc_always(self):
         settings.emails.cc_always = ['cc1@example.com', 'cc2@example.com']
         email = EmailMessage('Subject', 'Content', to=['to@example.com'])
-        message = email.message()
         
+        assert email.recipients() == ['to@example.com', 'cc1@example.com', 'cc2@example.com']
+        message = email.message()
         assert message['Subject'].encode() == 'Subject'
         assert message.get_payload() == 'Content'
         assert message['From'] == 'root@localhost'
         assert message['To'] == 'to@example.com'
         assert message['Cc'] == 'cc1@example.com, cc2@example.com'
-        assert email.recipients() == ['to@example.com', 'cc1@example.com', 'cc2@example.com']
         
         email = EmailMessage('Subject', 'Content', to=['to@example.com'], cc=['cc3@example.com'])
-        message = email.message()
         
+        assert email.recipients() == ['to@example.com', 'cc3@example.com', 'cc1@example.com', 'cc2@example.com']
+        message = email.message()        
         assert message['Subject'].encode() == 'Subject'
         assert message.get_payload() == 'Content'
         assert message['From'] == 'root@localhost'
         assert message['To'] == 'to@example.com'
         assert message['Cc'] == 'cc3@example.com, cc1@example.com, cc2@example.com'
-        assert email.recipients() == ['to@example.com', 'cc3@example.com', 'cc1@example.com', 'cc2@example.com']
     
     def test_overrides(self):
         """Test overrides"""
