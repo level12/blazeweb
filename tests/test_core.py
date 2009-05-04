@@ -1,16 +1,14 @@
 from os import path
 import unittest
-import config
-
+import pysmvttestapp
+import pysmvttestapp2
 import pysmvttestapp.applications
 import pysmvt
 from pysmvt import appfilepath
 from pysmvt.exceptions import ProgrammingError
 
-pysmvt_project_dir = path.dirname(path.dirname(pysmvt.__file__))
-apps_dir = path.join(pysmvt_project_dir, 'tests', 'applications')
-app1_dir = path.join(apps_dir, 'pysmvttestapp')
-app2_dir = path.join(apps_dir, 'pysmvttestapp2')
+app1_dir = path.dirname(pysmvttestapp.__file__)
+app2_dir = path.dirname(pysmvttestapp2.__file__)
 
 class TestImports(unittest.TestCase):
     def setUp(self):
