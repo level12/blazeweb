@@ -1,0 +1,6 @@
+-e svn+https://svn.rcslocal.com:8443/svn/pysmvt/pysutils/trunk#egg=pysutils
+-e svn+https://svn.rcslocal.com:8443/svn/pysmvt/pysform/trunk#egg=pysform
+-e svn+https://svn.rcslocal.com:8443/svn/pysmvt/pysmvt/trunk#egg=pysmvt
+-e svn+https://svn.rcslocal.com:8443/svn/pysmvt/pysapp/trunk#egg=pysapp
+-e svn+https://svn.rcslocal.com:8443/svn/pysmvt/pysmvt-apps/testapp1/trunk#egg=pysmvttestapp1
+-e svn+https://svn.rcslocal.com:8443/svn/pysmvt/pysmvt-apps/testapp2/trunk#egg=pysmvttestapp2
