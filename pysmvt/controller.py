@@ -1,17 +1,14 @@
-from os import path
-import sys
 from traceback import format_exc
 import logging
 
-from werkzeug.routing import Map, Submount, RequestRedirect
+from werkzeug.routing import RequestRedirect
 from werkzeug.exceptions import HTTPException, NotFound, InternalServerError, \
     MethodNotAllowed
-import werkzeug.utils
 
-from pysmvt import settings, session, user, rg, ag, getview, _getview, modimport
+from pysmvt import settings, session, user, rg, ag, _getview
 from pysmvt.exceptions import ForwardException, ProgrammingError, Redirect
 from pysmvt.mail import mail_programmers
-from pysmvt.utils import randchars, traceback_depth, pprint
+from pysmvt.utils import randchars, pprint
 from pysmvt.wrappers import Request, Response
 
 log = logging.getLogger(__name__)
