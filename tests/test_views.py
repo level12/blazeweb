@@ -1,5 +1,4 @@
 import unittest
-import config 
 
 from pysmvt import settings
 from pysmvttestapp.applications import make_wsgi
