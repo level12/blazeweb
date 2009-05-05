@@ -1,10 +1,10 @@
 import config
 import unittest
 
-from pysmvt.application import Application
-import pysmvt.config
 from pysmvt.routing import *
 from pysmvt.exceptions import SettingsError
+from pysmvttestapp.applications import make_wsgi
+from werkzeug import Client, BaseResponse, create_environ
 
 class RoutingSettings(config.Testruns):
     def __init__(self):
@@ -91,6 +91,48 @@ class TestNoIndex(unittest.TestCase):
             self.fail('expected exception from index_url()')
         except SettingsError, e:
             self.assertEqual('the index url "/" could not be located', str(e))
+
+class TestCurrentUrl(unittest.TestCase):
+
+    def setUp(self):
+        self.app = make_wsgi('Testruns')
+        self.client = Client(self.app, BaseResponse)
+
+    def tearDown(self):
+        self.client = None
+        self.app = None
+
+    def test_in_view(self):
+        r = self.client.get('routingtests/currenturl?foo=bar')
+
+        self.assertEqual(r.status, '200 OK')
+        
+        self.assertEqual(r.data, 'http://localhost/routingtests/currenturl?foo=bar')
+
+    def test_arguments(self):
+        env = create_environ("/news/list?param=foo", "http://localhost:8080/script")
+        self.assertEqual('http://localhost:8080/script/news/list?param=foo', current_url(environ=env))
+        self.assertEqual('http://localhost:8080/script/', current_url(environ=env, root_only=True))
+        self.assertEqual('http://localhost:8080/', current_url(environ=env, host_only=True))
+        self.assertEqual('http://localhost:8080/script/news/list', current_url(environ=env, strip_querystring=True))
+        self.assertEqual('/script/news/list?param=foo', current_url(environ=env, strip_host=True))
+        self.assertEqual('http://localhost:8080/script/news/list?param=foo', current_url(environ=env, https=False))
+        self.assertEqual('http://localhost:8080/script/', current_url(environ=env, root_only=True, https=False))
+        self.assertEqual('http://localhost:8080/', current_url(environ=env, host_only=True, https=False))
+        self.assertEqual('http://localhost:8080/script/news/list', current_url(environ=env, strip_querystring=True, https=False))
+        self.assertEqual('/script/news/list?param=foo', current_url(environ=env, strip_host=True, https=False))
+
+        env = create_environ("/news/list?param=foo", "https://localhost:8080/script")
+        self.assertEqual('https://localhost:8080/script/news/list?param=foo', current_url(environ=env))
+        self.assertEqual('https://localhost:8080/script/', current_url(environ=env, root_only=True))
+        self.assertEqual('https://localhost:8080/', current_url(environ=env, host_only=True))
+        self.assertEqual('https://localhost:8080/script/news/list', current_url(environ=env, strip_querystring=True))
+        self.assertEqual('/script/news/list?param=foo', current_url(environ=env, strip_host=True))
+        self.assertEqual('https://localhost:8080/script/news/list?param=foo', current_url(environ=env, https=True))
+        self.assertEqual('https://localhost:8080/script/', current_url(environ=env, root_only=True, https=True))
+        self.assertEqual('https://localhost:8080/', current_url(environ=env, host_only=True, https=True))
+        self.assertEqual('https://localhost:8080/script/news/list', current_url(environ=env, strip_querystring=True, https=True))
+        self.assertEqual('/script/news/list?param=foo', current_url(environ=env, strip_host=True, https=True))
 
 if __name__ == '__main__':
     unittest.main()
