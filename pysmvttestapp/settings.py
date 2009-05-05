@@ -27,6 +27,7 @@ class Testruns(DefaultSettings):
         self.modules.nosettings.enabled = True
         self.modules.sessiontests.enabled = True
         self.modules.usertests.enabled = True
+        self.modules.routingtests.enabled = True
         self.modules.disabled.enabled = False
         
         self.routing.routes.extend([
