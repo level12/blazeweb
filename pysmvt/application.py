@@ -9,7 +9,7 @@ from werkzeug.utils import create_environ
 from pysmvt import settings, ag, session, rg, user
 from pysmvt import routing
 from pysmvt.controller import Controller
-from pysmvt.users import SessionUser
+from pysmvt.users import User
 from pysmvt.utils import randhash, Context
 
 class Application(object):
@@ -55,7 +55,7 @@ class WSGIApplication(Application):
             environ['paste.registry'].register(settings, self.settings)
             environ['paste.registry'].register(ag, self.ag)
             environ['paste.registry'].register(session, environ['beaker.session'])
-            environ['paste.registry'].register(user, self.setup_user())
+            environ['paste.registry'].register(user, self.setup_user(environ))
             environ['paste.registry'].register(rg, Context())
 
     def __call__(self, environ, start_response):
@@ -65,6 +65,15 @@ class WSGIApplication(Application):
     def setup_controller(self):
         self.controller = Controller(self.settings)
     
-    def setup_user(self):
-        return SessionUser()
+    def setup_user(self, environ):
+
+        try:
+            return environ['beaker.session']['__pysmvt_user']
+        except KeyError, e:
+            if '__pysmvt_user' not in str(e):
+                raise
+            environ['beaker.session']['__pysmvt_user'] = User()
+            # this is for BC, and will eventually be removed
+            environ['beaker.session']['user'] = environ['beaker.session']['__pysmvt_user']
+            return environ['beaker.session']['__pysmvt_user']
         
