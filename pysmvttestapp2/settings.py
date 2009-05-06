@@ -11,9 +11,6 @@ class Default(DefaultSettings):
     def __init__(self):
         # call parent init to setup default settings
         DefaultSettings.__init__(self, appname, basedir)
-        
-        # we are done adding variables to this settings object, so lock it
-        self.lock()
 
 class Testruns(DefaultSettings):
     def __init__(self):
@@ -63,6 +60,3 @@ class Testruns(DefaultSettings):
         self.email.subject_prefix = '[pysvmt test app] '
         
         #self.logging.debug.stream.filter = 'pysmvt.templates'
-        
-        # we are done adding variables to this settings object, so lock it
-        self.lock()
