@@ -7,6 +7,8 @@ import logging
 from pprint import PrettyPrinter
 from pysmvt import settings, user, ag, forward, rg, modimport
 from werkzeug.debug.tbtools import get_current_traceback
+from werkzeug import run_wsgi_app, create_environ
+from nose.tools import make_decorator
 from formencode.validators import URL
 from formencode import Invalid
 from markdown2 import markdown
@@ -298,3 +300,29 @@ class Context(object):
         just a dummy object to hang attributes off of
     """
     pass
+
+def wrapinapp(wsgiapp):
+    """Used to make any callable run inside a WSGI application.
+
+    Example use::
+
+        from pysmvt.routing import current_url
+        from pysmvt.utils import wrapinapp
+
+        from testproj.applications import make_wsgi
+        app = make_wsgi('Test')
+
+        @wrapinapp(app)
+        def test_currenturl():
+            assert current_url(host_only=True) == 'http://localhost/'
+    """
+    def decorate(func):
+        def newfunc(*arg, **kw):
+            def sendtowsgi():
+                func(*arg, **kw)
+            environ = create_environ('/[[__handle_callable__]]')
+            environ['pysmvt.callable'] = sendtowsgi
+            run_wsgi_app(wsgiapp, environ)
+        newfunc = make_decorator(func)(newfunc)
+        return newfunc
+    return decorate

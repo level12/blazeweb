@@ -32,11 +32,19 @@ class Controller(object):
         self._wsgi_request_setup(environ)
 
         try:
-            response = self._error_documents_handler(environ)
+            if rg.request.path == '/[[__handle_callable__]]':
+                response = self._handle_callable()
+            else:
+                response = self._error_documents_handler(environ)
             self._wsgi_request_cleanup()
             return response(environ, start_response)
         finally:
             pass
+
+    def _handle_callable(self):
+        r = Response()
+        r.data = unicode(rg.environ['pysmvt.callable']())
+        return r
     
     def _wsgi_request_setup(self, environ):
         # WSGI request setup
@@ -159,7 +167,7 @@ class Controller(object):
                 called_from = 'forward'
             finally:
                 self._response_cleanup()
-    
+
     def __call__(self, environ, start_response):
         """Just forward a WSGI call to the first internal middleware."""
         return self.dispatch_request(environ, start_response)
