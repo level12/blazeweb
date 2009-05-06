@@ -1,5 +1,4 @@
 from setuptools import setup, find_packages
-import sys, os
 
 version = '0.1'
 
@@ -13,7 +12,7 @@ setup(name={{repr(project)}},
       author_email={{repr(programmer_email or '')}},
       url='',
       license='',
-      packages=['libs']+find_packages(exclude=['ez_setup', 'examples', 'tests']),
+      packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
       include_package_data=True,
       zip_safe=False,
       install_requires=[

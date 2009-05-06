@@ -92,4 +92,13 @@ class {{username}}(Default):
 # command line when running `pysmvt serve`
 {{username.lower()}}={{username}}
 
+class Test(Default):
+    def __init__(self):
+        # call parent init to setup default settings
+        Default.__init__(self)
+
+        self.emails.override = '{{programmer_email}}'
+        self.exceptions.hide = False
+        self.exceptions.email = False
+        self.template.default = 'test.html'
 

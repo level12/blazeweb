@@ -1,0 +1,18 @@
+from werkzeug import Client, BaseResponse
+from {{package}}.applications import make_wsgi
+
+class TestsFunctional(object):
+
+    def setUp(self):
+        self.app = make_wsgi('Test')
+        self.client = Client(self.app, BaseResponse)
+
+    def tearDown(self):
+        self.client = None
+        self.app = None
+
+    def test_default(self):
+        r = self.client.get('/')
+
+        assert r.status == '200 OK'
+        assert 'Default Module\'s Index Page' in r.data

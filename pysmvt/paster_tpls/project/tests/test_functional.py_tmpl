@@ -1,0 +1,18 @@
+from werkzeug import Client, BaseResponse
+from {{package}}.applications import make_wsgi
+
+class TestsFunctional(object):
+
+    def setUp(self):
+        self.app = make_wsgi('Test')
+        self.client = Client(self.app, BaseResponse)
+
+    def tearDown(self):
+        self.client = None
+        self.app = None
+
+    def test_notthere(self):
+        r = self.client.get('/nothere')
+
+        assert r.status == '404 NOT FOUND'
+        assert 'Not Found' in r.data
