@@ -24,14 +24,6 @@ class Prefixsettings(RoutingSettings):
         
         self.routing.prefix = '/prefix'
 
-class Noindex(RoutingSettings):
-    def __init__(self):
-        RoutingSettings.__init__(self)
-        
-        self.routing.routes = [
-            Rule('/url1', endpoint='mod:Url1'),
-        ]
-
 class TestRouting(unittest.TestCase):
     def setUp(self):
         self.app = config.make_console(RoutingSettings)
@@ -49,7 +41,6 @@ class TestRouting(unittest.TestCase):
         self.assertEqual('/c/test.css', style_url('test.css', app='foo'))
         self.assertEqual('/js/test.js', js_url('test.js'))
         self.assertEqual('/js/test.js', js_url('test.js', app='foo'))
-        self.assertEqual('/', index_url())
         self.assertEqual('https://localhost/url1', url_for('mod:Url1', _https=True))
         self.assertEqual('http://localhost/url1', url_for('mod:Url1', _https=False, _external=True))
         
@@ -71,26 +62,8 @@ class TestPrefix(unittest.TestCase):
         self.assertEqual('/prefix/c/test.css', style_url('test.css', app='foo'))
         self.assertEqual('/prefix/js/test.js', js_url('test.js'))
         self.assertEqual('/prefix/js/test.js', js_url('test.js', app='foo'))
-        self.assertEqual('/prefix/', index_url())
         self.assertEqual('https://localhost/prefix/url1', url_for('mod:Url1', _https=True))
         self.assertEqual('http://localhost/prefix/url1', url_for('mod:Url1', _https=False, _external=True))
-
-class TestNoIndex(unittest.TestCase):
-    def setUp(self):
-        self.app = config.make_console(Noindex)
-        self.app.start_request()
-    
-    def tearDown(self):
-        self.app.end_request()
-        self.app = None
-    
-    def test_routes(self):
-        
-        try:
-            index_url()
-            self.fail('expected exception from index_url()')
-        except SettingsError, e:
-            self.assertEqual('the index url "/" could not be located', str(e))
 
 class TestCurrentUrl(unittest.TestCase):
 
@@ -133,6 +106,20 @@ class TestCurrentUrl(unittest.TestCase):
         self.assertEqual('https://localhost:8080/', current_url(environ=env, host_only=True, https=True))
         self.assertEqual('https://localhost:8080/script/news/list', current_url(environ=env, strip_querystring=True, https=True))
         self.assertEqual('/script/news/list?param=foo', current_url(environ=env, strip_host=True, https=True))
+        self.assertEqual('/script/', current_url(root_only=True, strip_host=True, environ=env))
+
+        env = create_environ("/news/list?param=foo", "http://localhost:8080/")
+        self.assertEqual('http://localhost:8080/news/list?param=foo', current_url(environ=env))
+        self.assertEqual('http://localhost:8080/', current_url(environ=env, root_only=True))
+        self.assertEqual('http://localhost:8080/', current_url(environ=env, host_only=True))
+        self.assertEqual('http://localhost:8080/news/list', current_url(environ=env, strip_querystring=True))
+        self.assertEqual('/news/list?param=foo', current_url(environ=env, strip_host=True))
+        self.assertEqual('http://localhost:8080/news/list?param=foo', current_url(environ=env, https=False))
+        self.assertEqual('http://localhost:8080/', current_url(environ=env, root_only=True, https=False))
+        self.assertEqual('http://localhost:8080/', current_url(environ=env, host_only=True, https=False))
+        self.assertEqual('http://localhost:8080/news/list', current_url(environ=env, strip_querystring=True, https=False))
+        self.assertEqual('/news/list?param=foo', current_url(environ=env, strip_host=True, https=False))
+        self.assertEqual('/', current_url(root_only=True, strip_host=True, environ=env))
 
 if __name__ == '__main__':
     unittest.main()

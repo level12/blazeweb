@@ -42,7 +42,11 @@ def js_url(file, app = None):
     return static_url(endpoint, file=file, app=app)
 
 def index_url(full=False):
-    
+    from warnings import warn
+    warn(DeprecationWarning('index_url() is deprecated.  Functionality is now'
+                            ' provided by current_url(root_only=True).'),
+            stacklevel=2
+        )
     try:
         if settings.routing.prefix:
             url = '/%s/' % settings.routing.prefix.strip('/')
@@ -108,8 +112,8 @@ def current_url(root_only=False, host_only=False, strip_querystring=False,
             retval = ro.base_url
         else:
             retval = ro.url
-        if strip_host:
-            retval = retval.replace(ro.host_url.rstrip('/'), '', 1)
+    if strip_host:
+        retval = retval.replace(ro.host_url.rstrip('/'), '', 1)
     if not strip_host and https != None:
         if https and retval.startswith('http://'):
             retval = retval.replace('http://', 'https://', 1)
