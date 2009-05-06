@@ -11,9 +11,6 @@ class Default(DefaultSettings):
     def __init__(self):
         # call parent init to setup default settings
         DefaultSettings.__init__(self, appname, basedir)
-        
-        # we are done adding variables to this settings object, so lock it
-        self.lock()
 
 class Testruns(DefaultSettings):
     def __init__(self):
@@ -75,6 +72,3 @@ class Testruns(DefaultSettings):
         
         # logging
         #self.logging.debug.stream.filter = 'pysmvt'
-        
-        # we are done adding variables to this settings object, so lock it
-        self.lock()

@@ -8,6 +8,3 @@ class Settings(QuickSettings):
         QuickSettings.__init__(self)
         
         self.routes = []
-        
-        # no more values can be added
-        self.lock()

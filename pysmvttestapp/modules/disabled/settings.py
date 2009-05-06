@@ -10,6 +10,3 @@ class Settings(QuickSettings):
         self.routes = ([
             Rule('/disabled/notthere', endpoint='disabled:NotThere'),
         ])
-        
-        # no more values can be added
-        self.lock()

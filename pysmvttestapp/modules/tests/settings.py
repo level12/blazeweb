@@ -51,6 +51,3 @@ class Settings(QuickSettings):
         ])
         
         self.foo = 'baz'
-        
-        # no more values can be added
-        self.lock()
