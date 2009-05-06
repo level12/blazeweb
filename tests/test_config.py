@@ -324,7 +324,26 @@ class TestConfig(unittest.TestCase):
         
     def test_modsettings(self):
         self.assertEqual(settings.modules.tests.foo, 'baz')
+
+    def test_settingslock(self):
+        """ tests the lock() in appinit() """
+        try:
+            this = settings.notthere
+        except AttributeError, e:
+            assert str(e) == "object has no attribute 'notthere' (object is locked)"
+        else:
+            self.fail("expected AttributeError for 'notthere'")
+
+    def test_modulesettingslock(self):
+        """ tests the lock() in appinit() for module settings """
+        try:
+            this = settings.modules.tests.notthere
+        except AttributeError, e:
+            assert str(e) == "object has no attribute 'notthere' (object is locked)"
+        else:
+            self.fail("expected AttributeError for 'notthere'")
         
+
 if __name__ == '__main__':
     unittest.main()
     #unittest.TextTestRunner().run(TestImports('test_callerglobals1'))

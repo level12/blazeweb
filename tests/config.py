@@ -43,9 +43,6 @@ class Testruns(DefaultSettings):
         self.emails.from_default = 'root@localhost'
         self.emails.programmers = ['randy@rcs-comp.com']
         self.email.subject_prefix = '[pysvmt test app] '
-        
-        # we are done adding variables to this settings object, so lock it
-        self.lock()
 
 def make_console(settings_cls=Testruns, **kwargs):
     appinit(settings_cls=settings_cls, **kwargs)
