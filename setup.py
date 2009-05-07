@@ -2,10 +2,10 @@
 Introduction
 ---------------
 
-pysmvt is a wsgi web framework library designed in the spirit of pylons but with
-django modularity (i.e. what they would call "apps").  If you want to try it out
-it would be best to start with `pysapp <http://pypi.python.org/pypi/pysapp/>`_
-which is a pysmvt "supporting application" that your projects can be built on.
+pysmvt is a wsgi web framework library designed in the spirit of Pylons but with
+Django modularity (i.e. what they would call "apps").  If you want to try it out
+it would be best to start with
+`our example application <http://pypi.python.org/pypi/PysAppExample/>`_.
 
 Questions & Comments
 ---------------------
@@ -15,9 +15,7 @@ Please visit: http://groups.google.com/group/pyslibs
 Current Status
 ---------------
 
-We are currently in an alpha phase which means lots of stuff can change, maybe rapidly, and we are not interested in backwards compatibility at this point.
-
-I am currently using this library for some production websites, but I wouldn't recommend you do that unless you **really** know what you are doing.
+The code for 0.1 is pretty stable.  API, however, will be changing in 0.2.
 
 The unstable `development version
 <https://svn.rcslocal.com:8443/svn/pysmvt/pysmvt/trunk#egg=pysmvt-dev>`_.
@@ -32,14 +30,14 @@ except ImportError:
 
 setup(
     name = "pysmvt",
-    version = "0.1dev",
+    version = "0.1",
     description = "A wsgi web framework with a pylons spirit and django modularity",
     long_description = __doc__,
     author = "Randy Syring",
     author_email = "randy@rcs-comp.com",
     url='http://pypi.python.org/pypi/pysmvt/',
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
       ],
@@ -47,20 +45,17 @@ setup(
     packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
     include_package_data=True,
     install_requires = [
-        "Beaker>=1.1.2",
-        "decorator>=3.0.0",
-        "FormEncode>=1.2",
-        "html2text>=1.2",
-        "jinja2>=2.1",
+        "Beaker>=1.1.3",
+        "decorator>=3.0.1",
+        "FormEncode>=1.2.2",
+        "html2text>=2.35",
+        "jinja2>=2.1.1",
         "markdown2>=1.0.1.11",
+        "nose>=0.10.4",
         "Paste>=1.7.2",
         "PasteScript>=1.7.3",
-        "pysutils>=dev",
-        "Werkzeug>=0.4"
-    ],
-    dependency_links = [
-        "http://www.aaronsw.com/2002/html2text/html2text.py#egg=html2text-2.3",
-        "https://svn.rcslocal.com:8443/svn/pysmvt/pysutils/trunk/#egg=pysutils-dev"
+        "pysutils>=0.1",
+        "Werkzeug>=0.5"
     ],
     entry_points="""
     [console_scripts]
