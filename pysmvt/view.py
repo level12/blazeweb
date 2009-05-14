@@ -195,11 +195,12 @@ class TemplateMixin(object):
         self.template_file = None
         
     def assignTemplateFunctions(self):
-        from pysmvt.routing import style_url, index_url, url_for, js_url
+        from pysmvt.routing import style_url, index_url, url_for, js_url, current_url
         self.template.templateEnv.globals['url_for'] = url_for
         self.template.templateEnv.globals['style_url'] = style_url
         self.template.templateEnv.globals['js_url'] = js_url
         self.template.templateEnv.globals['index_url'] = index_url
+        self.template.templateEnv.globals['current_url'] = current_url
         self.template.templateEnv.globals['include_css'] = self.include_css
         self.template.templateEnv.globals['include_js'] = self.include_js
         self.template.templateEnv.globals['page_css'] = self.page_css
