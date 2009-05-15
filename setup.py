@@ -64,7 +64,7 @@ except ImportError:
 
 setup(
     name = "pysmvt",
-    version = "0.1",
+    version = "0.1.1",
     description = "A wsgi web framework with a pylons spirit and django modularity",
     long_description = __doc__,
     author = "Randy Syring",
