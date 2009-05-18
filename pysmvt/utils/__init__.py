@@ -22,19 +22,19 @@ def reindent(s, numspaces):
                 for line in s.splitlines()]
     return '\n'.join(lines)
 
-def urlslug(s, length=None):
-    import re
+def simplify_string(s, length=None, replace_with='-'):
     #$slug = str_replace("&", "and", $string);
     # only keep alphanumeric characters, underscores, dashes, and spaces
     s = re.compile( r'[^\/a-zA-Z0-9_ \\-]').sub('', s)
     # replace forward slash, back slash, underscores, and spaces with dashes
-    s = re.compile(r'[\/ \\_]+').sub('-', s)
+    s = re.compile(r'[\/ \\_]+').sub(replace_with, s)
     # make it lowercase
     s = s.lower()
     if length is not None:
-        return s[:length-1].rstrip('-')
+        return s[:length-1].rstrip(replace_with)
     else:
         return s
+urlslug = simplify_string
 
 def isurl(s, require_tld=True):
     u = URL(add_http=False, require_tld=require_tld)
