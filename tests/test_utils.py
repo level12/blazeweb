@@ -11,3 +11,9 @@ app = make_wsgi('Testruns')
 @wrapinapp(app)
 def test_currenturl():
     assert current_url(host_only=True) == 'http://localhost/'
+    
+class TestThis(object):
+    """ Works for class methods too """
+    @wrapinapp(app)
+    def test_currenturl(self):
+        assert current_url(host_only=True) == 'http://localhost/'
