@@ -1,5 +1,6 @@
 import random
 from pysmvt import rg
+from pysmvt.utils import tolist
 import logging
 
 log = logging.getLogger(__name__)
@@ -34,7 +35,13 @@ class User(object):
         
     def has_perm(self, token):
         return self.tokens.has_key(token)
-
+    
+    def has_any_perm(self, tokens):
+        for token in tolist(tokens):
+            if self.has_perm(token):
+                return True
+        return False
+    
     def add_message(self, severity, text, ident = None):
         log.debug('SessionUser message added')
         # generate random ident making sure random ident doesn't already
