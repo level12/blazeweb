@@ -42,7 +42,9 @@ class Controller(object):
             pass
 
     def _handle_callable(self):
+        from pysmvt.view import HtmlPageViewBase
         r = Response()
+        respview = HtmlPageViewBase('', '', {})
         r.data = unicode(rg.environ['pysmvt.callable']())
         return r
     

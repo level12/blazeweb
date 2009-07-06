@@ -390,6 +390,12 @@ class TestViews(unittest.TestCase):
         self.assertTrue('Not Found' in r.data)
         self.assertTrue('If you entered the URL manually please check your spelling and try again.' in r.data)
 
+    def test_html_snippet_with_css(self):
+        """ css file gets processed, but file contents don't show up """
+        r = self.client.get('/tests/htmlsnippetwithcss')
+        
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual('no css', r.data)
 
 class TestApp2(unittest.TestCase):
         
