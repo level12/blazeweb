@@ -2,7 +2,7 @@
 
 from pysmvt import getview, redirect, forward
 from pysmvt.view import RespondingViewBase, SnippetViewBase, TextTemplatePage, \
-    TextTemplateSnippet, HtmlTemplateSnippet, HtmlTemplatePage
+    TextTemplateSnippet, HtmlTemplateSnippet, HtmlTemplatePage, HtmlPageViewBase
 from werkzeug.exceptions import ServiceUnavailable
 from formencode.validators import UnicodeString, Int
 
@@ -85,7 +85,7 @@ class Html(HtmlTemplatePage):
 class HtmlCssJs(HtmlTemplatePage):
     def default(self):
         pass
-    
+
 class Redirect(RespondingViewBase):
     def default(self):
         redirect('some/other/page')
@@ -211,3 +211,11 @@ class ModLevelPriority(HtmlTemplatePage):
 class HtmlTemplateFileArgCss(HtmlTemplatePage):
     def default(self):
         self.template_file = 'fileargcss.html'
+
+class HtmlSnippetWithCss(HtmlTemplateSnippet):
+    def default(self):
+        pass
+    
+class HtmlSnippetWithCssParent(HtmlPageViewBase):
+    def default(self):
+        self.retval = getview('tests:HtmlSnippetWithCss')

@@ -48,6 +48,7 @@ class Settings(QuickSettings):
             Rule('/tests/parenttemplateinheritance', endpoint='tests:ParentTemplateInheritance'),
             Rule('/tests/modlevelpriority', endpoint='tests:ModLevelPriority'),
             Rule('/tests/htmltemplatefileargcss', endpoint='tests:HtmlTemplateFileArgCss'),
+            Rule('/tests/htmlsnippetwithcss', endpoint='tests:HtmlSnippetWithCssParent'),
         ])
         
         self.foo = 'baz'
