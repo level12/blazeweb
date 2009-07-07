@@ -176,8 +176,8 @@ def appfilepath(*args):
         
         appfilepath('myfile.txt')
         
-        returns '/projects/myapp' if '/projects/myapp/myfile.txt' exists
-        returns '/projects/supportingapp' if '/projects/myapp/myfile.txt' does
+        returns '/projects/myapp/myfile.txt' if '/projects/myapp/myfile.txt' exists
+        returns '/projects/supportingapp/myfile.txt' if '/projects/myapp/myfile.txt' does
         not exist but '/projects/supportingapp/myfile.txt' exists
     """
     from pysmvt.config import appslist
