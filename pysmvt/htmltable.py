@@ -106,7 +106,7 @@ class Table(OrderedProperties):
         
 
 class Col(object):
-    def __init__(self, header, extractor=None, **kwargs):
+    def __init__(self, header, extractor=None, th_decorator = None, **kwargs):
         # attributes for column's <td> tags
         self.attrs_td = dict([(k[:-3],v) for k,v in kwargs.items() if k.endswith('_td')])
         #: attributes for column's <th> tag
@@ -117,9 +117,14 @@ class Col(object):
         self.crow = None
         #: a callable that can be used to get the value from the current row
         self.extractor = extractor
+        #: a callable that can style (alter) the contents of the TH
+        self.th_decorator = th_decorator
         
     def render_th(self):
-        return HTML.th(self.header, **self.attrs_th)
+        thcontent = self.header
+        if self.th_decorator:
+            thcontent = self.th_decorator(thcontent)
+        return HTML.th(thcontent, **self.attrs_th)
         
     def render_td(self, row, key):
         self.crow = row
