@@ -9,6 +9,7 @@ from pysmvt.utils import tb_depth_in
 from werkzeug import script
 from paste.util.multidict import MultiDict
 from decorator import FunctionMaker
+from pysutils import find_path_package_name
 
 # we store this at the module level b/c it will only matter in an application
 # context and we don't have to worry about multiple applications when using
@@ -103,12 +104,12 @@ def _is_application_context():
     return False
 
 def _app_name():
-    cwd = os.getcwd()
+    app_name = find_path_package_name(os.getcwd())
+    app_pymod = __import__(app_name , globals(), locals(), [''])
+    appdir = path.dirname(app_pymod.__file__)
     # every application has to have a settings.py file, see if it is in the cwd
-    settings_path = path.join(cwd, 'settings.py')
+    settings_path = path.join(appdir, 'settings.py')
     if path.exists(settings_path):
-        app_path = path.dirname(settings_path)
-        app_name = path.basename(app_path)
         return app_name
     return None
 
