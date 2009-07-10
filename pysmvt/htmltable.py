@@ -156,14 +156,30 @@ class Col(object):
         return self.extract(key)
 
 class Link(Col):
-    def __init__(self, header, urlfrom='url', **kwargs):
+    """
+        Examples:
+        
+        Link( 'Referred By',
+            validate_url=False,
+            urlfrom=lambda row: url_for('module:ReferringObjectDetail', id=row[referred_by_id]) if row[referred_by_id] else None
+        )
+    """
+    def __init__(self, header, urlfrom='url', require_tld=True, validate_url=True, **kwargs):
         Col.__init__(self, header, **kwargs)
         self.urlfrom = urlfrom
         self._link_attrs = {}
+        self.require_tld = require_tld
+        self.validate_url = validate_url
         
     def process(self, key):
-        url = self.extract(self.urlfrom)
-        if url is not None and isurl(url):
+        try:
+            url = self.urlfrom(self.crow)
+        except TypeError, e:
+            if 'is not callable' not in str(e):
+                raise
+            url = self.extract(self.urlfrom)
+
+        if url is not None and (not self.validate_url or isurl(url, require_tld=self.require_tld)):
             return link_to(self.extract(key), url, **self._link_attrs)
         return self.extract(key)
     
