@@ -5,9 +5,6 @@
     `nosetests --help`:
     
         ...
-        --add-pkg-tests=PYSMVT_PKGTESTS
-                    A comma separated list of packages from which tests
-                    should be gathered
         --app-profile=PYSMVT_PROFILE
                     The name of the test profile in settings.py
         ...
@@ -18,22 +15,6 @@
     these plugins to work:
     
         `cd .../myproject/src/myapp-dist/myapp/`
-    
-    === Tests From Package Plugin ===
-    
-    Allows one to run tests from another package. Useful when you are
-    running tests for an application but also want to run tests on
-    supporting applications that are not under the current working
-    directory. For example, in order to run the tests for pysapp, from the
-    pysappexample application (because an application is required for some
-    of the pysapp functional tests), you would run:
-    
-        `cd .../myproject/src/pysappexample-dist/pysappexample/`
-        `nosetests --add-pkg-tests=pysapp`
-    
-    This will run all the tests in pysappexample as well as pysapp. If you
-    are going to do this kind of thing a lot, there is an easier way.  See
-    the next section.
     
     === Init Current App Plugin ===
     
@@ -85,7 +66,7 @@
     
     Would be equivelent to running:
     
-        `nosetests --add-pkg-tests=pysapp`
+        `nosetests pysapp`
     
     Packages can also be specified as a list/tuple:
         
@@ -133,31 +114,4 @@ class InitCurrentAppPlugin(nose.plugins.Plugin):
         except AttributeError, e:
             if "has no attribute 'testing'" not in str(e):
                 raise
-
-class TestsFromPackagePlugin(nose.plugins.Plugin):
-    enabled = False
-    name = 'pkgtests'
-    opt_name = 'pysmvt_pkgtests'
-    opt_value = None
-    
-    def add_options(self, parser, env=os.environ):
-        """Add command-line options for this plugin"""
-        env_opt = 'NOSE_WITH_%s' % self.name.upper()
-        env_opt.replace('-', '_')
-
-        parser.add_option("--add-pkg-tests",
-                          dest=self.opt_name, type="string",
-                          default="",
-                          help="A comma separated list of packages from which "\
-                            "tests should be gathered"
-                        )
-
-    def configure(self, options, conf):
-        """Configure the plugin"""
-        if hasattr(options, self.opt_name):
-            self.enabled = bool(getattr(options, self.opt_name))
-            self.opt_value = getattr(options, self.opt_name)
-
-    def loadTestsFromNames(self, names, module=None):
-        for pkgname in self.opt_value.split(','):
-            names.append(pkgname)
+        print names, module
