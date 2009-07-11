@@ -1,22 +1,8 @@
 """
     == Making The Plugins Available ==
     
-    Make sure something like the following is in your application packages
-    setup.py file:
-    
-        entry_points=\"""
-                # -*- Entry points: -*-
-                [nose.plugins]
-                testsfrompackage = pysmvt.test:TestsFromPackagePlugin
-                initcurrentapp = pysmvt.test:InitCurrentAppPlugin
-            \""",
-    
-    Then either install the package or run `python setup.py develop`.
-    Assuming nose is installed, you should then be able to run:
-        
-        `nosetests --help`
-    
-    and you should see the following in the output:
+    If pysmvt is installed, you should see the following in the output of
+    `nosetests --help`:
     
         ...
         --add-pkg-tests=PYSMVT_PKGTESTS
