@@ -114,4 +114,3 @@ class InitCurrentAppPlugin(nose.plugins.Plugin):
         except AttributeError, e:
             if "has no attribute 'testing'" not in str(e):
                 raise
-        print names, module
