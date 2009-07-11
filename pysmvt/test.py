@@ -44,3 +44,31 @@ class PysmvtPlugin(nose.plugins.Plugin):
     
     def afterTest(self, test):
         self.consoleapp.end_request()
+
+class TestsFromPackagePlugin(nose.plugins.Plugin):
+    enabled = False
+    name = 'pkgtests'
+    opt_name = 'pkgtests_pkgs'
+    opt_value = None
+    
+    def add_options(self, parser, env=os.environ):
+        """Add command-line options for this plugin"""
+        env_opt = 'NOSE_WITH_%s' % self.name.upper()
+        env_opt.replace('-', '_')
+
+        parser.add_option("--add-pkg-tests",
+                          dest=self.opt_name, type="string",
+                          default="",
+                          help="A comma separated list of packages from which "\
+                            "tests should be gathered"
+                        )
+
+    def configure(self, options, conf):
+        """Configure the plugin"""
+        if hasattr(options, self.opt_name):
+            self.enabled = bool(getattr(options, self.opt_name))
+            self.opt_value = getattr(options, self.opt_name)
+
+    def loadTestsFromNames(self, names, module=None):
+        for pkgname in self.opt_value.split(','):
+            names.append(pkgname)
