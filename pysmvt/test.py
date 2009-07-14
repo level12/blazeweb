@@ -5,7 +5,7 @@
     `nosetests --help`:
     
         ...
-        --app-profile=PYSMVT_PROFILE
+        --pysmvt-app-profile=PYSMVT_PROFILE
                     The name of the test profile in settings.py
         ...
     
@@ -45,7 +45,7 @@
     The default profile used with this plugin is 'Test'.  If you need to
     specifiy a different profile, do:
         
-        `nosetests  --app-profile=mytestprofile`
+        `nosetests  --pymvt-app-profile=mytestprofile`
         
     To include tests from packges outside the application's directory
     structure, you can put a `testing.include_pkgs` attribute in your test
@@ -62,7 +62,7 @@
     
     Running:
         
-        `nosetests  --app-profile=testpysapp`
+        `nosetests  --pysmvt-app-profile=testpysapp`
     
     Would be equivelent to running:
     
@@ -76,41 +76,67 @@
 
 import os
 import nose.plugins
-from pysmvt import config, ag, settings
+from pysmvt import ag, settings
 from pysmvt.script import _app_name
 from pysutils import tolist
 
 class InitCurrentAppPlugin(nose.plugins.Plugin):
-    enabled = False
-    app_pkg_name = None
     opt_app_profile = 'pysmvt_profile'
     val_app_profile = None
+    opt_app_name = 'pysmvt_name'
+    val_app_name = None
+    opt_disable = 'pysmvt_disable'
+    val_disable = False
     
     def add_options(self, parser, env=os.environ):
         """Add command-line options for this plugin"""
         env_opt = 'NOSE_WITH_%s' % self.name.upper()
         env_opt.replace('-', '_')
 
-        parser.add_option("--app-profile",
+        parser.add_option("--pysmvt-app-profile",
                           dest=self.opt_app_profile, type="string",
                           default="Test",
                           help="The name of the test profile in settings.py"
                         )
-    
+        
+        parser.add_option("--pysmvt-app-name",
+                          dest=self.opt_app_profile, type="string",
+                          default="Test",
+                          help="The name of the application's package, defaults"
+                          " to top package of current working directory"
+                        )
+        
+        parser.add_option("--pysmvt-disable",
+                          dest=self.opt_disable,
+                          action="store_true",
+                          help="Disable plugin"
+                        )
+        
     def configure(self, options, conf):
         """Configure the plugin"""
-        self.app_pkg_name = _app_name()
-        self.enabled = bool(self.app_pkg_name)
-        if hasattr(options, self.opt_app_profile):
-            self.val_app_profile = getattr(options, self.opt_app_profile)
+        self.val_disable = getattr(options, self.opt_disable, False)
+        if not self.val_disable:
+            if hasattr(options, self.opt_app_profile):
+                self.val_app_profile = getattr(options, self.opt_app_profile)
+            if hasattr(options, self.opt_app_name):
+                self.val_app_name = getattr(options, self.opt_app_name)
+            else:
+                try:
+                    self.val_app_name = _app_name()
+                except Exception, e:
+                    if 'package name could not be determined' not in str(e):
+                        raise
+                if not self.val_app_name:
+                    self.val_disable = True
+        
+        if not self.val_disable:
+            apps_pymod = __import__('%s.applications' % self.val_app_name, globals(), locals(), [''])
+            ag._wsgi_test_app = apps_pymod.make_wsgi(self.val_app_profile)
 
-    def begin(self):
-        apps_pymod = __import__('%s.applications' % self.app_pkg_name, globals(), locals(), [''])
-        ag._wsgi_test_app = apps_pymod.make_wsgi(self.val_app_profile)
-    
     def loadTestsFromNames(self, names, module=None):
-        try:
-            names.extend(tolist(settings.testing.include_pkgs))
-        except AttributeError, e:
-            if "has no attribute 'testing'" not in str(e):
-                raise
+        if not self.val_disable:
+            try:
+                names.extend(tolist(settings.testing.include_pkgs))
+            except AttributeError, e:
+                if "has no attribute 'testing'" not in str(e):
+                    raise
