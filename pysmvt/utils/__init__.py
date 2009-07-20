@@ -12,6 +12,7 @@ from nose.tools import make_decorator
 from formencode.validators import URL
 from formencode import Invalid
 from markdown2 import markdown
+from pysmvt.exceptions import Abort
 
 log = logging.getLogger(__name__)
 
@@ -326,3 +327,6 @@ def wrapinapp(wsgiapp):
         newfunc = make_decorator(func)(newfunc)
         return newfunc
     return decorate
+
+def abort(outputobj=None, code=200):
+    raise Abort(outputobj, code)

@@ -1,5 +1,6 @@
 
 from werkzeug.exceptions import HTTPException, InternalServerError
+from pysutils import pformat
 
 class TemplateException(HTTPException):
     code = 500
@@ -16,6 +17,12 @@ class Redirect(HTTPException):
         """Get a list of headers."""
         return [('Content-Type', 'text/html'),
                 ('Location', self.location)]
+
+class Abort(HTTPException):
+    def __init__(self, outputobj=None, code=200):
+        self.code = code
+        self.description = pformat(outputobj) if outputobj else ''
+        HTTPException.__init__(self)
 
 class ForwardException(Exception):
     pass
