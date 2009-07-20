@@ -61,13 +61,21 @@ def action_broadcast(action_to_call=('a', '')):
     manual_broadcast(action_to_call)
     
 def manual_broadcast(action_to_call):
-    if not action_to_call:
-        print 'Error: `action` is required'
-        return
-    for key, callable in broadcast_actions.iteritems():
-        if key == action_to_call:
-            print 'calling: %s' % callable.__name__
-            callable()
+    if ',' in action_to_call:
+        actions_to_call = action_to_call.split(',')
+    else:
+        actions_to_call = [action_to_call]
+    show_action_to_call = len(actions_to_call) > 1 or False
+    for action_to_call in actions_to_call:
+        if show_action_to_call:
+            print '-------------- action to call: %s -----------------' % action_to_call
+        if not action_to_call:
+            print 'Error: `action` is required'
+            return
+        for key, callable in broadcast_actions.iteritems():
+            if key == action_to_call:
+                print 'calling: %s' % callable.__name__
+                callable()
 
 def action_testrun(url=('u', '/'), profile='Default', show_body=('b', False), show_headers=('h', False), show_all=('a', False)):
     """

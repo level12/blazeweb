@@ -21,7 +21,7 @@ class Redirect(HTTPException):
 class Abort(HTTPException):
     def __init__(self, outputobj=None, code=200):
         self.code = code
-        self.description = pformat(outputobj) if outputobj else ''
+        self.description = "<pre>%s</pre>" % pformat(outputobj) if outputobj else ''
         HTTPException.__init__(self)
 
 class ForwardException(Exception):
