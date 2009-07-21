@@ -193,6 +193,15 @@ class OrderedProperties(object):
             return self._data[key]
         except KeyError:
             raise AttributeError(key)
+    
+    def __delattr__(self, key):
+        if self.__dict__.has_key(key):
+            del self.__dict__[key]
+        else:
+            try:
+                del self._data[key]
+            except KeyError:
+                raise AttributeError(key)
 
     def __contains__(self, key):
         return key in self._data
