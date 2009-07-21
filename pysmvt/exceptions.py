@@ -20,8 +20,9 @@ class Redirect(HTTPException):
 
 class Abort(HTTPException):
     def __init__(self, outputobj=None, code=200):
+        from pysmvt.utils.html import escape
         self.code = code
-        self.description = "<pre>%s</pre>" % pformat(outputobj) if outputobj else ''
+        self.description = "<pre>%s</pre>" % escape(pformat(outputobj)) if outputobj else ''
         HTTPException.__init__(self)
 
 class ForwardException(Exception):
