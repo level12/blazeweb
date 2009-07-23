@@ -36,8 +36,11 @@ class User(object):
     def has_perm(self, token):
         return self.tokens.has_key(token)
     
-    def has_any_perm(self, tokens):
-        for token in tolist(tokens):
+    def has_any_perm(self, tokens, *args):
+        tokens = tolist(tokens)
+        if len(args) > 0:
+            tokens.extend(args)
+        for token in tokens:
             if self.has_perm(token):
                 return True
         return False
