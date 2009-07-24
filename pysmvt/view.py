@@ -5,7 +5,8 @@ from pysmvt.utils import reindent, auth_error, bad_request_error, \
     fatal_error, urlslug, markdown
 from pysmvt.utils.html import strip_tags
 from pysmvt.templates import JinjaHtmlBase, JinjaBase
-from pysmvt.exceptions import ActionError, UserError, ProgrammingError
+from pysmvt.exceptions import ActionError, UserError, ProgrammingError, \
+    ViewCallStackAbort
 from pysmvt.wrappers import Response
 from werkzeug.wrappers import BaseResponse
 from werkzeug.exceptions import InternalServerError, BadRequest
@@ -148,8 +149,18 @@ class ViewBase(object):
         raise NotImplementedError('ViewBase.handle_response() must be implemented in a subclass')
     
     def __call__(self):
-        self.call_methods()
+        try:
+            self.call_methods()
+        except ViewCallStackAbort:
+            pass
         return self.handle_response()
+    
+    def send_response(self):
+        """
+            Can be used in a method in the call stack to skip the rest of the
+            methods in the stack and return the response immediately.
+        """
+        raise ViewCallStackAbort
         
 class RespondingViewBase(ViewBase):
     def __init__(self, modulePath, endpoint, args):

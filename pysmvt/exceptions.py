@@ -48,3 +48,10 @@ class SettingsError(Exception):
         raised when a settings error is detected
     """
     pass
+
+class ViewCallStackAbort(Exception):
+    """
+        used to stop the views from running through all the methods in the
+        call stack. Don't use directly, use the send_response() method on the
+        view instead.
+    """
