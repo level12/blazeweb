@@ -30,6 +30,9 @@ class User(object):
     def has_attr(self, attribute):
         return self.attributes.has_key(attribute)
     
+    def del_attr(self, attribute):
+        del self.attributes[attribute]
+    
     def add_perm(self, token):
         self.tokens[token] = True
         

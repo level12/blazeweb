@@ -120,6 +120,11 @@ class TestCurrentUrl(unittest.TestCase):
         self.assertEqual('http://localhost:8080/news/list', current_url(environ=env, strip_querystring=True, https=False))
         self.assertEqual('/news/list?param=foo', current_url(environ=env, strip_host=True, https=False))
         self.assertEqual('/', current_url(root_only=True, strip_host=True, environ=env))
+    
+    def test_qs_replace_new(self):
+        env = create_environ("/news/list?page=5&perpage=10", "http://localhost:8080/")
+        self.assertEqual('http://localhost:8080/news/list?page=1&perpage=10', current_url(environ=env, querystring_replace={'page':1}))
+        self.assertEqual('http://localhost:8080/news/list?bar=baz&foo=bar', current_url(environ=env, querystring_new={'foo':'bar', 'bar':'baz'}))
 
 if __name__ == '__main__':
     unittest.main()

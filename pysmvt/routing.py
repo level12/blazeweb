@@ -1,5 +1,6 @@
 from urlparse import urlparse
 from pysmvt import settings, rg
+from werkzeug import Href, MultiDict
 from werkzeug.routing import Rule, RequestRedirect
 from werkzeug.exceptions import NotFound, MethodNotAllowed
 from werkzeug.wrappers import BaseRequest
@@ -71,7 +72,8 @@ def add_prefix(path):
     return path
 
 def current_url(root_only=False, host_only=False, strip_querystring=False,
-    strip_host=False, https=None, environ=None):
+    strip_host=False, https=None, environ=None, querystring_replace=None,
+    querystring_new=None):
     """
     Returns strings based on the current URL.  Assume a request with path:
 
@@ -102,7 +104,10 @@ def current_url(root_only=False, host_only=False, strip_querystring=False,
         ro = BaseRequest(environ, shallow=True)
     else:
         ro = rg.request
-
+    
+    if querystring_replace or querystring_new:
+        strip_querystring = True
+    
     if root_only:
         retval = ro.url_root
     elif host_only:
@@ -119,4 +124,23 @@ def current_url(root_only=False, host_only=False, strip_querystring=False,
             retval = retval.replace('http://', 'https://', 1)
         elif not https and retval.startswith('https://'):
             retval = retval.replace('https://', 'http://', 1)
+    
+    if querystring_replace:
+        href = Href(retval, sort=True)
+        
+        args = MultiDict(ro.args)
+        # multidicts extend, not replace, so we need to get rid of the keys first
+        for key in querystring_replace.keys():
+            try:
+                del args[key]
+            except KeyError:
+                pass
+        
+        # convert to md first so that if we have lists in the kwargs, they
+        # are converted appropriately
+        args.update(MultiDict(querystring_replace))
+        return href(args)
+    elif querystring_new:
+        href = Href(retval, sort=True)
+        return href(MultiDict(querystring_new))
     return retval
