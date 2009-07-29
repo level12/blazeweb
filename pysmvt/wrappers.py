@@ -16,6 +16,12 @@ class Request(BaseRequest):
     def bind_to_context(self):
         rg.request = self
 
+    @property
+    def is_xhr(self):
+        rw = self.headers.get('X-Requested-With', None)
+        if rw == 'XMLHttpRequest':
+            return True
+        return False
 
 class Response(BaseResponse):
     """
@@ -23,3 +29,19 @@ class Response(BaseResponse):
     """
         
     default_mimetype = 'text/html'
+
+try:
+    import simplejson as json
+    class JSONResponse(Response):
+        
+        default_mimetype = 'application/json'
+        
+    def _get_data(self):
+        return BaseResponse.data
+    def _set_data(self, data):
+        BaseResponse.data = json.dumps(data)
+    json_data = property(_get_data, _set_data)
+    
+except ImportError:
+    pass
+        

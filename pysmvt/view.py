@@ -70,8 +70,10 @@ class ViewBase(object):
                     getattr(self, call_details['method_name'])(**argsdict)
                 else:
                     getattr(self, call_details['method_name'])()
-
-        if rg.request.method == 'GET' and hasattr(self, 'get'):
+        
+        if rg.request.is_xhr and hasattr(self, 'xhr'):
+            retval = self.xhr(**argsdict)
+        elif rg.request.method == 'GET' and hasattr(self, 'get'):
             retval = self.get(**argsdict)
         elif rg.request.method == 'POST' and hasattr(self, 'post'):
             retval = self.post(**argsdict)
