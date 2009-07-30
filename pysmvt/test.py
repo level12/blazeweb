@@ -79,6 +79,9 @@ import nose.plugins
 from pysmvt import ag, settings
 from pysmvt.script import _app_name
 from pysutils import tolist
+from werkzeug import Client as WClient
+from werkzeug import BaseRequest
+from pysutils import tolist
 
 class InitCurrentAppPlugin(nose.plugins.Plugin):
     opt_app_profile = 'pysmvt_profile'
@@ -140,3 +143,21 @@ class InitCurrentAppPlugin(nose.plugins.Plugin):
             except AttributeError, e:
                 if "has no attribute 'testing'" not in str(e):
                     raise
+
+class Client(WClient):
+    
+    def open(self, *args, **kwargs):
+        """
+            if follow_redirects is requested, a (BaseRequest, response) tuple
+            will be returned, the request being the last redirect request
+            made to get the response
+        """
+        fr = kwargs.get('follow_redirects', False)
+        if fr:
+            kwargs['as_tuple'] = True
+        retval = WClient.open(self, *args, **kwargs)
+        if kwargs.get('as_tuple', False):
+            
+        if fr:
+            return BaseRequest(retval[0]), retval[1]
+        return retval
