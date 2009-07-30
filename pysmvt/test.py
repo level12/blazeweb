@@ -81,7 +81,6 @@ from pysmvt.script import _app_name
 from pysutils import tolist
 from werkzeug import Client as WClient
 from werkzeug import BaseRequest
-from pysutils import tolist
 
 class InitCurrentAppPlugin(nose.plugins.Plugin):
     opt_app_profile = 'pysmvt_profile'
@@ -156,8 +155,6 @@ class Client(WClient):
         if fr:
             kwargs['as_tuple'] = True
         retval = WClient.open(self, *args, **kwargs)
-        if kwargs.get('as_tuple', False):
-            
         if fr:
             return BaseRequest(retval[0]), retval[1]
         return retval
