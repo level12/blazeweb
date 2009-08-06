@@ -76,6 +76,7 @@
 
 import os
 import nose.plugins
+from nose.tools import make_decorator
 from pysmvt import ag, settings
 from pysmvt.script import _app_name
 from pysutils import tolist
@@ -158,3 +159,69 @@ class Client(WClient):
         if fr:
             return BaseRequest(retval[0]), retval[1]
         return retval
+
+def mock_smtp(cancel_override=True):
+    ''' A decorator that allows you to test emails that are sent during
+        functional or unit testing by mocking SMTP lib objects with the
+        MiniMock library and giving the test function the tracker object
+        to do tests with.
+        
+        :param cancel_override: in testing, we often will have email_overrides set
+            so that emails don't get sent out for real.  Since this method
+            prevents live emails from being sent, we will most often want
+            to cancel that setting for the duration of the test so that the
+            email tested is exactly what would be sent out if the emails were
+            live.
+        :raises: :exc:`ImportError` if the MiniMock library is not installed
+        
+    Example use::
+
+    @mock_smtp()
+    def test_user_form(self, mm_tracker=None):
+        add_new_user_which_sends_email_to_user(form_data)
+        look_for = """Called smtp_connection.sendmail(
+    '...',
+    [u'%s'],
+    'Content-Type:...To: %s...You have been added to our """ \
+            """system of registered users...REQUIRED to change it...
+Called smtp_connection.quit()""" % (form_data['email_address'], form_data['email_address'])
+        assert mm_tracker.check(look_for), mm_tracker.diff(look_for)
+        # make sure only one email is sent out.  Can't == b/c from address
+        # will change, but length is ~837, so 1000 seems safe
+        assert len(mm_tracker.dump()) <= 1000, len(mm_tracker.dump())
+          
+        @mock_smtp()
+        def test_that_fails():
+            assert mm_tracker.check('Called smtp_connection.sendmail(...%s...has been issu'
+                        'ed to reset the password...' % user.email_address)
+    
+    Other tracker methods::
+        mm_tracker.dump(): returns minimock usage captured so far
+        mm_tracker.diff(): returns diff of expected output and actual output
+        mm_tracker.clear(): clears the tracker of everything captured
+    '''
+    try:
+        import minimock
+    except ImportError:
+        raise ImportError('use of the assert_email decorator requires the minimock library')
+    import smtplib
+    def decorate(func):
+        def newfunc(*arg, **kw):
+            try:
+                override = None
+                # setup the mock objects so we can test the email getting sent out
+                tt = minimock.TraceTracker()
+                smtplib.SMTP = minimock.Mock('smtplib.SMTP', tracker=None)
+                smtplib.SMTP.mock_returns = minimock.Mock('smtp_connection', tracker=tt)
+                if cancel_override:
+                    override = settings.emails.override
+                    settings.emails.override = None
+                kw['mm_tracker'] = tt
+                func(*arg, **kw)
+            finally:
+                minimock.restore()
+                if cancel_override:
+                    settings.emails.override = override
+        newfunc = make_decorator(func)(newfunc)
+        return newfunc
+    return decorate
