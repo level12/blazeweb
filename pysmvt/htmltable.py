@@ -49,23 +49,67 @@ class StringIndentHelper(object):
 
 class HtmlAttributeHolder(object):
     def __init__(self, **kwargs):
+        self._cleankeys(kwargs)
         #: a dictionary that represents html attributes
         self.attributes = kwargs
         
-    def setAttributes(self, **kwargs ):
+    def set_attrs(self, **kwargs ):
+        self._cleankeys(kwargs)
         self.attributes.update(kwargs)
-        
-    def setAttribute(self, key, value):
+    setAttributes = set_attrs
+    
+    def set_attr(self, key, value):
+        if key.endswith('_'):
+            key = key[:-1]
         self.attributes[key] = value
+    setAttribute = set_attr
     
-    def getAttributes(self):
+    def add_attr(self, key, value):
+        """
+            Creates a space separated string of attributes.  Mostly for the
+            "class" attribute.
+        """
+        if key.endswith('_'):
+            key = key[:-1]
+        if self.attributes.has_key(key):
+            self.attributes[key] = self.attributes[key] + ' ' + value
+        else:
+            self.attributes[key] = value
+        
+    def del_attr(self, key):
+        if key.endswith('_'):
+            key = key[:-1]
+        del self.attributes[key]
+    
+    def get_attrs(self):
         return self.attributes
+    getAttributes = get_attrs
     
-    def getAttribute(self, attr):
-        return self.attributes[attr]
+    def get_attr(self, key, defaultval = NotGiven):
+        try:
+            if key.endswith('_'):
+                key = key[:-1]
+            return self.attributes[key]
+        except KeyError:
+            if defaultval is not NotGiven:
+                return defaultval
+            raise
+    getAttribute = get_attr
+    
+    def _cleankeys(self, dict):
+        """
+            When using kwargs, some attributes can not be sent directly b/c
+            they are Python key words (i.e. "class") so that have to be sent
+            in with an underscore at the end (i.e. "class_").  We want to
+            remove the underscore before saving
+        """
+        for key, val in dict.items():
+            if key.endswith('_'):
+                del dict[key]
+                dict[key[:-1]] = val
 
 class Table(OrderedProperties):
-    def __init__(self, **kwargs):
+    def __init__(self, row_dec=None, **kwargs):
         # avoid accesiblity errors when running validation
         if not kwargs.has_key('summary'):
             kwargs['summary'] = ''
@@ -74,6 +118,7 @@ class Table(OrderedProperties):
         if not kwargs.has_key('cellspacing'):
             kwargs['cellspacing'] = 0
         self.attrs = kwargs
+        self.row_dec = row_dec
         # this has to go after all our initilization b/c otherwise the attributes
         # get put into _data
         OrderedProperties.__init__(self)
@@ -92,8 +137,11 @@ class Table(OrderedProperties):
             ind.dec('</thead>')
             ind.inc('<tbody>')
             # loop through rows
-            for value in iterable:
-                ind.inc('<tr>')
+            for row_num, value in enumerate(iterable):
+                row_attrs = HtmlAttributeHolder()
+                if self.row_dec:
+                    self.row_dec(row_num+1, row_attrs, value)
+                ind.inc(HTML.tr(_closed=False, **row_attrs.attributes))
                 # loop through columns for data
                 for name, col in self._data.items():                    
                     ind(col.render_td(value, name))
@@ -104,7 +152,6 @@ class Table(OrderedProperties):
         else:
             return ''
         
-
 class Col(object):
     def __init__(self, header, extractor=None, th_decorator = None, **kwargs):
         # attributes for column's <td> tags
