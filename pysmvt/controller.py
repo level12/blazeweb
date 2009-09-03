@@ -113,7 +113,7 @@ class Controller(object):
                 for msg in messages:
                     msg_html.append('<li>(%s) %s</li>' % (msg.severity, msg.text))
                 msg_html.append('</ul>')
-                response.description = response.description + '\n'.join(msg_html)
+                response.description = str(response.description) + '\n'.join(msg_html)
         return response
     
     def _exception_handling(self, called_from, environ = None, endpoint=None, args = {}):

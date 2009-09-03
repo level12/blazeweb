@@ -8,6 +8,7 @@ from pysmvt.paster_tpl import run_template
 from pysmvt import ag, settings
 from pysmvt.script import console_dispatch, make_wsgi, make_console, \
     broadcast_actions
+from pysutils import pprint
 
 def action_serve(profile='Default', hostname=('h', 'localhost'), port=('p', 5000),
                reloader=True, debugger=False, evalex=False, 
@@ -94,3 +95,14 @@ def action_testrun(url=('u', '/'), profile='Default', show_body=('b', False), sh
     if show_body or show_all:
         for respstr in resp.response:
             print respstr
+
+@console_dispatch
+def action_routes(endpoints=False):
+    """ prints out all routes in the mapper """
+    toprint = []
+    for rule in ag.route_map.iter_rules():
+        if endpoints:
+            toprint.append((rule.rule, rule.endpoint))
+        else:
+            toprint.append(rule.rule)
+    pprint(toprint)
