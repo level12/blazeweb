@@ -79,7 +79,8 @@ import nose.plugins
 from nose.tools import make_decorator
 from pysmvt import ag, settings
 from pysmvt.script import _app_name
-from pysutils import tolist
+from pysmvt.utils import import_app_str
+from pysutils import tolist, import_split
 from werkzeug import Client as WClient
 from werkzeug import BaseRequest
 
@@ -135,6 +136,13 @@ class InitCurrentAppPlugin(nose.plugins.Plugin):
         if not self.val_disable:
             apps_pymod = __import__('%s.applications' % self.val_app_name, globals(), locals(), [''])
             ag._wsgi_test_app = apps_pymod.make_wsgi(self.val_app_profile)
+            
+            # an application can define functions to be called after the app
+            # is initialized but before any test inspection is done or tests
+            # are ran.  We call those functions here:
+            for callstring in tolist(settings.testing.init_callables):
+                tocall = import_app_str(callstring)
+                tocall()
 
     def loadTestsFromNames(self, names, module=None):
         if not self.val_disable:

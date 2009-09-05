@@ -5,7 +5,7 @@ import time
 import re
 import logging
 from pprint import PrettyPrinter
-from pysmvt import settings, user, ag, forward, rg, modimport
+from pysmvt import settings, user, ag, forward, rg, modimport, appimport
 from werkzeug.debug.tbtools import get_current_traceback
 from werkzeug import run_wsgi_app, create_environ
 from nose.tools import make_decorator
@@ -13,6 +13,7 @@ from formencode.validators import URL
 from formencode import Invalid
 from markdown2 import markdown
 from pysmvt.exceptions import Abort
+from pysutils import import_split
 
 log = logging.getLogger(__name__)
 
@@ -339,3 +340,17 @@ def wrapinapp(wsgiapp):
 
 def abort(outputobj=None, code=200):
     raise Abort(outputobj, code)
+
+def import_app_str(impstr):
+    return _import_str(appimport, impstr)
+    
+def import_mod_str(impstr):
+    return _import_str(modimport, impstr)
+
+def _import_str(impfunc, impstr):
+    path, object, attr = import_split(impstr)
+    if object:
+        if attr:
+            return getattr(impfunc(path, object), attr)
+        return impfunc(path, object)
+    return impfunc(path)

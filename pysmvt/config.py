@@ -256,6 +256,19 @@ class DefaultSettings(QuickSettings):
         # is detected to try and give the user a more consistent experience
         # self.error_docs[404] = 'errorsmod:NotFound'
         self.error_docs
+        
+        #######################################################################
+        # TESTING
+        #######################################################################
+        # an application can define functions to be called after the app
+        # is initialized but before any test inspection is done or tests
+        # are ran.  The import strings given are relative to the application
+        # stack.  Some examples:
+        #      self.testing.init_callables = (
+        #      'testing.setup_db',  # calls setup_db function in myapp.testing
+        #      'testing:Setup.doit', # calls doit class method of Setup in myapp.testing
+        #      )
+        self.testing.init_callables = None
 
 def appinit(settings_mod=None, profile=None, settings_cls=None):
     """
