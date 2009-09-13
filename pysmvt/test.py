@@ -75,6 +75,7 @@
 """
 
 import os
+import logging
 import nose.plugins
 from nose.tools import make_decorator
 from pysmvt import ag, settings
@@ -174,8 +175,8 @@ def mock_smtp(cancel_override=True):
         MiniMock library and giving the test function the tracker object
         to do tests with.
         
-        :param cancel_override: in testing, we often will have email_overrides set
-            so that emails don't get sent out for real.  Since this method
+        :param cancel_override: in testing, we often will have email_overrides
+            set so that emails don't get sent out for real.  Since this function
             prevents live emails from being sent, we will most often want
             to cancel that setting for the duration of the test so that the
             email tested is exactly what would be sent out if the emails were
@@ -233,3 +234,28 @@ Called smtp_connection.quit()""" % (form_data['email_address'], form_data['email
         newfunc = make_decorator(func)(newfunc)
         return newfunc
     return decorate
+
+class LoggingHandler(logging.Handler):
+    """ logging handler to check for expected logs when testing"""
+
+    def __init__(self, *args, **kwargs):
+        self.reset()
+        logging.Handler.__init__(self, *args, **kwargs)
+
+    def emit(self, record):
+        self.messages[record.levelname.lower()].append(record.getMessage())
+
+    def reset(self):
+        self.messages = {
+            'debug': [],
+            'info': [],
+            'warning': [],
+            'error': [],
+            'critical': [],
+        }
+
+def logging_handler(logger_to_examine):
+    lr = logging.getLogger(logger_to_examine)
+    lh = LoggingHandler()
+    lr.addHandler(lh)
+    return lh

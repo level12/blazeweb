@@ -232,6 +232,9 @@ class DefaultSettings(QuickSettings):
         #######################################################################
         # used by mail_admins() and mail_programmers()
         self.email.subject_prefix = ''
+        # Should we actually send email out to a SMTP server?  Setting this to
+        # False can be useful when doing testing.
+        self.email.is_live = True
         
         #######################################################################
         # SMTP SETTINGS
