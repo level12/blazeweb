@@ -150,9 +150,10 @@ class DefaultSettings(QuickSettings):
         # SESSIONS
         #######################################################################
         #beaker session options
-        #http://wiki.pylonshq.com/display/beaker/Configuration+Options
+        #http://beaker.groovie.org/configuration.html
         self.beaker.type = 'dbm'
         self.beaker.data_dir = path.join(self.dirs.tmp, 'session_cache')
+        self.beaker.lock_dir = path.join(self.dirs.tmp, 'beaker_locks')
         
         #######################################################################
         # TEMPLATES
