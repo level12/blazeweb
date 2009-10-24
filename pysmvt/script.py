@@ -105,15 +105,13 @@ def _is_application_context():
 
 def _app_name():
     app_name = find_path_package_name(os.getcwd())
-    if not app_name:
-        raise Exception('The web application\'s package name could not be '
-                        'determined from the current working directory')
-    app_pymod = __import__(app_name , globals(), locals(), [''])
-    appdir = path.dirname(app_pymod.__file__)
-    # every application has to have a settings.py file, see if it is in the cwd
-    settings_path = path.join(appdir, 'settings.py')
-    if path.exists(settings_path):
-        return app_name
+    if app_name:
+        app_pymod = __import__(app_name , globals(), locals(), [''])
+        appdir = path.dirname(app_pymod.__file__)
+        # every application has to have a settings.py file, see if it is in the cwd
+        settings_path = path.join(appdir, 'settings.py')
+        if path.exists(settings_path):
+            return app_name
     return None
 
 class ProfileLast(object):
