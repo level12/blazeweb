@@ -43,5 +43,7 @@ try:
     json_data = property(_get_data, _set_data)
     
 except ImportError:
-    pass
+    class JSONResponse(Response):
+        def __init__(self, *args, **kwargs):
+            raise ImportError('simplejson package required to use JSONResponse')
         

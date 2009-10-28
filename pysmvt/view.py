@@ -7,7 +7,7 @@ from pysmvt.utils.html import strip_tags
 from pysmvt.templates import JinjaHtmlBase, JinjaBase
 from pysmvt.exceptions import ActionError, UserError, ProgrammingError, \
     ViewCallStackAbort
-from pysmvt.wrappers import Response
+from pysmvt.wrappers import Response, JSONResponse
 from werkzeug.wrappers import BaseResponse
 from werkzeug.exceptions import InternalServerError, BadRequest
 from werkzeug.utils import MultiDict
@@ -182,6 +182,10 @@ class RespondingViewBase(ViewBase):
         else:
             self.response.data = self.retval
             return self.response
+
+class AjaxRespondingView(RespondingViewBase):
+    def _init_response(self):
+        self.response = JSONResponse()
 
 class HtmlPageViewBase(RespondingViewBase):
     def __init__(self, modulePath, endpoint, args):
