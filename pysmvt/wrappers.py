@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from pysmvt import rg
-from werkzeug import BaseRequest, BaseResponse
+from werkzeug import BaseRequest, BaseResponse, ResponseStreamMixin
 
 class Request(BaseRequest):
     """
@@ -29,6 +29,14 @@ class Response(BaseResponse):
     """
         
     default_mimetype = 'text/html'
+
+class StreamResponse(Response, ResponseStreamMixin):
+    """
+    Response Object with a .stream method
+    """
+        
+    default_mimetype = 'application/octet-stream'
+
 
 try:
     import simplejson as json
