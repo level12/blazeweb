@@ -13,7 +13,7 @@ from werkzeug.exceptions import InternalServerError, BadRequest
 from werkzeug.utils import MultiDict
 import formencode
 from pprint import PrettyPrinter
-from pysutils import NotGiven
+from pysutils import NotGiven, moneyfmt
 
 log = logging.getLogger(__name__)
 
@@ -227,6 +227,7 @@ class TemplateMixin(object):
         self.template.templateEnv.filters['pprint'] = self.filter_pprint
         self.template.templateEnv.filters['markdown'] = markdown
         self.template.templateEnv.filters['strip_tags'] = strip_tags
+        self.template.templateEnv.filters['moneyfmt'] = moneyfmt
     
     def filter_pprint(self, value, indent=1, width=80, depth=None):
         toprint = PrettyPrinter(indent, width, depth).pformat(value)
