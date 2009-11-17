@@ -1,4 +1,6 @@
+from decorator import decorator
 from os import path
+from traceback import format_exc
 import logging
 from pysmvt import settings, user, ag, _getview, rg, appimportauto
 from pysmvt.utils import reindent, auth_error, bad_request_error, \
@@ -328,3 +330,24 @@ class TextTemplateSnippet(SnippetViewBase, TemplateMixin):
     def handle_response(self):
         TemplateMixin.handle_response(self)
         return super(TextTemplateSnippet, self).handle_response()
+
+@decorator
+def jsonify(f, self, *args, **kwargs):
+    def new_handle_response():
+        jresp = JSONResponse()
+        retval = {}
+        try:
+            retval['data'] = f(self, *args, **kwargs)
+            retval['error'] = 0
+        except Exception, e:
+            trace = format_exc()
+            print trace
+            retval['error'] = 1
+            retval['data'] = ''
+            user.add_message('error', str(e))
+        retval['messages'] = []
+        for msg in user.get_messages():
+            retval['messages'].append({'severity':msg.severity, 'text': msg.text})
+        jresp.data = retval
+        return jresp
+    self.handle_response = new_handle_response
