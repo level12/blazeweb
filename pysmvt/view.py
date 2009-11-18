@@ -15,7 +15,7 @@ from werkzeug.exceptions import InternalServerError, BadRequest
 from werkzeug.utils import MultiDict
 import formencode
 from pprint import PrettyPrinter
-from pysutils import NotGiven, moneyfmt
+from pysutils import NotGiven, moneyfmt, safe_strftime
 
 log = logging.getLogger(__name__)
 
@@ -230,6 +230,7 @@ class TemplateMixin(object):
         self.template.templateEnv.filters['markdown'] = markdown
         self.template.templateEnv.filters['strip_tags'] = strip_tags
         self.template.templateEnv.filters['moneyfmt'] = moneyfmt
+        self.template.templateEnv.filters['datefmt'] = safe_strftime
     
     def filter_pprint(self, value, indent=1, width=80, depth=None):
         toprint = PrettyPrinter(indent, width, depth).pformat(value)
@@ -343,6 +344,7 @@ def jsonify(f, self, *args, **kwargs):
             trace = format_exc()
             print trace
             retval['error'] = 1
+            retval['exception'] = str(e)
             retval['data'] = ''
             user.add_message('error', str(e))
         retval['messages'] = []
