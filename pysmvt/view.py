@@ -350,6 +350,6 @@ def jsonify(f, self, *args, **kwargs):
         retval['messages'] = []
         for msg in user.get_messages():
             retval['messages'].append({'severity':msg.severity, 'text': msg.text})
-        jresp.data = retval
+        jresp.json_data = retval
         return jresp
     self.handle_response = new_handle_response

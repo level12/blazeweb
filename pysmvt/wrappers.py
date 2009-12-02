@@ -44,11 +44,11 @@ try:
         
         default_mimetype = 'application/json'
         
-    def _get_data(self):
-        return BaseResponse.data
-    def _set_data(self, data):
-        BaseResponse.data = json.dumps(data)
-    json_data = property(_get_data, _set_data)
+        def _get_jsondata(self):
+            return self.data
+        def _set_jsondata(self, data):
+            self.data = json.dumps(data)
+        json_data = property(_get_jsondata, _set_jsondata)
     
 except ImportError:
     class JSONResponse(Response):
