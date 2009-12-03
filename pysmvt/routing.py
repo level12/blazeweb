@@ -16,13 +16,13 @@ __all__ = [
     'current_url'
 ]
 
-def url_for(endpoint, _external=False, _https=False, **values):
-    if _https:
+def url_for(endpoint, _external=False, _https=None, **values):
+    if _https is not None:
         _external = True
     url = rg.urladapter.build(endpoint, values, force_external=_external)
     if _https and url.startswith('http:'):
         url = url.replace('http:', 'https:', 1)
-    elif not _https and url.startswith('https:'):
+    elif _https == False and url.startswith('https:'):
         # need to specify _external=True for this to fire
         url = url.replace('https:', 'http:', 1)
     return url
