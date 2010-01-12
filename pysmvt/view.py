@@ -110,7 +110,7 @@ class ViewBase(object):
                     else:
                         value = rg.request.args.get(argname)
                         value = validator.to_python(value)
-                    if value:
+                    if value or value == 0:
                         self.args[argname] = value
                     else:
                         if required:
