@@ -134,3 +134,16 @@ def traceback_depth(tb=None):
         depth += 1
         tb = tb.tb_next
     return depth
+
+def werkzeug_multi_dict_conv(md):
+    '''
+        Werzeug Multi-Dicts are either flat or lists, but we want a single value
+        if only one value or a list if multiple values
+    '''
+    retval = {}
+    for key, value in md.to_dict(flat=False).iteritems():
+        if len(value) == 1:
+            retval[key] = value[0]
+        else:
+            retval[key] = value
+    return retval

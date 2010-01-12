@@ -1,5 +1,6 @@
 
 from werkzeug.exceptions import HTTPException, InternalServerError
+from werkzeug import MultiDict
 from pysutils import pformat
 
 class TemplateException(HTTPException):
@@ -20,8 +21,11 @@ class Redirect(HTTPException):
 
 class Abort(HTTPException):
     def __init__(self, outputobj=None, code=200):
+        from pysmvt.utils import werkzeug_multi_dict_conv
         from pysmvt.utils.html import escape
         self.code = code
+        if isinstance(outputobj, MultiDict):
+            outputobj = werkzeug_multi_dict_conv(outputobj)
         self.description = "<pre>%s</pre>" % escape(pformat(outputobj)) if outputobj else ''
         HTTPException.__init__(self)
 

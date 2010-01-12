@@ -74,9 +74,10 @@ class AppTemplateLoader(FileSystemLoader):
         self.encoding = encoding
         self.modname = modname
 
-    def get_source(self, environment, template):
+    def get_source(self, environment, template, modname=None):
+        modname = modname or self.modname
         pieces = split_template_path(template)
-        modppath = path.join('modules', self.modname, 'templates', *pieces)
+        modppath = path.join('modules', modname, 'templates', *pieces)
         apppath = path.join('templates', *pieces)
         log.debug('template modpath: %s', modppath)
         log.debug('template apppath: %s', apppath)
