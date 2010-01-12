@@ -244,17 +244,17 @@ class TemplateMixin(object):
     def assign(self, key, value):
         self.template.assign(key, value)
     
-    def include_css(self, filename=None, modname=None):
+    def include_css(self, filename=None):
         if filename == None:
             filename = self.template_name + '.css'
-        contents, filepath, reloadfunc = self.template.templateEnv.loader.get_source(self.template.templateEnv, filename, modname)
+        contents, filepath, reloadfunc = self.template.templateEnv.loader.get_source(self.template.templateEnv, filename)
         rg.respview.add_css(contents)    
         return ''
     
-    def include_js(self, filename=None, modname=None):
+    def include_js(self, filename=None):
         if filename == None:
             filename = self.template_name + '.js'
-        contents, filepath, reloadfunc = self.template.templateEnv.loader.get_source(self.template.templateEnv, filename, modname)
+        contents, filepath, reloadfunc = self.template.templateEnv.loader.get_source(self.template.templateEnv, filename)
         rg.respview.add_js(contents)
         return ''
     
