@@ -111,5 +111,5 @@ def action_routes(endpoints=False):
 @console_dispatch
 def action_tasks(tasks_to_run=''):
     """ run task(s) (csv for multiple)"""
-    tasks = tasks.split(',')
+    tasks = tasks_to_run.split(',')
     run_tasks(tasks)
