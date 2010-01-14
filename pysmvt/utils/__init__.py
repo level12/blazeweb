@@ -147,3 +147,75 @@ def werkzeug_multi_dict_conv(md):
         else:
             retval[key] = value
     return retval
+
+def gather_objects(modpath):
+    """
+        This searches all applications and all modules in all 
+        applications for `modpath` and if a python module is found
+        returns all the objects found in that module.
+        
+        Search Order: search order is applications lower in the stack
+        first (the primary application is always on top of the stack).  
+        The application is searched first, then its modules, and then 
+        the next application & modules are searched.
+        
+        For example, if we had the following applications and modules, 
+        with app1 being our primary module and app2 being a supporting
+        module, and the module activiation order being: foo, bar, baz
+        
+        app1.modules.foo
+        app1.modules.bar
+        app2.modules.foo
+        app2.modules.baz
+        
+        and we called gather_objects('tasks.init_db'), then the 
+        following python modules would be searched for:
+        
+        app2.tasks.init_db
+        app2.modules.foo.tasks.init_db
+        app2.modules.baz.tasks.init_db
+        app1.tasks.init_db
+        app1.modules.foo.tasks.init_db
+        app1.modules.bar.tasks.init_db
+        
+        and if found, the objects in that module would be added to the
+        return value list.
+        
+        The return value is a list of dictionaries.  Each dictionary in 
+        in the list represents the module's symbol table.
+    """
+    from pysmvt.config import appslist
+    retmods = OrderedDict()
+    
+    def add_to_retmods(modvars):
+        modname = modvars['__name__']
+        # we don't care about the application, so strip that off
+        _, modname = modname.split('.', 1)
+        if retmods.has_key(modname):
+            retmods[modname]['__override_stack__'].append(retmods[modname]['__name__'])
+            retmods[modname].update(modvars)
+        else:
+            retmods[modname] = {}
+            retmods[modname].update(modvars)
+            retmods[modname]['__override_stack__'] = []
+        # remove builtins for sanity's sake
+        del retmods[modname]['__builtins__']
+        
+    # get commands from all applications (primary and supporting)
+    for app_name in appslist(reverse=True):
+        try:
+            cmd_mod = __import__('%s.%s' % (app_name, modpath), globals(), locals(), [''])
+            add_to_retmods(vars(cmd_mod))
+        except ImportError:
+            if tb_depth_in(0):
+                pass
+                
+        # get commands from all modules in all applications
+        for appmod in settings.modules.keys():
+                try:
+                    cmd_mod = __import__('%s.modules.%s.%s' % (app_name, appmod, modpath), globals(), locals(), [''])
+                    add_to_retmods(vars(cmd_mod))
+                except ImportError:
+                    if not tb_depth_in(0):
+                        raise 
+    return retmods.values()

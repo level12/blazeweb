@@ -1,5 +1,6 @@
+from nose.tools import eq_
 from pysmvt.routing import current_url
-from pysmvt.utils import wrapinapp, OrderedProperties
+from pysmvt.utils import wrapinapp, OrderedProperties, gather_objects
 from pysmvt import getview
 
 # create the wsgi application that will be used for testing
@@ -53,3 +54,24 @@ def test_ordered_properties():
         assert False, 'expected attribute error'
     except AttributeError:
         pass
+
+class TestGatherObjects(object):
+    
+    @classmethod
+    def setup_class(cls):
+       cls.modlist = gather_objects('tasks.init_db')
+    
+    def test_correct_location(self):
+        for modobjs in self.modlist:
+            eq_(modobjs['loc'], modobjs['__name__'])
+    
+    def test_order(self):
+        eq_(self.modlist[0]['loc'], 'pysmvttestapp.tasks.init_db')
+        eq_(self.modlist[0]['loctoo'], 'pysmvttestapp2.tasks.init_db')
+        eq_(self.modlist[1]['loc'], 'pysmvttestapp.modules.tests.tasks.init_db')
+        eq_(self.modlist[1]['loctoo'], 'pysmvttestapp2.modules.tests.tasks.init_db')
+        eq_(self.modlist[2]['loc'], 'pysmvttestapp.modules.nomodel.tasks.init_db')
+        eq_(self.modlist[3]['loc'], 'pysmvttestapp.modules.routingtests.tasks.init_db')
+
+    def test_count(self):
+        assert len(self.modlist) == 4

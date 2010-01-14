@@ -8,6 +8,7 @@ from pysmvt.paster_tpl import run_template
 from pysmvt import ag, settings
 from pysmvt.script import console_dispatch, make_wsgi, make_console, \
     broadcast_actions
+from pysmvt.tasks import run_tasks
 from pysutils import pprint
 
 def action_serve(profile='Default', hostname=('h', 'localhost'), port=('p', 5000),
@@ -106,3 +107,9 @@ def action_routes(endpoints=False):
         else:
             toprint.append(rule.rule)
     pprint(toprint)
+
+@console_dispatch
+def action_tasks(tasks_to_run=''):
+    """ run task(s) (csv for multiple)"""
+    tasks = tasks.split(',')
+    run_tasks(tasks)
