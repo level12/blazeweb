@@ -27,4 +27,19 @@ class TestTasks(object):
     
     def test_notask(self):
         eq_(run_tasks('not-there'), {'not-there': []})
+        
+    def test_single_attribute(self):
+        assert run_tasks('init-db:test') == \
+        {'init-db': [
+                ('action_001', 'pysmvttestapp.tasks.init_db', 'pysmvttestapp.tasks.init_db'), 
+            ],
+        }
+        
+    def test_multiple_attributes(self):
+        assert run_tasks('init-db:prod') == \
+        {'init-db': [
+                ('action_000', 'pysmvttestapp.tasks.init_db', 'pysmvttestapp.tasks.init_db'), 
+                ('action_002', 'pysmvttestapp.tasks.init_db', 'pysmvttestapp.tasks.init_db'), 
+            ],
+        }
 
