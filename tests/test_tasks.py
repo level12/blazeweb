@@ -18,7 +18,7 @@ class TestTasks(object):
                 ('action_001', 'pysmvttestapp.modules.routingtests.tasks.init_db', 'pysmvttestapp.modules.routingtests.tasks.init_db'), 
                 ('action_001', 'pysmvttestapp.modules.tests.tasks.init_db', 'pysmvttestapp2.modules.tests.tasks.init_db'), 
                 ('action_001', 'pysmvttestapp.tasks.init_db', 'pysmvttestapp.tasks.init_db'), 
-                ('action_002', 'pysmvttestapp.tasks.init_db', 'pysmvttestapp.tasks.init_db')
+                ('action_002', 'pysmvttestapp.tasks.init_db', 'pysmvttestapp.tasks.init_db'),
             ],
         'init-data': [
                 ('action_010', 'pysmvttestapp.tasks.init_data', 'lots of data'), 
@@ -31,7 +31,7 @@ class TestTasks(object):
     def test_single_attribute(self):
         assert run_tasks('init-db:test') == \
         {'init-db': [
-                ('action_001', 'pysmvttestapp.tasks.init_db', 'pysmvttestapp.tasks.init_db'), 
+                ('action_001', 'pysmvttestapp.tasks.init_db', 'pysmvttestapp.tasks.init_db'),
             ],
         }
         
@@ -39,7 +39,37 @@ class TestTasks(object):
         assert run_tasks('init-db:prod') == \
         {'init-db': [
                 ('action_000', 'pysmvttestapp.tasks.init_db', 'pysmvttestapp.tasks.init_db'), 
-                ('action_002', 'pysmvttestapp.tasks.init_db', 'pysmvttestapp.tasks.init_db'), 
+                ('action_002', 'pysmvttestapp.tasks.init_db', 'pysmvttestapp.tasks.init_db'),
             ],
         }
+        
+    def test_matrix_noattr(self):
+        eq_(run_tasks('attr-matrix'), 
+        {'attr-matrix': [
+                ('action_1noattr', 'pysmvttestapp.tasks.attr_matrix', None),
+                ('action_2xattr', 'pysmvttestapp.tasks.attr_matrix', None),
+                ('action_4mxattr', 'pysmvttestapp.tasks.attr_matrix', None),
+                ('action_5yattr', 'pysmvttestapp.tasks.attr_matrix', None),
+                ('action_7myattr', 'pysmvttestapp.tasks.attr_matrix', None),
+            ],
+        })
+        
+    def test_matrix_attr(self):
+        eq_(run_tasks('attr-matrix:xattr'), 
+        {'attr-matrix': [
+                ('action_2xattr', 'pysmvttestapp.tasks.attr_matrix', None),
+                ('action_3pxattr', 'pysmvttestapp.tasks.attr_matrix', None),
+            ],
+        })
+        
+    def test_matrix_soft_attr(self):
+        eq_(run_tasks('attr-matrix:~xattr'), 
+        {'attr-matrix': [
+                ('action_1noattr', 'pysmvttestapp.tasks.attr_matrix', None),
+                ('action_2xattr', 'pysmvttestapp.tasks.attr_matrix', None),
+                ('action_3pxattr', 'pysmvttestapp.tasks.attr_matrix', None),
+                ('action_5yattr', 'pysmvttestapp.tasks.attr_matrix', None),
+                ('action_7myattr', 'pysmvttestapp.tasks.attr_matrix', None),
+            ],
+        })
 

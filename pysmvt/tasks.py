@@ -45,8 +45,16 @@ def run_tasks(tasks, print_call=True, *args, **kwargs):
         # split off the attribute if it is present:
         if ':' in task:
             task, attr = task.split(':', 1)
+            
+            # get the soft attribute flag
+            if attr.startswith('~'):
+                soft_attribute_matching = True
+                attr = attr[1:]
+            else:
+                soft_attribute_matching = False
         else:
             attr = None
+            
         # allow tasks to be defined with dashes, but convert to
         # underscore to follow file naming conventions
         underscore_task = task.replace('-', '_')
@@ -56,14 +64,27 @@ def run_tasks(tasks, print_call=True, *args, **kwargs):
         callables = []
         for modobjs in modlist:
             for k,v in modobjs.iteritems():
-                # do prep work for testing the callable's attributes
-                if attr is None:
-                    has_attr = True
-                else:
+                if k.startswith('action_'):
+                    plus_exit = False
                     callable_attrs = getattr(v, '__pysmvt_task_attrs', tuple())
-                    has_attr = attr in callable_attrs
-
-                if k.startswith('action_') and has_attr:
+                    
+                    # if callable has a "+" attribute
+                    for cattr in callable_attrs:
+                        if cattr.startswith('+') and cattr[1:] != attr:
+                            plus_exit = True
+                            break
+                    
+                    if plus_exit:
+                        continue
+                    
+                    # attribute given, callable is required to have it
+                    if attr is not None:
+                        if soft_attribute_matching:
+                            if '-' + attr in callable_attrs:
+                                continue
+                        elif attr not in callable_attrs and '+' + attr not in callable_attrs:
+                            continue
+    
                     # function name, module name, function object
                     # we added module name as the second value for 
                     # sorting purposes, it gives us a predictable
