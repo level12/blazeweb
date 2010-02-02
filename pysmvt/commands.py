@@ -109,7 +109,7 @@ def action_routes(endpoints=False):
     pprint(toprint)
 
 @console_dispatch
-def action_tasks(tasks_to_run=''):
+def action_tasks(tasks_to_run='', test_only=('t', False)):
     """ run task(s) (csv for multiple)"""
     tasks = tasks_to_run.split(',')
-    run_tasks(tasks)
+    run_tasks(tasks, test_only=test_only)

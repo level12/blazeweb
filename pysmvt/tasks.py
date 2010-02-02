@@ -38,7 +38,7 @@ def attributes(*args):
     return decorate_func
 
 
-def run_tasks(tasks, print_call=True, *args, **kwargs):
+def run_tasks(tasks, print_call=True, test_only=False, *args, **kwargs):
     tasks = tolist(tasks)
     retval = OrderedDict()
     for task in tasks:
@@ -94,10 +94,16 @@ def run_tasks(tasks, print_call=True, *args, **kwargs):
         for call_tuple in sorted(callables):
             if print_call == True:
                 print '--- Calling: %s:%s ---' % (call_tuple[1], call_tuple[0])
+            if test_only:
+                callable_retval = 'test_only=True'
+            else:
+                callable_retval = call_tuple[2]()
             retval[task].append((
                 call_tuple[0], 
-                call_tuple[1], 
-                call_tuple[2]()
+                call_tuple[1],
+                callable_retval
                 ))
+    if print_call and test_only:
+        print '*** NOTICE: test_only=True, no actions called ***'
     return retval
                     
