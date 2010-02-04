@@ -6,9 +6,11 @@ from werkzeug.exceptions import HTTPException, NotFound, InternalServerError, \
     MethodNotAllowed
 
 from pysmvt import settings, session, user, rg, ag, _getview
-from pysmvt.exceptions import ForwardException, ProgrammingError, Redirect
+from pysmvt.exceptions import ForwardException, ProgrammingError, Redirect, \
+    ExceptionToClient
 from pysmvt.mail import mail_programmers
-from pysmvt.utils import randchars, pprint
+from pysmvt.utils import randchars, pprint, werkzeug_multi_dict_conv
+from pysmvt.utils.html import escape
 from pysmvt.wrappers import Request, Response
 
 log = logging.getLogger(__name__)
@@ -87,7 +89,7 @@ class Controller(object):
             else:
                 return response.status_code
         code = get_status_code(response)
-        if code in settings.error_docs:
+        if code in settings.error_docs and not isinstance(response, ExceptionToClient):
             handling_endpoint = settings.error_docs.get(code)
             log.debug('error docs: handling code %d with %s' % (code, handling_endpoint))
             environ['pysmvt.controller.error_docs_handler.response'] = response
@@ -104,9 +106,9 @@ class Controller(object):
                     new_response.code = code
                 response = new_response
             else:
-                log.info('error docs: encountered non-200 status code response '
+                log.error('error docs: encountered non-200 status code response '
                         '(%d) when trying to handle with %s' % (get_status_code(new_response), handling_endpoint))
-        if isinstance(response, HTTPException) and not isinstance(response, Redirect):
+        if isinstance(response, HTTPException) and not isinstance(response, (Redirect, ExceptionToClient)):
             messages = user.get_messages()
             if messages:
                 msg_html = ['<h2>Error Details:</h2><ul>']
@@ -117,6 +119,11 @@ class Controller(object):
         return response
     
     def _exception_handling(self, called_from, environ = None, endpoint=None, args = {}):
+        def exception_info():
+            retval = '\n== TRACE ==\n\n%s' % format_exc()
+            retval += '\n\n== ENVIRON ==\n\n%s' % pprint(rg.environ, 4, True)
+            retval += '\n\n== POST ==\n\n%s\n\n' % pprint(werkzeug_multi_dict_conv(rg.request.form), 4, True)
+            return retval
         try:
             if environ:
                 endpoint, args = self._endpoint_args_from_env(environ)
@@ -126,12 +133,16 @@ class Controller(object):
             response = e
         except Exception, e:
             if settings.exceptions.log:
-                log.info('exception handling: %s' % str(e))
+                log.error('exception encountered: %s' % exception_info())
             if settings.exceptions.email:
-                trace = format_exc()
-                envstr = pprint(rg.environ, 4, True)
-                mail_programmers('exception encountered', '== TRACE ==\n\n%s\n\n== ENVIRON ==\n\n%s' % (trace, envstr))
-            if settings.exceptions.hide:
+                try:
+                    mail_programmers('exception encountered', exception_info())
+                except Exception, e:
+                    log.exception('exception when trying to email exception')
+            if settings.exceptions.to_client:
+                response = ExceptionToClient()
+                response.description = '<pre>%s</pre>' % escape(exception_info())
+            elif settings.exceptions.hide:
                 # turn the exception into a 500 server response
                 response = InternalServerError()
             else:

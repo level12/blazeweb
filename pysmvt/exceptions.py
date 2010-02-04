@@ -6,7 +6,10 @@ from pysutils import pformat
 class TemplateException(HTTPException):
     code = 500
     description = '<p>A fatal error occured while trying to process a template.</p>'
-    
+
+class ExceptionToClient(InternalServerError):
+    pass
+
 class Redirect(HTTPException):
     def __init__(self, location, code):
         self.code = code

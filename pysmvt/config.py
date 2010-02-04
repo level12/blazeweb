@@ -4,6 +4,7 @@ import os
 import logging
 import re
 from pysmvt import appimport, settings, ag, modimport
+from pysmvt.logs import _create_handlers_from_settings
 from werkzeug.routing import Rule, Map, Submount
 from pysmvt.utils import OrderedProperties, OrderedDict, Context, tb_depth_in
 from pysmvt.utils.filesystem import mkdirs
@@ -175,11 +176,16 @@ class DefaultSettings(QuickSettings):
         # the error docs handler if setup for 500 errors
         #
         #  *** SET TO True FOR PRODUCTION ENVIRONMENTS ***
+        # will format the exception and environment and return as HTML
+        # to a client.  This raises a special 500 response that is not handled
+        # by the error docs handler!
+        self.exceptions.to_client = False
+        # will cause generic 500 respose to be returned, overriden by to_client
         self.exceptions.hide = False
         # if true, an email will be sent using mail_programmers() whenever
         # an exception is encountered
         self.exceptions.email = False
-        # if True, will send exception details to the applications debug file
+        # if True, will send exception details to log.info()
         self.exceptions.log = True
         
         #######################################################################
@@ -273,7 +279,28 @@ class DefaultSettings(QuickSettings):
         #      'testing:Setup.doit', # calls doit class method of Setup in myapp.testing
         #      )
         self.testing.init_callables = None
-
+        
+        #######################################################################
+        # Log Files
+        ######################################################################
+        # logs will be logged using RotatingFileHandler
+        # maximum log file size is 50MB
+        self.logs.max_bytes = 1024*1024*10
+        # maximum number of log files to keep around
+        self.logs.backup_count = 5
+        # will log all WARN and above logs to errors.log in the logs directory
+        self.logs.errors.enabled = True
+        # will log all application logs (level 25) to application.log.  This will
+        # also setup the logging object so you can use log.application().  The
+        # application log level is 25, which is greater than INFO but less than
+        # WARNING.
+        self.logs.application.enabled = True
+        # if you don't want application or error logging and don't setup your
+        # own, then you may see error messages on stdout like "No handlers could
+        # be found for logger ...".  Enable the null_handler to get rid of
+        # those messages.  But, you should *really* enable logging of some kind.
+        self.logs.null_handler.enabled = False
+        
 def appinit(settings_mod=None, profile=None, settings_cls=None):
     """
         called to setup the application's settings
@@ -285,7 +312,7 @@ def appinit(settings_mod=None, profile=None, settings_cls=None):
         Settings = settings_cls
     settings._push_object(Settings())
     ag._push_object(Context())
-
+    
     ## setup python logging based on settings configuration
     level1map = {
             'critical':logging.CRITICAL,
@@ -405,6 +432,9 @@ def appinit(settings_mod=None, profile=None, settings_cls=None):
     # would be created, which is undesirable since any "new" attribute at this
     # point would probably be an accident
     settings.lock()
+    
+    ## more simple default logging
+    _create_handlers_from_settings(settings)
     
     ###
     ### routing

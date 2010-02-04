@@ -72,6 +72,9 @@ class User(object):
         
     def is_authenticated(self):
         return self._is_authenticated
+    
+    def __repr__(self):
+        return '<User (%s): %s, %s, %s>' % (hex(id(self)), self.is_authenticated(), self.attributes, self.messages)
 
 class UserMessage(object):
     
