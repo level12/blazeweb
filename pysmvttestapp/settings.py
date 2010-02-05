@@ -72,3 +72,12 @@ class Testruns(DefaultSettings):
         
         # logging
         #self.logging.debug.stream.filter = 'pysmvt'
+
+class NoLogs(Testruns):
+    def __init__(self):
+        Testruns.__init__(self)
+        
+        self.logs.errors.enabled = False
+        self.logs.application.enabled = False
+        self.logs.null_handler.enabled = True
+        
