@@ -1,4 +1,5 @@
 from nose.tools import eq_
+from paste.registry import StackedObjectProxy
 from pysmvt.routing import current_url
 from pysmvt.utils import wrapinapp, OrderedProperties, gather_objects, registry_has_object
 from pysmvt import getview, rg
@@ -76,9 +77,29 @@ class TestGatherObjects(object):
     def test_count(self):
         assert len(self.modlist) == 4
 
-def test_registry_has_object_not():
-    assert not registry_has_object(rg)
+def test_paste_bug():
+    """
+        http://trac.pythonpaste.org/pythonpaste/ticket/408
+    """
+    testsop = StackedObjectProxy(name="testsop")
+    try:
+        assert not testsop._object_stack()
+        assert False, 'paste _object_stack() bug fixed, removed workaround in registry_has_object()'
+    except AttributeError, e:
+        if "'thread._local' object has no attribute 'objects'" == str(e):
+            pass
 
-@wrapinapp(app)
-def test_registry_has_object_ok():
-    assert registry_has_object(rg)
+class TestRegistryHasObject(object):
+    testsop = StackedObjectProxy(name="testsop")
+    
+    def test_registry(self):
+        assert not registry_has_object(self.testsop)
+        foo = ''
+        self.testsop._push_object(foo)
+        assert registry_has_object(self.testsop)
+        self.testsop._pop_object()
+        assert not registry_has_object(self.testsop)
+    
+    @wrapinapp(app)
+    def test_registry_has_object_with_wrapinapp(self):
+        assert registry_has_object(rg)

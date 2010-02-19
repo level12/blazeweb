@@ -28,7 +28,7 @@ __all__ = [
 ag = StackedObjectProxy(name="ag")
 # the request "global" object, stores data and objects "globaly" during a request.  The
 # environment, urladapter, etc. get saved here. (request only)
-rg = StackedObjectProxy(name="rco")
+rg = StackedObjectProxy(name="rg")
 # all of the settings data (application scope)
 settings = StackedObjectProxy(name="settings")
 # the http session (request only)
