@@ -219,3 +219,13 @@ def gather_objects(modpath):
                     if not tb_depth_in(0):
                         raise 
     return retmods.values()
+
+def registry_has_object(to_check=None):
+    """
+        can be used to check the registry objects (rg, ag, etc.) in a safe way
+        to see if they have been registered
+    """
+    if not to_check:
+        to_check = rg
+    return bool(to_check._object_stack())
+    

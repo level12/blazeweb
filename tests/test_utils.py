@@ -1,6 +1,6 @@
 from nose.tools import eq_
 from pysmvt.routing import current_url
-from pysmvt.utils import wrapinapp, OrderedProperties, gather_objects
+from pysmvt.utils import wrapinapp, OrderedProperties, gather_objects, registry_has_object
 from pysmvt import getview
 
 # create the wsgi application that will be used for testing
@@ -75,3 +75,10 @@ class TestGatherObjects(object):
 
     def test_count(self):
         assert len(self.modlist) == 4
+
+def test_registry_has_object_not():
+    assert not registry_has_object()
+
+@wrapinapp(app)
+def test_registry_has_object_ok():
+    assert registry_has_object()
