@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from pysmvt import rg
-from werkzeug import BaseRequest, BaseResponse, ResponseStreamMixin
+from werkzeug import BaseRequest, BaseResponse, ResponseStreamMixin, MultiDict
 from pysmvt.utils import registry_has_object
 
 class Request(BaseRequest):
@@ -9,6 +9,9 @@ class Request(BaseRequest):
     Simple request subclass that allows to bind the object to the
     current context.
     """
+
+    # we want mutable request objects
+    parameter_storage_class = MultiDict
     
     def __init__(self, environ, populate_request=True, shallow=False, bind_to_context=True):
         if bind_to_context:

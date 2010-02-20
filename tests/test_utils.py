@@ -105,7 +105,7 @@ class TestRegistryHasObject(object):
     def test_registry_has_object_with_wrapinapp(self):
         assert registry_has_object(rg)
 
-class TestCreateRequest(object):
+class TestRequestManipulation(object):
     
     def test_no_current_req_object(self):
         req = create_request({'foo':'bar'})
@@ -113,12 +113,15 @@ class TestCreateRequest(object):
     
     @wrapinapp(app)
     def test_in_app(self):
+        """
+            creating a request should not affect rg.request
+        """
         first_req = rg.request
         sec_req = create_request({'foo':'bar'})
-        assert rg.request is sec_req
+        assert rg.request is first_req
 
     @wrapinapp(app)
     def test_in_app_no_replace(self):
         first_req = rg.request
-        sec_req = create_request({'foo':'bar'}, bind_to_context=False)
+        sec_req = create_request({'foo':'bar'})
         assert rg.request is first_req

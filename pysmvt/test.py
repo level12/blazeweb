@@ -260,11 +260,11 @@ def logging_handler(logger_to_examine):
     lr.addHandler(lh)
     return lh
 
-def create_request(data, method='POST', bind_to_context=True, **kwargs):
+def create_request(data, method='POST', **kwargs):
     """
     used to create a fake request that then binds itself to rg.request.  Useful
     for testing forms without needing to use a WSGI client.
     """
     builder = EnvironBuilder(method=method, data=data, **kwargs)
     env = builder.get_environ()
-    return Request(env, bind_to_context=bind_to_context)
+    return Request(env, bind_to_context=False)

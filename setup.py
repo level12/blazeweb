@@ -89,7 +89,7 @@ setup(
         "Paste>=1.7.2",
         "PasteScript>=1.7.3",
         "pysutils>=0.1",
-        "Werkzeug>=0.5"
+        "Werkzeug>=0.6"
     ],
     entry_points="""
     [console_scripts]
