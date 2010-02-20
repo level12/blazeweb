@@ -3,6 +3,7 @@ from paste.registry import StackedObjectProxy
 from pysmvt.routing import current_url
 from pysmvt.utils import wrapinapp, OrderedProperties, gather_objects, registry_has_object
 from pysmvt import getview, rg
+from pysmvt.test import create_request
 
 # create the wsgi application that will be used for testing
 from pysmvttestapp.applications import make_wsgi
@@ -103,3 +104,21 @@ class TestRegistryHasObject(object):
     @wrapinapp(app)
     def test_registry_has_object_with_wrapinapp(self):
         assert registry_has_object(rg)
+
+class TestCreateRequest(object):
+    
+    def test_no_current_req_object(self):
+        req = create_request({'foo':'bar'})
+        assert req.form['foo'] == 'bar'
+    
+    @wrapinapp(app)
+    def test_in_app(self):
+        first_req = rg.request
+        sec_req = create_request({'foo':'bar'})
+        assert rg.request is sec_req
+
+    @wrapinapp(app)
+    def test_in_app_no_replace(self):
+        first_req = rg.request
+        sec_req = create_request({'foo':'bar'}, bind_to_context=False)
+        assert rg.request is first_req

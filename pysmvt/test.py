@@ -81,9 +81,9 @@ from nose.tools import make_decorator
 from pysmvt import ag, settings
 from pysmvt.script import _app_name
 from pysmvt.utils import import_app_str
+from pysmvt.wrappers import Request
 from pysutils import tolist, import_split
-from werkzeug import Client as WClient
-from werkzeug import BaseRequest
+from werkzeug import Client as WClient, BaseRequest, EnvironBuilder
 
 class InitCurrentAppPlugin(nose.plugins.Plugin):
     opt_app_profile = 'pysmvt_profile'
@@ -259,3 +259,12 @@ def logging_handler(logger_to_examine):
     lh = LoggingHandler()
     lr.addHandler(lh)
     return lh
+
+def create_request(data, method='POST', bind_to_context=True, **kwargs):
+    """
+    used to create a fake request that then binds itself to rg.request.  Useful
+    for testing forms without needing to use a WSGI client.
+    """
+    builder = EnvironBuilder(method=method, data=data, **kwargs)
+    env = builder.get_environ()
+    return Request(env, bind_to_context=bind_to_context)

@@ -2,6 +2,7 @@
 
 from pysmvt import rg
 from werkzeug import BaseRequest, BaseResponse, ResponseStreamMixin
+from pysmvt.utils import registry_has_object
 
 class Request(BaseRequest):
     """
@@ -9,12 +10,14 @@ class Request(BaseRequest):
     current context.
     """
     
-    def __init__(self, environ, populate_request=True, shallow=False):
-        self.bind_to_context()
+    def __init__(self, environ, populate_request=True, shallow=False, bind_to_context=True):
+        if bind_to_context:
+            self.bind_to_context()
         BaseRequest.__init__(self, environ, populate_request, shallow)
         
     def bind_to_context(self):
-        rg.request = self
+        if registry_has_object(rg):
+            rg.request = self
 
     @property
     def is_xhr(self):
