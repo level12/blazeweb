@@ -341,12 +341,10 @@ def jsonify(f, self, *args, **kwargs):
             retval['data'] = f(self, *args, **kwargs)
             retval['error'] = 0
         except Exception, e:
-            trace = format_exc()
-            print trace
             retval['error'] = 1
-            retval['exception'] = str(e)
+            log.exception('error calling jsonified function %s, %s, %s', f, args, kwargs)
             retval['data'] = ''
-            user.add_message('error', str(e))
+            user.add_message('error', 'internal error encountered, exception logged')
         retval['messages'] = []
         for msg in user.get_messages():
             retval['messages'].append({'severity':msg.severity, 'text': msg.text})
