@@ -301,6 +301,14 @@ class DefaultSettings(QuickSettings):
         # those messages.  But, you should *really* enable logging of some kind.
         self.logs.null_handler.enabled = False
         
+        # log http requests.  You must put HttpRequestLogger middleware
+        # in your WSGI stack, preferrably as the last application so that its
+        # the first middleware in the stack
+        ## Won't work until we get registrations moved up the WSGI stack
+        #self.logs.http_requests.enabled = False
+        #self.logs.http_requests.filters.path_info = None
+        #self.logs.http_requests.filters.request_method = None
+        
 def appinit(settings_mod=None, profile=None, settings_cls=None):
     """
         called to setup the application's settings
