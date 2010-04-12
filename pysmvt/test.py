@@ -82,7 +82,7 @@ from pysmvt import ag, settings
 from pysmvt.script import _app_name
 from pysmvt.utils import import_app_str
 from pysutils import tolist
-from werkzeug import Client as WClient, BaseRequest
+from werkzeug import Client as WClient, BaseRequest, BaseResponse, cached_property
 
 class InitCurrentAppPlugin(nose.plugins.Plugin):
     opt_app_profile = 'pysmvt_profile'
@@ -259,3 +259,14 @@ def logging_handler(logger_to_examine):
     lr.addHandler(lh)
     return lh
 
+class TestResponse(BaseResponse):
+
+    @cached_property
+    def fdata(self):
+        return self.filter_data()
+    
+    def filter_data(self, normalize_ws=True):
+        data = super(TestResponse, self).data
+        if normalize_ws:
+            data = ' '.join(data.split())
+        return data
