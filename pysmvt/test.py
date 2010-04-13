@@ -83,6 +83,7 @@ from pysmvt.script import _app_name
 from pysmvt.utils import import_app_str
 from pysutils import tolist
 from werkzeug import Client as WClient, BaseRequest, BaseResponse, cached_property
+from webhelpers.html import tools
 
 class InitCurrentAppPlugin(nose.plugins.Plugin):
     opt_app_profile = 'pysmvt_profile'
@@ -265,8 +266,12 @@ class TestResponse(BaseResponse):
     def fdata(self):
         return self.filter_data()
     
-    def filter_data(self, normalize_ws=True):
+    @cached_property
+    def wsdata(self):
+        return self.filter_data(strip_links=False)
+        
+    def filter_data(self, normalize_ws=True, strip_links=True):
         data = super(TestResponse, self).data
         if normalize_ws:
             data = ' '.join(data.split())
-        return data
+        return data if not strip_links else tools.strip_links(data)
