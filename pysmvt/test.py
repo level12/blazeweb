@@ -85,6 +85,12 @@ from pysutils import tolist
 from werkzeug import Client as WClient, BaseRequest, BaseResponse, cached_property
 from webhelpers.html import tools
 
+try:
+    from webtest import TestApp as WTTestApp
+    from webtest import TestResponse as WTTestResponse
+except ImportError:
+    WTTestApp = None
+
 class InitCurrentAppPlugin(nose.plugins.Plugin):
     opt_app_profile = 'pysmvt_profile'
     val_app_profile = None
@@ -275,3 +281,34 @@ class TestResponse(BaseResponse):
         if normalize_ws:
             data = ' '.join(data.split())
         return data if not strip_links else tools.strip_links(data)
+
+if WTTestApp:
+    # we import TestApp from here to make sure TestResponse gets patched with
+    # pyquery
+    class TestApp(WTTestApp):
+        pass
+
+    def pyquery(self):
+        """
+        Returns the response as a `PyQuery <http://pyquery.org/>`_ object.
+
+        Only works with HTML and XML responses; other content-types raise
+        AttributeError.
+        """
+        if 'html' not in self.content_type and 'xml' not in self.content_type:
+            raise AttributeError(
+                "Not an HTML or XML response body (content-type: %s)"
+                % self.content_type)
+        try:
+            from pyquery import PyQuery
+        except ImportError:
+            raise ImportError(
+                "You must have PyQuery installed to use response.pyquery")
+        d = PyQuery(self.body)
+        return d
+    
+    WTTestResponse.pyq = property(pyquery, doc=pyquery.__doc__)
+else:
+    def TestApp(object):
+        def __init__(self, *args, **kwargs):
+            raise ImportError('You must have WebTest installed to use TestApp')
