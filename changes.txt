@@ -6,6 +6,12 @@ Version ??
 -----------
 (??, release date to be announced)
 
+Version 0.2.2
+-------------
+(bugfix, released on 2010-05-30)
+
+- fixed a problem with the nose entry point
+
 Version 0.2.1
 -------------
 (bugfix, released on 2010-05-30)

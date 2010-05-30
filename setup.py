@@ -103,7 +103,9 @@ setup(
     
     [pysmvt.pysmvt_module_template]
     pysmvt = pysmvt.paster_tpl:ModuleTemplate
-
+    
+    [nose.plugins]
+    pysmvt_initcurrentapp = pysmvt.test:InitCurrentAppPlugin
     """,
     zip_safe=False
 )
