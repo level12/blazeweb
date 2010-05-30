@@ -51,8 +51,8 @@ Current Status
 
 The code for 0.1.x is pretty stable.  API, however, will be changing in 0.2.
 
-The `pysmvt tip <http://bitbucket.org/rsyring/pysmvt/get/tip.zip>`_
-is installable via `easy_install` with ``easy_install Werkzeug==dev``
+The `pysmvt tip <http://bitbucket.org/rsyring/pysmvt/get/tip.zip#egg=pysmvt-dev>`_
+is installable via `easy_install` with ``easy_install pysmvt==dev``
 """
 import sys
 try:
@@ -91,7 +91,7 @@ setup(
         "nose>=0.11",
         "Paste>=1.7",
         "PasteScript>=1.7",
-        "pysutils>=0.1",
+        "pysutils>=0.2",
         "simplejson>=2.0", #but only on 2.5, and only if using the json wrapper
         "WebHelpers>=1.0rc1",
         "Werkzeug>=0.6"
