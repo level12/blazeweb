@@ -6,6 +6,12 @@ Version ??
 -----------
 (??, release date to be announced)
 
+Version 0.2.1
+-------------
+(bugfix, released on 2010-05-30)
+
+- last version was borked, it didn't contain up-to-date code
+
 Version 0.2.0
 -------------
 (bugfixes/features/**BC BREAKS!!**, released on May 30th 2010)
