@@ -1,5 +1,6 @@
 import unittest
 import config
+import logging
 
 from pysmvt import settings
 import pysmvt.config
@@ -7,11 +8,7 @@ from pysmvt.application import Application
 from pysmvt.mail import EmailMessage, BadHeaderError, EmailMultiAlternatives, \
     MarkdownMessage, HtmlMessage, send_mail, _mail_programmers, _mail_admins
 from pysmvt.exceptions import SettingsError
-
-# use these variables to send live emails which is needed to test
-# some of the send functions
-_send_live = False
-_to = ''
+from pysmvt.test import mock_smtp, logging_handler
 
 class TestEmail(unittest.TestCase):
     def setUp(self):
@@ -234,7 +231,8 @@ class TestEmail(unittest.TestCase):
         assert message['To'] == 'to@example.com'
         assert message['Cc'] == 'cc3@example.com, cc1@example.com, cc2@example.com'
     
-    def test_overrides(self):
+    @mock_smtp(cancel_override=False)
+    def test_overrides(self, mm_tracker=None):
         """Test overrides"""
         
         settings.emails.override = 'override@example.com'
@@ -249,6 +247,16 @@ class TestEmail(unittest.TestCase):
         
         msg_body = '%s\n\nTo: to@example.com  =\n\nCc: cc@example.com  =\n\nBcc: bcc@example.com\n\n%s\n\nContent' % ('-'*70, '-'*70)
         assert msg_body in message.as_string()
+        
+        email.send()
+        look_for = """Called smtp_connection.sendmail(
+    'from@example.com',
+    ['override@example.com'],
+    'Content-Type: text/plain...To: override@example.com...Content...
+Called smtp_connection.quit()"""
+        assert mm_tracker.check(look_for), mm_tracker.diff(look_for)
+        mm_tracker.clear()
+        
     
     def test_overrides_recipients_first(self):
         """
@@ -389,7 +397,7 @@ Content-Transfer-Encoding: quoted-printable
     document with a W3C url for the DTD.</p>
   </body>
 </html>"""
-        settings.emails.override = _to or 'override@example.com'
+        settings.emails.override = 'override@example.com'
         email = HtmlMessage('Subject', html_doc, 'from@example.com', ['to@example.com'])
         message = email.message()
         
@@ -429,18 +437,46 @@ Bcc: </p>
         text_message = message.as_string()
         assert text_part in text_message
         assert html_part in text_message
-        
-        if _send_live:
-            email.send()
 
-    def test_send_mail(self):
-        if _send_live:
-            send_mail('test text email', 'email content', [_to])
-            
-            send_mail('test markdown email', '**important** email content', [_to], format='markdown')
-            
-            send_mail('test markdown email', '<strong>important</strong> email content', [_to], format='markdown')
+    @mock_smtp()
+    def test_send_mail(self, mm_tracker=None):
+        send_mail('test text email', 'email content', ['test@example.com'])
+        look_for = """Called smtp_connection.sendmail(
+    'root@localhost',
+    ['test@example.com'],
+    'Content-Type: text/plain...To: test@example.com...email content...
+Called smtp_connection.quit()"""
+        assert mm_tracker.check(look_for), mm_tracker.diff(look_for)
+        mm_tracker.clear()
+        
+        send_mail('test markdown email', '**important** email content', ['test@example.com'], format='markdown')
+        look_for = """Called smtp_connection.sendmail(
+    'root@localhost',
+    ['test@example.com'],
+    'Content-Type: multipart/alternative...To: test@example.com...""" \
+    """**important** email content...<strong>important</strong> email content...
+Called smtp_connection.quit()"""
+        assert mm_tracker.check(look_for), mm_tracker.diff(look_for)
+        mm_tracker.clear()
+        
+        send_mail('test html email', '<strong>important</strong> email content', ['test@example.com'], format='html')
+        look_for = """Called smtp_connection.sendmail(
+    'root@localhost',
+    ['test@example.com'],
+    'Content-Type: multipart/alternative...To: test@example.com...""" \
+    """**important** email content...<strong>important</strong> email content...
+Called smtp_connection.quit()"""
+        assert mm_tracker.check(look_for), mm_tracker.diff(look_for)
     
+    @mock_smtp()
+    def test_not_live(self, mm_tracker=None):
+        settings.email.is_live = False
+        lh = logging_handler('pysmvt.mail')
+        send_mail('test text email', 'email content', ['test@example.com'])
+        look_for = 'Called smtp_connection.quit()...'
+        assert mm_tracker.check(look_for), mm_tracker.diff(look_for)
+        assert 'email.is_live = False' in lh.messages['warning'][0]
+        
     def test_duplicate_headers(self):	
         # Specifying dates or message-ids in the extra headers overrides the defaul
         # values (#9233).

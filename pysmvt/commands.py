@@ -8,6 +8,8 @@ from pysmvt.paster_tpl import run_template
 from pysmvt import ag, settings
 from pysmvt.script import console_dispatch, make_wsgi, make_console, \
     broadcast_actions
+from pysmvt.tasks import run_tasks
+from pysutils import pprint
 
 def action_serve(profile='Default', hostname=('h', 'localhost'), port=('p', 5000),
                reloader=True, debugger=False, evalex=False, 
@@ -61,13 +63,21 @@ def action_broadcast(action_to_call=('a', '')):
     manual_broadcast(action_to_call)
     
 def manual_broadcast(action_to_call):
-    if not action_to_call:
-        print 'Error: `action` is required'
-        return
-    for key, callable in broadcast_actions.iteritems():
-        if key == action_to_call:
-            print 'calling: %s' % callable.__name__
-            callable()
+    if ',' in action_to_call:
+        actions_to_call = action_to_call.split(',')
+    else:
+        actions_to_call = [action_to_call]
+    show_action_to_call = len(actions_to_call) > 1 or False
+    for action_to_call in actions_to_call:
+        if show_action_to_call:
+            print '-------------- action to call: %s -----------------' % action_to_call
+        if not action_to_call:
+            print 'Error: `action` is required'
+            return
+        for key, callable in broadcast_actions.iteritems():
+            if key == action_to_call:
+                print 'calling: %s' % callable.__name__
+                callable()
 
 def action_testrun(url=('u', '/'), profile='Default', show_body=('b', False), show_headers=('h', False), show_all=('a', False)):
     """
@@ -86,3 +96,20 @@ def action_testrun(url=('u', '/'), profile='Default', show_body=('b', False), sh
     if show_body or show_all:
         for respstr in resp.response:
             print respstr
+
+@console_dispatch
+def action_routes(endpoints=False):
+    """ prints out all routes in the mapper """
+    toprint = []
+    for rule in ag.route_map.iter_rules():
+        if endpoints:
+            toprint.append((rule.rule, rule.endpoint))
+        else:
+            toprint.append(rule.rule)
+    pprint(toprint)
+
+@console_dispatch
+def action_tasks(tasks_to_run='', test_only=('t', False)):
+    """ run task(s) (csv for multiple)"""
+    tasks = tasks_to_run.split(',')
+    run_tasks(tasks, test_only=test_only)

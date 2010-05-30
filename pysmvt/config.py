@@ -4,52 +4,13 @@ import os
 import logging
 import re
 from pysmvt import appimport, settings, ag, modimport
+from pysmvt.logs import _create_handlers_from_settings
 from werkzeug.routing import Rule, Map, Submount
-from pysmvt.utils import OrderedProperties, OrderedDict, Context, tb_depth_in
+from pysmvt.utils import OrderedDict, Context, tb_depth_in
 from pysmvt.utils.filesystem import mkdirs
 from pysmvt.exceptions import SettingsError
 from pysutils import case_us2cw, multi_pop
-
-class QuickSettings(OrderedProperties):
-    def __init__(self, initialize=True):
-        self._locked = False
-        OrderedProperties.__init__(self, initialize)
-    
-    def lock(self):
-        self._locked = True
-        for child in self._data.values():
-            if isinstance(child, QuickSettings):
-                child.lock()
-    
-    def unlock(self):
-        self._locked = False
-        for child in self._data.values():
-            if isinstance(child, QuickSettings):
-                child.unlock()
-    
-    def __getattr__(self, key):
-        if not self._data.has_key(key):
-            if not self._locked:
-                self._data[key] = QuickSettings()
-            else:
-                raise AttributeError("object has no attribute '%s' (object is locked)" % key)
-        return self._data[key]
-    
-    def update(self, ____sequence=None, **kwargs):
-        if ____sequence is not None:
-            if hasattr(____sequence, 'keys'):
-                for key in ____sequence.keys():
-                    try:
-                        self.get(key).update(____sequence[key])
-                    except (AttributeError, ValueError), e:
-                        if "object has no attribute 'update'" not in str(e) and "need more than 1 value to unpack" not in str(e):
-                            raise
-                        self.__setitem__(key, ____sequence[key])
-            else:
-                for key, value in ____sequence:
-                    self[key] = value
-        if kwargs:
-            self.update(kwargs)
+from pysutils.config import QuickSettings
 
 class ModulesSettings(QuickSettings):
     """
@@ -150,9 +111,10 @@ class DefaultSettings(QuickSettings):
         # SESSIONS
         #######################################################################
         #beaker session options
-        #http://wiki.pylonshq.com/display/beaker/Configuration+Options
+        #http://beaker.groovie.org/configuration.html
         self.beaker.type = 'dbm'
         self.beaker.data_dir = path.join(self.dirs.tmp, 'session_cache')
+        self.beaker.lock_dir = path.join(self.dirs.tmp, 'beaker_locks')
         
         #######################################################################
         # TEMPLATES
@@ -174,11 +136,16 @@ class DefaultSettings(QuickSettings):
         # the error docs handler if setup for 500 errors
         #
         #  *** SET TO True FOR PRODUCTION ENVIRONMENTS ***
+        # will format the exception and environment and return as HTML
+        # to a client.  This raises a special 500 response that is not handled
+        # by the error docs handler!
+        self.exceptions.to_client = False
+        # will cause generic 500 respose to be returned, overriden by to_client
         self.exceptions.hide = False
         # if true, an email will be sent using mail_programmers() whenever
         # an exception is encountered
         self.exceptions.email = False
-        # if True, will send exception details to the applications debug file
+        # if True, will send exception details to log.info()
         self.exceptions.log = True
         
         #######################################################################
@@ -232,6 +199,9 @@ class DefaultSettings(QuickSettings):
         #######################################################################
         # used by mail_admins() and mail_programmers()
         self.email.subject_prefix = ''
+        # Should we actually send email out to a SMTP server?  Setting this to
+        # False can be useful when doing testing.
+        self.email.is_live = True
         
         #######################################################################
         # SMTP SETTINGS
@@ -256,7 +226,49 @@ class DefaultSettings(QuickSettings):
         # is detected to try and give the user a more consistent experience
         # self.error_docs[404] = 'errorsmod:NotFound'
         self.error_docs
-
+        
+        #######################################################################
+        # TESTING
+        #######################################################################
+        # an application can define functions to be called after the app
+        # is initialized but before any test inspection is done or tests
+        # are ran.  The import strings given are relative to the application
+        # stack.  Some examples:
+        #      self.testing.init_callables = (
+        #      'testing.setup_db',  # calls setup_db function in myapp.testing
+        #      'testing:Setup.doit', # calls doit class method of Setup in myapp.testing
+        #      )
+        self.testing.init_callables = None
+        
+        #######################################################################
+        # Log Files
+        ######################################################################
+        # logs will be logged using RotatingFileHandler
+        # maximum log file size is 50MB
+        self.logs.max_bytes = 1024*1024*10
+        # maximum number of log files to keep around
+        self.logs.backup_count = 5
+        # will log all WARN and above logs to errors.log in the logs directory
+        self.logs.errors.enabled = True
+        # will log all application logs (level 25) to application.log.  This will
+        # also setup the logging object so you can use log.application().  The
+        # application log level is 25, which is greater than INFO but less than
+        # WARNING.
+        self.logs.application.enabled = True
+        # if you don't want application or error logging and don't setup your
+        # own, then you may see error messages on stdout like "No handlers could
+        # be found for logger ...".  Enable the null_handler to get rid of
+        # those messages.  But, you should *really* enable logging of some kind.
+        self.logs.null_handler.enabled = False
+        
+        # log http requests.  You must put HttpRequestLogger middleware
+        # in your WSGI stack, preferrably as the last application so that its
+        # the first middleware in the stack
+        ## Won't work until we get registrations moved up the WSGI stack
+        #self.logs.http_requests.enabled = False
+        #self.logs.http_requests.filters.path_info = None
+        #self.logs.http_requests.filters.request_method = None
+        
 def appinit(settings_mod=None, profile=None, settings_cls=None):
     """
         called to setup the application's settings
@@ -268,7 +280,7 @@ def appinit(settings_mod=None, profile=None, settings_cls=None):
         Settings = settings_cls
     settings._push_object(Settings())
     ag._push_object(Context())
-
+    
     ## setup python logging based on settings configuration
     level1map = {
             'critical':logging.CRITICAL,
@@ -388,6 +400,9 @@ def appinit(settings_mod=None, profile=None, settings_cls=None):
     # would be created, which is undesirable since any "new" attribute at this
     # point would probably be an accident
     settings.lock()
+    
+    ## more simple default logging
+    _create_handlers_from_settings(settings)
     
     ###
     ### routing

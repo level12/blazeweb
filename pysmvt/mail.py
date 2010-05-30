@@ -2,6 +2,7 @@
 Tools for sending email.
 """
 
+import logging
 import mimetypes
 import os
 import smtplib
@@ -21,6 +22,8 @@ from pysmvt.exceptions import SettingsError
 from pysmvt.utils.encoding import smart_str, force_unicode
 from pysmvt.utils import tolist, markdown
 from html2text import html2text
+
+log = logging.getLogger(__name__)
 
 # Don't BASE64-encode UTF-8 messages so that we avoid unwanted attention from
 # some spam filters.
@@ -185,9 +188,12 @@ class SMTPConnection(object):
         if not email_message.recipients():
             return False
         try:
-            self.connection.sendmail(email_message.from_email,
-                    email_message.recipients(),
-                    email_message.message().as_string())
+            if settings.email.is_live:
+                self.connection.sendmail(email_message.from_email,
+                        email_message.recipients(),
+                        email_message.message().as_string())
+            else:
+                log.warn('email.is_live = False, email getting skipped')
         except:
             if not self.fail_silently:
                 raise
