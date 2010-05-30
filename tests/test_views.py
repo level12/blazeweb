@@ -126,53 +126,53 @@ class TestViews(unittest.TestCase):
         
         self.assertEqual(r.status, '200 OK')
         self.assertEqual(r.data, 'Hello World!')        
-        self.assertEqual( dict(r.header_list)['Content-Type'], 'text/plain; charset=utf-8' )
+        self.assertEqual( r.headers['Content-Type'], 'text/plain; charset=utf-8' )
         
     def test_textwsnip(self):
         r = self.client.get('tests/textwsnip')
         
         self.assertEqual(r.status, '200 OK')
         self.assertEqual(r.data, 'Hello World!')
-        self.assertEqual( dict(r.header_list)['Content-Type'], 'text/plain; charset=utf-8' )
+        self.assertEqual( r.headers['Content-Type'], 'text/plain; charset=utf-8' )
 
     def test_textwsnip2(self):
         r = self.client.get('tests/textwsnip2')
         
         self.assertEqual(r.status, '200 OK')
         self.assertEqual(r.data, 'Hello World!')
-        self.assertEqual( dict(r.header_list)['Content-Type'], 'text/plain; charset=utf-8' )
+        self.assertEqual( r.headers['Content-Type'], 'text/plain; charset=utf-8' )
     
     def test_html(self):
         r = self.client.get('tests/html')
         
         self.assertEqual(r.status, '200 OK')
         self.assertEqual(r.data, 'Hello World!')
-        self.assertEqual( dict(r.header_list)['Content-Type'], 'text/html; charset=utf-8' )
+        self.assertEqual( r.headers['Content-Type'], 'text/html; charset=utf-8' )
     
     def test_htmljscss(self):
         r = self.client.get('tests/htmlcssjs')
         
         self.assertEqual(r.status, '200 OK')
         self.assertEqual(r.data, 'css\njs')
-        self.assertEqual( dict(r.header_list)['Content-Type'], 'text/html; charset=utf-8' )
+        self.assertEqual( r.headers['Content-Type'], 'text/html; charset=utf-8' )
     
     def test_redirect(self):
         r = self.client.get('tests/redirect')
         
         self.assertEqual(r.status_code, 302)
-        self.assertEqual(dict(r.header_list)['Location'], 'http://localhost/some/other/page')
+        self.assertEqual(r.headers['Location'], 'http://localhost/some/other/page')
         
     def test_permredirect(self):
         r = self.client.get('tests/permredirect')
         
         self.assertEqual(r.status_code, 301)
-        self.assertEqual(dict(r.header_list)['Location'], 'http://localhost/some/other/page')
+        self.assertEqual(r.headers['Location'], 'http://localhost/some/other/page')
         
     def test_custredirect(self):
         r = self.client.get('tests/custredirect')
         
         self.assertEqual(r.status_code, 303)
-        self.assertEqual(dict(r.header_list)['Location'], 'http://localhost/some/other/page')
+        self.assertEqual(r.headers['Location'], 'http://localhost/some/other/page')
         
     def test_heraise(self):
         r = self.client.get('tests/heraise')
@@ -412,7 +412,7 @@ class TestApp2(unittest.TestCase):
         
         self.assertEqual(r.status, '200 OK')
         self.assertEqual(r.data, 'Hello World!')
-        self.assertEqual( dict(r.header_list)['Content-Type'], 'text/html; charset=utf-8' )
+        self.assertEqual( r.headers['Content-Type'], 'text/html; charset=utf-8' )
 
 if __name__ == '__main__':
     #unittest.main()
