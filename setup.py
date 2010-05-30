@@ -60,7 +60,7 @@ except ImportError:
     use_setuptools()
     from setuptools import setup, find_packages
 
-version = '0.2.2'
+version = '0.2.3'
 
 setup(
     name = "pysmvt",
