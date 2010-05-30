@@ -8,7 +8,7 @@ Version ??
 
 Version 0.2.0
 -------------
-(bugfixes/features/**BC BREAKS!!**, released on ??)
+(bugfixes/features/**BC BREAKS!!**, released on May 30th 2010)
 
 - this release definitely includes BC BREAKS!
 - see bitbucket changesets: http://bitbucket.org/rsyring/pysmvt/changesets

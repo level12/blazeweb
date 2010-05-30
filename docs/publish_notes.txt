@@ -1,3 +1,4 @@
 
 - update changes.txt, set release date
+- change setup.cfg to remove "dev" tag
 - python setup.py register sdist upload
