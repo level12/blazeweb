@@ -1,0 +1,42 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta name="robots" content="index, follow" />
+    <meta name="author" content="" />
+    <meta name="keywords" content="" />
+    <meta name="description" content="" />
+    <base href="<{ index_url(True) }>" />
+    
+    <title>
+        <% block title %>PySMVT Default Application<% endblock %>
+    </title>
+    
+    <style type="text/css">
+    /*<![CDATA[*/
+        @import "<{ style_url('template.css')}>";
+        
+        <{ page_css() }>
+    /*]]>*/
+    </style>
+</head>
+<body>
+    <div id="page_wrapper">
+        <div id="page_header">
+            <h1><a href="<{ index_url() }>">PySMVT Default Application</a></h1>
+        </div>
+        <ul id="top_nav">
+            <li><a href="<{ index_url() }>">Home</a> | </li>
+        </ul>
+        <div id="page_body">
+            <div id="page_content">
+                
+                <% block body %><% endblock %>
+            </div>
+        </div>
+        
+        <div id="page_footer">
+            <p>&nbsp;</p>
+        </div>
+    </div>
+</body>
+</html>

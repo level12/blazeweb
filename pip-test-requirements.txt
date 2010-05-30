@@ -1,0 +1,14 @@
+Beaker==1.3
+FormEncode==1.2.2
+Paste==1.7.2
+PasteDeploy==1.3.3
+PasteScript==1.7.3
+Werkzeug==0.5
+decorator==3.0.1
+html2text==2.35
+jinja2==2.1.1
+markdown2==1.0.1.11
+-e svn+https://svn.rcslocal.com:8443/svn/pysmvt/pysutils/trunk#egg=pysutils
+-e svn+https://svn.rcslocal.com:8443/svn/pysmvt/pysmvt/trunk#egg=pysmvt
+-e svn+https://svn.rcslocal.com:8443/svn/pysmvt/pysmvt-apps/testapp1/trunk#egg=pysmvttestapp1
+-e svn+https://svn.rcslocal.com:8443/svn/pysmvt/pysmvt-apps/testapp2/trunk#egg=pysmvttestapp2

@@ -1,0 +1,104 @@
+from os import path
+from werkzeug.routing import Rule
+from pysmvt.config import DefaultSettings
+
+basedir = path.dirname(path.abspath(__file__))
+appname = path.basename(basedir)
+
+class Default(DefaultSettings):
+    """ Default settings should be good for production.  User-specific
+    development environments can be created below.  """
+    
+    def __init__(self):
+        # call parent init to setup default settings
+        DefaultSettings.__init__(self, appname, basedir)
+        
+        # supporting applications
+        self.supporting_apps = []
+        
+        # application modules from our application or supporting applications
+        self.modules.default.enabled = True
+        
+        #######################################################################
+        # ROUTING
+        #######################################################################
+        self.routing.routes.extend([
+            # used with pysmvt.routing.style_url|static_url|js_url
+            Rule('/<file>', endpoint='static', build_only=True),
+            Rule('/c/<file>', endpoint='styles', build_only=True),
+            Rule('/js/<file>', endpoint='javascript', build_only=True),
+            Rule('/', defaults={}, endpoint='default:Index')
+        ])
+        
+        #######################################################################
+        # EMAIL ADDRESSES
+        #######################################################################
+        # the default 'from' address used if no from address is specified
+        self.emails.from_default = '{{programmer_email}}'
+        
+        # programmers who would get system level notifications (code
+        # broke, exception notifications, etc.)
+        self.emails.programmers = ['{{programmer_email}}']
+        
+        # people who would get application level notifications (payment recieved,
+        # action needed, etc.)
+        self.emails.admins = ['{{programmer_email}}']
+        
+        #######################################################################
+        # EMAIL SETTINGS
+        #######################################################################
+        # used by mail_admins() and mail_programmers()
+        self.email.subject_prefix = '[%s] ' % appname
+        
+        #######################################################################
+        # EXCEPTION HANDLING
+        #######################################################################
+        self.exceptions.hide = True
+        self.exceptions.email = True
+        
+        #######################################################################
+        # DEBUGGING
+        #######################################################################
+        self.debugger.enabled = False
+
+class {{username}}(Default):
+    """ this custom "user" class is designed to be used for
+    user specific development environments.  It can be used like:
+    
+        `pysmvt serve {{username.lower()}}`
+    """
+    def __init__(self):
+        Default.__init__(self)
+                
+        # a single or list of emails that will be used to override every email sent
+        # by the system.  Useful for debugging.  Original recipient information
+        # will be added to the body of the email
+        self.emails.override = '{{programmer_email}}'
+        
+        #######################################################################
+        # EXCEPTION HANDLING
+        #######################################################################
+        self.exceptions.hide = False
+        self.exceptions.email = False
+        
+        #######################################################################
+        # DEBUGGING
+        #######################################################################
+        self.debugger.enabled = True
+        # this is a security risk on a live system, so we only turn it on
+        # for a specific user config
+        self.debugger.interactive = True
+# this is just a convenience so we don't have to type the capital letter on the
+# command line when running `pysmvt serve`
+{{username.lower()}}={{username}}
+
+class Test(Default):
+    def __init__(self):
+        # call parent init to setup default settings
+        Default.__init__(self)
+
+        self.emails.override = '{{programmer_email}}'
+        self.exceptions.hide = False
+        self.exceptions.email = False
+        self.template.default = 'test.html'
+

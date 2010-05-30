@@ -1,0 +1,3 @@
+recursive-include {{project}} *
+recursive-include {{project}}-sharedmods *
+prune {{project}}/writeable/tmp

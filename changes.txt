@@ -1,0 +1,6 @@
+Werkzeug Changelog
+==================
+
+Version 0.1
+-----------
+(release date unknown)
