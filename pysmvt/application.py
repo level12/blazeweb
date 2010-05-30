@@ -4,7 +4,7 @@ import beaker.session
 import werkzeug
 from werkzeug import SharedDataMiddleware, DebuggedApplication
 from werkzeug.exceptions import HTTPException
-from werkzeug.utils import create_environ
+from werkzeug import create_environ
 
 from pysmvt import settings, ag, session, rg, user
 from pysmvt import routing
