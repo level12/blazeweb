@@ -1,6 +1,6 @@
-Werkzeug Changelog
-==================
 
-Version 0.1
------------
-(release date unknown)
+See bitbucket changesets: http://bitbucket.org/rsyring/pysmvt/changesets
+
+If the project becomes used by more people, and there is need for a more
+formal change log, we can start it here.
+
