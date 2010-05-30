@@ -1,1 +1,2 @@
+recursive-include pysmvt/paster_tpls *
 global-exclude *.pyc

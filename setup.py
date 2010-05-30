@@ -3,9 +3,7 @@ Introduction
 ---------------
 
 pysmvt is a wsgi web framework library designed in the spirit of Pylons but with
-Django modularity (i.e. what they would call "apps").  If you want to try it out
-it would be best to start with
-`our example application <http://pypi.python.org/pypi/PysAppExample/>`_.
+Django modularity (i.e. what they would call "apps").
 
 Steps for Installation
 ----------------------
@@ -13,13 +11,13 @@ Steps for Installation
 #. Install Python
 #. install setuptools (includes easy_install)
 #. install virtualenv `easy_install virtualenv`
-#. Create a new virtual environement `virtualenv myproj-staging --no-site-packages`
+#. Create a new virtual environement `virtualenv pysmvttest-venv --no-site-packages`
 #. `Activate the virtual environment (os dependent) <http://pypi.python.org/pypi/virtualenv#activate-script>`_
-#. install pysmvt & dependencies `easy_install pysmvt`
+#. install pysmvt & dependencies `easy_install pysmvt` or `pip install pysmvt`
 
 Steps for creating a working application
 -----------------------------------------
-#. `cd myproj-staging`
+#. `cd pysmvttest-venv`
 #. `mkdir src`
 #. `cd src`
 #. `pysmvt project myapp`
@@ -49,7 +47,7 @@ Please visit: http://groups.google.com/group/pyslibs
 Current Status
 ---------------
 
-The code for 0.1.x is pretty stable.  API, however, will be changing in 0.2.
+The code stays pretty stable, but the API is likely to change in the future.
 
 The `pysmvt tip <http://bitbucket.org/rsyring/pysmvt/get/tip.zip#egg=pysmvt-dev>`_
 is installable via `easy_install` with ``easy_install pysmvt==dev``
