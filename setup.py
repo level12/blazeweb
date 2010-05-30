@@ -81,17 +81,20 @@ setup(
     packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
     include_package_data=True,
     install_requires = [
-        "Beaker>=1.1.3",
-        "decorator>=3.0.1",
-        "FormEncode>=1.2.2",
+        "Beaker>=1.5",
+        "decorator>=3.0.1", ## <-- is used?
+        "FormEncode>=1.2",
         "html2text>=2.35",
-        "jinja2>=2.1.1",
-        "markdown2>=1.0.1.11",
-        "nose>=0.10.4",
-        "Paste>=1.7.2",
-        "PasteScript>=1.7.3",
+        "jinja2>=2.5",
+        "markdown2>=1.0.1",
+        "minimock>=1.2",
+        "nose>=0.11",
+        "Paste>=1.7",
+        "PasteScript>=1.7",
         "pysutils>=0.1",
-        "Werkzeug>=0.5"
+        "simplejson>=2.0", #but only on 2.5, and only if using the json wrapper
+        "WebHelpers>=1.0rc1",
+        "Werkzeug>=0.6"
     ],
     entry_points="""
     [console_scripts]
