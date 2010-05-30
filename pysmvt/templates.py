@@ -75,8 +75,12 @@ class AppTemplateLoader(FileSystemLoader):
         self.modname = modname
 
     def get_source(self, environment, template):
+        if ':' in template:
+            modname, template = template.split(':', 1)
+        else:
+            modname = self.modname
         pieces = split_template_path(template)
-        modppath = path.join('modules', self.modname, 'templates', *pieces)
+        modppath = path.join('modules', modname, 'templates', *pieces)
         apppath = path.join('templates', *pieces)
         log.debug('template modpath: %s', modppath)
         log.debug('template apppath: %s', apppath)

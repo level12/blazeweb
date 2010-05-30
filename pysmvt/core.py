@@ -4,6 +4,7 @@ import logging
 from paste.registry import StackedObjectProxy
 
 log = logging.getLogger(__name__)
+
 __all__ = [
     'ag',
     'rg',
@@ -27,7 +28,7 @@ __all__ = [
 ag = StackedObjectProxy(name="ag")
 # the request "global" object, stores data and objects "globaly" during a request.  The
 # environment, urladapter, etc. get saved here. (request only)
-rg = StackedObjectProxy(name="rco")
+rg = StackedObjectProxy(name="rg")
 # all of the settings data (application scope)
 settings = StackedObjectProxy(name="settings")
 # the http session (request only)
@@ -133,20 +134,29 @@ def _import(dotted_location, attr=None):
                 
     """
     from pysmvt.utils import traceback_depth
+     
+     # setup the logger
+    log = logging.getLogger('%s:%s' % (__name__, '_import'))
+    log.debug('called with dotted_location: %s; attr: %s', dotted_location, attr)
     
     # the first time this function is used for this applicaiton, we need to
     # do some setup
     if not hasattr(ag, '_import_cache'):
+        log.debug('cache did not exist, creating')
         ag._import_cache = dict()
     
     if attr:
         cachekey = '%s:%s' % (dotted_location, attr)
         if ag._import_cache.get(cachekey):
-            return __import__(ag._import_cache.get(cachekey), globals(), locals(), [attr])
+            module = __import__(ag._import_cache.get(cachekey), globals(), locals(), [attr])
+            log.debug('found %s in cache: %s', cachekey, module)
+            return module
     else:
         cachekey = dotted_location
         if ag._import_cache.get(dotted_location):
-            return __import__(ag._import_cache.get(dotted_location), globals(), locals(), [''])
+            module = __import__(ag._import_cache.get(dotted_location), globals(), locals(), [''])
+            log.debug('found %s in cache: %s', cachekey, module)
+            return module
 
     # if the module's location wasn't cached, or the module at that location
     # doesn't have the requested attribute, we need to search for the module
@@ -157,13 +167,18 @@ def _import(dotted_location, attr=None):
             found = __import__(pymodtoload, globals(), locals(), [''])
             if attr is None or hasattr(found, attr):
                 ag._import_cache[cachekey] = pymodtoload
+                log.debug('found %s: %s', cachekey, pymodtoload)
                 return found
         except ImportError:
             if traceback_depth() > 0:
                 raise
+        log.debug('did not find %s in app %s', cachekey, app)
+        
     if attr:
+        log.debug('cannot import "%s" with attribute "%s" from any application', dotted_location, attr)
         raise ImportError('cannot import "%s" with attribute "%s" from any application' % (dotted_location, attr))
     else:
+        log.debug('cannot import "%s" from any application', dotted_location)
         raise ImportError('cannot import "%s" from any application' % dotted_location)
 
 def appfilepath(*args):
@@ -176,16 +191,22 @@ def appfilepath(*args):
         
         appfilepath('myfile.txt')
         
-        returns '/projects/myapp' if '/projects/myapp/myfile.txt' exists
-        returns '/projects/supportingapp' if '/projects/myapp/myfile.txt' does
+        returns '/projects/myapp/myfile.txt' if '/projects/myapp/myfile.txt' exists
+        returns '/projects/supportingapp/myfile.txt' if '/projects/myapp/myfile.txt' does
         not exist but '/projects/supportingapp/myfile.txt' exists
     """
     from pysmvt.config import appslist
     from pysmvt.utils import tolist
     
+    # setup the logger
+    log = logging.getLogger('%s:%s' % (__name__, 'appfilepath'))
+    
+    log.debug('args are %s', args)
+    
     # the first time this function is used for this applicaiton, we need to
     # do some setup
     if not hasattr(ag, '_file_lookup_cache'):
+        log.debug('creating empty file_lookup_cache')
         ag._file_lookup_cache = dict()
     
     ppaths = args
@@ -193,15 +214,20 @@ def appfilepath(*args):
     for ppath in ppaths:
         ppath = path.normpath(ppath)
         if ag._file_lookup_cache.has_key(ppath):
-            return ag._file_lookup_cache[ppath]
+            fpath = ag._file_lookup_cache[ppath]
+            log.debug('found %s in cache: %s', ppath, fpath)
+            return fpath
         
         for app in appslist():
             app_dir = path.dirname(__import__(app).__file__)
             fpath = path.join(app_dir, ppath)
             if path.exists(fpath):
+                log.debug('found %s in app %s, file is %s', ppath, app, fpath)
                 ag._file_lookup_cache[ppath] = fpath
                 return fpath
+            log.debug('did not find %s in app %s', ppath, app)
     
+    log.debug('could not locate %s in any application', ppath)
     raise ProgrammingError('could not locate "%s" in any application' % ppath)
         
 

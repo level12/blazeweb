@@ -42,8 +42,43 @@ class TestRouting(unittest.TestCase):
         self.assertEqual('/js/test.js', js_url('test.js'))
         self.assertEqual('/js/test.js', js_url('test.js', app='foo'))
         self.assertEqual('https://localhost/url1', url_for('mod:Url1', _https=True))
-        self.assertEqual('http://localhost/url1', url_for('mod:Url1', _https=False, _external=True))
+        self.assertEqual('http://localhost/url1', url_for('mod:Url1', _https=False))
         
+class TestRoutingSSL(unittest.TestCase):
+    def setUp(self):
+        self.app = config.make_console(RoutingSettings)
+        env = create_environ("/test/url", "https://localhost:8080/script")
+        self.app.start_request(env)
+    
+    def tearDown(self):
+        self.app.end_request()
+        self.app = None
+    
+    def test_routes(self):
+        self.assertEqual( '/script/url1', url_for('mod:Url1'))
+        self.assertEqual('/script/url1?foo=bar', url_for('mod:Url1', foo='bar'))
+        self.assertEqual('https://localhost:8080/script/url1', url_for('mod:Url1', True))
+        self.assertEqual('/script/c/test.css', style_url('test.css'))
+        self.assertEqual('/script/c/test.css', style_url('test.css', app='foo'))
+        self.assertEqual('/script/js/test.js', js_url('test.js'))
+        self.assertEqual('/script/js/test.js', js_url('test.js', app='foo'))
+        self.assertEqual('https://localhost:8080/script/url1', url_for('mod:Url1', _https=True))
+        self.assertEqual('http://localhost:8080/script/url1', url_for('mod:Url1', _https=False))
+
+class TestRoutingSSLCaseSensitive(unittest.TestCase):
+    def setUp(self):
+        self.app = config.make_console(RoutingSettings)
+        env = create_environ("/test/url", "HTTPS://localhost:8080/scRipt")
+        self.app.start_request(env)
+    
+    def tearDown(self):
+        self.app.end_request()
+        self.app = None
+    
+    def test_routes(self):
+        self.assertEqual('https://localhost:8080/scRipt/url1', url_for('mod:Url1', True))
+        self.assertEqual('https://localhost:8080/scRipt/url1', url_for('mod:Url1', _https=True))
+        self.assertEqual('http://localhost:8080/scRipt/url1', url_for('mod:Url1', _https=False))
 
 class TestPrefix(unittest.TestCase):
     def setUp(self):
@@ -63,7 +98,7 @@ class TestPrefix(unittest.TestCase):
         self.assertEqual('/prefix/js/test.js', js_url('test.js'))
         self.assertEqual('/prefix/js/test.js', js_url('test.js', app='foo'))
         self.assertEqual('https://localhost/prefix/url1', url_for('mod:Url1', _https=True))
-        self.assertEqual('http://localhost/prefix/url1', url_for('mod:Url1', _https=False, _external=True))
+        self.assertEqual('http://localhost/prefix/url1', url_for('mod:Url1', _https=False))
 
 class TestCurrentUrl(unittest.TestCase):
 
@@ -120,6 +155,11 @@ class TestCurrentUrl(unittest.TestCase):
         self.assertEqual('http://localhost:8080/news/list', current_url(environ=env, strip_querystring=True, https=False))
         self.assertEqual('/news/list?param=foo', current_url(environ=env, strip_host=True, https=False))
         self.assertEqual('/', current_url(root_only=True, strip_host=True, environ=env))
+    
+    def test_qs_replace_new(self):
+        env = create_environ("/news/list?page=5&perpage=10", "http://localhost:8080/")
+        self.assertEqual('http://localhost:8080/news/list?page=1&perpage=10', current_url(environ=env, qs_replace={'page':1, 'foo':'bar'}))
+        self.assertEqual('http://localhost:8080/news/list?foo=bar&page=1&perpage=10', current_url(environ=env, qs_update={'page':1, 'foo':'bar'}))
 
 if __name__ == '__main__':
     unittest.main()

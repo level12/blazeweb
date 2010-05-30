@@ -1,18 +1,21 @@
+from decorator import decorator
 from os import path
+from traceback import format_exc
 import logging
 from pysmvt import settings, user, ag, _getview, rg, appimportauto
 from pysmvt.utils import reindent, auth_error, bad_request_error, \
     fatal_error, urlslug, markdown
 from pysmvt.utils.html import strip_tags
 from pysmvt.templates import JinjaHtmlBase, JinjaBase
-from pysmvt.exceptions import ActionError, UserError, ProgrammingError
-from pysmvt.wrappers import Response
+from pysmvt.exceptions import ActionError, UserError, ProgrammingError, \
+    ViewCallStackAbort
+from pysmvt.wrappers import Response, JSONResponse
 from werkzeug.wrappers import BaseResponse
 from werkzeug.exceptions import InternalServerError, BadRequest
 from werkzeug.utils import MultiDict
 import formencode
 from pprint import PrettyPrinter
-from pysutils import NotGiven
+from pysutils import NotGiven, moneyfmt, safe_strftime
 
 log = logging.getLogger(__name__)
 
@@ -69,8 +72,10 @@ class ViewBase(object):
                     getattr(self, call_details['method_name'])(**argsdict)
                 else:
                     getattr(self, call_details['method_name'])()
-
-        if rg.request.method == 'GET' and hasattr(self, 'get'):
+        
+        if rg.request.is_xhr and hasattr(self, 'xhr'):
+            retval = self.xhr(**argsdict)
+        elif rg.request.method == 'GET' and hasattr(self, 'get'):
             retval = self.get(**argsdict)
         elif rg.request.method == 'POST' and hasattr(self, 'post'):
             retval = self.post(**argsdict)
@@ -105,7 +110,7 @@ class ViewBase(object):
                     else:
                         value = rg.request.args.get(argname)
                         value = validator.to_python(value)
-                    if value:
+                    if value or value == 0:
                         self.args[argname] = value
                     else:
                         if required:
@@ -148,8 +153,18 @@ class ViewBase(object):
         raise NotImplementedError('ViewBase.handle_response() must be implemented in a subclass')
     
     def __call__(self):
-        self.call_methods()
+        try:
+            self.call_methods()
+        except ViewCallStackAbort:
+            pass
         return self.handle_response()
+    
+    def send_response(self):
+        """
+            Can be used in a method in the call stack to skip the rest of the
+            methods in the stack and return the response immediately.
+        """
+        raise ViewCallStackAbort
         
 class RespondingViewBase(ViewBase):
     def __init__(self, modulePath, endpoint, args):
@@ -169,6 +184,10 @@ class RespondingViewBase(ViewBase):
         else:
             self.response.data = self.retval
             return self.response
+
+class AjaxRespondingView(RespondingViewBase):
+    def _init_response(self):
+        self.response = JSONResponse()
 
 class HtmlPageViewBase(RespondingViewBase):
     def __init__(self, modulePath, endpoint, args):
@@ -195,11 +214,12 @@ class TemplateMixin(object):
         self.template_file = None
         
     def assignTemplateFunctions(self):
-        from pysmvt.routing import style_url, index_url, url_for, js_url
+        from pysmvt.routing import style_url, index_url, url_for, js_url, current_url
         self.template.templateEnv.globals['url_for'] = url_for
         self.template.templateEnv.globals['style_url'] = style_url
         self.template.templateEnv.globals['js_url'] = js_url
         self.template.templateEnv.globals['index_url'] = index_url
+        self.template.templateEnv.globals['current_url'] = current_url
         self.template.templateEnv.globals['include_css'] = self.include_css
         self.template.templateEnv.globals['include_js'] = self.include_js
         self.template.templateEnv.globals['page_css'] = self.page_css
@@ -209,6 +229,8 @@ class TemplateMixin(object):
         self.template.templateEnv.filters['pprint'] = self.filter_pprint
         self.template.templateEnv.filters['markdown'] = markdown
         self.template.templateEnv.filters['strip_tags'] = strip_tags
+        self.template.templateEnv.filters['moneyfmt'] = moneyfmt
+        self.template.templateEnv.filters['datefmt'] = safe_strftime
     
     def filter_pprint(self, value, indent=1, width=80, depth=None):
         toprint = PrettyPrinter(indent, width, depth).pformat(value)
@@ -309,3 +331,23 @@ class TextTemplateSnippet(SnippetViewBase, TemplateMixin):
     def handle_response(self):
         TemplateMixin.handle_response(self)
         return super(TextTemplateSnippet, self).handle_response()
+
+@decorator
+def jsonify(f, self, *args, **kwargs):
+    def new_handle_response():
+        jresp = JSONResponse()
+        retval = {}
+        try:
+            retval['data'] = f(self, *args, **kwargs)
+            retval['error'] = 0
+        except Exception, e:
+            retval['error'] = 1
+            log.exception('error calling jsonified function %s, %s, %s', f, args, kwargs)
+            retval['data'] = ''
+            user.add_message('error', 'internal error encountered, exception logged')
+        retval['messages'] = []
+        for msg in user.get_messages():
+            retval['messages'].append({'severity':msg.severity, 'text': msg.text})
+        jresp.json_data = retval
+        return jresp
+    self.handle_response = new_handle_response
