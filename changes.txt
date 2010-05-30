@@ -1,6 +1,21 @@
 
-See bitbucket changesets: http://bitbucket.org/rsyring/pysmvt/changesets
+pysmvt Changelog
+==================
 
-If the project becomes used by more people, and there is need for a more
-formal change log, we can start it here.
+Version ??
+-----------
+(??, release date to be announced)
 
+Version 0.2.0
+-------------
+(bugfixes/features/**BC BREAKS!!**, released on ??)
+
+- this release definitely includes BC BREAKS!
+- see bitbucket changesets: http://bitbucket.org/rsyring/pysmvt/changesets
+
+Version 0.1.1
+-------------
+(bugfix release, released on May 15th 2009)
+
+- renamed the attribute `implicit_seqence_conversion` attribute of the
+  request object to `implicit_sequence_conversion`.
