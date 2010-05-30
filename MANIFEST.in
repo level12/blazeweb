@@ -1,2 +1,1 @@
-recursive-include pysapp/paster_tpls *
 global-exclude *.pyc

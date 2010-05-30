@@ -1,0 +1,3 @@
+
+- update changes.txt, set release date
+- python setup.py register sdist upload

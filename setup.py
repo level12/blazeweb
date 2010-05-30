@@ -49,10 +49,10 @@ Please visit: http://groups.google.com/group/pyslibs
 Current Status
 ---------------
 
-The code for 0.1 is pretty stable.  API, however, will be changing in 0.2.
+The code for 0.1.x is pretty stable.  API, however, will be changing in 0.2.
 
-The unstable `development version
-<https://svn.rcslocal.com:8443/svn/pysmvt/pysmvt/trunk#egg=pysmvt-dev>`_.
+The `pysmvt tip <http://bitbucket.org/rsyring/pysmvt/get/tip.zip>`_
+is installable via `easy_install` with ``easy_install Werkzeug==dev``
 """
 import sys
 try:
@@ -62,13 +62,15 @@ except ImportError:
     use_setuptools()
     from setuptools import setup, find_packages
 
+version = '0.2'
+
 setup(
     name = "pysmvt",
-    version = "0.1",
+    version = version,
     description = "A wsgi web framework with a pylons spirit and django modularity",
     long_description = __doc__,
     author = "Randy Syring",
-    author_email = "randy@rcs-comp.com",
+    author_email = "rsyring@gmail.com",
     url='http://pypi.python.org/pypi/pysmvt/',
     classifiers=[
         'Development Status :: 4 - Beta',
