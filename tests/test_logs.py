@@ -15,7 +15,7 @@ log_base_dir = path.join(basedir, 'writeable', 'logs')
 class LogsBase(object):
     
     @classmethod
-    def setup_class(cls):        
+    def setup_class(cls):
         # have to clear the log files 
         # do this before the app is instantiated or else the files will have
         # write locks
@@ -35,7 +35,7 @@ class LogsBase(object):
             
 class TestLogs(LogsBase):
     
-    settings_name = 'Testruns'
+    settings_name = 'WithLogs'
     
     def last_line(self, fname):
         lines = self.lines(fname)
@@ -77,7 +77,7 @@ class TestLogs(LogsBase):
         
 class TestNoLogs(LogsBase):
     
-    settings_name = 'NoLogs'
+    settings_name = 'Testruns'
     
     def test_no_logs(self):
         log = logging.getLogger('test_application_no_log')

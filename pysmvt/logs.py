@@ -1,5 +1,6 @@
 from os import path
 import logging
+from pysmvt import settings
 from logging.handlers import RotatingFileHandler
 APPLICATION = 25
 
@@ -21,9 +22,12 @@ logging.addLevelName(APPLICATION, 'APPLICATION')
 def _create_handlers_from_settings(settings):
     """
         used internally to setup logging for the settings.logs
-    """
+    """    
     # clear any previously setup handlers
     clear_settings_handlers()
+    
+    if not settings.logs.enabled:
+        return
     
     # have to set the root logger lower than WARN (the default) or our
     # application logs will never be seen
@@ -61,17 +65,6 @@ def _create_handlers_from_settings(settings):
         app_handler.setFormatter(formatter)
         app_handler.addFilter(OnlyLevel25())
         logging.root.addHandler(app_handler)
-    
-    # add a null handler so that we don't get the "no handlers could be found"
-    # error message
-    if settings.logs.null_handler.enabled:
-        class NullHandler(logging.Handler):
-            
-            _from_pysmvt_settings = True
-            
-            def emit(self, record):
-                pass
-        logging.root.addHandler(NullHandler())
 
 
 def clear_settings_handlers():
@@ -83,3 +76,14 @@ def clear_settings_handlers():
         else:
             new_handlers.append(h)
     logging.root.handlers = new_handlers
+    
+    # add a null handler so that we don't get the "no handlers could be found"
+    # error message
+    if settings.logs.null_handler.enabled:
+        class NullHandler(logging.Handler):
+            
+            _from_pysmvt_settings = True
+            
+            def emit(self, record):
+                pass
+        logging.root.addHandler(NullHandler())
