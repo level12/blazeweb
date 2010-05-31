@@ -54,8 +54,12 @@ class WSGIApplication(Application):
         if environ.has_key('paste.registry'):
             environ['paste.registry'].register(settings, self.settings)
             environ['paste.registry'].register(ag, self.ag)
-            environ['paste.registry'].register(session, environ['beaker.session'])
-            environ['paste.registry'].register(user, self.setup_user(environ))
+            if environ.has_key('beaker.session'):
+                environ['paste.registry'].register(session, environ['beaker.session'])
+                environ['paste.registry'].register(user, self.setup_user(environ))
+            else:
+                environ['paste.registry'].register(session, None)
+                environ['paste.registry'].register(user, None)
             environ['paste.registry'].register(rg, Context())
 
     def __call__(self, environ, start_response):
@@ -66,7 +70,6 @@ class WSGIApplication(Application):
         self.controller = Controller(self.settings)
     
     def setup_user(self, environ):
-
         try:
             return environ['beaker.session']['__pysmvt_user']
         except KeyError, e:

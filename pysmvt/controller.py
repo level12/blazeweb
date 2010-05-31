@@ -59,7 +59,8 @@ class Controller(object):
         
     def _wsgi_request_cleanup(self):
         # save the user session
-        session.save()
+        if session:
+            session.save()
     
     def _response_cleanup(self):
         # if we do a forward, this would still be set, so we need to
@@ -109,13 +110,15 @@ class Controller(object):
                 log.error('error docs: encountered non-200 status code response '
                         '(%d) when trying to handle with %s' % (get_status_code(new_response), handling_endpoint))
         if isinstance(response, HTTPException) and not isinstance(response, (Redirect, ExceptionToClient)):
-            messages = user.get_messages()
-            if messages:
-                msg_html = ['<h2>Error Details:</h2><ul>']
-                for msg in messages:
-                    msg_html.append('<li>(%s) %s</li>' % (msg.severity, msg.text))
-                msg_html.append('</ul>')
-                response.description = str(response.description) + '\n'.join(msg_html)
+            if user:
+                """ if the app is not using beaker sessions, its possible the user object doesn't exist"""
+                messages = user.get_messages()
+                if messages:
+                    msg_html = ['<h2>Error Details:</h2><ul>']
+                    for msg in messages:
+                        msg_html.append('<li>(%s) %s</li>' % (msg.severity, msg.text))
+                    msg_html.append('</ul>')
+                    response.description = str(response.description) + '\n'.join(msg_html)
         return response
     
     def _exception_handling(self, called_from, environ = None, endpoint=None, args = {}):
@@ -172,16 +175,17 @@ class Controller(object):
             try: 
                 # call the view
                 endpoint, args = rg.forward_queue[-1]
-                response = _getview(endpoint, args, called_from)
-                return response
+                return self._execute_view(endpoint, args, called_from)
             except ForwardException:
                 called_from = 'forward'
             finally:
                 self._response_cleanup()
 
+    def _execute_view(self, endpoint, args, called_from):
+        return _getview(endpoint, args, called_from)
+
     def __call__(self, environ, start_response):
         """Just forward a WSGI call to the first internal middleware."""
         return self.dispatch_request(environ, start_response)
 
-    
 
