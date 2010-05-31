@@ -7,3 +7,4 @@
 [^/]+-stats\.txt$
 /writeable/tmp/.*
 
+glob:*/writeable/logs/*.log
