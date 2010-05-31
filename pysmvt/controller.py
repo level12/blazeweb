@@ -173,8 +173,6 @@ class Controller(object):
                 # call the view
                 endpoint, args = rg.forward_queue[-1]
                 response = _getview(endpoint, args, called_from)
-                if not isinstance(response, Response):
-                    raise ProgrammingError('view %s did not return a response object' % endpoint)
                 return response
             except ForwardException:
                 called_from = 'forward'
