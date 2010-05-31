@@ -1,7 +1,7 @@
-from helpers import create_testapp, asview, create_altstack_app
+from helpers import create_testapp, asview, create_altstack_app, AsViewHelper
 from webtest import TestApp
 
-from pysmvt import session, user
+from pysmvt import session, user, forward
 
 wsgiapp = None
 ta = None
@@ -44,6 +44,19 @@ class TestAltStack(object):
             
         r = self.ta.get('/nosession')
         r.mustcontain('hello nosession!')
+    
+    def test_forward(self):
+        @asview
+        def page1():
+            forward(AsViewHelper, {'funckey': 'page2'})
+            return 'hello nosession!'
+
+        @asview
+        def page2():
+            return 'page2!'
+            
+        r = self.ta.get('/page1')
+        r.mustcontain('page2!')
 
 class TestAltStackWithSession(object):
     

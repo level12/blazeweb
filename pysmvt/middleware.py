@@ -2,10 +2,15 @@ from os import path
 import time
 from tempfile import TemporaryFile
 from StringIO import StringIO
-from werkzeug import EnvironHeaders, LimitedStream
+
+from beaker.middleware import SessionMiddleware
+from paste.registry import RegistryManager
+from werkzeug import EnvironHeaders, LimitedStream, \
+    SharedDataMiddleware, DebuggedApplication
+
 from pysutils import randchars, pformat, tolist
 from pysutils.datastructures import BlankObject
-from pysmvt import ag, session, user, settings, rg
+from pysmvt import ag, session, user, settings, rg, config
 from pysmvt.utils.filesystem import mkdirs
 from pysmvt.users import User
 
@@ -71,12 +76,11 @@ class HttpRequestLogger(object):
         environ['wsgi.input'] = wsgi_input
         return environ['wsgi.input']
 
-class RequestManager(object):
-    
-    def __init__(self, application, ag, settings):
-        self.application = application
+class RequestPrep(object):
+    def __init__(self, app, ag, config_settings):
+        self.application = app
         self.ag = ag
-        self.settings = settings
+        self.settings = config_settings
     
     def __call__(self, environ, start_response):
         environ['pysmvt.middleware.RequestManager'] = True
@@ -107,3 +111,63 @@ class RequestManager(object):
                 raise
             environ['beaker.session']['__pysmvt_user'] = User()
             return environ['beaker.session']['__pysmvt_user']
+
+class ErrorDocumentsHandler(object):
+    def __init__(self, app):
+        self.application = app
+        
+    def __call__(self, environ, start_response):
+        return self.application(environ, start_response)
+
+class ExceptionHandler(object):
+    def __init__(self, app):
+        self.application = app
+        
+    def __call__(self, environ, start_response):
+        return self.application(environ, start_response)
+
+class ResponseCycleHandler(object):
+    def __init__(self, app):
+        self.application = app
+        
+    def __call__(self, environ, start_response):
+        return self.application(environ, start_response)
+
+def middleware_manager(app, ag, config_settings):
+    
+    app = ResponseCycleHandler(app)
+    
+    # serve static files from main app and supporting apps (need to reverse order b/c
+    # middleware stack is run in bottom up order).  This works b/c if a
+    # static file isn't found, the ShardDataMiddleware just forwards the request
+    # to the next app.
+    if config_settings.static_files.enabled:
+        for appname in config.appslist(reverse=True):
+            app_py_mod = __import__(appname)
+            fs_static_path = path.join(path.dirname(app_py_mod.__file__), 'static')
+            static_map = {routing.add_prefix('/') : fs_static_path}
+            app = SharedDataMiddleware(app, static_map)
+    
+    if config_settings.exception_handling:
+        app = ExceptionHandler(app)
+    
+    # assign request global objects, session/user, and routing
+    app = RequestPrep(app, ag, config_settings)
+    
+    # beaker sessions
+    if config_settings.beaker.enabled:
+        app = SessionMiddleware(app, **dict(config_settings.beaker))
+        
+    # paste.registry for global object initilization
+    app = RegistryManager(app)
+    
+    if config_settings.logs.http_requests.enabled:
+        app = HttpRequestLogger(app, True,
+                config_settings.logs.http_requests.filters.path_info,
+                config_settings.logs.http_requests.filters.request_method)
+    
+    # show nice stack traces and debug output if enabled
+    if settings.debugger.enabled:
+        app = DebuggedApplication(app, evalex=settings.debugger.interactive)
+
+    return app

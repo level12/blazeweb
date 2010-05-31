@@ -4,7 +4,7 @@ from werkzeug.routing import Rule
 from pysmvt.application import WSGIApplication
 from pysmvt.config import DefaultSettings, appinit
 from pysmvt.controller import Controller
-from pysmvt.middleware import RequestManager
+from pysmvt.middleware import middleware_manager
 from pysmvt.view import RespondingViewBase
 
 class TestSettings(DefaultSettings):
@@ -18,8 +18,9 @@ class TestSettings(DefaultSettings):
             Rule('/<funckey>', endpoint=AsViewHelper)
         ])
         # disable so they don't interfere with testing
-        #self.exceptions.hide = False
-        #self.debugger.enabled = False
+        self.exception_handling = False
+        self.debugger.enabled = False
+        self.static_files.enabled = False
 
 class TestController(Controller):
     def _execute_view(self, endpoint, args, called_from):
@@ -48,14 +49,10 @@ def asview(f):
 def create_altstack_app(use_session=False):
     class AltApp(TestWsgiApplication):
         def __call__(self, environ, start_response):
-            resp = self.controller(environ, start_response)
-            if 'beaker.session' in environ:
-                environ['beaker.session'].save()
-            return resp
+            return self.controller(environ, start_response)
     appinit(settings_cls=TestSettings)
     app = AltApp()
-    app = RequestManager(app, app.ag, app.settings)
-    if use_session:
-        app = SessionMiddleware(app, **dict(app.settings.beaker))
-    app = RegistryManager(app)
+    if not use_session:
+        app.settings.beaker.enabled=False
+    app = middleware_manager(app, app.ag, app.settings)
     return app
