@@ -94,6 +94,7 @@ setup(
         "WebHelpers>=1.0rc1",
         "Werkzeug>=0.6"
     ],
+    tests_require=['webtest'],
     entry_points="""
     [console_scripts]
     pysmvt = pysmvt.script:main
