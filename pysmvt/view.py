@@ -4,7 +4,7 @@ from traceback import format_exc
 import logging
 from pysmvt import settings, user, ag, _getview, rg, appimportauto
 from pysmvt.utils import reindent, auth_error, bad_request_error, \
-    fatal_error, urlslug, markdown
+    urlslug, markdown
 from pysmvt.utils.html import strip_tags
 from pysmvt.templates import JinjaHtmlBase, JinjaBase
 from pysmvt.exceptions import ActionError, UserError, ProgrammingError, \
@@ -18,14 +18,6 @@ from pprint import PrettyPrinter
 from pysutils import NotGiven, moneyfmt, safe_strftime
 
 log = logging.getLogger(__name__)
-
-# @@todo: this is a **really** bad way to do this
-try: 
-    appimportauto('utils', 'fatal_error')
-except ImportError, e:
-    if 'cannot import "utils" with attribute "fatal_error"' not in str(e):
-        raise
-    from pysmvt.utils import fatal_error
 
 class ViewBase(object):
     """
