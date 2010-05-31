@@ -128,17 +128,19 @@ class Controller(object):
             log.debug('exception handling caught HTTPException "%s", sending as response' % e.__class__.__name__)
             response = e
         except Exception, e:
-            if settings.exceptions.log:
+            if not settings.exception_handling:
+                raise
+            if 'log' in settings.exception_handling:
                 log.error('exception encountered: %s' % exception_info())
-            if settings.exceptions.email:
+            if 'email' in settings.exception_handling:
                 try:
                     mail_programmers('exception encountered', exception_info())
                 except Exception, e:
                     log.exception('exception when trying to email exception')
-            if settings.exceptions.to_client:
+            if 'html' in settings.exception_handling:
                 response = ExceptionToClient()
                 response.description = '<pre>%s</pre>' % escape(exception_info())
-            elif settings.exceptions.hide:
+            elif 'hide' in settings.exception_handling:
                 # turn the exception into a 500 server response
                 response = InternalServerError()
             else:

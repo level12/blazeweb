@@ -42,7 +42,7 @@ class Testruns(DefaultSettings):
         # the error docs handler if setup for 500 errors
         #
         #  *** SET TO True FOR PRODUCTION ENVIRONMENTS ***
-        self.exceptions.hide = False
+        self.exception_handling = False
         # if true, an email will be sent using mail_programmers() whenever
         # an exception is encountered
         self.exceptions.email = False

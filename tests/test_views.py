@@ -77,7 +77,7 @@ class TestViews(unittest.TestCase):
             self.fail('should have gotten an exception b/c view does not have action method')
     
     def test_hideexception(self):
-        settings.exceptions.hide = True
+        settings.exception_handling = ['hide']
         r = self.client.get('tests/noactionmethod')
         self.assertEqual(r.status, '500 INTERNAL SERVER ERROR')
         
@@ -201,7 +201,7 @@ class TestViews(unittest.TestCase):
         # non-200 response since the exception created by tests:BadForward
         # should have been turned into a 500 response, which the error docs
         # handler won't accept
-        settings.exceptions.hide = True
+        settings.exception_handling = ['hide']
         r = self.client.get('tests/heraise')
         
         self.assertEqual(r.status_code, 503)

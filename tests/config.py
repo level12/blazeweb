@@ -19,12 +19,7 @@ class Testruns(DefaultSettings):
         #######################################################################
         # EXCEPTION HANDLING
         #######################################################################
-        # if True, most exceptions will be caught and
-        # turned into a 500 response, which will optionally be handled by
-        # the error docs handler if setup for 500 errors
-        #
-        #  *** SET TO True FOR PRODUCTION ENVIRONMENTS ***
-        self.exceptions.hide = False
+        self.exception_handling = False
         
         #######################################################################
         # DEBUGGING

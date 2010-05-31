@@ -112,6 +112,7 @@ class DefaultSettings(QuickSettings):
         #######################################################################
         #beaker session options
         #http://beaker.groovie.org/configuration.html
+        self.beaker.enabled = True
         self.beaker.type = 'dbm'
         self.beaker.data_dir = path.join(self.dirs.tmp, 'session_cache')
         self.beaker.lock_dir = path.join(self.dirs.tmp, 'beaker_locks')
@@ -131,22 +132,18 @@ class DefaultSettings(QuickSettings):
         #######################################################################
         # EXCEPTION HANDLING
         #######################################################################
-        # if True, most exceptions will be caught and
-        # turned into a 500 response, which will optionally be handled by
-        # the error docs handler if setup for 500 errors
-        #
-        #  *** SET TO True FOR PRODUCTION ENVIRONMENTS ***
-        # will format the exception and environment and return as HTML
-        # to a client.  This raises a special 500 response that is not handled
-        # by the error docs handler!
-        self.exceptions.to_client = False
-        # will cause generic 500 respose to be returned, overriden by to_client
-        self.exceptions.hide = False
-        # if true, an email will be sent using mail_programmers() whenever
-        # an exception is encountered
-        self.exceptions.email = False
-        # if True, will send exception details to log.info()
-        self.exceptions.log = True
+        # list of options:
+        #   - hide: will cause generic 500 respose to be returned, which can
+        #       can then be handled with error documents
+        #   - html: will format the exception and environment and return
+        #       as HTML, takes precedence over hide.  Not usually needed b/c
+        #       the debugger is better for development
+        #   - email: an email will be sent using mail_programmers() whenever
+        #       an exception is encountered
+        #   - log: a log will be entered using log.exception()
+        # example of all:
+        #   self.exception_handling = ['log', 'hide', 'html', 'email']
+        self.exception_handling = ['log', 'hide', 'email']
         
         #######################################################################
         # DEBUGGING
@@ -264,10 +261,14 @@ class DefaultSettings(QuickSettings):
         # log http requests.  You must put HttpRequestLogger middleware
         # in your WSGI stack, preferrably as the last application so that its
         # the first middleware in the stack
-        ## Won't work until we get registrations moved up the WSGI stack
-        #self.logs.http_requests.enabled = False
-        #self.logs.http_requests.filters.path_info = None
-        #self.logs.http_requests.filters.request_method = None
+        self.logs.http_requests.enabled = False
+        self.logs.http_requests.filters.path_info = None
+        self.logs.http_requests.filters.request_method = None
+        
+        #######################################################################
+        # Static Files
+        ######################################################################
+        self.static_files.enabled = True
         
 def appinit(settings_mod=None, profile=None, settings_cls=None):
     """
