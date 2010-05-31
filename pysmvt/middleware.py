@@ -4,8 +4,10 @@ from tempfile import TemporaryFile
 from StringIO import StringIO
 from werkzeug import EnvironHeaders, LimitedStream
 from pysutils import randchars, pformat, tolist
-from pysmvt import settings
+from pysutils.datastructures import BlankObject
+from pysmvt import ag, session, user, settings, rg
 from pysmvt.utils.filesystem import mkdirs
+from pysmvt.users import User
 
 class HttpRequestLogger(object):
     """
@@ -68,3 +70,40 @@ class HttpRequestLogger(object):
         wsgi_input.seek(0)
         environ['wsgi.input'] = wsgi_input
         return environ['wsgi.input']
+
+class RequestManager(object):
+    
+    def __init__(self, application, ag, settings):
+        self.application = application
+        self.ag = ag
+        self.settings = settings
+    
+    def __call__(self, environ, start_response):
+        environ['pysmvt.middleware.RequestManager'] = True
+        self.registry_setup(environ)
+        self.routing_setup(environ)
+        return self.application(environ, start_response)
+    
+    def registry_setup(self, environ):
+        if environ.has_key('paste.registry'):
+            environ['paste.registry'].register(settings, self.settings)
+            environ['paste.registry'].register(ag, self.ag)
+            if environ.has_key('beaker.session'):
+                environ['paste.registry'].register(session, environ['beaker.session'])
+                environ['paste.registry'].register(user, self.user_setup(environ))
+            else:
+                environ['paste.registry'].register(session, None)
+                environ['paste.registry'].register(user, None)
+            environ['paste.registry'].register(rg, BlankObject())
+    
+    def routing_setup(self, environ):
+        rg.urladapter = ag.route_map.bind_to_environ(environ)
+    
+    def user_setup(self, environ):
+        try:
+            return environ['beaker.session'].setdefault('__pysmvt_user', User())
+        except KeyError, e:
+            if '__pysmvt_user' not in str(e):
+                raise
+            environ['beaker.session']['__pysmvt_user'] = User()
+            return environ['beaker.session']['__pysmvt_user']

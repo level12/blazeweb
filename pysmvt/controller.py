@@ -33,15 +33,13 @@ class Controller(object):
         
         self._wsgi_request_setup(environ)
 
-        try:
-            if rg.request.path == '/[[__handle_callable__]]':
-                response = self._handle_callable()
-            else:
-                response = self._error_documents_handler(environ)
-            self._wsgi_request_cleanup()
-            return response(environ, start_response)
-        finally:
-            pass
+        if rg.request.path == '/[[__handle_callable__]]':
+            wsgiapp = self._handle_callable()
+        else:
+            wsgiapp = self._error_documents_handler(environ)
+        if 'beaker.session' in environ:
+            environ['beaker.session'].save()
+        return wsgiapp(environ, start_response)
 
     def _handle_callable(self):
         from pysmvt.view import HtmlPageViewBase
@@ -56,11 +54,6 @@ class Controller(object):
         rg.environ = environ
         # the request object binds itself to rg.request
         request = Request(environ)
-        
-    def _wsgi_request_cleanup(self):
-        # save the user session
-        if session:
-            session.save()
     
     def _response_cleanup(self):
         # if we do a forward, this would still be set, so we need to
@@ -154,18 +147,14 @@ class Controller(object):
     
     def _endpoint_args_from_env(self, environ):
         try:
-            # bind the route map to the current environment
-            urls = rg.urladapter = ag.route_map.bind_to_environ(environ)
-            
-            # initialize endpoint to avoid UnboundLocalError
-            endpoint = None
+            if not hasattr(rg, 'urladapter'):
+                rg.urladapter = ag.route_map.bind_to_environ(environ)
             
             # find the requested view based on the URL
-            return urls.match()
+            return rg.urladapter.match()
         
         except (NotFound, MethodNotAllowed, RequestRedirect):
-            if endpoint is None:
-                log.debug('URL (%s) generated HTTPException' % environ['PATH_INFO'])
+            log.debug('URL (%s) generated HTTPException' % environ['PATH_INFO'])
             raise
         
     def _inner_requests_wrapper(self, endpoint, args, called_from):

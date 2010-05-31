@@ -1,5 +1,7 @@
-from helpers import create_testapp, asview
+from helpers import create_testapp, asview, create_altstack_app
 from webtest import TestApp
+
+from pysmvt import session, user
 
 wsgiapp = None
 ta = None
@@ -18,3 +20,76 @@ def test_working_view():
     r = ta.get('/workingview')
     r.mustcontain('hello world!')
     
+class TestAltStack(object):
+    
+    @classmethod
+    def setup_class(cls):
+        cls.wsgiapp = create_altstack_app()
+        cls.ta = TestApp(cls.wsgiapp)
+    
+    def test_workingview(self):
+        @asview
+        def workingview():
+            return 'hello foo!'
+            
+        r = self.ta.get('/workingview')
+        r.mustcontain('hello foo!')
+    
+    def test_no_session(self):
+        @asview
+        def nosession():
+            assert not session
+            assert not user
+            return 'hello nosession!'
+            
+        r = self.ta.get('/nosession')
+        r.mustcontain('hello nosession!')
+
+class TestAltStackWithSession(object):
+    
+    @classmethod
+    def setup_class(cls):
+        cls.wsgiapp = create_altstack_app(use_session=True)
+        cls.ta = TestApp(cls.wsgiapp)
+    
+    def test_workingview(self):
+        @asview
+        def workingview():
+            return 'hello foo!'
+            
+        r = self.ta.get('/workingview')
+        r.mustcontain('hello foo!')
+    
+    def test_hassession(self):
+        @asview
+        def hassession():
+            assert session
+            assert user
+            return 'hello hassession!'
+            
+        r = self.ta.get('/hassession')
+        r.mustcontain('hello hassession!')
+    
+    def test_session_saves(self):
+        @asview
+        def session1():
+            session['session1'] = 'foo'
+            return ''
+
+        r = self.ta.get('/session1')
+        
+        @asview
+        def session2():
+            assert session['session1'] == 'foo'
+            return ''
+            
+        r = self.ta.get('/session2')
+        
+        @asview
+        def session3():
+            assert 'session1' not in session
+            return ''
+        
+        nta = TestApp(self.wsgiapp)
+        r = nta.get('/session3')
+        
