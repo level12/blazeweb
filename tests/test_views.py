@@ -77,7 +77,7 @@ class TestViews(unittest.TestCase):
             self.fail('should have gotten an exception b/c view does not have action method')
     
     def test_hideexception(self):
-        settings.exception_handling = ['hide']
+        settings.exception_handling = ['handle']
         r = self.client.get('tests/noactionmethod')
         self.assertEqual(r.status, '500 INTERNAL SERVER ERROR')
         
@@ -94,10 +94,9 @@ class TestViews(unittest.TestCase):
     def test_tworespondingviews(self):
         try:
             r = self.client.get('tests/tworespondingviews')
+            self.fail('should have gotten an exception b/c we initialized two responding views in the same request')
         except ProgrammingError, e:
             self.assertTrue( 'Responding view (tests:Rvb) intialized but one already exists' in str(e))
-        else:
-            self.fail('should have gotten an exception b/c we initialized two responding views in the same request')
         
     def test_forward(self):
         r = self.client.get('tests/doforward')
@@ -183,7 +182,7 @@ class TestViews(unittest.TestCase):
     def test_errordoc(self):
         settings.error_docs[503] = 'tests:Rvb'
         r = self.client.get('tests/heraise')
-        
+
         self.assertEqual(r.status_code, 503)
         self.assertEqual(r.status, '503 SERVICE UNAVAILABLE')
         self.assertEqual(r.data, 'Hello World!')
@@ -197,16 +196,13 @@ class TestViews(unittest.TestCase):
         else:
             self.fail('should have gotten an exception b/c we forwarded to a non-responding view')
         
-        # now turn exception handling on, and we should see the original
-        # non-200 response since the exception created by tests:BadForward
-        # should have been turned into a 500 response, which the error docs
-        # handler won't accept
-        settings.exception_handling = ['hide']
+        # now turn exception handling on and we should see a generic 500
+        # response since the document handler raised an exception
+        settings.exception_handling = ['handle']
         r = self.client.get('tests/heraise')
         
-        self.assertEqual(r.status_code, 503)
-        self.assertEqual(r.status, '503 SERVICE UNAVAILABLE')
-        assert 'server is temporarily unable' in r.data
+        self.assertEqual(r.status_code, 500)
+        assert 'Internal Server Error' in r.data
     
     def test_forwardloop(self):
         try:
@@ -262,14 +258,24 @@ class TestViews(unittest.TestCase):
         self.assertEqual(r.data, 'Hello World!')
 
     
-    def test_getargs3(self):        
+    def test_getargs3(self):
+        r = self.client.get('tests/getargs3?num=ten&num2=ten')
+        self.assertEqual(r.status_code, 400)
+        # we are no longer going to manipulate the response object to include
+        # user messages
+        self.assertTrue('(error) num: must be an integer' not in r.data)
+        self.assertTrue('(error) num: Please enter an integer value' not in r.data)
+        
+        #If you want user messages included in an error response
+        # you need to use an error document that will include them, like so:
+        settings.error_docs[400] = 'tests:UserMessages'
         r = self.client.get('tests/getargs3?num=ten&num2=ten')
         self.assertEqual(r.status_code, 400)
         self.assertTrue('(error) num: must be an integer' in r.data)
         self.assertTrue('(error) num: Please enter an integer value' in r.data)
 
     def test_reqgetargs(self):
-        
+        settings.error_docs[400] = 'tests:UserMessages'
         r = self.client.get('/tests/reqgetargs?num=10&num2=10')
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.data, 'Hello World, 10 10 10!')

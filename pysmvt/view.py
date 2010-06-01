@@ -4,7 +4,7 @@ from traceback import format_exc
 import logging
 from pysmvt import settings, user, ag, _getview, rg, appimportauto
 from pysmvt.utils import reindent, auth_error, bad_request_error, \
-    urlslug, markdown
+    urlslug, markdown, registry_has_object
 from pysmvt.utils.html import strip_tags
 from pysmvt.templates import JinjaHtmlBase, JinjaBase
 from pysmvt.exceptions import ActionError, UserError, ProgrammingError, \
@@ -64,12 +64,16 @@ class ViewBase(object):
                     getattr(self, call_details['method_name'])(**argsdict)
                 else:
                     getattr(self, call_details['method_name'])()
-        
-        if rg.request.is_xhr and hasattr(self, 'xhr'):
+
+        has_request = False
+        if registry_has_object(rg) and hasattr(rg, 'request'):
+            has_request = True
+            
+        if has_request and rg.request.is_xhr and hasattr(self, 'xhr'):
             retval = self.xhr(**argsdict)
-        elif rg.request.method == 'GET' and hasattr(self, 'get'):
+        elif has_request and rg.request.method == 'GET' and hasattr(self, 'get'):
             retval = self.get(**argsdict)
-        elif rg.request.method == 'POST' and hasattr(self, 'post'):
+        elif has_request and rg.request.method == 'POST' and hasattr(self, 'post'):
             retval = self.post(**argsdict)
         else:
             try:
@@ -161,10 +165,10 @@ class ViewBase(object):
 class RespondingViewBase(ViewBase):
     def __init__(self, modulePath, endpoint, args):
         ViewBase.__init__(self, modulePath, endpoint, args)
-        if hasattr(rg, 'respview'):
+        if rg.respctx.respview:
             raise ProgrammingError('Responding view (%s) intialized but one already exists (%s).  '
-                                      'Only one responding view is allowed per request.' % (endpoint, rg.respview._endpoint))
-        rg.respview = self
+                                      'Only one responding view is allowed per request.' % (endpoint, rg.respctx.respview._endpoint))
+        rg.respctx.respview = self
         self._init_response()
         
     def _init_response(self):
@@ -184,14 +188,12 @@ class AjaxRespondingView(RespondingViewBase):
 class HtmlPageViewBase(RespondingViewBase):
     def __init__(self, modulePath, endpoint, args):
         RespondingViewBase.__init__(self, modulePath, endpoint, args)
-        self.css = []
-        self.js = []
         
     def add_css(self, css):
-        self.css.append(css)
+        rg.respctx.css.append(css)
     
     def add_js(self, js):
-        self.js.append(js)
+        rg.respctx.css.append(js)
 
 class SnippetViewBase(ViewBase):
     def handle_response(self):
@@ -240,23 +242,21 @@ class TemplateMixin(object):
         if filename == None:
             filename = self.template_name + '.css'
         contents, filepath, reloadfunc = self.template.templateEnv.loader.get_source(self.template.templateEnv, filename)
-        rg.respview.add_css(contents)    
+        rg.respctx.css.append(contents)    
         return ''
     
     def include_js(self, filename=None):
         if filename == None:
             filename = self.template_name + '.js'
         contents, filepath, reloadfunc = self.template.templateEnv.loader.get_source(self.template.templateEnv, filename)
-        rg.respview.add_js(contents)
+        rg.respctx.js.append(contents)
         return ''
     
     def page_css(self, indent=8):
-        #print rg.respview.css
-        return reindent(''.join(rg.respview.css), indent).lstrip()
+        return reindent(''.join(rg.respctx.css), indent).lstrip()
     
     def page_js(self, indent=8):
-        #print rg.respview.css
-        return reindent(''.join(rg.respview.js), indent).lstrip()
+        return reindent(''.join(rg.respctx.js), indent).lstrip()
     
     def process_view(self, view, **kwargs):
         return _getview(view, kwargs, 'template')

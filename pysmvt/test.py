@@ -40,7 +40,7 @@
         
         testapp = ag._wsgi_test_app
         
-    `testapp` could now be used in the pysmvt.utils.wrapinapp() decorator.
+    `testapp` could now be used w/ werkzeug.Client or webtest.TestApp
     
     The default profile used with this plugin is 'Test'.  If you need to
     specifiy a different profile, do:
@@ -76,13 +76,18 @@
 
 import os
 import logging
+
+from decorator import decorator
 import nose.plugins
 from nose.tools import make_decorator
-from pysmvt import ag, settings
+from pysmvt import ag, settings, rg
 from pysmvt.script import _app_name
 from pysmvt.utils import import_app_str
+from pysmvt.wrappers import Request
 from pysutils import tolist
-from werkzeug import Client as WClient, BaseRequest, BaseResponse, cached_property
+from pysutils.datastructures import BlankObject
+from werkzeug import Client as WClient, BaseRequest, BaseResponse, \
+    cached_property, create_environ
 from webhelpers.html import tools
 
 try:
@@ -111,8 +116,7 @@ class InitCurrentAppPlugin(nose.plugins.Plugin):
                         )
         
         parser.add_option("--pysmvt-app-name",
-                          dest=self.opt_app_profile, type="string",
-                          default="Test",
+                          dest=self.opt_app_name, type="string",
                           help="The name of the application's package, defaults"
                           " to top package of current working directory"
                         )
@@ -129,7 +133,7 @@ class InitCurrentAppPlugin(nose.plugins.Plugin):
         if not self.val_disable:
             if hasattr(options, self.opt_app_profile):
                 self.val_app_profile = getattr(options, self.opt_app_profile)
-            if hasattr(options, self.opt_app_name):
+            if hasattr(options, self.opt_app_name) and getattr(options, self.opt_app_name):
                 self.val_app_name = getattr(options, self.opt_app_name)
             else:
                 try:
@@ -139,7 +143,7 @@ class InitCurrentAppPlugin(nose.plugins.Plugin):
                         raise
                 if not self.val_app_name:
                     self.val_disable = True
-        
+
         if not self.val_disable:
             apps_pymod = __import__('%s.applications' % self.val_app_name, globals(), locals(), [''])
             ag._wsgi_test_app = apps_pymod.make_wsgi(self.val_app_profile)
@@ -312,3 +316,25 @@ else:
     def TestApp(object):
         def __init__(self, *args, **kwargs):
             raise ImportError('You must have WebTest installed to use TestApp')
+
+@decorator
+def inrequest(f, *args, **kwargs):
+    """
+        This sets up rg and rg.respctx before calling the decorated function.
+        Primarily used when you have to test something that depends on those
+        objects being present.  It does not currently setup a Request or
+        environ.
+    """
+    rg._push_object(BlankObject())
+    Request(create_environ('/[[@inrequest]]'))
+    rg.respctx = BlankObject(**{
+        'respview': None,
+        'error_doc_code': None,
+        'css': [],
+        'js': [],
+    })
+    try:
+        return f(*args, **kwargs)
+    finally:
+        rg._pop_object()
+    

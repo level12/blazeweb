@@ -20,7 +20,7 @@ __all__ = [
     'modimportauto',
     'appimportauto',
     'db',
-    'appfilepath'
+    'appfilepath',
 ]
 
 # a "global" object for storing data and objects (like tcp connections or db
@@ -245,10 +245,7 @@ def redirect(location, permanent=False, code=302 ):
     raise Redirect(location, code)
 
 def forward(endpoint, args = {}):
-    if len(rg.forward_queue) == 10:
-        raise ProgrammingError('forward loop detected: %s' % '->'.join([g[0] for g in rg.forward_queue]))
-    rg.forward_queue.append((endpoint, args))
-    raise ForwardException
+    raise ForwardException(endpoint, args)
 
 def getview(endpoint, **kwargs):
     return _getview(endpoint, kwargs, 'getview')

@@ -10,7 +10,7 @@ class SetFoo(RespondingViewBase):
         if existing:
             raise Exception('user attribute "foo" existed')
         user.set_attr('foo', 'bar')
-        session['user'].set_attr('bar', 'baz')
+        user.set_attr('bar', 'baz')
         return 'foo set'
 
 class GetFoo(RespondingViewBase):

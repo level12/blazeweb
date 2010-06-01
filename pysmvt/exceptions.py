@@ -33,7 +33,10 @@ class Abort(HTTPException):
         HTTPException.__init__(self)
 
 class ForwardException(Exception):
-    pass
+    def __init__(self, endpoint, args):
+        Exception.__init__(self)
+        self.forward_endpoint = endpoint
+        self.forward_args = args
 
 class ActionError(Exception):
     def __init__(self, type, description = ''):

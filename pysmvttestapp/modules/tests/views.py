@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from pysmvt import getview, redirect, forward
+from pysmvt import getview, redirect, forward, rg
 from pysmvt.view import RespondingViewBase, SnippetViewBase, TextTemplatePage, \
     TextTemplateSnippet, HtmlTemplateSnippet, HtmlTemplatePage, HtmlPageViewBase
 from werkzeug.exceptions import ServiceUnavailable
@@ -9,6 +9,10 @@ from formencode.validators import UnicodeString, Int
 class Rvb(RespondingViewBase):
     
     def default(self):
+        # this view is used as a error doc handler, so we need to set the
+        # status code appropriately
+        if rg.respctx.error_doc_code:
+            self.response.status_code = rg.respctx.error_doc_code
         self.retval = 'Hello World!'
 
 class HwSnippet(SnippetViewBase):
@@ -219,3 +223,9 @@ class HtmlSnippetWithCss(HtmlTemplateSnippet):
 class HtmlSnippetWithCssParent(HtmlPageViewBase):
     def default(self):
         self.retval = getview('tests:HtmlSnippetWithCss')
+
+class UserMessages(HtmlTemplatePage):
+    def default(self):
+        if rg.respctx.error_doc_code:
+            self.response.status_code = rg.respctx.error_doc_code
+        pass

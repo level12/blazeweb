@@ -49,6 +49,7 @@ class Settings(QuickSettings):
             Rule('/tests/modlevelpriority', endpoint='tests:ModLevelPriority'),
             Rule('/tests/htmltemplatefileargcss', endpoint='tests:HtmlTemplateFileArgCss'),
             Rule('/tests/htmlsnippetwithcss', endpoint='tests:HtmlSnippetWithCssParent'),
+            Rule('/tests/usermessages', endpoint='tests:UserMessages'),
         ])
         
         self.foo = 'baz'

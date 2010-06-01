@@ -19,6 +19,19 @@ def test_working_view():
         
     r = ta.get('/workingview')
     r.mustcontain('hello world!')
+
+def test_forward():
+    @asview
+    def page1():
+        forward(AsViewHelper, {'funckey': 'page2'})
+        return 'hello nosession!'
+
+    @asview
+    def page2():
+        return 'page2!'
+        
+    r = ta.get('/page1')
+    r.mustcontain('page2!')
     
 class TestAltStack(object):
     
@@ -105,4 +118,3 @@ class TestAltStackWithSession(object):
         
         nta = TestApp(self.wsgiapp)
         r = nta.get('/session3')
-        

@@ -1,10 +1,7 @@
 from StringIO import StringIO
 from pysmvt import rg
 from pysmvt.wrappers import Request
-from pysmvt.utils import wrapinapp
-from pysmvttestapp.applications import make_wsgi
-
-app = make_wsgi('Testruns')
+from pysmvt.test import inrequest
 
 class TestRequest(object):
 
@@ -20,10 +17,10 @@ class TestRequest(object):
         assert req.args['val2'] == u'2'
         req.args['new'] = 1
 
-    @wrapinapp(app)
+    @inrequest
     def test_replace_http_args(self):
         req = rg.request
-        assert req.path == '/[[__handle_callable__]]', rg.request.path
+        assert req.path == '/[[@inrequest]]', rg.request.path
         assert len(req.args) == 0
         assert len(req.form) == 0
         assert len(req.files) == 0
@@ -33,7 +30,7 @@ class TestRequest(object):
         },
         path='/foo?val1=1&val2=2')
         assert rg.request is req
-        assert req.path == '/[[__handle_callable__]]', rg.request.path
+        assert req.path == '/[[@inrequest]]', rg.request.path
         assert len(req.args) == 2
         assert req.args['val1'] == u'1'
         assert req.args['val2'] == u'2'
@@ -46,7 +43,7 @@ class TestRequest(object):
         req = Request.from_values({'foo':'bar'})
         assert req.form['foo'] == 'bar'
 
-    @wrapinapp(app)
+    @inrequest
     def test_from_values_inside_context(self):
         """
             creating a request should not affect rg.request by default
@@ -55,8 +52,7 @@ class TestRequest(object):
         sec_req = Request.from_values({'foo':'bar'})
         assert rg.request is first_req
 
-
-    @wrapinapp(app)
+    @inrequest
     def test_from_values_inside_context_with_new_bind(self):
         """
             creating a request can affect rg.request

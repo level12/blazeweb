@@ -1,0 +1,3 @@
+<% for msg in sesuser.get_messages() %>
+    (<{msg.severity}>) <{msg.text}>
+<% endfor %>
