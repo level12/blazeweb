@@ -60,7 +60,8 @@ except ImportError:
     use_setuptools()
     from setuptools import setup, find_packages
 
-version = '0.2.3'
+import pysmvt
+version = pysmvt.VERSION
 
 setup(
     name = "pysmvt",
@@ -76,7 +77,7 @@ setup(
         'License :: OSI Approved :: BSD License',
       ],
     license='BSD',
-    packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
+    packages=find_packages(exclude=['ez_setup']),
     include_package_data=True,
     install_requires = [
         "Beaker>=1.5",
