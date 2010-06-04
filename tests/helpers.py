@@ -1,3 +1,5 @@
+from os import path
+
 from beaker.middleware import SessionMiddleware
 from paste.registry import RegistryManager
 from werkzeug.routing import Rule
@@ -6,12 +8,14 @@ from pysmvt import settings
 from pysmvt.config import DefaultSettings, appinit
 from pysmvt.view import RespondingViewBase
 
+basedir = path.dirname(path.abspath(__file__))
+
 class TestSettings(DefaultSettings):
     def __init__(self):
         # note that we don't really have a physical location for this "app",
         # so it should not be used for any kind of testing which uses file 
         # system locations
-        DefaultSettings.__init__(self, 'testapp', '')
+        DefaultSettings.__init__(self, 'testapp', basedir)
 
         self.routing.routes.extend([
             Rule('/<funckey>', endpoint=AsViewHelper)

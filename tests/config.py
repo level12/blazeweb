@@ -5,7 +5,7 @@ from pysmvt.config import DefaultSettings, appinit
 from pysmvt import settings
 
 from pysutils import prependsitedir
-prependsitedir(__file__, 'applications')
+prependsitedir(__file__, 'apps')
 
 basedir = path.dirname(path.abspath(__file__))
 
@@ -13,8 +13,6 @@ class Testruns(DefaultSettings):
     def __init__(self):
         # call parent init to setup default settings
         DefaultSettings.__init__(self, 'pysmvttestapp', basedir)
-        
-        self.db.uri = 'sqlite:///'
         
         #######################################################################
         # EXCEPTION HANDLING
