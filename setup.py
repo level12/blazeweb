@@ -95,10 +95,18 @@ setup(
         "WebHelpers>=1.0rc1",
         "Werkzeug>=0.6"
     ],
-    tests_require=['webtest'],
+    tests_require=['webtest', 'scripttest'],
     entry_points="""
     [console_scripts]
-    pysmvt = pysmvt.script:main
+    pysmvt = pysmvt.scripting:pysmvt_entry
+    
+    [pysmvt.no_app_command]
+    help=paste.script.help:HelpCommand
+    project = pysmvt.commands:ProjectCommand
+    
+    [pysmvt.app_command]
+    serve = pysmvt.commands:ServeCommand
+    help=paste.script.help:HelpCommand
     
     [pysmvt.pysmvt_project_template]
     pysmvt = pysmvt.paster_tpl:ProjectTemplate

@@ -4,10 +4,13 @@ from pysmvt import settings
 
 # make sure the path gets appended so we can import by name
 import config
+
+# application imports
+from minimal2.application import make_wsgi
 from minimal1.application import wsgiapp, settings
 settings.apply_test_settings()
 
-class TestViews(object):
+class TestMinimal1(object):
     
     @classmethod
     def setup_class(cls):
@@ -66,4 +69,13 @@ class TestViews(object):
     def test_return_wsgiapp(self):
         r = self.ta.get('/returnwsgiapp')
         r.mustcontain('wsgi hw')
-        
+
+class TestMinimal2(object):
+    
+    @classmethod
+    def setup_class(cls):
+        cls.ta = TestApp(make_wsgi())
+    
+    def test_workingview(self):           
+        r = self.ta.get('/')
+        r.mustcontain('index')

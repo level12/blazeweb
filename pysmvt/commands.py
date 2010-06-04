@@ -113,3 +113,117 @@ def action_tasks(tasks_to_run='', test_only=('t', False)):
     """ run task(s) (csv for multiple)"""
     tasks = tasks_to_run.split(',')
     run_tasks(tasks, test_only=test_only)
+
+import paste.script.command as pscmd
+
+class ServeCommand(pscmd.Command):
+        # Parser configuration
+        summary = "Serve the application by starting a development http server"
+        usage = ""
+        
+        parser = pscmd.Command.standard_parser(verbose=False)
+        parser.add_option('-a', '--address',
+                        dest='address',
+                        default='localhost',
+                        help="IP address or hostname to serve from")
+        parser.add_option('-P', '--port',
+                        dest='port',
+                        default=5000,
+                        type='int')
+        parser.add_option('--no-reloader',
+                      dest='reloader',
+                      action='store_false',
+                      default=True,)
+        parser.add_option('--with-debugger',
+                      dest='debugger',
+                      action='store_true',
+                      default=False,)
+        parser.add_option('--with-evalex',
+                      dest='evalex',
+                      action='store_true',
+                      default=False,)
+        parser.add_option('--with-threaded',
+                      dest='threaded',
+                      action='store_true',
+                      default=False,)
+        parser.add_option('--processes',
+                        dest='processes',
+                        default=1,
+                        type='int',
+                        help='number of processes to use')
+        parser.add_option('--reloader-interval',
+                        dest='reloader_interval',
+                        default=1,
+                        type='int',)
+        parser.add_option('--pass-through-errors',
+                      dest='pass_through_errors',
+                      action='store_true',
+                      default=False,)
+
+        def command(self):
+            if settings.logs.enabled:
+                # our logging conflicts with werkzeug's, see issue #13
+                # this is to give some visual feedback that the server did in fact start
+                print ' * Serving on http://%s:%s/' % (self.options.address, self.options.port)
+            run_simple(
+                self.options.address,
+                self.options.port,
+                self.wsgiapp,
+                use_reloader = self.options.reloader,
+                use_debugger = self.options.debugger,
+                use_evalex = self.options.evalex,
+                extra_files = None,
+                reloader_interval = self.options.reloader_interval,
+                threaded = self.options.threaded,
+                processes = self.options.processes,
+                passthrough_errors = self.options.pass_through_errors,
+            )
+
+def action_serve(hostname=('h', 'localhost'), port=('p', 5000),
+               reloader=True, debugger=False, evalex=False, 
+               threaded=False, processes=1):
+    """ serve the application by starting a development http server """
+    run_simple(hostname, port, make_wsgi(profile), reloader, debugger, evalex,
+               None, 1, threaded, processes)
+
+class ProjectCommand(pscmd.Command):
+
+    summary = "Create a project layout using a pre-defined template"
+    usage = "APP_NAME"
+    group_name = ""
+    
+    min_args = 1
+    max_args = 1
+    
+    parser = pscmd.Command.standard_parser(verbose=False)
+    parser.add_option('-t', '--template',
+                        dest='template',
+                        default='pysmvt',
+                        help="The pre-defined template to use")
+    parser.add_option('--no-interactive',
+                      dest='interactive',
+                      action='store_false',
+                      default=True,)
+    parser.add_option('--verbose',
+                      dest='verbose',
+                      action='store_true',
+                      default=False)
+    parser.add_option('--no-overwrite',
+                      dest='overwrite',
+                      action='store_false',
+                      default=True)
+    def command(self):
+        projname = self.args[0]
+        output_dir = path.join(os.getcwd(), '%s-dist' % projname)
+        vars = {'project': projname,
+                'package': projname,
+                }
+        run_template(
+            self.options.interactive,
+            self.options.verbose,
+            self.options.overwrite,
+            vars,
+            output_dir,
+            self.options.template,
+            'pysmvt_project_template'
+        )
