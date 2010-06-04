@@ -3,19 +3,19 @@ from os import path
 from beaker.middleware import SessionMiddleware
 from paste.registry import RegistryManager
 from werkzeug.routing import Rule
-from pysmvt.application import full_wsgi_stack, minimal_wsgi_stack, WSGIApplication
+from pysmvt.application import WSGIApplication
+from pysmvt.middleware import full_wsgi_stack, minimal_wsgi_stack
 from pysmvt import settings
-from pysmvt.config import DefaultSettings, appinit
+from pysmvt.config import DefaultSettings
 from pysmvt.view import RespondingViewBase
 
-basedir = path.dirname(path.abspath(__file__))
+
 
 class TestSettings(DefaultSettings):
-    def __init__(self):
-        # note that we don't really have a physical location for this "app",
-        # so it should not be used for any kind of testing which uses file 
-        # system locations
-        DefaultSettings.__init__(self, 'testapp', basedir)
+    def init(self):
+        self.dirs.base = path.dirname(__file__)
+        self.appname = 'testapp'
+        DefaultSettings.init(self)
 
         self.routing.routes.extend([
             Rule('/<funckey>', endpoint=AsViewHelper)
@@ -29,8 +29,8 @@ class TestWsgiApplication(WSGIApplication):
         return vklass('', vklass.__name__, args)()
 
 def create_testapp():
-    appinit(settings_cls=TestSettings)
-    return minimal_wsgi_stack(TestWsgiApplication)
+    app = TestWsgiApplication(TestSettings())
+    return minimal_wsgi_stack(app)
 
 class AsViewHelper(RespondingViewBase):
     func_mapping = {}
@@ -42,7 +42,7 @@ def asview(f):
     return f
 
 def create_altstack_app(use_session=False):
-    appinit(settings_cls=TestSettings)
+    app = TestWsgiApplication(TestSettings())
     if not use_session:
-        settings.beaker.enabled=False
-    return full_wsgi_stack(TestWsgiApplication)
+        app.settings.beaker.enabled=False
+    return full_wsgi_stack(app)

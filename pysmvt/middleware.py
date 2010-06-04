@@ -11,6 +11,7 @@ from werkzeug import EnvironHeaders, LimitedStream, \
 from pysutils import randchars, pformat, tolist
 from pysutils.datastructures import BlankObject
 from pysmvt import ag, session, user, settings, rg, config
+from pysmvt import routing
 from pysmvt.utils.filesystem import mkdirs
 from pysmvt.users import User
 
@@ -76,98 +77,45 @@ class HttpRequestLogger(object):
         environ['wsgi.input'] = wsgi_input
         return environ['wsgi.input']
 
-class RequestPrep(object):
-    def __init__(self, app, ag, config_settings):
-        self.application = app
-        self.ag = ag
-        self.settings = config_settings
+def full_wsgi_stack(app):
+    """
+        returns the WSGIApplication wrapped in common middleware
+    """
     
-    def __call__(self, environ, start_response):
-        environ['pysmvt.middleware.RequestManager'] = True
-        self.registry_setup(environ)
-        self.routing_setup(environ)
-        return self.application(environ, start_response)
+    settings = app.settings
     
-    def registry_setup(self, environ):
-        if environ.has_key('paste.registry'):
-            environ['paste.registry'].register(settings, self.settings)
-            environ['paste.registry'].register(ag, self.ag)
-            if environ.has_key('beaker.session'):
-                environ['paste.registry'].register(session, environ['beaker.session'])
-                environ['paste.registry'].register(user, self.user_setup(environ))
-            else:
-                environ['paste.registry'].register(session, None)
-                environ['paste.registry'].register(user, None)
-            environ['paste.registry'].register(rg, BlankObject())
+    if settings.beaker.enabled:
+        app = SessionMiddleware(app, **dict(settings.beaker))
     
-    def routing_setup(self, environ):
-        rg.urladapter = ag.route_map.bind_to_environ(environ)
-    
-    def user_setup(self, environ):
-        try:
-            return environ['beaker.session'].setdefault('__pysmvt_user', User())
-        except KeyError, e:
-            if '__pysmvt_user' not in str(e):
-                raise
-            environ['beaker.session']['__pysmvt_user'] = User()
-            return environ['beaker.session']['__pysmvt_user']
-
-class ErrorDocumentsHandler(object):
-    def __init__(self, app):
-        self.application = app
-        
-    def __call__(self, environ, start_response):
-        return self.application(environ, start_response)
-
-class ExceptionHandler(object):
-    def __init__(self, app):
-        self.application = app
-        
-    def __call__(self, environ, start_response):
-        return self.application(environ, start_response)
-
-class ResponseCycleHandler(object):
-    def __init__(self, app):
-        self.application = app
-        
-    def __call__(self, environ, start_response):
-        return self.application(environ, start_response)
-
-def middleware_manager(app, ag, config_settings):
-    
-    app = ResponseCycleHandler(app)
+    app = RegistryManager(app)
     
     # serve static files from main app and supporting apps (need to reverse order b/c
     # middleware stack is run in bottom up order).  This works b/c if a
     # static file isn't found, the ShardDataMiddleware just forwards the request
     # to the next app.
-    if config_settings.static_files.enabled:
+    if settings.static_files.enabled:
         for appname in config.appslist(reverse=True):
             app_py_mod = __import__(appname)
             fs_static_path = path.join(path.dirname(app_py_mod.__file__), 'static')
             static_map = {routing.add_prefix('/') : fs_static_path}
             app = SharedDataMiddleware(app, static_map)
     
-    if config_settings.exception_handling:
-        app = ExceptionHandler(app)
-    
-    # assign request global objects, session/user, and routing
-    app = RequestPrep(app, ag, config_settings)
-    
-    # beaker sessions
-    if config_settings.beaker.enabled:
-        app = SessionMiddleware(app, **dict(config_settings.beaker))
-        
-    # paste.registry for global object initilization
-    app = RegistryManager(app)
-    
-    if config_settings.logs.http_requests.enabled:
-        app = HttpRequestLogger(app, True,
-                config_settings.logs.http_requests.filters.path_info,
-                config_settings.logs.http_requests.filters.request_method)
-    
     # show nice stack traces and debug output if enabled
     if settings.debugger.enabled:
         app = DebuggedApplication(app, evalex=settings.debugger.interactive)
+    
+    # log http requests, use sparingly on production servers
+    if settings.logs.http_requests.enabled:
+        app = HttpRequestLogger(app, True,
+                settings.logs.http_requests.filters.path_info,
+                settings.logs.http_requests.filters.request_method)
+    
+    return app
 
+def minimal_wsgi_stack(app):
+    """
+        returns a WSGI application wrapped in minimal middleware, mostly useful
+        for internal testing
+    """
+    app = RegistryManager(app)
     return app

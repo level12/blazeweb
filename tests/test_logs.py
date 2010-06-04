@@ -5,12 +5,14 @@ from pysmvt import getview
 from pysmvt import settings
 from pysmvt.logs import clear_settings_handlers
 import logging
-from pysmvttestapp.settings import basedir
+
 
 # create the wsgi application that will be used for testing
+import config
+from pysmvttestapp.settings import Default
 from pysmvttestapp.applications import make_wsgi
 
-log_base_dir = path.join(basedir, 'writeable', 'logs')
+log_base_dir = Default().dirs.logs
 
 class LogsBase(object):
     
@@ -27,7 +29,8 @@ class LogsBase(object):
         make_wsgi(cls.settings_name)
 
     def lines(self, fname):
-        fh = open( path.join(log_base_dir, '%s.log' % fname), 'r')
+        fpath = path.join(log_base_dir, '%s.log' % fname)
+        fh = open( fpath, 'r')
         try:
             return fh.readlines()
         finally:

@@ -1,11 +1,11 @@
-from pysmvt import config
-from pysmvt.application import Application, full_wsgi_stack
+from pysmvt.application import Application, WSGIApplication
+from pysmvt.middleware import full_wsgi_stack
 import settings as settingsmod
 
-def make_wsgi(profile='Default', **kwargs):
-    config.appinit(settingsmod, profile, **kwargs)
-    return full_wsgi_stack()
+def make_wsgi(profile='Default'):
+    app = WSGIApplication(settingsmod, profile)
+    app = full_wsgi_stack(app)
+    return app
 
-def make_console(profile='Default', **kwargs):
-    config.appinit(settingsmod, profile, **kwargs)
-    return Application()
+def make_console(profile='Default'):
+    return Application(settingsmod, profile)

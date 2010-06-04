@@ -3,15 +3,18 @@ from os import path
 from traceback import format_exc
 import logging
 from pysmvt import settings, user, ag, _getview, rg, appimportauto
+from pysmvt.routing import add_prefix
 from pysmvt.utils import reindent, auth_error, bad_request_error, \
-    urlslug, markdown, registry_has_object
+    urlslug, markdown, registry_has_object, werkzeug_multi_dict_conv
 from pysmvt.utils.html import strip_tags
 from pysmvt.templates import JinjaHtmlBase, JinjaBase
 from pysmvt.exceptions import ActionError, UserError, ProgrammingError, \
     ViewCallStackAbort
 from pysmvt.wrappers import Response, JSONResponse
+from werkzeug import validate_arguments, ArgumentValidationError
+from werkzeug.routing import Rule
 from werkzeug.wrappers import BaseResponse
-from werkzeug.exceptions import InternalServerError, BadRequest
+from werkzeug.exceptions import InternalServerError, BadRequest, NotFound
 from werkzeug.utils import MultiDict
 import formencode
 from pprint import PrettyPrinter
@@ -343,3 +346,51 @@ def jsonify(f, self, *args, **kwargs):
         jresp.json_data = retval
         return jresp
     self.handle_response = new_handle_response
+
+def asview(rule=None, **options):
+    def decorator(f):
+        lrule = rule
+        fname = f.__name__
+        if lrule is None:
+            lrule = '/%s' % fname
+        lrule = add_prefix(lrule)
+        getargs = options.pop('getargs', None)
+        ag.view_functions[fname] = f, getargs
+        endpoint = '__viewfuncs__:%s' % fname
+        ag.route_map.add(Rule(lrule, endpoint=endpoint), **options)
+        return f
+    return decorator
+
+def function_view_handler(endpoint, urlargs):
+    fname = endpoint.split(':')[1]
+    func, expected_get_args = ag.view_functions.get(fname)
+    if not func:
+        raise NotFound
+    rg.respctx.response = Response()
+    
+    # handle argument conversion to what the function accepts
+    args = MultiDict()
+    if expected_get_args:
+        for k in rg.request.args.iterkeys():
+            if k in expected_get_args:
+                args.setlist(k, rg.request.args.getlist(k))
+    args.update(urlargs)
+    args = werkzeug_multi_dict_conv(args)
+    try:
+        args, kwargs = validate_arguments(func, tuple(), args)
+    except ArgumentValidationError:
+        raise BadRequest('The browser failed to transmit all '
+                         'the data expected.')
+    # call the function
+    retval = func(*args, **kwargs)
+    # if retval is None, assume they altered respctx.response directly
+    if retval is None:
+        return rg.respctx.response
+    # if the response is a string, add it as the response data
+    if isinstance(retval, basestring):
+        rg.respctx.response.data = retval
+        return rg.respctx.response
+    # if something else was returned, assume it is a WSGI application
+    # and return it directly
+    return retval
+        

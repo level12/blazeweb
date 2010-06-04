@@ -7,8 +7,8 @@ from pysmvttestapp.applications import make_wsgi
 from werkzeug import Client, BaseResponse, create_environ
 
 class RoutingSettings(config.Testruns):
-    def __init__(self):
-        config.Testruns.__init__(self)
+    def init(self):
+        config.Testruns.init(self)
     
         self.routing.routes.extend([
             Rule('/<file>', endpoint='static', build_only=True),
@@ -19,8 +19,8 @@ class RoutingSettings(config.Testruns):
         ])
 
 class Prefixsettings(RoutingSettings):
-    def __init__(self):
-        RoutingSettings.__init__(self)
+    def init(self):
+        RoutingSettings.init(self)
         
         self.routing.prefix = '/prefix'
 

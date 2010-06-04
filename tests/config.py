@@ -1,18 +1,17 @@
 from os import path
 
 from pysmvt.application import Application
-from pysmvt.config import DefaultSettings, appinit
+from pysmvt.config import DefaultSettings
 from pysmvt import settings
 
 from pysutils import prependsitedir
 prependsitedir(__file__, 'apps')
 
-basedir = path.dirname(path.abspath(__file__))
-
 class Testruns(DefaultSettings):
-    def __init__(self):
-        # call parent init to setup default settings
-        DefaultSettings.__init__(self, 'pysmvttestapp', basedir)
+    def init(self):
+        self.dirs.base = path.dirname(__file__)
+        self.appname = path.basename(self.dirs.base)
+        DefaultSettings.init(self)
         
         #######################################################################
         # EXCEPTION HANDLING
@@ -34,18 +33,16 @@ class Testruns(DefaultSettings):
         self.debugger.format = 'interactive'
                 
         self.emails.from_default = 'root@localhost'
-        self.emails.programmers = ['randy@rcs-comp.com']
+        self.emails.programmers = ['you@example.com']
         self.email.subject_prefix = '[pysvmt test app] '
 
 def make_console(settings_cls=Testruns, **kwargs):
-    appinit(settings_cls=settings_cls, **kwargs)
-    return Application()
+    return Application(settings_cls())
 
 def init_settings(customsettings=None):
     if customsettings:
         settings._push_object(customsettings)
-    return settings._push_object(Testruns('testsettings', path.dirname(path.abspath(__file__))))
-        
+    return settings._push_object(Testruns())
 
 def destroy_settings():
     settings._pop_object()

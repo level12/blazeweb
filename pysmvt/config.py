@@ -62,13 +62,14 @@ class ModulesSettings(QuickSettings):
         return d
 
 class DefaultSettings(QuickSettings):
-    
-    def __init__(self, appname,  basedir):
+    # child classes should define the following
+    # basename
+    # basedir
+    def __init__(self):
         QuickSettings.__init__(self)
+        self.init()
         
-        # name of the primary application
-        self.appname = appname
-        
+    def init(self):
         # supporting applications
         self.supporting_apps = []
         
@@ -99,10 +100,9 @@ class DefaultSettings(QuickSettings):
         #######################################################################
         # DIRECTORIES required by PYSVMT
         #######################################################################
-        self.dirs.base = basedir
-        self.dirs.writeable = path.join(basedir, 'writeable')
-        self.dirs.static = path.join(basedir, 'static')
-        self.dirs.templates = path.join(basedir, 'templates')
+        self.dirs.writeable = path.join(self.dirs.base, 'writeable')
+        self.dirs.static = path.join(self.dirs.base, 'static')
+        self.dirs.templates = path.join(self.dirs.base, 'templates')
         self.dirs.data = path.join(self.dirs.writeable, 'data')
         self.dirs.logs = path.join(self.dirs.writeable, 'logs')
         self.dirs.tmp = path.join(self.dirs.writeable, 'tmp')
@@ -290,69 +290,6 @@ class DefaultSettings(QuickSettings):
         self.exception_handling = False
         # ditto
         self.debugger.enabled = False
-        
-def appinit(settings_mod=None, profile=None, settings_cls=None):
-    """
-        called to setup the application's settings
-        variable
-    """
-    if settings_cls is None:
-        Settings = getattr(settings_mod, profile)
-    else:
-        Settings = settings_cls
-    settings._push_object(Settings())
-    ag._push_object(Context())
-    
-    # create the writeable directories if they don't exist already
-    mkdirs(settings.dirs.data)
-    mkdirs(settings.dirs.logs)
-    mkdirs(settings.dirs.tmp)
-    
-    # now we need to assign module settings to the main setting object
-    for module in settings.modules.keys():
-        try:
-            Settings = modimport('%s.settings' % module, 'Settings')
-            ms = Settings()
-            # update the module's settings with any module level settings made
-            # at the app level.  This allows us to override module settings
-            # in our applications settings.py file.
-            ms.update(settings.modules[module])
-            settings.modules[module] = ms
-        except ImportError:
-            # 3 = .settings or Settings wasn't found, which is ok.  Any other
-            # depth means a different import error, and we want to raise that
-            if not tb_depth_in(3):
-                raise
-    
-    # lock the settings, this ensures that an attribute error is thrown if an
-    # attribute is accessed that doesn't exist.  Without the lock, a new attr
-    # would be created, which is undesirable since any "new" attribute at this
-    # point would probably be an accident
-    settings.lock()
-    
-    ## more simple default logging
-    _create_handlers_from_settings(settings)
-    
-    ###
-    ### routing
-    ###
-    ag.route_map = Map(**settings.routing.map.todict())
-       
-    # application routes
-    _add_routing_rules(settings.routing.routes)
-   
-    # module routes        
-    for module in settings.modules:
-        if hasattr(module, 'routes'):
-            _add_routing_rules(module.routes)
-
-def _add_routing_rules(rules):
-    if settings.routing.prefix:
-        # prefix the routes with the prefix in the app settings class
-        ag.route_map.add(Submount( settings.routing.prefix, rules ))
-    else:
-        for rule in rules or ():
-            ag.route_map.add(rule)
 
 def appslist(reverse=False):
     if reverse:

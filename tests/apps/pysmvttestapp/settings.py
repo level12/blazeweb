@@ -1,21 +1,16 @@
-# -*- coding: utf-8 -*-
 from os import path
 from werkzeug.routing import Rule
 from pysmvt.config import DefaultSettings
 
-appname = 'pysmvttestapp'
-basedir = path.dirname(path.abspath(__file__))
-
 class Default(DefaultSettings):
-
-    def __init__(self):
-        # call parent init to setup default settings
-        DefaultSettings.__init__(self, appname, basedir)
-
-class Testruns(DefaultSettings):
-    def __init__(self):
-        # call parent init to setup default settings
-        DefaultSettings.__init__(self, appname, basedir)
+    def init(self):
+        self.dirs.base = path.dirname(__file__)
+        self.appname = path.basename(self.dirs.base)
+        DefaultSettings.init(self)
+        
+class Testruns(Default):
+    def init(self):
+        Default.init(self)
         
         self.supporting_apps = ['pysmvttestapp2']
         
@@ -34,15 +29,17 @@ class Testruns(DefaultSettings):
         # don't use exception catching, debuggers, logging, etc.
         self.apply_test_settings()        
         
-        self.emails.programmers = ['randy@rcs-comp.com']
+        self.emails.programmers = ['you@example.com']
         self.email.subject_prefix = '[pysvmt test app] '
         
         # a fake setting for testing
         self.foo = 'bar'
 
 class WithLogs(Testruns):
-    def __init__(self):
-        Testruns.__init__(self)
+    def init(self):
+        # call parent init to setup default settings
+        Testruns.init(self)
         
         self.logs.enabled = True
+
         

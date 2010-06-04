@@ -1,32 +1,110 @@
 import logging
 from os import path
 
-from beaker.middleware import SessionMiddleware
-from paste.registry import RegistryManager
-from werkzeug import SharedDataMiddleware, DebuggedApplication
 from werkzeug.exceptions import HTTPException, InternalServerError
 from werkzeug import create_environ
+from werkzeug.routing import Map, Submount
 
 from pysutils.datastructures import BlankObject
 from pysutils.strings import randchars
-from pysmvt import settings, ag, session, rg, user, routing, config, _getview
+from pysutils.error_handling import traceback_depth_in
+import pysmvt
+from pysmvt import session, rg, user, config, _getview, modimport
+from pysmvt.config import DefaultSettings
 from pysmvt.exceptions import ForwardException, ProgrammingError
+from pysmvt.logs import _create_handlers_from_settings
 from pysmvt.mail import mail_programmers
+from pysmvt.view import function_view_handler
 from pysmvt.users import User
 from pysmvt.utils import randhash, Context, exception_with_context
+from pysmvt.utils.filesystem import mkdirs
 from pysmvt.wrappers import Request
 
 log = logging.getLogger(__name__)
 
 class Application(object):
     
-    def __init__(self):
+    def __init__(self, module_or_settings, profile=None):
         self._id = randhash()
+        self.settings = module_or_settings
+        if profile is not None:
+            module = module_or_settings
+            self.settings = getattr(module, profile)()
+        self.ag = BlankObject()
+        self.ag.view_functions = {}
+        self.registry_setup()
+        self.filesystem_setup()
+        self.settings_setup()
+        self.logging_setup()
+        self.routing_setup()
+        
+    #def settings_extraction(self, module_or_settings, profile):
+    #    if klass:
+    #        return klass(self.name, self.basedir)
+    #    if settings_mod is not None and profile is not None:
+    #        return getattr(settings_mod, profile)(self.name, self.basedir)
+    #    # no settings were given, so we give the default settings
+    #    settings = DefaultSettings(self.name, self.basedir)
+    #    # but we change the writeable directory to the base directory assuming
+    #    # a more simple setup.  We could eventully test for a virtualenv
+    #    # and not make this change if the application is running in one.
+    #    settings.dirs.writeable = path.join(self.basedir, 'writeable')
+    #    return settings
     
-        # keep local copies of these objects around for later
-        # when we need to bind them to the request
-        self.settings = settings._current_obj()
-        self.ag = ag._current_obj()
+    def registry_setup(self):
+        pysmvt.settings._push_object(self.settings)
+        pysmvt.ag._push_object(self.ag)
+    
+    def filesystem_setup(self):
+        # create the writeable directories if they don't exist already
+        mkdirs(self.settings.dirs.data)
+        mkdirs(self.settings.dirs.logs)
+        mkdirs(self.settings.dirs.tmp)
+    
+    def settings_setup(self):
+        # now we need to assign modules' settings to the main setting object
+        for module in self.settings.modules.keys():
+            try:
+                Settings = modimport('%s.settings' % module, 'Settings')
+                ms = Settings()
+                # update the module's settings with any module level settings made
+                # at the app level.  This allows us to override module settings
+                # in our applications settings.py file.
+                ms.update(self.settings.modules[module])
+                self.settings.modules[module] = ms
+            except ImportError:
+                # 3 = .settings or Settings wasn't found, which is ok.  Any other
+                # depth means a different import error, and we want to raise that
+                if not traceback_depth_in(3):
+                    raise
+        
+        # lock the settings, this ensures that an attribute error is thrown if an
+        # attribute is accessed that doesn't exist.  Without the lock, a new attr
+        # would be created, which is undesirable since any "new" attribute at this
+        # point would probably be an accident
+        self.settings.lock()
+    
+    def logging_setup(self):
+        _create_handlers_from_settings(self.settings)
+    
+    def routing_setup(self):
+        self.ag.route_map = Map(**self.settings.routing.map.todict())
+           
+        # application routes
+        self.add_routing_rules(self.settings.routing.routes)
+       
+        # module routes        
+        for module in self.settings.modules:
+            if hasattr(module, 'routes'):
+                self.add_routing_rules(module.routes)
+    
+    def add_routing_rules(self, rules):
+        if self.settings.routing.prefix:
+            # prefix the routes with the prefix in the app settings class
+            self.ag.route_map.add(Submount( self.settings.routing.prefix, rules ))
+        else:
+            for rule in rules or ():
+                self.ag.route_map.add(rule)
     
     def start_request(self, environ=None):
         rg._push_object(Context())
@@ -37,7 +115,7 @@ class Application(object):
         
         # this might throw an exception, but we are letting that go
         # b/c we need to make sure the url adapter gets created
-        rg.urladapter = ag.route_map.bind_to_environ(environ)
+        rg.urladapter = self.ag.route_map.bind_to_environ(environ)
     
     def console_dispatch(self, callable, environ=None):
         self.start_request(environ)
@@ -56,8 +134,8 @@ class RequestManager(object):
         
     def registry_setup(self):
         environ = self.environ
-        environ['paste.registry'].register(settings, self.app.settings)
-        environ['paste.registry'].register(ag, self.app.ag)
+        environ['paste.registry'].register(pysmvt.settings, self.app.settings)
+        environ['paste.registry'].register(pysmvt.ag, self.app.ag)
         if environ.has_key('beaker.session'):
             environ['paste.registry'].register(session, environ['beaker.session'])
             environ['paste.registry'].register(user, self.user_setup())
@@ -74,7 +152,7 @@ class RequestManager(object):
         Request(self.environ)
     
     def routing_setup(self):
-        rg.urladapter = ag.route_map.bind_to_environ(self.environ)
+        rg.urladapter = pysmvt.ag.route_map.bind_to_environ(self.environ)
     
     def user_setup(self):
         environ = self.environ
@@ -131,8 +209,8 @@ class ResponseContext(object):
 
 class WSGIApplication(Application):
 
-    def __init__(self):
-        Application.__init__(self)
+    def __init__(self, module_or_settings, profile=None):
+        Application.__init__(self, module_or_settings, profile)
     
     def request_manager(self, environ):
         return RequestManager(self, environ)
@@ -153,6 +231,8 @@ class WSGIApplication(Application):
         else:
             called_from = called_from or 'client'
         log.debug('dispatch to %s (%s)', endpoint, args)
+        if endpoint.startswith('__viewfuncs__:'):
+            return function_view_handler(endpoint, args)
         return _getview(endpoint, args, called_from)
 
     def wsgi_app(self, environ, start_response):
@@ -174,7 +254,7 @@ class WSGIApplication(Application):
 
         .. versionadded: 0.3
         """
-        endpoint = settings.error_docs.get(e.code)
+        endpoint = self.settings.error_docs.get(e.code)
         log.debug('handling http exception %s with %s', e, endpoint)
         if endpoint is None:
             return e
@@ -198,19 +278,19 @@ class WSGIApplication(Application):
         .. versionadded: 0.3
         """
         log.error('exception encountered: %s' % exception_with_context())
-        if not settings.exception_handling:
+        if not self.settings.exception_handling:
             raise
-        if 'email' in settings.exception_handling:
+        if 'email' in self.settings.exception_handling:
             try:
                 mail_programmers('exception encountered', exception_with_context())
             except Exception, e:
                 log.exception('exception when trying to email exception')
-        if 'format' in settings.exception_handling:
+        if 'format' in self.settings.exception_handling:
             response = InternalServerError()
             response.description = '<pre>%s</pre>' % escape(exception_with_context())
             return response
-        if 'handle' in settings.exception_handling:
-            endpoint = settings.error_docs.get(500)
+        if 'handle' in self.settings.exception_handling:
+            endpoint = self.settings.error_docs.get(500)
             if endpoint is None:
                 # turn the exception into a 500 server response
                 log.debug('handling exception with generic 500 response')
@@ -229,48 +309,3 @@ class WSGIApplication(Application):
 
     def __call__(self, environ, start_response):
         return self.wsgi_app(environ, start_response)
-
-def full_wsgi_stack(appklass=WSGIApplication):
-    """
-        returns the WSGIApplication wrapped in common middleware
-    """
-    app = appklass()
-    
-    settings = app.settings
-    
-    if settings.beaker.enabled:
-        app = SessionMiddleware(app, **dict(settings.beaker))
-    
-    app = RegistryManager(app)
-    
-    # serve static files from main app and supporting apps (need to reverse order b/c
-    # middleware stack is run in bottom up order).  This works b/c if a
-    # static file isn't found, the ShardDataMiddleware just forwards the request
-    # to the next app.
-    if settings.static_files.enabled:
-        for appname in config.appslist(reverse=True):
-            app_py_mod = __import__(appname)
-            fs_static_path = path.join(path.dirname(app_py_mod.__file__), 'static')
-            static_map = {routing.add_prefix('/') : fs_static_path}
-            app = SharedDataMiddleware(app, static_map)
-    
-    # show nice stack traces and debug output if enabled
-    if settings.debugger.enabled:
-        app = DebuggedApplication(app, evalex=settings.debugger.interactive)
-    
-    # log http requests, use sparingly on production servers
-    if settings.logs.http_requests.enabled:
-        app = HttpRequestLogger(app, True,
-                settings.logs.http_requests.filters.path_info,
-                settings.logs.http_requests.filters.request_method)
-    
-    return app
-
-def minimal_wsgi_stack(appklass=WSGIApplication):
-    """
-        returns the WSGIApplication wrapped in minimal middleware, mostly useful
-        for internal testing
-    """
-    app = appklass()
-    app = RegistryManager(app)
-    return app

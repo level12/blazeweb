@@ -4,6 +4,7 @@ import unittest
 import pysmvt
 from pysmvt import settings
 import pysmvttestapp.settings
+from pysmvttestapp.applications import make_console
 from pysmvt.config import appslist, QuickSettings, ModulesSettings
 
 class Base(QuickSettings):
@@ -307,8 +308,7 @@ class TestQuickSettings(unittest.TestCase):
 
 class TestConfig(unittest.TestCase):
     def setUp(self):
-        pysmvt.config.appinit(pysmvttestapp.settings, 'Testruns')
-        #self.app = Application()
+        self.app = make_console('Testruns')
         
     def tearDown(self):
         pass

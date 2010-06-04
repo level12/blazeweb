@@ -4,7 +4,7 @@ import os
 from os import path
 import inspect
 from pysmvt import ag, db, settings
-from pysmvt.config import appslist, appinit
+from pysmvt.config import appslist
 from pysmvt.utils import tb_depth_in
 from werkzeug import script
 from paste.util.multidict import MultiDict
