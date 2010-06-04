@@ -322,8 +322,7 @@ def inrequest(f, *args, **kwargs):
     """
         This sets up rg and rg.respctx before calling the decorated function.
         Primarily used when you have to test something that depends on those
-        objects being present.  It does not currently setup a Request or
-        environ.
+        objects being present.
     """
     rg._push_object(BlankObject())
     Request(create_environ('/[[@inrequest]]'))
