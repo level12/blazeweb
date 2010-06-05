@@ -151,14 +151,14 @@ class DefaultSettings(QuickSettings):
         #######################################################################
         # DEBUGGING
         #######################################################################
-        # only matters when exceptions.hide = False.  Setting interactive =
+        # only matters when exceptions are not handled above.  Setting interactive =
         # to True will give a python command prompt in the stack trace
         #
         #          ******* SECURITY ALERT **********
         # setting interactive = True would allow ANYONE who has http access to the 
         # server to run arbitrary code.  ONLY use in an isolated development
         # environment.
-        self.debugger.enabled = True
+        self.debugger.enabled = False
         self.debugger.interactive = False
         
         #######################################################################
