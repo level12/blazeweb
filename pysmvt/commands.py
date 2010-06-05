@@ -213,7 +213,6 @@ class ServeCommand(pscmd.Command):
                 processes = self.options.processes,
                 passthrough_errors = self.options.pass_through_errors,
             )
-            
 
 class TestRunCommand(pscmd.Command):
         # Parser configuration
@@ -253,3 +252,19 @@ class TestRunCommand(pscmd.Command):
             if options.show_body and not options.silent:
                 for respstr in resp.response:
                     print respstr
+
+class TasksCommand(pscmd.Command):
+        # Parser configuration
+        summary = "runs task(s)"
+        usage = "TASK [TASK [TASK [...]]]"
+        
+        min_args = 1
+        
+        parser = pscmd.Command.standard_parser(verbose=False)
+        parser.add_option('-t', '--test-only',
+                      dest='test_only',
+                      action='store_true',
+                      default=False,)
+
+        def command(self):
+            run_tasks(self.args, test_only=self.options.test_only)

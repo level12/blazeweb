@@ -108,6 +108,7 @@ setup(
     serve = pysmvt.commands:ServeCommand
     help = paste.script.help:HelpCommand
     testrun = pysmvt.commands:TestRunCommand
+    tasks = pysmvt.commands:TasksCommand
     
     [pysmvt.pysmvt_project_template]
     pysmvt = pysmvt.paster_tpl:ProjectTemplate

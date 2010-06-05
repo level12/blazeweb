@@ -31,6 +31,7 @@ def test_app_usage():
     assert 'project' not in result.stdout
     assert 'Serve the application' in result.stdout
     assert 'testrun' in result.stdout
+    assert 'tasks' in result.stdout
     
 def test_bad_profile():
     result = run_application('minimal2', '-p', 'profilenotthere', expect_error = True)
@@ -66,6 +67,21 @@ def test_app_testrun():
     assert 'Content-Type: text/html' in res.stdout
     assert '\nindex\n' not in res.stdout
 
+def test_app_tasks():
+    res = run_application('minimal2', 'tasks', expect_error=True)
+    assert 'You must provide at least 1 argument' in res.stdout
+    
+    res = run_application('minimal2', 'tasks', 'notasksthere')
+    assert res.stdout.strip() == ''
+    
+    res = run_application('minimal2', 'tasks', 'init_data')
+    assert 'minimal2.tasks.init_data:action_010' in res.stdout
+    assert 'doit' in res.stdout
+
+    res = run_application('minimal2', 'tasks', 'init_data', '-t')
+    assert 'minimal2.tasks.init_data:action_010' in res.stdout
+    assert 'doit' not in res.stdout
+    
 def test_minimal_project_checkout_and_functionality():
     projname = 'pysminimalprojtest_no_name_clash_hopefully'
     res = env.run('pip', 'uninstall', projname, '-y', expect_error=True)
