@@ -110,6 +110,7 @@ setup(
     
     [pysmvt.pysmvt_project_template]
     pysmvt = pysmvt.paster_tpl:ProjectTemplate
+    minimal = pysmvt.paster_tpl:MinimalProjectTemplate
     
     [pysmvt.pysmvt_module_template]
     pysmvt = pysmvt.paster_tpl:ModuleTemplate

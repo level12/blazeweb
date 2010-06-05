@@ -34,6 +34,17 @@ class ProjectTemplate(Template):
         author = vars['author']
         vars['username'] = author.split(' ')[0].capitalize()
 
+class MinimalProjectTemplate(Template):
+
+    summary = 'Template for creating a minimal pysmvt project'
+    _template_dir = ('pysmvt', 'paster_tpls/minimal-project')
+    template_renderer = staticmethod(paste_script_template_renderer)
+    vars = [
+        var('description', 'One-line description of the package'),
+        var('author', 'Your name'),
+        var('programmer_email', 'Your email'),
+        ]
+
 class ModuleTemplate(Template):
 
     _template_dir = ('pysmvt', 'paster_tpls/module')
