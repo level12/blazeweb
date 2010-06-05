@@ -30,19 +30,6 @@ def action_shell(ipython=True):
     shell_act = make_shell(lambda: shell_namespace, 'pysmvt Interactive Shell')
     shell_act(ipython)
 
-def action_project(projname='', template=('t', 'pysmvt'),
-        interactive=True, verbose=False, overwrite=True):
-    """ creates a new project file structure """
-    if not projname:
-        print 'Error: `projname` is required'
-        return
-    output_dir = path.join(os.getcwd(), '%s-dist' % projname)
-    vars = {'project': projname,
-            'package': projname,
-        }
-    run_template(interactive, verbose, overwrite, vars,
-                 output_dir, template, 'pysmvt_project_template')
-
 def action_module(modname='', template=('t', 'pysmvt'),
         interactive=True, verbose=False, overwrite=True):
     """ creates a new module file structure """
@@ -116,6 +103,54 @@ def action_tasks(tasks_to_run='', test_only=('t', False)):
 
 import paste.script.command as pscmd
 
+###
+### PYSMVT COMMANDS FIRST
+###
+class ProjectCommand(pscmd.Command):
+
+    summary = "Create a project layout using a pre-defined template"
+    usage = "APP_NAME"
+    group_name = ""
+    
+    min_args = 1
+    max_args = 1
+    
+    parser = pscmd.Command.standard_parser(verbose=False)
+    parser.add_option('-t', '--template',
+                        dest='template',
+                        default='pysmvt',
+                        help="The pre-defined template to use")
+    parser.add_option('--no-interactive',
+                      dest='interactive',
+                      action='store_false',
+                      default=True,)
+    parser.add_option('--verbose',
+                      dest='verbose',
+                      action='store_true',
+                      default=False)
+    parser.add_option('--no-overwrite',
+                      dest='overwrite',
+                      action='store_false',
+                      default=True)
+    def command(self):
+        projname = self.args[0]
+        output_dir = path.join(os.getcwd(), '%s-dist' % projname)
+        vars = {'project': projname,
+                'package': projname,
+                }
+        run_template(
+            self.options.interactive,
+            self.options.verbose,
+            self.options.overwrite,
+            vars,
+            output_dir,
+            self.options.template,
+            'pysmvt_project_template'
+        )
+
+###
+### Now Application Specific Commands
+###
 class ServeCommand(pscmd.Command):
         # Parser configuration
         summary = "Serve the application by starting a development http server"
@@ -178,52 +213,43 @@ class ServeCommand(pscmd.Command):
                 processes = self.options.processes,
                 passthrough_errors = self.options.pass_through_errors,
             )
+            
 
-def action_serve(hostname=('h', 'localhost'), port=('p', 5000),
-               reloader=True, debugger=False, evalex=False, 
-               threaded=False, processes=1):
-    """ serve the application by starting a development http server """
-    run_simple(hostname, port, make_wsgi(profile), reloader, debugger, evalex,
-               None, 1, threaded, processes)
-
-class ProjectCommand(pscmd.Command):
-
-    summary = "Create a project layout using a pre-defined template"
-    usage = "APP_NAME"
-    group_name = ""
-    
-    min_args = 1
-    max_args = 1
-    
-    parser = pscmd.Command.standard_parser(verbose=False)
-    parser.add_option('-t', '--template',
-                        dest='template',
-                        default='pysmvt',
-                        help="The pre-defined template to use")
-    parser.add_option('--no-interactive',
-                      dest='interactive',
+class TestRunCommand(pscmd.Command):
+        # Parser configuration
+        summary = "runs a single request through the application"
+        usage = "URL"
+        
+        min_args = 0
+        max_args = 1
+        
+        parser = pscmd.Command.standard_parser(verbose=False)
+        parser.add_option('--silent',
+                      dest='silent',
+                      action='store_true',
+                      default=False,)
+        parser.add_option('--no-headers',
+                      dest='show_headers',
                       action='store_false',
                       default=True,)
-    parser.add_option('--verbose',
-                      dest='verbose',
-                      action='store_true',
-                      default=False)
-    parser.add_option('--no-overwrite',
-                      dest='overwrite',
+        parser.add_option('--no-body',
+                      dest='show_body',
                       action='store_false',
-                      default=True)
-    def command(self):
-        projname = self.args[0]
-        output_dir = path.join(os.getcwd(), '%s-dist' % projname)
-        vars = {'project': projname,
-                'package': projname,
-                }
-        run_template(
-            self.options.interactive,
-            self.options.verbose,
-            self.options.overwrite,
-            vars,
-            output_dir,
-            self.options.template,
-            'pysmvt_project_template'
-        )
+                      default=True,)
+
+        def command(self):
+            options = self.options
+            c = Client(self.wsgiapp, BaseResponse)
+            if self.args:
+                url = self.args[0]
+            else:
+                url = '/'
+            resp = c.get(url)
+        
+            if options.show_headers and not options.silent:
+                print resp.status
+                print resp.headers
+            
+            if options.show_body and not options.silent:
+                for respstr in resp.response:
+                    print respstr
