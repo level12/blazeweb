@@ -1,0 +1,3 @@
+recursive-include {{project}} *
+prune {{project}}/writeable/tmp
+prune {{project}}/writeable/logs

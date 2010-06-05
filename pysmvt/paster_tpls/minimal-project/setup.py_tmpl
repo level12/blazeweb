@@ -1,0 +1,27 @@
+from setuptools import setup, find_packages
+
+import {{project}}
+version = {{project}}.VERSION
+
+setup(name={{repr(project)}},
+      version=version,
+      description="{{description or ''}}",
+      long_description="""long description""",
+      # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
+      classifiers=[], 
+      keywords='',
+      author={{repr(author or '')}},
+      author_email={{repr(programmer_email or '')}},
+      url='',
+      license='',
+      packages=find_packages(exclude=['ez_setup']),
+      include_package_data=True,
+      zip_safe=False,
+      install_requires=[
+          'pysmvt>=dev'
+      ],
+      entry_points="""
+          [console_scripts]
+          {{project}} = {{project}}.application:script_entry
+      """,
+      )
