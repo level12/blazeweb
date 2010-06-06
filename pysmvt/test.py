@@ -81,7 +81,7 @@ from decorator import decorator
 import nose.plugins
 from nose.tools import make_decorator
 from pysmvt import ag, settings, rg
-from pysmvt.script import _app_name
+from pysmvt.scripting import load_current_app, UsageError
 from pysmvt.utils import import_app_str
 from pysmvt.wrappers import Request
 from pysutils import tolist
@@ -103,19 +103,21 @@ class InitCurrentAppPlugin(nose.plugins.Plugin):
     val_app_name = None
     opt_disable = 'pysmvt_disable'
     val_disable = False
+    opt_debug = 'pysmvt_debug'
+    val_debug = False
     
     def add_options(self, parser, env=os.environ):
         """Add command-line options for this plugin"""
         env_opt = 'NOSE_WITH_%s' % self.name.upper()
         env_opt.replace('-', '_')
 
-        parser.add_option("--pysmvt-app-profile",
+        parser.add_option("--pysmvt-profile",
                           dest=self.opt_app_profile, type="string",
                           default="Test",
                           help="The name of the test profile in settings.py"
                         )
         
-        parser.add_option("--pysmvt-app-name",
+        parser.add_option("--pysmvt-appname",
                           dest=self.opt_app_name, type="string",
                           help="The name of the application's package, defaults"
                           " to top package of current working directory"
@@ -123,6 +125,12 @@ class InitCurrentAppPlugin(nose.plugins.Plugin):
         
         parser.add_option("--pysmvt-disable",
                           dest=self.opt_disable,
+                          action="store_true",
+                          help="Disable plugin"
+                        )
+        
+        parser.add_option("--pysmvt-debug",
+                          dest=self.opt_debug,
                           action="store_true",
                           help="Disable plugin"
                         )
@@ -135,25 +143,22 @@ class InitCurrentAppPlugin(nose.plugins.Plugin):
                 self.val_app_profile = getattr(options, self.opt_app_profile)
             if hasattr(options, self.opt_app_name) and getattr(options, self.opt_app_name):
                 self.val_app_name = getattr(options, self.opt_app_name)
-            else:
-                try:
-                    self.val_app_name = _app_name()
-                except Exception, e:
-                    if 'package name could not be determined' not in str(e):
-                        raise
-                if not self.val_app_name:
-                    self.val_disable = True
-
-        if not self.val_disable:
-            apps_pymod = __import__('%s.applications' % self.val_app_name, globals(), locals(), [''])
-            ag._wsgi_test_app = apps_pymod.make_wsgi(self.val_app_profile)
-            
-            # an application can define functions to be called after the app
-            # is initialized but before any test inspection is done or tests
-            # are ran.  We call those functions here:
-            for callstring in tolist(settings.testing.init_callables):
-                tocall = import_app_str(callstring)
-                tocall()
+            try:
+                _, _, _, wsgiapp = load_current_app(self.val_app_name, self.val_app_profile)
+                
+                # make the app available to the tests
+                ag.wsgiapp = wsgiapp
+                
+                # an application can define functions to be called after the app
+                # is initialized but before any test inspection is done or tests
+                # are ran.  We call those functions here:
+                for callstring in tolist(settings.testing.init_callables):
+                    tocall = import_app_str(callstring)
+                    tocall()
+            except UsageError, e:
+                if options.pysmvt_debug:
+                    raise
+                self.val_disable = True            
 
     def loadTestsFromNames(self, names, module=None):
         if not self.val_disable:

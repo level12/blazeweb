@@ -109,6 +109,8 @@ setup(
     help = paste.script.help:HelpCommand
     testrun = pysmvt.commands:TestRunCommand
     tasks = pysmvt.commands:TasksCommand
+    shell = pysmvt.commands:ShellCommand
+    routes = pysmvt.commands:RoutesCommand
     
     [pysmvt.pysmvt_project_template]
     pysmvt = pysmvt.paster_tpl:ProjectTemplate

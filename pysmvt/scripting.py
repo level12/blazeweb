@@ -1,9 +1,11 @@
 import os
+from os import path
 import sys
 
 import paste.script.command as pscmd
 import pkg_resources
 import optparse
+from pysutils import find_path_package_name
 
 class ScriptingHelperBase(object):
     def __init__(self):
@@ -121,3 +123,35 @@ def application_entry(appfactory):
 
 def pysmvt_entry():
     PysmvtScriptingHelper().run()
+
+class UsageError(Exception):
+    pass
+
+def load_current_app(app_name=None, profile=None):
+    """
+        Load the application
+    """
+    if not app_name:
+        """ look for the app name in the environment """
+        app_name = os.getenv('PYSMVT_APPNAME')
+    if not app_name:
+        """ find the appname based on the current working directory """
+        app_name = find_path_package_name(os.getcwd())
+    if not app_name:
+        raise UsageError('Could not determine the current application name.  Is the CWD a pysmvt application?')
+    try:
+        pkg_pymod = __import__(app_name , globals(), locals(), [''])
+    except ImportError, e:
+        raise UsageError('Could not import name "%s".  Is the CWD a pysmvt application?' % app_name)
+    
+    try:
+        app_pymod = __import__('%s.application' % app_name , globals(), locals(), [''])
+    except ImportError, e:
+        raise UsageError('Could not import name "%s.application".  Is the CWD a pysmvt application?' % app_name)
+    
+    pkg_dir = path.dirname(pkg_pymod.__file__)
+    if profile:
+        wsgi_app = app_pymod.make_wsgi(profile)
+    else:
+        wsgi_app = app_pymod.make_wsgi()
+    return app_name, pkg_pymod, pkg_dir, wsgi_app

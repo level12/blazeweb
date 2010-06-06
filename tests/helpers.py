@@ -1,15 +1,11 @@
 from os import path
 
-from beaker.middleware import SessionMiddleware
-from paste.registry import RegistryManager
 from werkzeug.routing import Rule
 from pysmvt.application import WSGIApplication
 from pysmvt.middleware import full_wsgi_stack, minimal_wsgi_stack
 from pysmvt import settings
 from pysmvt.config import DefaultSettings
 from pysmvt.view import RespondingViewBase
-
-
 
 class TestSettings(DefaultSettings):
     def init(self):

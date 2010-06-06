@@ -1,13 +1,8 @@
-import os, sys
+import os
 from pysutils.config import QuickSettings
 from pysutils.helpers import tolist
 
-here = os.path.dirname(os.path.abspath(__file__))
-base_path = os.path.join(here, 'test-output')
-
-from scripttest import TestFileEnvironment
-
-env = TestFileEnvironment(base_path)
+from scripting_helpers import env, script_test_path, here
 
 def run_application(testapp, *args, **kw):
     cwd = os.path.join(here, 'apps', testapp)
@@ -32,6 +27,7 @@ def test_app_usage():
     assert 'Serve the application' in result.stdout
     assert 'testrun' in result.stdout
     assert 'tasks' in result.stdout
+    assert 'shell' in result.stdout
     
 def test_bad_profile():
     result = run_application('minimal2', '-p', 'profilenotthere', expect_error = True)
@@ -81,14 +77,18 @@ def test_app_tasks():
     res = run_application('minimal2', 'tasks', 'init_data', '-t')
     assert 'minimal2.tasks.init_data:action_010' in res.stdout
     assert 'doit' not in res.stdout
-    
+
+def test_app_routes():
+    res = run_application('minimal2', 'routes')
+    assert "['/[pysmvt_test]', '/']" in res.stdout, res.stdout
+
 def test_minimal_project_checkout_and_functionality():
     projname = 'pysminimalprojtest_no_name_clash_hopefully'
     res = env.run('pip', 'uninstall', projname, '-y', expect_error=True)
     assert 'not installed' in res.stdout or 'Succesfully uninstalled' in res.stdout
     result = run_pysmvt('project', '-t', 'minimal', '--no-interactive', projname)
     assert len(result.files_created) == 9
-    env.run('python', 'setup.py', 'develop', cwd=os.path.join(base_path, projname + '-dist'))
+    env.run('python', 'setup.py', 'develop', cwd=os.path.join(script_test_path, projname + '-dist'))
     res = env.run(projname)
     assert 'Usage: %s [global_options]' % projname in res.stdout
     res = env.run(projname, 'testrun')
