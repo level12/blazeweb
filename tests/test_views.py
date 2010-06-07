@@ -1,9 +1,11 @@
 import unittest
 
+from werkzeug import Client, BaseResponse
+
+import config
 from pysmvt import settings
 from pysmvttestapp.applications import make_wsgi
 from pysmvttestapp2.applications import make_wsgi as make_wsgi2
-from werkzeug import Client, BaseResponse
 from pysmvt.exceptions import ProgrammingError
 
 class TestViews(unittest.TestCase):

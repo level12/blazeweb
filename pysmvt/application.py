@@ -12,6 +12,7 @@ import pysmvt
 from pysmvt import session, rg, user, config, _getview, modimport
 from pysmvt.config import DefaultSettings
 from pysmvt.exceptions import ForwardException, ProgrammingError
+#from pysmvt.hierarchy import HierarchyManager
 from pysmvt.logs import _create_handlers_from_settings
 from pysmvt.mail import mail_programmers
 from pysmvt.view import function_view_handler
@@ -32,6 +33,8 @@ class Application(object):
             self.settings = getattr(module, profile)()
         self.ag = BlankObject()
         self.ag.view_functions = {}
+        self.ag.import_cache = {}
+        #self.hierarchy_setup()
         self.registry_setup()
         self.filesystem_setup()
         self.settings_setup()
@@ -50,6 +53,9 @@ class Application(object):
     #    # and not make this change if the application is running in one.
     #    settings.dirs.writeable = path.join(self.basedir, 'writeable')
     #    return settings
+    
+    def hierarchy_setup(self):
+        self.ag.hm = HierarchyManager()
     
     def registry_setup(self):
         pysmvt.settings._push_object(self.settings)

@@ -73,8 +73,10 @@ class DefaultSettings(QuickSettings):
         # supporting applications
         self.supporting_apps = []
         
-        # application modules from our application or supporting applications
+        # these values are controlled by '.enabled' attributes
+        self.apps = ModulesSettings()
         self.modules = ModulesSettings()
+        self.plugins = ModulesSettings()
         
         #######################################################################
         # ROUTING
@@ -277,7 +279,13 @@ class DefaultSettings(QuickSettings):
         # should we use Werkzeug's SharedData middleware for serving static
         # files?
         self.static_files.enabled = True
-        
+    
+    def add_app(self, appname):
+        self.apps.set_dotted('%s.enabled' % appname, True)
+        app = getattr(self.apps, appname)
+        app.plugins = ModulesSettings()
+        return app
+    
     def apply_test_settings(self):
         """
             changes settings to the defaults for testing

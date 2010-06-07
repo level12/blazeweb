@@ -1,0 +1,3 @@
+
+class AppLevelView(object):
+    pass

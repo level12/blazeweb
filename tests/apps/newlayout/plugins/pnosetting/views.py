@@ -1,0 +1,3 @@
+
+class FakeView(object):
+    pass
