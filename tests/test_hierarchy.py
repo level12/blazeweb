@@ -5,7 +5,7 @@ from traceback import extract_tb
 from nose.tools import eq_
 
 from pysutils.error_handling import traceback_depth, get_current_traceback, display_tb
-from pysmvt.hierarchy import hm
+from pysmvt.hierarchy import hm, findview
 from pysmvt.testing import logging_handler
 
 import config
@@ -14,68 +14,169 @@ from newlayout.application import make_wsgi
 app = make_wsgi()
 
 def test_plugin_view():
-    view = hm.find_view('news:FakeView')
-    assert 'newlayout.plugins.news.views.FakeView' in str(view)
+    view = findview('news:FakeView')
+    assert 'newlayout.plugins.news.views.FakeView' in str(view), view
     
+    from plugstack.news.views import FakeView
+    assert view is FakeView, (view, FakeView)
+
+def test_plugstack_import_overrides():
+    import newlayout.plugins.news.views as nlviews
+    import newsplug1.views as np1views
+    import nlsupporting.plugins.news as nlsnews
+    
+    from plugstack.news.views import FakeView
+    assert nlviews.FakeView is FakeView
+    
+    # test with "as"
+    from plugstack.news.views import FakeView as psFakeView
+    assert nlviews.FakeView is psFakeView
+    
+    # test two attributes from different modules
+    from plugstack.news.views import FakeView, InNewsPlug1
+    assert nlviews.FakeView is psFakeView
+    assert np1views.InNewsPlug1 is InNewsPlug1
+
+    # testing import from main module
+    from plugstack.news import somefunc
+    assert nlsnews.somefunc is somefunc
+    
+def test_plugin_import_failures():    
+    # test non-attribute import
+    try:
+        import plugstack.news.views
+        assert False
+    except ImportError, e:
+        if 'non-attribute importing is not supported' not in str(e):
+            raise
+        
+    # test no module found
+    try:
+        from plugstack.something.notthere import foobar
+        assert False
+    except ImportError, e:
+        assert str(e) == 'module "something.notthere" not found; searched plugstack'
+    
+    # test module exists, but attribute not found
+    try:
+        from plugstack.news.views import nothere
+        assert False
+    except ImportError, e:
+        assert str(e) == 'attribute "nothere" not found; searched plugstack.news.views'
+        
+    # test importing from plugstack directly
+    try:
+        from plugstack import news
+        assert False
+    except ImportError, e:
+        if 'No module named plugstack' not in str(e):
+            raise
+
+def test_appstack_import_overrides():
+    import newlayout.views as nlviews
+    import nlsupporting.views as nlsviews
+    
+    from appstack.views import AppLevelView, AppLevelView2
+    assert nlviews.AppLevelView is AppLevelView
+    assert nlsviews.AppLevelView2 is AppLevelView2
+
+def test_appstack_import_failures():
+    # test non-attribute import
+    try:
+        import appstack.views
+        assert False
+    except ImportError, e:
+        if 'non-attribute importing is not supported' not in str(e):
+            raise
+        
+    # test no module found
+    try:
+        from appstack.notthere import foobar
+        assert False
+    except ImportError, e:
+        if str(e) != 'module "notthere" not found; searched appstack':
+            raise
+    
+    # test module exists, but attribute not found
+    try:
+        from appstack.views import notthere
+        assert False
+    except ImportError, e:
+        assert str(e) == 'attribute "notthere" not found; searched appstack.views'
+        
+    # test importing from plugstack directly
+    try:
+        from appstack import views
+        assert False
+    except ImportError, e:
+        if 'No module named appstack' not in str(e):
+            raise
+
 def test_package_plugin():
-    view = hm.find_view('news:InNewsPlug1')
+    view = findview('news:InNewsPlug1')
     assert 'newsplug1.views.InNewsPlug1' in str(view)
     
 def test_package_plugin_two_deep():
-    view = hm.find_view('news:InNewsPlug2')
+    view = findview('news:InNewsPlug2')
     assert 'newsplug2.views.InNewsPlug2' in str(view)
     
 def test_from_supporting_app_internal_plugin():
-    view = hm.find_view('news:InNlSupporting')
+    view = findview('news:InNlSupporting')
     assert 'nlsupporting.plugins.news.views.InNlSupporting' in str(view)
     
 def test_from_supporting_app_external_plugin():
-    view = hm.find_view('news:InNewsPlug3')
+    view = findview('news:InNewsPlug3')
     assert 'newsplug3.views.InNewsPlug3' in str(view)
     
 def test_package_plugin_priority():
     # upper external plugins have priority over lower externals
-    view = hm.find_view('news:News1HasPriority')
+    view = findview('news:News1HasPriority')
     assert 'newsplug1.views.News1HasPriority' in str(view)
     
     # plugins in the application have priority over externals
-    view = hm.find_view('news:InAppHasPriority')
+    view = findview('news:InAppHasPriority')
     assert 'newlayout.plugins.news.views.InAppHasPriority' in str(view)
 
 def test_cache():
     eh = logging_handler('pysmvt.hierarchy')
-    view = hm.find_view('news:OnlyForCache')
+    view1 = findview('news:OnlyForCache')
     dmesgs = ''.join(eh.messages['debug'])
     assert 'in cache' not in dmesgs , dmesgs
     eh.reset()
-    view = hm.find_view('news:OnlyForCache')
+    view2 = findview('news:OnlyForCache')
     dmesgs = ''.join(eh.messages['debug'])
     assert 'in cache' in dmesgs , dmesgs
+    
+    assert view1 is view2, (view1, view2)
 
 def test_app_level_view():
-    view = hm.find_view('appstack:AppLevelView')
+    view = findview('AppLevelView')
     assert 'newlayout.views.AppLevelView' in str(view), view
     
 def test_disabled_plugin():
     try:
-        view = hm.find_view('pdisabled:FakeView')
+        view = findview('pdisabled:FakeView')
+        assert False
     except ImportError, e:
-        assert 'pdisabled:FakeView' in str(e)
+        assert 'module "pdisabled.views" not found; searched plugstack' in str(e)
 
 def test_no_setting_plugin():
     try:
-        view = hm.find_view('pnosetting:FakeView')
+        view = findview('pnosetting:FakeView')
+        assert False
     except ImportError, e:
-        assert 'pnosetting:FakeView' in str(e)
+        assert 'module "pnosetting.views" not found' in str(e)
 
 def test_good_plugin_but_object_not_there():
     try:
-        view = hm.find_view('news:nothere')
+        view = findview('news:nothere')
+        assert False
     except ImportError, e:
-        assert 'news:nothere' in str(e)
+        assert 'attribute "nothere" not found; searched plugstack.news.views' in str(e)
         
 def test_import_error_in_target_gets_raised():
     try:
-        view = hm.find_view('badimport:nothere')
+        view = findview('badimport:nothere')
+        assert False
     except ImportError, e:
         assert 'No module named foo' == str(e), e

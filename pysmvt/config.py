@@ -74,7 +74,6 @@ class DefaultSettings(QuickSettings):
         self.supporting_apps = []
         
         # these values are controlled by '.enabled' attributes
-        self.apps = ModulesSettings()
         self.modules = ModulesSettings()
         self.plugins = ModulesSettings()
         
@@ -286,6 +285,17 @@ class DefaultSettings(QuickSettings):
         app.plugins = ModulesSettings()
         return app
     
+    def add_plugin(self, appname, namespace, package=None):
+        if not hasattr(self.plugins, appname):
+            setattr(self.plugins, appname, ModulesSettings())
+        self.set_dotted('plugins.%s.%s.enabled' % (appname, namespace), True)
+        if package:
+            cvalue = self.get_dotted('plugins.%s.%s.packages' % (appname, namespace))
+            if not cvalue:
+                self.set_dotted('plugins.%s.%s.packages' % (appname, namespace), [package])
+                return
+            cvalue.append(package)
+        
     def apply_test_settings(self):
         """
             changes settings to the defaults for testing
