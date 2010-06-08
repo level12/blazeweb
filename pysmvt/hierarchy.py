@@ -29,14 +29,6 @@ class HierarchyManager(object):
         self.builtin_import = __builtin__.__import__
         self.replace_builtin()
 
-    def apps_list(self, reverse=False):
-        if reverse:
-            apps = list(settings.supporting_apps)
-            apps.reverse()
-            apps.append(settings.appname)
-            return apps
-        return [settings.appname] + settings.supporting_apps
-
     def replace_builtin(self):
         __builtin__.__import__ = self.pysmvt_import
         log.debug('HierarchyManager replaced __builtin__.__import__')
@@ -51,6 +43,50 @@ class HierarchyManager(object):
             return instack_collection
         return self.builtin_import(name, globals, locals, fromlist, level)
 hm = HierarchyManager()
+
+
+def listapps(reverse=False):
+    if reverse:
+        apps = list(settings.supporting_apps)
+        apps.reverse()
+        apps.append(settings.appname)
+        return apps
+    return [settings.appname] + settings.supporting_apps
+
+def listplugins(reverse=False):
+    """
+        a flat list of the namespace of each enabled plugin
+    """
+    retval = list(set([pname for _, pname, _ in list_plugin_mappings()]))
+    if reverse:
+        retval.reverse()
+    return retval
+
+def list_plugin_mappings(target_plugin=None, reverse=False):
+    """
+        a list of tuples: (app name, plugin name, package name)
+
+        package name will be none of the location of the plugin is internal
+    """
+    retval = []
+    for app in listapps():
+        aplugins = getattr(settings.pluginmap, app)
+        for pname in aplugins.keys():
+            if target_plugin is None or pname == target_plugin:
+                retval.append((app, pname, None))
+                try:
+                    for package in aplugins.get_dotted('%s.packages' % pname):
+                        retval.append((app, pname, package))
+                except AttributeError, e:
+                    if 'packages' not in str(e):
+                        raise
+    if reverse:
+        retval.reverse()
+    return retval
+
+def mapplugins(callable, reverse=True):
+    for pair in listplugins(reverse):
+        callable(*pair)
 
 def findview(endpoint):
     """
@@ -84,6 +120,7 @@ def findfile(endpoint_path):
 
         Raises: FileNotFound if the path can not be found in the hierarchy
     """
+    log.debug('findfile() looking for: %s' % endpoint_path)
     fpath = FileFinderBase.findfile(endpoint_path)
     if not fpath:
         raise FileNotFound('could not find: %s' % endpoint_path)
@@ -135,18 +172,18 @@ class FileFinderBase(object):
         if fullpath:
             return fullpath
 
-        for app in hm.apps_list():
-            fullpath = self.search_in_app(app)
-            if fullpath:
-                ag.hierarchy_file_cache[self.cachekey] = fullpath
-                return fullpath
+        fullpath = self.search_apps()
+        if fullpath:
+            ag.hierarchy_file_cache[self.cachekey] = fullpath
+            return fullpath
 
 class AppFileFinder(FileFinderBase):
 
-    def search_in_app(self, app):
-        testpath = ospath.join(self.package_dir(app), self.pathpart)
-        if ospath.exists(testpath):
-            return testpath
+    def search_apps(self):
+        for app in listapps():
+            testpath = ospath.join(self.package_dir(app), self.pathpart)
+            if ospath.exists(testpath):
+                return testpath
 
 class PluginFileFinder(FileFinderBase):
 
@@ -157,24 +194,12 @@ class PluginFileFinder(FileFinderBase):
         self.plugin = plugin
         FileFinderBase.__init__(self, pathpart)
 
-    def search_in_app(self, app):
-        try:
-            psettings = settings.plugins.get_dotted('%s.%s' % (app, self.plugin))
-        except AttributeError:
-            psettings = None
-        if not psettings or not psettings.enabled:
-            log.debug('the plugin %s is not enabled for app %s' % (self.plugin, app))
-            return
-
-        # look in the application's source directory for the path first
-        testpath = ospath.join(self.package_dir(app), 'plugins', self.plugin, self.pathpart)
-        if ospath.exists(testpath):
-            return testpath
-
-        # look in the application's external plugins
-        packages = psettings.get('packages')
-        for package in tolist(packages):
-            testpath = ospath.join(self.package_dir(package), self.pathpart)
+    def search_apps(self):
+        for app, pname, package in list_plugin_mappings(self.plugin):
+            if not package:
+                testpath = ospath.join(self.package_dir(app), 'plugins', self.plugin, self.pathpart)
+            else:
+                testpath = ospath.join(self.package_dir(package), self.pathpart)
             if ospath.exists(testpath):
                 return testpath
 
@@ -221,10 +246,7 @@ class FinderBase(object):
     def _search(self):
         module = self.cached_module()
         if not module:
-            for app in hm.apps_list():
-                module = self.search_in_app(app)
-                if module:
-                    break
+            module = self.search_apps()
         return module
 
     def try_import(self, dlocation):
@@ -252,11 +274,12 @@ class AppFinder(FinderBase):
     def assign_cachekey(self):
         self.cachekey = '%s:%s' % (self.location, self.attr)
 
-    def search_in_app(self, app):
-        dlocation = '%s.%s' % (app, self.location)
-        module = self.try_import(dlocation)
-        if module:
-            return module
+    def search_apps(self):
+        for app in listapps():
+            dlocation = '%s.%s' % (app, self.location)
+            module = self.try_import(dlocation)
+            if module:
+                return module
 
 class PluginFinder(FinderBase):
     type = 'plugstack'
@@ -272,25 +295,12 @@ class PluginFinder(FinderBase):
     def assign_cachekey(self):
         self.cachekey = '%s.%s:%s' % (self.plugin, self.location, self.attr)
 
-    def search_in_app(self, app):
-        try:
-            psettings = settings.plugins.get_dotted('%s.%s' % (app, self.plugin))
-        except AttributeError:
-            psettings = None
-        if not psettings or not psettings.enabled:
-            log.debug('the plugin %s is not enabled for app %s' % (self.plugin, app))
-            return
-
-        # look in the application's source directory for plugins first
-        dlocation = '%s.plugins.%s.%s' % (app, self.plugin, self.location)
-        module = self.try_import(dlocation)
-        if module:
-            return module
-
-        # look in the application's external plugins
-        packages = psettings.get('packages')
-        for package in tolist(packages):
-            dlocation = '%s.%s' % (package, self.location)
+    def search_apps(self):
+        for app, pname, package in list_plugin_mappings(self.plugin):
+            if not package:
+                dlocation = '%s.plugins.%s.%s' % (app, self.plugin, self.location)
+            else:
+                dlocation = '%s.%s' % (package, self.location)
             module = self.try_import(dlocation)
             if module:
                 return module

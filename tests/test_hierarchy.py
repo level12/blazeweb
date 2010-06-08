@@ -1,17 +1,17 @@
 import __builtin__
 import sys
-from traceback import extract_tb
 
 from nose.tools import eq_
 
 from pysmvt.hierarchy import hm, findview, HierarchyImportError, findfile, \
-    FileNotFound, findobj
+    FileNotFound, findobj, listplugins, list_plugin_mappings
 from pysutils.testing import logging_handler
 
 import config
 from newlayout.application import make_wsgi
 
-app = make_wsgi()
+def setup_module():
+    app = make_wsgi()
 
 def test_plugin_view():
     view = findview('news:FakeView')
@@ -233,3 +233,20 @@ def test_findobj():
 
     view = findobj('views', 'AppLevelView')
     assert 'newlayout.views.AppLevelView' in str(view), view
+
+def test_list_plugins():
+    plist = ['news', 'badimport']
+    eq_(plist, listplugins())
+
+    plist.reverse()
+    eq_(plist, listplugins(reverse=True))
+
+def test_plugin_mappings():
+    plist = [('newlayout', 'news', None), ('newlayout', 'news', 'newsplug1'), ('newlayout', 'news', 'newsplug2'), ('newlayout', 'badimport', None), ('nlsupporting', 'news', None), ('nlsupporting', 'news', 'newsplug3')]
+    eq_(plist, list_plugin_mappings())
+
+    plist.reverse()
+    eq_(plist, list_plugin_mappings(reverse=True))
+
+    plist = [('newlayout', 'news', None), ('newlayout', 'news', 'newsplug1'), ('newlayout', 'news', 'newsplug2'), ('nlsupporting', 'news', None), ('nlsupporting', 'news', 'newsplug3')]
+    eq_(plist, list_plugin_mappings('news'))
