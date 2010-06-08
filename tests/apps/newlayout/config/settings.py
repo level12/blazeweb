@@ -10,10 +10,12 @@ class Default(nlDefault):
         self.dirs.base = basedir
         self.appname = appname
         nlDefault.init(self)
-        
+
         self.supporting_apps.append('nlsupporting')
         self.setup_plugins()
-        
+
+        self.plugins.news.bar = 3
+
     def setup_plugins(self):
         """
             plugins need to be in order of importance, so supporting apps
@@ -22,7 +24,7 @@ class Default(nlDefault):
         self.add_plugin(appname, 'news', 'newsplug1')
         self.add_plugin(appname, 'news', 'newsplug2')
         self.add_plugin(appname, 'pdisabled')
-        self.plugins.newlayout.pdisabled.enabled = False
+        self.pluginmap.newlayout.pdisabled.enabled = False
         self.add_plugin(appname, 'badimport')
-        
+
         nlDefault.setup_plugins(self)

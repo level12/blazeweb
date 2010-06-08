@@ -1,6 +1,6 @@
 from pysmvt.application import Application, WSGIApplication
 from pysmvt.middleware import full_wsgi_stack
-import settings as settingsmod
+import config.settings as settingsmod
 
 def make_wsgi(profile='Default'):
     app = WSGIApplication(settingsmod, profile)
