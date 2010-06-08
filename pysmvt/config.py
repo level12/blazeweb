@@ -12,9 +12,9 @@ from pysmvt.exceptions import SettingsError
 from pysutils import case_us2cw, multi_pop
 from pysutils.config import QuickSettings
 
-class ModulesSettings(QuickSettings):
+class EnabledSettings(QuickSettings):
     """
-        a custom settings object for settings.modules.  The only difference
+        a custom settings object for "enabled" modules.  The only difference
         is that when iterating over the object, only modules with
         .enabled = True are returned.
     """
@@ -34,7 +34,7 @@ class ModulesSettings(QuickSettings):
             except AttributeError, e:
                 if "object has no attribute 'enabled'" not in str(e):
                     raise
-            
+
     def __iter__(self):
         for v in self._data.values():
             try:
@@ -49,10 +49,10 @@ class ModulesSettings(QuickSettings):
 
     def keys(self, showinactive=False):
         return [k for k,v in self.iteritems(showinactive)]
-    
+
     def values(self, showinactive=False):
         return [v for k,v in self.iteritems(showinactive)]
-    
+
     def todict(self, showinactive=False):
         if showinactive:
             return self._data
@@ -68,15 +68,14 @@ class DefaultSettings(QuickSettings):
     def __init__(self):
         QuickSettings.__init__(self)
         self.init()
-        
+
     def init(self):
         # supporting applications
         self.supporting_apps = []
-        
-        # these values are controlled by '.enabled' attributes
-        self.modules = ModulesSettings()
-        self.plugins = ModulesSettings()
-        
+
+        # don't want this to be empty
+        self.plugins = QuickSettings()
+
         #######################################################################
         # ROUTING
         #######################################################################
@@ -84,20 +83,20 @@ class DefaultSettings(QuickSettings):
             # a special route for testing purposes
             Rule('/[pysmvt_test]', endpoint='[pysmvt_test]')
         ]
-        
+
         # note that you shouldn't really need to use the routing prefix if
         # SCRIPT_NAME and PATH_INFO are set correctly as the Werkzeug
         # routing tools (both parsing rules and generating URLs) will
         # take these environment variables into account.
         self.routing.prefix = ''
-        
+
         # the settings for the Werkzeug routing Map object:
         self.routing.map.default_subdomain=''
         self.routing.map.charset='utf-8'
         self.routing.map.strict_slashes=True
         self.routing.map.redirect_defaults=True
         self.routing.map.converters=None
-        
+
         #######################################################################
         # DIRECTORIES required by PYSVMT
         #######################################################################
@@ -107,7 +106,7 @@ class DefaultSettings(QuickSettings):
         self.dirs.data = path.join(self.dirs.writeable, 'data')
         self.dirs.logs = path.join(self.dirs.writeable, 'logs')
         self.dirs.tmp = path.join(self.dirs.writeable, 'tmp')
-        
+
         #######################################################################
         # SESSIONS
         #######################################################################
@@ -117,19 +116,19 @@ class DefaultSettings(QuickSettings):
         self.beaker.type = 'dbm'
         self.beaker.data_dir = path.join(self.dirs.tmp, 'session_cache')
         self.beaker.lock_dir = path.join(self.dirs.tmp, 'beaker_locks')
-        
+
         #######################################################################
         # TEMPLATES
         #######################################################################
         self.template.default = 'default.html'
-        
+
         #######################################################################
         # SYSTEM VIEW ENDPOINTS
         #######################################################################
         self.endpoint.sys_error = ''
         self.endpoint.sys_auth_error = ''
         self.endpoint.bad_request_error = ''
-        
+
         #######################################################################
         # EXCEPTION HANDLING
         #######################################################################
@@ -148,7 +147,7 @@ class DefaultSettings(QuickSettings):
         # example of all:
         #   self.exception_handling = ['handle', 'format', 'email']
         self.exception_handling = ['handle', 'email']
-        
+
         #######################################################################
         # DEBUGGING
         #######################################################################
@@ -156,12 +155,12 @@ class DefaultSettings(QuickSettings):
         # to True will give a python command prompt in the stack trace
         #
         #          ******* SECURITY ALERT **********
-        # setting interactive = True would allow ANYONE who has http access to the 
+        # setting interactive = True would allow ANYONE who has http access to the
         # server to run arbitrary code.  ONLY use in an isolated development
         # environment.
         self.debugger.enabled = False
         self.debugger.interactive = False
-        
+
         #######################################################################
         # EMAIL ADDRESSES
         #######################################################################
@@ -172,10 +171,10 @@ class DefaultSettings(QuickSettings):
         self.emails.from_default = ''
         # a default reply-to header if one is not specified
         self.emails.reply_to = ''
-        
+
         ### recipient defaults.  Should be a list of email addresses
         ### ('foo@example.com', 'bar@example.com')
-        
+
         # will always add theses cc's to every email sent
         self.emails.cc_always = None
         # default cc, but can be overriden
@@ -194,7 +193,7 @@ class DefaultSettings(QuickSettings):
         # by the system.  Useful for debugging.  Original recipient information
         # will be added to the body of the email
         self.emails.override = None
-        
+
         #######################################################################
         # EMAIL SETTINGS
         #######################################################################
@@ -203,7 +202,7 @@ class DefaultSettings(QuickSettings):
         # Should we actually send email out to a SMTP server?  Setting this to
         # False can be useful when doing testing.
         self.email.is_live = True
-        
+
         #######################################################################
         # SMTP SETTINGS
         #######################################################################
@@ -212,14 +211,14 @@ class DefaultSettings(QuickSettings):
         self.smtp.user = ''
         self.smtp.password = ''
         self.smtp.use_tls = False
-        
+
         #######################################################################
         # OTHER DEFAULTS
         #######################################################################
         self.default_charset = 'utf-8'
         self.default.file_mode = 0640
         self.default.dir_mode = 0750
-        
+
         #######################################################################
         # ERROR DOCUMENTS
         #######################################################################
@@ -227,7 +226,7 @@ class DefaultSettings(QuickSettings):
         # is detected to try and give the user a more consistent experience
         # self.error_docs[404] = 'errorsmod:NotFound'
         self.error_docs
-        
+
         #######################################################################
         # TESTING
         #######################################################################
@@ -240,7 +239,7 @@ class DefaultSettings(QuickSettings):
         #      'testing:Setup.doit', # calls doit class method of Setup in myapp.testing
         #      )
         self.testing.init_callables = None
-        
+
         #######################################################################
         # Log Files
         ######################################################################
@@ -264,43 +263,38 @@ class DefaultSettings(QuickSettings):
         # be found for logger ...".  Enable the null_handler to get rid of
         # those messages.  But, you should *really* enable logging of some kind.
         self.logs.null_handler.enabled = False
-        
+
         # log http requests.  You must put HttpRequestLogger middleware
         # in your WSGI stack, preferrably as the last application so that its
         # the first middleware in the stack
         self.logs.http_requests.enabled = False
         self.logs.http_requests.filters.path_info = None
         self.logs.http_requests.filters.request_method = None
-        
+
         #######################################################################
         # Static Files
         ######################################################################
         # should we use Werkzeug's SharedData middleware for serving static
         # files?
         self.static_files.enabled = True
-    
-    def add_app(self, appname):
-        self.apps.set_dotted('%s.enabled' % appname, True)
-        app = getattr(self.apps, appname)
-        app.plugins = ModulesSettings()
-        return app
-    
+
     def add_plugin(self, appname, namespace, package=None):
-        if not hasattr(self.plugins, appname):
-            setattr(self.plugins, appname, ModulesSettings())
-        self.set_dotted('plugins.%s.%s.enabled' % (appname, namespace), True)
+        # a little hack to get the default value to hang an application's
+        # plugin's off of
+        self.pluginmap._data.setdefault(appname, EnabledSettings())
+        self.set_dotted('pluginmap.%s.%s.enabled' % (appname, namespace), True)
         if package:
-            cvalue = self.get_dotted('plugins.%s.%s.packages' % (appname, namespace))
+            cvalue = self.get_dotted('pluginmap.%s.%s.packages' % (appname, namespace))
             if not cvalue:
-                self.set_dotted('plugins.%s.%s.packages' % (appname, namespace), [package])
+                self.set_dotted('pluginmap.%s.%s.packages' % (appname, namespace), [package])
                 return
             cvalue.append(package)
-        
+
     def apply_test_settings(self):
         """
             changes settings to the defaults for testing
         """
-        # nose has good log capturing facilities, so just let it rid
+        # nose has good log capturing facilities, so just let it ride
         self.logs.enabled=False
         # don't want pesky error messages
         self.logs.null_handler.enabled = True
