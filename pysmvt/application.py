@@ -24,49 +24,36 @@ from pysmvt.wrappers import Request
 log = logging.getLogger(__name__)
 
 class Application(object):
-    
+
     def __init__(self, module_or_settings, profile=None):
         self._id = randhash()
         self.settings = module_or_settings
         if profile is not None:
             module = module_or_settings
             self.settings = getattr(module, profile)()
-        self.ag = BlankObject()
-        self.ag.view_functions = {}
-        self.ag.import_cache = {}
-        #self.hierarchy_setup()
+        self.ag_setup()
         self.registry_setup()
         self.filesystem_setup()
         self.settings_setup()
         self.logging_setup()
         self.routing_setup()
-        
-    #def settings_extraction(self, module_or_settings, profile):
-    #    if klass:
-    #        return klass(self.name, self.basedir)
-    #    if settings_mod is not None and profile is not None:
-    #        return getattr(settings_mod, profile)(self.name, self.basedir)
-    #    # no settings were given, so we give the default settings
-    #    settings = DefaultSettings(self.name, self.basedir)
-    #    # but we change the writeable directory to the base directory assuming
-    #    # a more simple setup.  We could eventully test for a virtualenv
-    #    # and not make this change if the application is running in one.
-    #    settings.dirs.writeable = path.join(self.basedir, 'writeable')
-    #    return settings
-    
-    def hierarchy_setup(self):
-        self.ag.hm = HierarchyManager()
-    
+
     def registry_setup(self):
         pysmvt.settings._push_object(self.settings)
         pysmvt.ag._push_object(self.ag)
-    
+
+    def ag_setup(self):
+        self.ag = BlankObject()
+        self.ag.view_functions = {}
+        self.ag.hierarchy_import_cache = {}
+        self.ag.hierarchy_file_cache = {}
+
     def filesystem_setup(self):
         # create the writeable directories if they don't exist already
         mkdirs(self.settings.dirs.data)
         mkdirs(self.settings.dirs.logs)
         mkdirs(self.settings.dirs.tmp)
-    
+
     def settings_setup(self):
         # now we need to assign modules' settings to the main setting object
         for module in self.settings.modules.keys():
@@ -83,27 +70,27 @@ class Application(object):
                 # depth means a different import error, and we want to raise that
                 if not traceback_depth_in(3):
                     raise
-        
+
         # lock the settings, this ensures that an attribute error is thrown if an
         # attribute is accessed that doesn't exist.  Without the lock, a new attr
         # would be created, which is undesirable since any "new" attribute at this
         # point would probably be an accident
         self.settings.lock()
-    
+
     def logging_setup(self):
         _create_handlers_from_settings(self.settings)
-    
+
     def routing_setup(self):
         self.ag.route_map = Map(**self.settings.routing.map.todict())
-           
+
         # application routes
         self.add_routing_rules(self.settings.routing.routes)
-       
-        # module routes        
+
+        # module routes
         for module in self.settings.modules:
             if hasattr(module, 'routes'):
                 self.add_routing_rules(module.routes)
-    
+
     def add_routing_rules(self, rules):
         if self.settings.routing.prefix:
             # prefix the routes with the prefix in the app settings class
@@ -111,25 +98,25 @@ class Application(object):
         else:
             for rule in rules or ():
                 self.ag.route_map.add(rule)
-    
+
     def start_request(self, environ=None):
         rg._push_object(Context())
-        
+
         # create a fake environment if needed
         if not environ:
             environ = create_environ('/[pysmvt_test]')
-        
+
         # this might throw an exception, but we are letting that go
         # b/c we need to make sure the url adapter gets created
         rg.urladapter = self.ag.route_map.bind_to_environ(environ)
-    
+
     def console_dispatch(self, callable, environ=None):
         self.start_request(environ)
         try:
             callable()
         finally:
             self.end_request()
-    
+
     def end_request(self):
         rg._pop_object()
 
@@ -137,7 +124,7 @@ class RequestManager(object):
     def __init__(self, app, environ):
         self.app = app
         self.environ = environ
-        
+
     def registry_setup(self):
         environ = self.environ
         environ['paste.registry'].register(pysmvt.settings, self.app.settings)
@@ -149,17 +136,17 @@ class RequestManager(object):
             environ['paste.registry'].register(session, None)
             environ['paste.registry'].register(user, None)
         environ['paste.registry'].register(rg, BlankObject())
-    
+
     def rg_setup(self):
         # WSGI request setup
         rg.ident = randchars()
         rg.environ = self.environ
         # the request object binds itself to rg.request
         Request(self.environ)
-    
+
     def routing_setup(self):
         rg.urladapter = pysmvt.ag.route_map.bind_to_environ(self.environ)
-    
+
     def user_setup(self):
         environ = self.environ
         try:
@@ -184,7 +171,7 @@ class RequestManager(object):
         if 'pysmvt.request_teardown' in self.environ:
             for callable in self.environ['pysmvt.request_teardown']:
                 callable()
-        
+
 class ResponseContext(object):
     def __init__(self, error_doc_code):
         self.environ = rg.environ
@@ -217,13 +204,13 @@ class WSGIApplication(Application):
 
     def __init__(self, module_or_settings, profile=None):
         Application.__init__(self, module_or_settings, profile)
-    
+
     def request_manager(self, environ):
         return RequestManager(self, environ)
-        
+
     def response_context(self, error_doc_code):
         return ResponseContext(error_doc_code)
-        
+
     def response_cycle(self, endpoint, args, called_from=None, error_doc_code=None):
         rg.forward_queue = [(endpoint, args)]
         while True:
@@ -252,7 +239,7 @@ class WSGIApplication(Application):
             except Exception, e:
                 response = self.handle_exception(e)
             return response(environ, start_response)
-    
+
     def handle_http_exception(self, e):
         """Handles an HTTP exception.  By default this will invoke the
         registered error handlers and fall back to returning the
@@ -273,7 +260,7 @@ class WSGIApplication(Application):
         except Exception, exc:
             log.debug('error doc endpoint %s raised exception: %s', endpoint, exc)
             return self.handle_exception(exc)
-    
+
     def handle_exception(self, e):
         """Default exception handling that kicks in when an exception
         occours that is not catched.  In debug mode the exception will
