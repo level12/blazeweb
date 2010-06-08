@@ -4,6 +4,7 @@ import logging
 from pysutils import case_cw2us
 from pysmvt import ag, settings
 from pysmvt.exceptions import ProgrammingError
+from pysmvt.hierarchy import findfile, FileNotFound
 from pysmvt.utils import safe_strftime
 from jinja2 import FileSystemLoader, Environment, TemplateNotFound
 from jinja2.loaders import split_template_path
@@ -74,41 +75,39 @@ class AppTemplateLoader(FileSystemLoader):
         self.encoding = encoding
         self.modname = modname
 
-    def get_source(self, environment, template):
-        if ':' in template:
-            modname, template = template.split(':', 1)
-        else:
-            modname = self.modname
-        pieces = split_template_path(template)
-        modppath = path.join('modules', modname, 'templates', *pieces)
-        apppath = path.join('templates', *pieces)
-        log.debug('template modpath: %s', modppath)
-        log.debug('template apppath: %s', apppath)
+    def find_template_path(self, template):
+        # try module level first
         try:
-            fpath = appfilepath(modppath, apppath)
-        except ProgrammingError, e:
-            if 'could not locate' in str(e):
-                # in view.py, we default a template name to the name of the view class
-                # which results in a CapWordsFileName.  But file names should be
-                # underscore_notation.  This needs to be fixed in view.py eventually,
-                # but that requires us to update all our template file names.  So
-                # I am doing it here as a hack.  We can depricate the old later.
-                log.debug('could not locate template file, trying underscore version')
-                utemplate = case_cw2us(template)
-                if utemplate == template:
-                    log.debug('underscore version was the same')
-                    raise TemplateNotFound(template)
-                pieces = split_template_path(utemplate)
-                modppath = path.join('modules', self.modname, 'templates', *pieces)
-                apppath = path.join('templates', *pieces)
-                log.debug('utemplate modpath: %s', modppath)
-                log.debug('utemplate apppath: %s', apppath)
-                try:
-                    fpath = appfilepath(modppath, apppath)
-                except ProgrammingError, e:
-                    if 'could not locate' in str(e):
-                        raise TemplateNotFound(template)
-                    raise
+            if ':' not in template:
+                endpoint = '%s:templates/%s' % (self.modname, template)
+            return findfile(endpoint)
+        except FileNotFound:
+            pass
+        # try app level second if module wasn't specified
+        try:
+            if ':' not in template:
+                endpoint = 'templates/%s' % template
+                return findfile(endpoint)
+        except FileNotFound:
+            pass
+
+    def get_source(self, environment, template):
+        log.debug('get_source() processing: %s' % template)
+        fpath = self.find_template_path(template)
+        if not fpath:
+            # in view.py, we default a template name to the name of the view class
+            # which results in a CapWordsFileName.  But file names should be
+            # underscore_notation.  This needs to be fixed in view.py eventually,
+            # but that requires us to update all our template file names.  So
+            # I am doing it here as a hack.  We can depricate the old later.
+            log.debug('could not locate template file, trying underscore version')
+            utemplate = case_cw2us(template)
+            if utemplate == template:
+                log.debug('underscore version was the same')
+                raise TemplateNotFound(template)
+            fpath = self.find_template_path(utemplate)
+            if not fpath:
+                raise TemplateNotFound(template)
         f = file(fpath)
         try:
             contents = f.read().decode(self.encoding)
