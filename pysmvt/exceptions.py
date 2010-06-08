@@ -16,7 +16,7 @@ class Redirect(HTTPException):
         self.description = 'You are being redirected to: %s' % location
         self.location = location
         HTTPException.__init__(self)
-        
+
     def get_headers(self, environ):
         """Get a list of headers."""
         return [('Content-Type', 'text/html'),

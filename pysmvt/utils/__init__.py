@@ -4,7 +4,7 @@ import re
 import logging
 from traceback import format_exc
 from pprint import PrettyPrinter
-from pysmvt import settings, user, ag, forward, rg, modimport, appimport
+from pysmvt import settings, user, ag, forward, rg
 from werkzeug import run_wsgi_app, create_environ
 from nose.tools import make_decorator
 from formencode.validators import URL

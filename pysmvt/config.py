@@ -3,7 +3,7 @@ from os import path
 import os
 import logging
 import re
-from pysmvt import appimport, settings, ag, modimport
+from pysmvt import settings, ag
 from pysmvt.logs import _create_handlers_from_settings
 from werkzeug.routing import Rule, Map, Submount
 from pysmvt.utils import OrderedDict, Context, tb_depth_in

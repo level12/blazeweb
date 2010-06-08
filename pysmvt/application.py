@@ -9,7 +9,7 @@ from pysutils.datastructures import BlankObject
 from pysutils.strings import randchars
 from pysutils.error_handling import traceback_depth_in
 import pysmvt
-from pysmvt import session, rg, user, config, _getview, modimport
+from pysmvt import session, rg, user, config, _getview
 from pysmvt.config import DefaultSettings
 from pysmvt.exceptions import ForwardException, ProgrammingError
 #from pysmvt.hierarchy import HierarchyManager

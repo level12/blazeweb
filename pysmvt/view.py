@@ -2,7 +2,7 @@ from decorator import decorator
 from os import path
 from traceback import format_exc
 import logging
-from pysmvt import settings, user, ag, _getview, rg, appimportauto
+from pysmvt import settings, user, ag, _getview, rg
 from pysmvt.routing import add_prefix
 from pysmvt.utils import reindent, auth_error, bad_request_error, \
     urlslug, markdown, registry_has_object, werkzeug_multi_dict_conv
