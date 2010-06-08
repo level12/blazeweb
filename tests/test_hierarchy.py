@@ -5,7 +5,7 @@ from traceback import extract_tb
 from nose.tools import eq_
 
 from pysmvt.hierarchy import hm, findview, HierarchyImportError, findfile, \
-    FileNotFound
+    FileNotFound, findobj
 from pysutils.testing import logging_handler
 
 import config
@@ -226,3 +226,10 @@ def test_findfile_cache():
     dmesgs = ''.join(eh.messages['debug'])
     assert 'in cache' in dmesgs , dmesgs
     eh.reset()
+
+def test_findobj():
+    view = findobj('news:views', 'FakeView')
+    assert 'newlayout.plugins.news.views.FakeView' in str(view), view
+
+    view = findobj('views', 'AppLevelView')
+    assert 'newlayout.views.AppLevelView' in str(view), view

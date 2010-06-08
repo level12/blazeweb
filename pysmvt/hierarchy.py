@@ -89,6 +89,21 @@ def findfile(endpoint_path):
         raise FileNotFound('could not find: %s' % endpoint_path)
     return fpath
 
+def findobj(endpoint, attr):
+    """
+        Allows hieararchy importing based on strings:
+
+        findobject('news:views', 'Index') => from plugstack.news.views import Index
+        findobject('views', 'Index') => from appstack.views import Index
+    """
+    if ':' in endpoint:
+        plugin, impname = endpoint.split(':')
+        impstring = 'plugstack.%s.%s' % (plugin, impname)
+    else:
+        impstring = 'appstack.%s' % endpoint
+    collector = ImportOverrideHelper.doimport(impstring, [attr])
+    return getattr(collector, attr)
+
 class FileFinderBase(object):
 
     def __init__(self, pathpart):
