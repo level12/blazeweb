@@ -6,7 +6,7 @@ from nose.tools import eq_
 
 from pysmvt.hierarchy import hm, findview, HierarchyImportError, findfile, \
     FileNotFound
-from pysmvt.testing import logging_handler
+from pysutils.testing import logging_handler
 
 import config
 from newlayout.application import make_wsgi
@@ -137,7 +137,7 @@ def test_package_plugin_priority():
     view = findview('news:InAppHasPriority')
     assert 'newlayout.plugins.news.views.InAppHasPriority' in str(view)
 
-def test_cache():
+def test_import_cache():
     eh = logging_handler('pysmvt.hierarchy')
     view1 = findview('news:OnlyForCache')
     dmesgs = ''.join(eh.messages['debug'])
@@ -215,3 +215,14 @@ def test_plugin_findfile():
         assert False
     except FileNotFound:
         pass
+
+def test_findfile_cache():
+    eh = logging_handler('pysmvt.hierarchy')
+    fullpath = findfile('templates/forcache.txt')
+    dmesgs = ''.join(eh.messages['debug'])
+    assert 'in cache' not in dmesgs , dmesgs
+    eh.reset()
+    fullpath = findfile('templates/forcache.txt')
+    dmesgs = ''.join(eh.messages['debug'])
+    assert 'in cache' in dmesgs , dmesgs
+    eh.reset()

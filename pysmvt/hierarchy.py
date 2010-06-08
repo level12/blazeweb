@@ -93,6 +93,16 @@ class FileFinderBase(object):
 
     def __init__(self, pathpart):
         self.pathpart = ospath.normpath(pathpart)
+        self.assign_cachekey()
+
+    def assign_cachekey(self):
+        self.cachekey = self.pathpart
+
+    def cached_path(self):
+        fullpath = ag.hierarchy_file_cache.get(self.cachekey)
+        if fullpath:
+            log.debug('found %s in cache: %s', self.cachekey, fullpath)
+            return fullpath
 
     @classmethod
     def findfile(cls, endpoint_path):
@@ -106,9 +116,14 @@ class FileFinderBase(object):
         return ospath.dirname(package_mod.__file__)
 
     def search(self):
+        fullpath = self.cached_path()
+        if fullpath:
+            return fullpath
+
         for app in hm.apps_list():
             fullpath = self.search_in_app(app)
             if fullpath:
+                ag.hierarchy_file_cache[self.cachekey] = fullpath
                 return fullpath
 
 class AppFileFinder(FileFinderBase):
@@ -120,9 +135,12 @@ class AppFileFinder(FileFinderBase):
 
 class PluginFileFinder(FileFinderBase):
 
+    def assign_cachekey(self):
+        self.cachekey = '%s:%s' % (self.plugin, self.pathpart)
+
     def __init__(self, plugin, pathpart):
-        FileFinderBase.__init__(self, pathpart)
         self.plugin = plugin
+        FileFinderBase.__init__(self, pathpart)
 
     def search_in_app(self, app):
         try:
@@ -158,7 +176,7 @@ class FinderBase(object):
         return self.location
 
     def cached_module(self):
-        module_location = ag.import_cache.get(self.cachekey)
+        module_location = ag.hierarchy_import_cache.get(self.cachekey)
         if module_location:
             module = hm.builtin_import(module_location, globals(), locals(), [''])
             log.debug('found %s in cache: %s', self.cachekey, module)
@@ -199,7 +217,7 @@ class FinderBase(object):
             foundmod = hm.builtin_import(dlocation, globals(), locals(), [''])
             if self.attr is None or hasattr(foundmod, self.attr):
                 log.debug('found %s: %s', self.cachekey, dlocation)
-                ag.import_cache[self.cachekey] = dlocation
+                ag.hierarchy_import_cache[self.cachekey] = dlocation
                 return foundmod
         except ImportError, e:
             msg = str(e)

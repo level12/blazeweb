@@ -16,7 +16,6 @@ __all__ = [
     '_getview',
     'getview',
     'db',
-    'appfilepath',
 ]
 
 # a "global" object for storing data and objects (like tcp connections or db

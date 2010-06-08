@@ -2,7 +2,7 @@
 from os import path
 import logging
 from pysutils import case_cw2us
-from pysmvt import ag, settings, appfilepath
+from pysmvt import ag, settings
 from pysmvt.exceptions import ProgrammingError
 from pysmvt.utils import safe_strftime
 from jinja2 import FileSystemLoader, Environment, TemplateNotFound
@@ -11,9 +11,9 @@ from jinja2.loaders import split_template_path
 log = logging.getLogger(__name__)
 
 class JinjaBase(object):
-    
+
     def __init__(self, endpoint):
-        
+
         # setup some needed attributes.  We have to do this at runtime instead
         # of putting them as class attributes b/c the class atrributes are
         # shared among instantiated classes
@@ -22,20 +22,20 @@ class JinjaBase(object):
         self._templateValues = {}
 
         app_mod_name = endpoint.split(':')[0]
-                
+
         # change jinja tag style
         self.setOptions()
-        
+
         # Setup Jinja template environment only once per process
         if hasattr(ag, 'templateEnv'):
             self.jinjaTemplateEnv = ag.templateEnv
         else:
             ag.jinjaTemplateEnv = self.templateEnv = Environment(**self._jinjaEnvOptions)
             ag.jinjaTemplateEnv.filters['strftime'] = safe_strftime
-        
+
         # setup the AppTemplateLoader for each view that uses a template
         self.templateEnv.loader = AppTemplateLoader(app_mod_name)
-        
+
     def setOptions(self):
         #jinja stuff has to be setup before we call parent init
         self._jinjaEnvOptions = {
@@ -46,11 +46,11 @@ class JinjaBase(object):
                 'comment_start_string' : '<#',
                 'comment_end_string' : '#>',
             }
-    
+
     def render(self):
         template = self.templateEnv.get_template(self.templateName + '.' + self.tpl_extension)
         return template.render(self._templateValues)
-    
+
     def assign(self, key, value):
         self._templateValues[key] = value
 
@@ -60,7 +60,7 @@ class JinjaHtmlBase(JinjaBase):
 
         # call parent init
         JinjaBase.__init__(self, modulePath)
-        
+
         #setup my own initilization values
         self.tpl_extension = 'html'
 
