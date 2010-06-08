@@ -1,77 +1,77 @@
 """
     == Making The Plugins Available ==
-    
+
     If pysmvt is installed, you should see the following in the output of
     `nosetests --help`:
-    
+
         ...
         --pysmvt-app-profile=PYSMVT_PROFILE
                     The name of the test profile in settings.py
         ...
-    
+
     == Using the Plugins ==
-    
+
     You **must** be inside a pysmvt application's package directory for
     these plugins to work:
-    
+
         `cd .../myproject/src/myapp-dist/myapp/`
-    
+
     === Init Current App Plugin ===
-    
+
     This plugin does two things:
-        
+
         - initializes a WSGI application for the current application
           (optionally allowing you to specify which profile you want used
           to initlize the application)
         - automatically includes test's from packages if so defined in the
           profile which is loaded.
-    
+
     You don't have to do anything explicit to use this plugin.  It is
     enabled automatically when `nosetests` is run from inside an
     application's directory structure.  Assuming your make_wsgi() function
     is setup correctly, globaly proxy objects like 'ag' should now function
     correctly.  Request level objects, like 'rg' will not yet be available
     however.
-    
+
     In order to get access to the wsgi application that was instantiated,
     you can do:
-        
+
         from pysmvt import ag
-        
+
         testapp = ag._wsgi_test_app
-        
+
     `testapp` could now be used w/ werkzeug.Client or webtest.TestApp
-    
+
     The default profile used with this plugin is 'Test'.  If you need to
     specifiy a different profile, do:
-        
+
         `nosetests  --pymvt-app-profile=mytestprofile`
-        
+
     To include tests from packges outside the application's directory
     structure, you can put a `testing.include_pkgs` attribute in your test
     profile. For example:
-    
+
         class TestPysapp(Test):
             def __init__(self):
                 # call parent init to setup default settings
                 Test.__init__(self)
-                
+
                 # include pysapp tests
                 self.testing.include_pkgs = 'pysapp'
         testpysapp = TestPysapp
-    
+
     Running:
-        
+
         `nosetests  --pysmvt-app-profile=testpysapp`
-    
+
     Would be equivelent to running:
-    
+
         `nosetests pysapp`
-    
+
     Packages can also be specified as a list/tuple:
-        
+
         # include multiple tests
-        self.testing.include_pkgs = ('pysapp', 'somepkg')        
+        self.testing.include_pkgs = ('pysapp', 'somepkg')
 """
 
 import os
@@ -105,7 +105,7 @@ class InitCurrentAppPlugin(nose.plugins.Plugin):
     val_disable = False
     opt_debug = 'pysmvt_debug'
     val_debug = False
-    
+
     def add_options(self, parser, env=os.environ):
         """Add command-line options for this plugin"""
         env_opt = 'NOSE_WITH_%s' % self.name.upper()
@@ -116,25 +116,25 @@ class InitCurrentAppPlugin(nose.plugins.Plugin):
                           default="Test",
                           help="The name of the test profile in settings.py"
                         )
-        
+
         parser.add_option("--pysmvt-appname",
                           dest=self.opt_app_name, type="string",
                           help="The name of the application's package, defaults"
                           " to top package of current working directory"
                         )
-        
+
         parser.add_option("--pysmvt-disable",
                           dest=self.opt_disable,
                           action="store_true",
                           help="Disable plugin"
                         )
-        
+
         parser.add_option("--pysmvt-debug",
                           dest=self.opt_debug,
                           action="store_true",
                           help="Disable plugin"
                         )
-        
+
     def configure(self, options, conf):
         """Configure the plugin"""
         self.val_disable = getattr(options, self.opt_disable, False)
@@ -145,10 +145,10 @@ class InitCurrentAppPlugin(nose.plugins.Plugin):
                 self.val_app_name = getattr(options, self.opt_app_name)
             try:
                 _, _, _, wsgiapp = load_current_app(self.val_app_name, self.val_app_profile)
-                
+
                 # make the app available to the tests
                 ag.wsgiapp = wsgiapp
-                
+
                 # an application can define functions to be called after the app
                 # is initialized but before any test inspection is done or tests
                 # are ran.  We call those functions here:
@@ -158,7 +158,7 @@ class InitCurrentAppPlugin(nose.plugins.Plugin):
             except UsageError, e:
                 if options.pysmvt_debug:
                     raise
-                self.val_disable = True            
+                self.val_disable = True
 
     def loadTestsFromNames(self, names, module=None):
         if not self.val_disable:
@@ -169,7 +169,7 @@ class InitCurrentAppPlugin(nose.plugins.Plugin):
                     raise
 
 class Client(WClient):
-    
+
     def open(self, *args, **kwargs):
         """
             if follow_redirects is requested, a (BaseRequest, response) tuple
@@ -189,7 +189,7 @@ def mock_smtp(cancel_override=True):
         functional or unit testing by mocking SMTP lib objects with the
         MiniMock library and giving the test function the tracker object
         to do tests with.
-        
+
         :param cancel_override: in testing, we often will have email_overrides
             set so that emails don't get sent out for real.  Since this function
             prevents live emails from being sent, we will most often want
@@ -197,7 +197,7 @@ def mock_smtp(cancel_override=True):
             email tested is exactly what would be sent out if the emails were
             live.
         :raises: :exc:`ImportError` if the MiniMock library is not installed
-        
+
     Example use::
 
     @mock_smtp()
@@ -213,12 +213,12 @@ Called smtp_connection.quit()""" % (form_data['email_address'], form_data['email
         # make sure only one email is sent out.  Can't == b/c from address
         # will change, but length is ~837, so 1000 seems safe
         assert len(mm_tracker.dump()) <= 1000, len(mm_tracker.dump())
-          
+
         @mock_smtp()
         def test_that_fails():
             assert mm_tracker.check('Called smtp_connection.sendmail(...%s...has been issu'
                         'ed to reset the password...' % user.email_address)
-    
+
     Other tracker methods::
         mm_tracker.dump(): returns minimock usage captured so far
         mm_tracker.diff(): returns diff of expected output and actual output
@@ -250,41 +250,16 @@ Called smtp_connection.quit()""" % (form_data['email_address'], form_data['email
         return newfunc
     return decorate
 
-class LoggingHandler(logging.Handler):
-    """ logging handler to check for expected logs when testing"""
-
-    def __init__(self, *args, **kwargs):
-        self.reset()
-        logging.Handler.__init__(self, *args, **kwargs)
-
-    def emit(self, record):
-        self.messages[record.levelname.lower()].append(record.getMessage())
-
-    def reset(self):
-        self.messages = {
-            'debug': [],
-            'info': [],
-            'warning': [],
-            'error': [],
-            'critical': [],
-        }
-
-def logging_handler(logger_to_examine):
-    lr = logging.getLogger(logger_to_examine)
-    lh = LoggingHandler()
-    lr.addHandler(lh)
-    return lh
-
 class TestResponse(BaseResponse):
 
     @cached_property
     def fdata(self):
         return self.filter_data()
-    
+
     @cached_property
     def wsdata(self):
         return self.filter_data(strip_links=False)
-        
+
     def filter_data(self, normalize_ws=True, strip_links=True):
         data = super(TestResponse, self).data
         if normalize_ws:
@@ -315,7 +290,7 @@ if WTTestApp:
                 "You must have PyQuery installed to use response.pyquery")
         d = PyQuery(self.body)
         return d
-    
+
     WTTestResponse.pyq = property(pyquery, doc=pyquery.__doc__)
 else:
     def TestApp(object):
@@ -341,4 +316,3 @@ def inrequest(f, *args, **kwargs):
         return f(*args, **kwargs)
     finally:
         rg._pop_object()
-    
