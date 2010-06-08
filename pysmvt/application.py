@@ -12,7 +12,7 @@ import pysmvt
 from pysmvt import session, rg, user, config, _getview
 from pysmvt.config import DefaultSettings
 from pysmvt.exceptions import ForwardException, ProgrammingError
-#from pysmvt.hierarchy import HierarchyManager
+from pysmvt.hierarchy import findobj, HierarchyImportError, mapplugins, listplugins
 from pysmvt.logs import _create_handlers_from_settings
 from pysmvt.mail import mail_programmers
 from pysmvt.view import function_view_handler
@@ -55,20 +55,22 @@ class Application(object):
         mkdirs(self.settings.dirs.tmp)
 
     def settings_setup(self):
-        # now we need to assign modules' settings to the main setting object
-        for module in self.settings.modules.keys():
+        # now we need to assign plugin's settings to the main setting object
+        for pname in listplugins():
             try:
-                Settings = modimport('%s.settings' % module, 'Settings')
+                Settings = findobj('%s:config.settings' % pname, 'Settings')
                 ms = Settings()
-                # update the module's settings with any module level settings made
-                # at the app level.  This allows us to override module settings
-                # in our applications settings.py file.
-                ms.update(self.settings.modules[module])
-                self.settings.modules[module] = ms
-            except ImportError:
-                # 3 = .settings or Settings wasn't found, which is ok.  Any other
-                # depth means a different import error, and we want to raise that
-                if not traceback_depth_in(3):
+                # update the plugin's settings with any plugin level settings made
+                # at the app level.  This allows us to override plugin settings
+                # in our application's settings.py file.
+                try:
+                    ms.update(self.settings.plugins[pname])
+                except KeyError, e:
+                    if pname not in str(e):
+                        raise
+                self.settings.plugins[pname] = ms
+            except HierarchyImportError, e:
+                if '%s.config.settings' % pname not in str(e) and 'Settings' not in str(e):
                     raise
 
         # lock the settings, this ensures that an attribute error is thrown if an
@@ -81,20 +83,25 @@ class Application(object):
         _create_handlers_from_settings(self.settings)
 
     def routing_setup(self):
+        # setup the Map object with the appropriate settings
         self.ag.route_map = Map(**self.settings.routing.map.todict())
 
-        # application routes
+        # application routes first since they should take precedence
         self.add_routing_rules(self.settings.routing.routes)
 
-        # module routes
-        for module in self.settings.modules:
-            if hasattr(module, 'routes'):
-                self.add_routing_rules(module.routes)
+        # now the routes from plugin settings
+        for pname in self.settings.plugins.keys():
+            psettings = self.settings.plugins[pname]
+            try:
+                self.add_routing_rules(psettings.routes)
+            except AttributeError, e:
+                if "no attribute 'routes'" not in str(e):
+                    raise
 
     def add_routing_rules(self, rules):
         if self.settings.routing.prefix:
             # prefix the routes with the prefix in the app settings class
-            self.ag.route_map.add(Submount( self.settings.routing.prefix, rules ))
+            self.ag.route_map.add(Submount(self.settings.routing.prefix, rules ))
         else:
             for rule in rules or ():
                 self.ag.route_map.add(rule)
@@ -231,7 +238,11 @@ class WSGIApplication(Application):
     def wsgi_app(self, environ, start_response):
         with self.request_manager(environ):
             try:
-                endpoint, args = rg.urladapter.match()
+                try:
+                    endpoint, args = rg.urladapter.match()
+                except HTTPException, e:
+                    log.debug('routing HTTP exception %s from %s', e, rg.request.url)
+                    raise
                 log.debug('wsgi_app processing %s (%s)', endpoint, args)
                 response = self.response_cycle(endpoint, args)
             except HTTPException, e:
