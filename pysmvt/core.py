@@ -58,29 +58,20 @@ def _getview(endpoint, args, called_from ):
     """
         called_from options: client, forward, getview, template
     """
+    from pysmvt.hierarchy import HierarchyImportError, findview
     from pysmvt.view import RespondingViewBase
-    from pysmvt.utils import tb_depth_in
 
     app_mod_name, vclassname = endpoint.split(':')
 
-    try:
-        vklass = modimport('%s.views' % app_mod_name, vclassname, False)
-        if called_from in ('client', 'forward', 'error docs'):
-            if not issubclass(vklass, RespondingViewBase):
-                if called_from == 'client':
-                    raise ProgrammingError('Route exists to non-RespondingViewBase view "%s"' % vklass.__name__)
-                elif called_from == 'error docs':
-                    raise ProgrammingError('Error document handling endpoint used non-RespondingViewBase view "%s"' % vklass.__name__)
-                else:
-                    raise ProgrammingError('forward to non-RespondingViewBase view "%s"' % vklass.__name__)
-    except ImportError, e:
-        # traceback depth of 3 indicates we can't find the module or we can't
-        # find the class in a module
-        if tb_depth_in(3):
-            msg = 'Could not load view "%s": %s' % (endpoint, str(e))
-            log.info(msg)
-            raise ProgrammingError(msg)
-        raise
+    vklass = findview(endpoint)
+    if called_from in ('client', 'forward', 'error docs'):
+        if not issubclass(vklass, RespondingViewBase):
+            if called_from == 'client':
+                raise ProgrammingError('Route exists to non-RespondingViewBase view "%s"' % vklass.__name__)
+            elif called_from == 'error docs':
+                raise ProgrammingError('Error document handling endpoint used non-RespondingViewBase view "%s"' % vklass.__name__)
+            else:
+                raise ProgrammingError('forward to non-RespondingViewBase view "%s"' % vklass.__name__)
 
     vmod_dir = path.dirname(sys.modules[vklass.__module__].__file__)
 
