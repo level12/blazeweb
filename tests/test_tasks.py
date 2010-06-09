@@ -16,8 +16,8 @@ class TestTasks(object):
         eq_( run_tasks(('init-db', 'init-data'), print_call=False),
         {'init-db': [
                 ('action_000', 'pysmvttestapp.tasks.init_db', 'pysmvttestapp.tasks.init_db'),
-                ('action_001', 'pysmvttestapp.plugins.routingtests.tasks.init_db', 'pysmvttestapp.modules.routingtests.tasks.init_db'),
-                ('action_001', 'pysmvttestapp.plugins.tests.tasks.init_db', 'pysmvttestapp2.modules.tests.tasks.init_db'),
+                ('action_001', 'pysmvttestapp.plugins.routingtests.tasks.init_db', 'pysmvttestapp.plugins.routingtests.tasks.init_db'),
+                ('action_001', 'pysmvttestapp.plugins.tests.tasks.init_db', 'pysmvttestapp2.plugins.tests.tasks.init_db'),
                 ('action_001', 'pysmvttestapp.tasks.init_db', 'pysmvttestapp.tasks.init_db'),
                 ('action_002', 'pysmvttestapp.tasks.init_db', 'pysmvttestapp.tasks.init_db'),
             ],
