@@ -71,11 +71,11 @@ def test_app_tasks():
     assert res.stdout.strip() == ''
 
     res = run_application('minimal2', 'tasks', 'init_data')
-    assert 'minimal2.tasks.init_data:action_010' in res.stdout
+    assert 'appstack.tasks.init_data:action_010' in res.stdout, res
     assert 'doit' in res.stdout
 
     res = run_application('minimal2', 'tasks', 'init_data', '-t')
-    assert 'minimal2.tasks.init_data:action_010' in res.stdout
+    assert 'appstack.tasks.init_data:action_010' in res.stdout
     assert 'doit' not in res.stdout
 
 def test_app_routes():
