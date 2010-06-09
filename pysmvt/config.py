@@ -279,11 +279,16 @@ class DefaultSettings(QuickSettings):
         self.static_files.enabled = True
 
         #######################################################################
-        # Importing Helper
+        # Automatic Actions
         ######################################################################
         # when using @asviews, the view modules need to be loaded after the
         # app is initialized so that the routes get setup properly
         self.auto_load_views = False
+
+        # should we copy static files every time an app is loaded?  Useful
+        # for dev environments.
+        self.auto_copy_static.enabled = False
+        self.auto_copy_static.delete_existing = True
 
     def add_plugin(self, appname, namespace, package=None):
         # a little hack to get the default value to hang an application's

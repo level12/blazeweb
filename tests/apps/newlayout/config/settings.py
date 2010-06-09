@@ -31,3 +31,9 @@ class Default(nlDefault):
         self.add_plugin(appname, 'badimport')
 
         nlDefault.setup_plugins(self)
+
+class AutoCopyStatic(Default):
+    def init(self):
+        Default.init(self)
+
+        self.auto_copy_static.enabled = True

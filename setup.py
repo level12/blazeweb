@@ -27,10 +27,10 @@ Steps for creating a working application
 #. `python setup.py -q develop`
 #.  `nosetests` you should get three succesful tests
 #. `cd myapp`
-#. `pysmvt serve <user>` run a development http server with the user's settings 
+#. `pysmvt serve <user>` run a development http server with the user's settings
    profile
 #. point your browser at http://localhost:5000/
-    
+
 Creating a New Application Module
 ---------------------------------
 This step creates a Application Module directory structure in myapp/modules/<mymod>:
@@ -99,11 +99,11 @@ setup(
     entry_points="""
     [console_scripts]
     pysmvt = pysmvt.scripting:pysmvt_entry
-    
+
     [pysmvt.no_app_command]
     help=paste.script.help:HelpCommand
     project = pysmvt.commands:ProjectCommand
-    
+
     [pysmvt.app_command]
     serve = pysmvt.commands:ServeCommand
     help = paste.script.help:HelpCommand
@@ -111,14 +111,15 @@ setup(
     tasks = pysmvt.commands:TasksCommand
     shell = pysmvt.commands:ShellCommand
     routes = pysmvt.commands:RoutesCommand
-    
+    static-copy = pysmvt.commands:StaticCopyCommand
+
     [pysmvt.pysmvt_project_template]
     pysmvt = pysmvt.paster_tpl:ProjectTemplate
     minimal = pysmvt.paster_tpl:MinimalProjectTemplate
-    
+
     [pysmvt.pysmvt_module_template]
     pysmvt = pysmvt.paster_tpl:ModuleTemplate
-    
+
     [nose.plugins]
     pysmvt_initcurrentapp = pysmvt.testing:InitCurrentAppPlugin
     """,

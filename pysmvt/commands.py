@@ -7,6 +7,7 @@ from pysmvt.paster_tpl import run_template
 from pysmvt import ag, settings
 from pysmvt.tasks import run_tasks
 from pysutils.helpers import pprint
+from pysmvt.utils.filesystem import copy_static_files
 
 import paste.script.command as pscmd
 
@@ -224,3 +225,22 @@ class RoutesCommand(pscmd.Command):
                 else:
                     toprint.append(rule.rule)
             pprint(toprint)
+
+class StaticCopyCommand(pscmd.Command):
+        # Parser configuration
+        summary = "copy's app and plugin static files to the designated location"
+        usage = ""
+
+        min_args = 0
+        max_args = 0
+
+        parser = pscmd.Command.standard_parser(verbose=False)
+        parser.add_option('-d', '--delete-existing',
+                      dest='delete_existing',
+                      action='store_true',
+                      default=False,
+                      help='Delete "app" and "plugin" directories in the destination if they exist')
+
+        def command(self):
+            copy_static_files(delete_existing=self.options.delete_existing)
+            print '\n - files/dirs copied succesfully\n'

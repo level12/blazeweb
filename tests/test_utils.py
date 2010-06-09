@@ -61,3 +61,11 @@ class TestFirstApp(object):
 
         # other items in the static directory are still there
         assert path.exists(root_fpath)
+
+def test_auto_copy():
+    env.clear()
+    app = make_wsgi('AutoCopyStatic')
+
+    # make sure at least one file is there from the static copies
+    assert_contents('newlayout', path.join('newlayout', 'static', 'app', 'statictest.txt'))
+    env.clear()

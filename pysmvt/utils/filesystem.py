@@ -1,5 +1,5 @@
 """
-Portions of this module were taken from shutil.py in the Python 2.6.5 stadard
+Portions of this module were taken from shutil.py in the Python 2.6.5 standard
 library.
 
 - modified copytree() to work when the directory exists

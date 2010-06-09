@@ -18,7 +18,7 @@ from pysmvt.mail import mail_programmers
 from pysmvt.view import function_view_handler
 from pysmvt.users import User
 from pysmvt.utils import randhash, Context, exception_with_context
-from pysmvt.utils.filesystem import mkdirs
+from pysmvt.utils.filesystem import mkdirs, copy_static_files
 from pysmvt.wrappers import Request
 
 log = logging.getLogger(__name__)
@@ -30,11 +30,16 @@ class Application(object):
         self.settings = module_or_settings
         if profile is not None:
             module = module_or_settings
-            self.settings = getattr(module, profile)()
+            try:
+                self.settings = getattr(module, profile)()
+            except AttributeError, e:
+                if "has no attribute '%s'" % profile not in str(e):
+                    raise
+                raise ValueError('settings profile "%s" not found in this application' % profile)
         self.ag_setup()
         self.registry_setup()
-        self.filesystem_setup()
         self.settings_setup()
+        self.filesystem_setup()
         self.logging_setup()
         self.routing_setup()
 
@@ -47,12 +52,6 @@ class Application(object):
         self.ag.view_functions = {}
         self.ag.hierarchy_import_cache = {}
         self.ag.hierarchy_file_cache = {}
-
-    def filesystem_setup(self):
-        # create the writeable directories if they don't exist already
-        mkdirs(self.settings.dirs.data)
-        mkdirs(self.settings.dirs.logs)
-        mkdirs(self.settings.dirs.tmp)
 
     def settings_setup(self):
         # now we need to assign plugin's settings to the main setting object
@@ -78,6 +77,15 @@ class Application(object):
         # would be created, which is undesirable since any "new" attribute at this
         # point would probably be an accident
         self.settings.lock()
+
+    def filesystem_setup(self):
+        # create the writeable directories if they don't exist already
+        mkdirs(self.settings.dirs.data)
+        mkdirs(self.settings.dirs.logs)
+        mkdirs(self.settings.dirs.tmp)
+        # copy static files if requested
+        if self.settings.auto_copy_static.enabled:
+            copy_static_files(self.settings.auto_copy_static.delete_existing)
 
     def logging_setup(self):
         _create_handlers_from_settings(self.settings)

@@ -28,10 +28,11 @@ def test_app_usage():
     assert 'testrun' in result.stdout
     assert 'tasks' in result.stdout
     assert 'shell' in result.stdout
+    assert 'static-copy' in result.stdout
 
 def test_bad_profile():
     result = run_application('minimal2', '-p', 'profilenotthere', expect_error = True)
-    assert 'could not find settings profile' in result.stdout
+    assert 'settings profile "profilenotthere" not found in this application' in result.stdout
 
 def test_pysmvt_usage():
     result = run_pysmvt()
