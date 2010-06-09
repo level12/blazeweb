@@ -278,6 +278,13 @@ class DefaultSettings(QuickSettings):
         # files?
         self.static_files.enabled = True
 
+        #######################################################################
+        # Importing Helper
+        ######################################################################
+        # when using @asviews, the view modules need to be loaded after the
+        # app is initialized so that the routes get setup properly
+        self.auto_load_views = False
+
     def add_plugin(self, appname, namespace, package=None):
         # a little hack to get the default value to hang an application's
         # plugin's off of

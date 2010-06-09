@@ -13,18 +13,9 @@ class Settings(DefaultSettings):
         DefaultSettings.init(self)
 
 settings = Settings()
-# uncomment the next line if you are NOT using a virtualenv
-#settings.dirs.writeable = path.join(settings.basedir, 'writeable')
 
 app = WSGIApplication(settings)
 wsgiapp = minimal_wsgi_stack(app)
-
-#def script_entry():
-#    run_app_script(make_wsgi)
-#    import views
-#
-#if __name__ == '__main__':
-#    script_entry()
 
 @asview()
 def helloworld():
@@ -53,11 +44,11 @@ def cooler(SEOonly=None, foo=None, bar=None, willstaynone=None):
 @asview('/ap/<foo>', getargs=('foo'))
 def argprecedence(foo=None):
     return str(foo)
-    
+
 @asview('/tolist', getargs=('foo'))
 def tolist(foo=None):
     return str(foo)
-    
+
 @asview('/wontwork')
 def wontwork(foo):
     return 'foo'
@@ -73,7 +64,7 @@ def positionalurl(foo):
 @asview('/positional3/<foo>', getargs=('baz'))
 def positionalurl3(foo, baz):
     return foo
-    
+
 @asview()
 def cssresponse():
     rg.respctx.response = Response('body {color:black}', mimetype='text/css')
@@ -88,4 +79,3 @@ def returnwsgiapp():
         start_response('200 OK', [('Content-Type', 'text/html')])
         return ['wsgi hw']
     return hello_world
-

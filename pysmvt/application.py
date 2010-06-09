@@ -12,7 +12,8 @@ import pysmvt
 from pysmvt import session, rg, user, config, _getview
 from pysmvt.config import DefaultSettings
 from pysmvt.exceptions import ForwardException, ProgrammingError
-from pysmvt.hierarchy import findobj, HierarchyImportError, mapplugins, listplugins
+from pysmvt.hierarchy import findobj, HierarchyImportError, \
+    listplugins, visitmods
 from pysmvt.logs import _create_handlers_from_settings
 from pysmvt.mail import mail_programmers
 from pysmvt.view import function_view_handler
@@ -85,6 +86,10 @@ class Application(object):
     def routing_setup(self):
         # setup the Map object with the appropriate settings
         self.ag.route_map = Map(**self.settings.routing.map.todict())
+
+        # load view modules so routes from @asview() get setup correctly
+        if self.settings.auto_load_views:
+            visitmods('views')
 
         # application routes first since they should take precedence
         self.add_routing_rules(self.settings.routing.routes)

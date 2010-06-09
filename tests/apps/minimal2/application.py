@@ -13,16 +13,11 @@ except ImportError:
 
 def make_wsgi(profile='Default', middleware='minimal'):
     app = WSGIApplication(settingsmod, profile)
-    # need this to get the decorators to register the routes
-    import views
     # wrap our app in middleware and return
     return full_wsgi_stack(app)
 
 def script_entry():
     application_entry(make_wsgi)
-    
+
 if __name__ == '__main__':
     script_entry()
-
-
-

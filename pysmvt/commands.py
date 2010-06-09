@@ -6,7 +6,7 @@ from werkzeug.script import make_shell
 from pysmvt.paster_tpl import run_template
 from pysmvt import ag, settings
 from pysmvt.tasks import run_tasks
-from pysutils import pprint
+from pysutils.helpers import pprint
 
 import paste.script.command as pscmd
 
@@ -18,10 +18,10 @@ class ProjectCommand(pscmd.Command):
     summary = "Create a project layout using a pre-defined template"
     usage = "APP_NAME"
     group_name = ""
-    
+
     min_args = 1
     max_args = 1
-    
+
     parser = pscmd.Command.standard_parser(verbose=False)
     parser.add_option('-t', '--template',
                         dest='template',
@@ -62,7 +62,7 @@ class ServeCommand(pscmd.Command):
         # Parser configuration
         summary = "Serve the application by starting a development http server"
         usage = ""
-        
+
         parser = pscmd.Command.standard_parser(verbose=False)
         parser.add_option('-a', '--address',
                         dest='address',
@@ -125,10 +125,10 @@ class TestRunCommand(pscmd.Command):
         # Parser configuration
         summary = "runs a single request through the application"
         usage = "URL"
-        
+
         min_args = 0
         max_args = 1
-        
+
         parser = pscmd.Command.standard_parser(verbose=False)
         parser.add_option('--silent',
                       dest='silent',
@@ -151,11 +151,11 @@ class TestRunCommand(pscmd.Command):
             else:
                 url = '/'
             resp = c.get(url)
-        
+
             if options.show_headers and not options.silent:
                 print resp.status
                 print resp.headers
-            
+
             if options.show_body and not options.silent:
                 for respstr in resp.response:
                     print respstr
@@ -164,9 +164,9 @@ class TasksCommand(pscmd.Command):
         # Parser configuration
         summary = "runs task(s)"
         usage = "TASK [TASK [TASK [...]]]"
-        
+
         min_args = 1
-        
+
         parser = pscmd.Command.standard_parser(verbose=False)
         parser.add_option('-t', '--test-only',
                       dest='test_only',
@@ -180,10 +180,10 @@ class ShellCommand(pscmd.Command):
         # Parser configuration
         summary = "run a shell with an application initialized"
         usage = ""
-        
+
         min_args = 0
         max_args = 0
-        
+
         parser = pscmd.Command.standard_parser(verbose=False)
         parser.add_option('--ipython',
                       dest='use_ipython',
@@ -205,10 +205,10 @@ class RoutesCommand(pscmd.Command):
         # Parser configuration
         summary = "prints out all routes configured for the application"
         usage = ""
-        
+
         min_args = 0
         max_args = 0
-        
+
         parser = pscmd.Command.standard_parser(verbose=False)
         parser.add_option('-e', '--show-endpoints',
                       dest='show_endpoints',
@@ -224,4 +224,3 @@ class RoutesCommand(pscmd.Command):
                 else:
                     toprint.append(rule.rule)
             pprint(toprint)
-    

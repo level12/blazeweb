@@ -12,23 +12,27 @@ class Default(DefaultSettings):
         self.dirs.base = basedir
         self.appname = appname
         DefaultSettings.init(self)
-        
+
+        # since this is a quick start app, we want our views.py file to get
+        # loaded
+        self.auto_load_views = True
+
         #######################################################################
         # WRITEABLE DIRECTORY
         #######################################################################
         # this is ok for a small project, but its recommended to move this
         # out to the level of the virtualenv if you are working in one.
         self.dirs.writeable = path.join(basedir, 'writeable')
-        
+
         #######################################################################
         # EMAIL ADDRESSES
         #######################################################################
         # the default 'from' address used if no from address is specified
         self.emails.from_default = {{repr(programmer_email or '')}}
-        
+
         # programmers who would get system level notifications (code
         # broke, exception notifications, etc.)
         self.emails.programmers = [{{repr(programmer_email or '')}}]
-        
+
         # used by mail_admins() and mail_programmers()
         self.email.subject_prefix = '[%s] ' % appname

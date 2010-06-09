@@ -3,6 +3,7 @@ import logging
 from os import path as ospath
 
 from pysutils.datastructures import BlankObject
+from pysutils.error_handling import raise_unexpected_import_error
 from pysutils.helpers import tolist
 from pysmvt import ag, settings
 
@@ -62,7 +63,7 @@ def listplugins(reverse=False):
         retval.reverse()
     return retval
 
-def list_plugin_mappings(target_plugin=None, reverse=False):
+def list_plugin_mappings(target_plugin=None, reverse=False, inc_apps=False):
     """
         a list of tuples: (app name, plugin name, package name)
 
@@ -70,6 +71,8 @@ def list_plugin_mappings(target_plugin=None, reverse=False):
     """
     retval = []
     for app in listapps():
+        if inc_apps:
+            retval.append((app, None, None))
         aplugins = getattr(settings.pluginmap, app)
         for pname in aplugins.keys():
             if target_plugin is None or pname == target_plugin:
@@ -83,10 +86,6 @@ def list_plugin_mappings(target_plugin=None, reverse=False):
     if reverse:
         retval.reverse()
     return retval
-
-def mapplugins(callable, reverse=True):
-    for pair in listplugins(reverse):
-        callable(*pair)
 
 def findview(endpoint):
     """
@@ -140,6 +139,23 @@ def findobj(endpoint, attr):
         impstring = 'appstack.%s' % endpoint
     collector = ImportOverrideHelper.doimport(impstring, [attr])
     return getattr(collector, attr)
+
+def visitmods(dotpath, reverse=True):
+    """
+        Visit python modules installed in the appstack or module stack.
+    """
+    visitlist = list_plugin_mappings(inc_apps=True, reverse=reverse)
+    for app, pname, package in visitlist:
+        try:
+            if not pname and not package:
+                impstr = '%s.%s' % (app, dotpath)
+            elif package:
+                impstr = '%s.%s' % (package, dotpath)
+            else:
+                impstr = '%s.plugins.%s.%s' % (app, pname, dotpath)
+            hm.builtin_import(impstr, fromlist=[''])
+        except ImportError, e:
+            raise_unexpected_import_error(impstr, e)
 
 class FileFinderBase(object):
 

@@ -4,7 +4,7 @@ import sys
 from nose.tools import eq_
 
 from pysmvt.hierarchy import hm, findview, HierarchyImportError, findfile, \
-    FileNotFound, findobj, listplugins, list_plugin_mappings
+    FileNotFound, findobj, listplugins, list_plugin_mappings, visitmods
 from pysutils.testing import logging_handler
 
 import config
@@ -245,8 +245,26 @@ def test_plugin_mappings():
     plist = [('newlayout', 'news', None), ('newlayout', 'news', 'newsplug1'), ('newlayout', 'news', 'newsplug2'), ('newlayout', 'badimport', None), ('nlsupporting', 'news', None), ('nlsupporting', 'news', 'newsplug3')]
     eq_(plist, list_plugin_mappings())
 
+
+    plistwapps = [('newlayout',  None, None), ('newlayout', 'news', None), ('newlayout', 'news', 'newsplug1'), ('newlayout', 'news', 'newsplug2'), ('newlayout', 'badimport', None), ('nlsupporting',  None, None), ('nlsupporting', 'news', None), ('nlsupporting', 'news', 'newsplug3')]
+    eq_(plistwapps, list_plugin_mappings(inc_apps=True))
+
     plist.reverse()
     eq_(plist, list_plugin_mappings(reverse=True))
 
     plist = [('newlayout', 'news', None), ('newlayout', 'news', 'newsplug1'), ('newlayout', 'news', 'newsplug2'), ('nlsupporting', 'news', None), ('nlsupporting', 'news', 'newsplug3')]
     eq_(plist, list_plugin_mappings('news'))
+
+def test_visitmods():
+    bset = set(sys.modules.keys())
+    visitmods('tovisit')
+    aset = set(sys.modules.keys())
+    eq_(aset.difference(bset), set(['nlsupporting.tovisit', 'nlsupporting.plugins.news.tovisit', 'newlayout.plugins.badimport.tovisit', 'newsplug3.tovisit', 'newlayout.plugins.news.tovisit', 'newlayout.tovisit']))
+
+    # test that we don't catch another import error
+    try:
+        visitmods('views')
+        assert False
+    except ImportError, e:
+        if str(e) != 'No module named foo':
+            raise
