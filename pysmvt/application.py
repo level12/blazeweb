@@ -7,7 +7,6 @@ from werkzeug.routing import Map, Submount
 
 from pysutils.datastructures import BlankObject
 from pysutils.strings import randchars
-from pysutils.error_handling import traceback_depth_in
 import pysmvt
 from pysmvt import session, rg, user, config, _getview
 from pysmvt.config import DefaultSettings

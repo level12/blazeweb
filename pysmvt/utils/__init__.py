@@ -12,8 +12,7 @@ from formencode import Invalid
 from markdown2 import markdown
 from pysmvt.exceptions import Abort
 from pysutils import import_split, OrderedProperties, OrderedDict, \
-    safe_strftime, randhash, randchars, toset, tolist, traceback_depth, \
-    tb_depth_in, simplify_string, reindent
+    safe_strftime, randhash, randchars, toset, tolist, simplify_string, reindent
 
 log = logging.getLogger(__name__)
 
@@ -89,26 +88,6 @@ def _import_str(impfunc, impstr):
             return getattr(impfunc(path, object), attr)
         return impfunc(path, object)
     return impfunc(path)
-
-def tb_depth_in(depths):
-    """
-    looks at the current traceback to see if the depth of the traceback
-    matches any number in the depths list.  If a match is found, returns
-    True, else False.
-    """
-    depths = tolist(depths)
-    if traceback_depth() in depths:
-        return True
-    return False
-
-def traceback_depth(tb=None):
-    if tb == None:
-        _, _, tb = sys.exc_info()
-    depth = 0
-    while tb.tb_next is not None:
-        depth += 1
-        tb = tb.tb_next
-    return depth
 
 def werkzeug_multi_dict_conv(md):
     '''

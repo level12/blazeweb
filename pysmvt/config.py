@@ -6,7 +6,7 @@ import re
 from pysmvt import settings, ag
 from pysmvt.logs import _create_handlers_from_settings
 from werkzeug.routing import Rule, Map, Submount
-from pysmvt.utils import OrderedDict, Context, tb_depth_in
+from pysmvt.utils import OrderedDict, Context
 from pysmvt.utils.filesystem import mkdirs
 from pysmvt.exceptions import SettingsError
 from pysutils import case_us2cw, multi_pop
