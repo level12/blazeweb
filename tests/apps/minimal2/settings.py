@@ -29,6 +29,12 @@ class Test2(Default):
         self.apply_test_settings()
         print 'Test2 settings'
 
+class TestStorageDir(Default):
+    def init(self):
+        Default.init(self)
+
+        self.apply_test_settings()
+
 class NoAutoImportView(Default):
     def init(self):
         Default.init(self)

@@ -9,11 +9,11 @@ copyright applies:
 
 == SQLALCHEMY ==
 
-Some utility functions and classes were taken from Sqlalchemy.  The 
+Some utility functions and classes were taken from Sqlalchemy.  The
 code is MIT licensed and the following copyright and permission notice
 applies:
 
-    Copyright (c) 2005, 2006, 2007, 2008, 2009, 2010 Michael Bayer and contributors. 
+    Copyright (c) 2005, 2006, 2007, 2008, 2009, 2010 Michael Bayer and contributors.
     SQLAlchemy is a trademark of Michael Bayer.
 
     Permission is hereby granted, free of charge, to any person obtaining a copy of this
@@ -27,8 +27,15 @@ applies:
 Portions of code in the appications module were copied from Flask.
 
     Copyright (c) 2010 by Armin Ronacher and contributors.
-    
+
 
 == WERKZEUG ==
 
     Copyright (c) 2010 by the Werkzeug Team
+
+== PYTHON ==
+
+Some utility functions were take from Python 2.6.
+
+    Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006 Python Software Foundation; All Rights
+    Reserved

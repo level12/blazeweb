@@ -178,6 +178,7 @@ def gatherobjs(dotpath, filter):
                 modattrs.setdefault(k, v)
     visitmods(dotpath, call_with_mod=process_module)
     return collected
+
 class FileFinderBase(object):
 
     def __init__(self, pathpart):

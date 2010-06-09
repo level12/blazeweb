@@ -16,6 +16,9 @@ class Default(nlDefault):
 
         self.plugins.news.bar = 3
 
+    def get_storage_dir(self):
+        return path.join(basedir, '..', '..', 'test-output', appname)
+
     def setup_plugins(self):
         """
             plugins need to be in order of importance, so supporting apps

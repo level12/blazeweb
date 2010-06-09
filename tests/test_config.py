@@ -3,6 +3,7 @@ import unittest
 
 import pysmvt
 from pysmvt import settings
+from minimal2.application import make_wsgi as make_wsgi_min2
 from pysmvttestapp.applications import make_console
 from pysmvt.config import appslist, QuickSettings, EnabledSettings
 
@@ -342,7 +343,12 @@ class TestConfig(unittest.TestCase):
         else:
             self.fail("expected AttributeError for 'notthere'")
 
+class TestDefaultSettings(object):
 
-if __name__ == '__main__':
-    unittest.main()
-    #unittest.TextTestRunner().run(TestImports('test_callerglobals1'))
+    @classmethod
+    def setup_class(cls):
+        make_wsgi_min2('TestStorageDir')
+
+    def test_storage_dir(self):
+        # assume we are in a virtualenv
+        assert settings.dirs.storage.endswith('storage-minimal2')

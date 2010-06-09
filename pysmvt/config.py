@@ -100,9 +100,9 @@ class DefaultSettings(QuickSettings):
         #######################################################################
         # DIRECTORIES required by PYSVMT
         #######################################################################
-        self.dirs.writeable = path.join(self.dirs.base, 'writeable')
-        self.dirs.static = path.join(self.dirs.base, 'static')
-        self.dirs.templates = path.join(self.dirs.base, 'templates')
+        self.dirs.storage = path.abspath(self.get_storage_dir())
+        self.dirs.writeable = path.join(self.dirs.storage, 'writeable')
+        self.dirs.static = path.join(self.dirs.storage, 'static')
         self.dirs.data = path.join(self.dirs.writeable, 'data')
         self.dirs.logs = path.join(self.dirs.writeable, 'logs')
         self.dirs.tmp = path.join(self.dirs.writeable, 'tmp')
@@ -296,6 +296,16 @@ class DefaultSettings(QuickSettings):
                 self.set_dotted('pluginmap.%s.%s.packages' % (appname, namespace), [package])
                 return
             cvalue.append(package)
+
+    def get_storage_dir(self):
+        ## files should be stored outside the source directory so that your
+        ## application can be packaged.  We are assuming that you are in
+        ## a virtualenv.  If not, then we default to the directory above
+        ## the base directory
+        venv_dir = os.getenv('VIRTUAL_ENV')
+        if venv_dir:
+            return path.join(venv_dir, 'storage-%s' % self.appname)
+        return path.join(self.dirs.base, '..', 'storage-%s' % self.appname)
 
     def apply_test_settings(self):
         """
