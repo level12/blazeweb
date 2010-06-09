@@ -42,6 +42,7 @@ class Testruns(Default):
         self.plugins.pysmvttestapp.disabled.enabled = False
         # pysmvttestapp2 plugins
         self.add_plugin('pysmvttestapp2', 'tests')
+        self.add_plugin('pysmvttestapp2', 'routingtests')
 
 class WithLogs(Testruns):
     def init(self):

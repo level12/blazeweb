@@ -20,6 +20,7 @@ class TestTasks(object):
                 ('action_001', 'pysmvttestapp.plugins.tests.tasks.init_db', 'pysmvttestapp2.plugins.tests.tasks.init_db'),
                 ('action_001', 'pysmvttestapp.tasks.init_db', 'pysmvttestapp.tasks.init_db'),
                 ('action_002', 'pysmvttestapp.tasks.init_db', 'pysmvttestapp.tasks.init_db'),
+                ('action_005', 'pysmvttestapp.tasks.init_db', 'pysmvttestapp2.tasks.init_db'),
             ],
         'init-data': [
                 ('action_010', 'pysmvttestapp.tasks.init_data', 'lots of data'),

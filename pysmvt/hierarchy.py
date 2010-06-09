@@ -2,7 +2,7 @@ import __builtin__
 import logging
 from os import path as ospath
 
-from pysutils.datastructures import BlankObject
+from pysutils.datastructures import BlankObject, OrderedDict
 from pysutils.error_handling import raise_unexpected_import_error
 from pysutils.helpers import tolist
 from pysmvt import ag, settings
@@ -140,7 +140,7 @@ def findobj(endpoint, attr):
     collector = ImportOverrideHelper.doimport(impstring, [attr])
     return getattr(collector, attr)
 
-def visitmods(dotpath, reverse=True):
+def visitmods(dotpath, reverse=False, call_with_mod=None):
     """
         Visit python modules installed in the appstack or module stack.
     """
@@ -153,18 +153,36 @@ def visitmods(dotpath, reverse=True):
                 impstr = '%s.%s' % (package, dotpath)
             else:
                 impstr = '%s.plugins.%s.%s' % (app, pname, dotpath)
-            hm.builtin_import(impstr, fromlist=[''])
+            module = hm.builtin_import(impstr, fromlist=[''])
+            if call_with_mod:
+                call_with_mod(module, app=app, pname=pname, package=package)
         except ImportError, e:
             raise_unexpected_import_error(impstr, e)
 
+def gatherobjs(dotpath, filter):
+    """
+        like visitmods(), but instead of just importing the module it gathers
+        objects out of the module, passing them to filter to determine if they
+        should be kept or not.
+    """
+    def getkey(app, pname):
+        if not pname:
+            return 'appstack.%s' % dotpath
+        return 'plugstack.%s.%s' % (pname, dotpath)
+    collected = OrderedDict()
+    def process_module(module, app, pname, package):
+        modkey = getkey(app, pname)
+        for k, v in vars(module).iteritems():
+            if filter(k, v):
+                modattrs = collected.setdefault(modkey, OrderedDict())
+                modattrs.setdefault(k, v)
+    visitmods(dotpath, call_with_mod=process_module)
+    return collected
 class FileFinderBase(object):
 
     def __init__(self, pathpart):
         self.pathpart = ospath.normpath(pathpart)
         self.assign_cachekey()
-
-    def assign_cachekey(self):
-        self.cachekey = self.pathpart
 
     def cached_path(self):
         fullpath = ag.hierarchy_file_cache.get(self.cachekey)
@@ -194,6 +212,9 @@ class FileFinderBase(object):
             return fullpath
 
 class AppFileFinder(FileFinderBase):
+
+    def assign_cachekey(self):
+        self.cachekey = self.pathpart
 
     def search_apps(self):
         for app in listapps():
@@ -288,7 +309,7 @@ class AppFinder(FinderBase):
     type = 'appstack'
 
     def assign_cachekey(self):
-        self.cachekey = '%s:%s' % (self.location, self.attr)
+        self.cachekey = 'aopstack.%s:%s' % (self.location, self.attr)
 
     def search_apps(self):
         for app in listapps():
@@ -309,7 +330,7 @@ class PluginFinder(FinderBase):
         return '%s.%s' % (self.plugin, self.location)
 
     def assign_cachekey(self):
-        self.cachekey = '%s.%s:%s' % (self.plugin, self.location, self.attr)
+        self.cachekey = 'plugstack.%s.%s:%s' % (self.plugin, self.location, self.attr)
 
     def search_apps(self):
         for app, pname, package in list_plugin_mappings(self.plugin):
