@@ -18,23 +18,23 @@ from pysmvt.users import User
 class HttpRequestLogger(object):
     """
         Logs the full HTTP request to text files for debugging purposes
-        
+
         Note: should only be used low-request applications and/or with filters.
-        
+
         Example (<project>/applications.py):
-        
+
             def make_wsgi(profile='Default'):
-        
+
                 config.appinit(settingsmod, profile)
-                
+
                 app = WSGIApplication()
-                
+
                 <...snip...>
-                
+
                 app = HttpRequestLogger(app, enabled=True, path_info_filter='files/add', request_method_filter='post')
-                
+
                 return app
-            
+
     """
     def __init__(self, application, enabled=False, path_info_filter=None, request_method_filter=None ):
         self.log_dir = path.join(settings.dirs.logs, 'http_requests')
@@ -43,7 +43,7 @@ class HttpRequestLogger(object):
         self.enabled = enabled
         self.pi_filter = path_info_filter
         self.rm_filter = request_method_filter
-    
+
     def __call__(self, environ, start_response):
         if self.enabled:
             self.headers = EnvironHeaders(environ)
@@ -64,7 +64,7 @@ class HttpRequestLogger(object):
                 finally:
                     fh.close()
         return self.application(environ, start_response)
-    
+
     def replace_wsgi_input(self, environ):
         content_length = self.headers.get('content-length', type=int)
         limited_stream = LimitedStream(environ['wsgi.input'], content_length)
@@ -81,35 +81,31 @@ def full_wsgi_stack(app):
     """
         returns the WSGIApplication wrapped in common middleware
     """
-    
+
     settings = app.settings
-    
+
     if settings.beaker.enabled:
         app = SessionMiddleware(app, **dict(settings.beaker))
-    
+
     app = RegistryManager(app)
-    
+
     # serve static files from main app and supporting apps (need to reverse order b/c
     # middleware stack is run in bottom up order).  This works b/c if a
     # static file isn't found, the ShardDataMiddleware just forwards the request
     # to the next app.
     if settings.static_files.enabled:
-        for appname in config.appslist(reverse=True):
-            app_py_mod = __import__(appname)
-            fs_static_path = path.join(path.dirname(app_py_mod.__file__), 'static')
-            static_map = {routing.add_prefix('/') : fs_static_path}
-            app = SharedDataMiddleware(app, static_map)
-    
+        app = SharedDataMiddleware(app, {routing.add_prefix('/static/') : settings.dirs.static})
+
     # show nice stack traces and debug output if enabled
     if settings.debugger.enabled:
         app = DebuggedApplication(app, evalex=settings.debugger.interactive)
-    
+
     # log http requests, use sparingly on production servers
     if settings.logs.http_requests.enabled:
         app = HttpRequestLogger(app, True,
                 settings.logs.http_requests.filters.path_info,
                 settings.logs.http_requests.filters.request_method)
-    
+
     return app
 
 def minimal_wsgi_stack(app):

@@ -1,7 +1,9 @@
 from os import path
 
 from nose.tools import eq_
+from webtest import TestApp
 
+from pysmvt import settings
 from pysmvt.utils.filesystem import copy_static_files, mkdirs
 
 import config
@@ -17,7 +19,7 @@ class TestFirstApp(object):
 
     @classmethod
     def setup_class(cls):
-        app = make_wsgi()
+        cls.app = make_wsgi()
         env.clear()
 
     def tearDown(self):
@@ -61,6 +63,12 @@ class TestFirstApp(object):
 
         # other items in the static directory are still there
         assert path.exists(root_fpath)
+
+    def test_static_server(self):
+        copy_static_files(delete_existing=True)
+        ta = TestApp(self.app)
+        r = ta.get('/static/app/statictest.txt')
+        assert 'newlayout' in r
 
 def test_auto_copy():
     env.clear()
