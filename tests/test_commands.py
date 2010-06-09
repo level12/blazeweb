@@ -32,7 +32,7 @@ def test_app_usage():
 
 def test_bad_profile():
     result = run_application('minimal2', '-p', 'profilenotthere', expect_error = True)
-    assert 'settings profile "profilenotthere" not found in this application' in result.stdout
+    assert 'settings profile "profilenotthere" not found in this application' in result.stderr, result.stderr
 
 def test_pysmvt_usage():
     result = run_pysmvt()
