@@ -1,15 +1,18 @@
 import config
 import unittest
 
+from werkzeug import Client, BaseResponse, create_environ
+
 from pysmvt.routing import *
 from pysmvt.exceptions import SettingsError
+from pysmvt.testing import inrequest
+
 from pysmvttestapp.applications import make_wsgi
-from werkzeug import Client, BaseResponse, create_environ
 
 class RoutingSettings(config.Testruns):
     def init(self):
         config.Testruns.init(self)
-    
+
         self.routing.routes.extend([
             Rule('/<file>', endpoint='static', build_only=True),
             Rule('/c/<file>', endpoint='styles', build_only=True),
@@ -21,18 +24,16 @@ class RoutingSettings(config.Testruns):
 class Prefixsettings(RoutingSettings):
     def init(self):
         RoutingSettings.init(self)
-        
+
         self.routing.prefix = '/prefix'
 
 class TestRouting(unittest.TestCase):
-    def setUp(self):
-        self.app = config.make_console(RoutingSettings)
-        self.app.start_request()
-    
-    def tearDown(self):
-        self.app.end_request()
-        self.app = None
-    
+
+    @classmethod
+    def setup_class(cls):
+        cls.app = config.make_wsgi(RoutingSettings)
+
+    @inrequest()
     def test_routes(self):
         self.assertEqual( '/url1', url_for('mod:Url1'))
         self.assertEqual('/url1?foo=bar', url_for('mod:Url1', foo='bar'))
@@ -43,17 +44,14 @@ class TestRouting(unittest.TestCase):
         self.assertEqual('/js/test.js', js_url('test.js', app='foo'))
         self.assertEqual('https://localhost/url1', url_for('mod:Url1', _https=True))
         self.assertEqual('http://localhost/url1', url_for('mod:Url1', _https=False))
-        
+
 class TestRoutingSSL(unittest.TestCase):
-    def setUp(self):
-        self.app = config.make_console(RoutingSettings)
-        env = create_environ("/test/url", "https://localhost:8080/script")
-        self.app.start_request(env)
-    
-    def tearDown(self):
-        self.app.end_request()
-        self.app = None
-    
+
+    @classmethod
+    def setup_class(cls):
+        cls.app = config.make_wsgi(RoutingSettings)
+
+    @inrequest(create_environ("/test/url", "https://localhost:8080/script"))
     def test_routes(self):
         self.assertEqual( '/script/url1', url_for('mod:Url1'))
         self.assertEqual('/script/url1?foo=bar', url_for('mod:Url1', foo='bar'))
@@ -66,29 +64,24 @@ class TestRoutingSSL(unittest.TestCase):
         self.assertEqual('http://localhost:8080/script/url1', url_for('mod:Url1', _https=False))
 
 class TestRoutingSSLCaseSensitive(unittest.TestCase):
-    def setUp(self):
-        self.app = config.make_console(RoutingSettings)
-        env = create_environ("/test/url", "HTTPS://localhost:8080/scRipt")
-        self.app.start_request(env)
-    
-    def tearDown(self):
-        self.app.end_request()
-        self.app = None
-    
+
+    @classmethod
+    def setup_class(cls):
+        cls.app = config.make_wsgi(RoutingSettings)
+
+    @inrequest(create_environ("/test/url", "HTTPS://localhost:8080/scRipt"))
     def test_routes(self):
         self.assertEqual('https://localhost:8080/scRipt/url1', url_for('mod:Url1', True))
         self.assertEqual('https://localhost:8080/scRipt/url1', url_for('mod:Url1', _https=True))
         self.assertEqual('http://localhost:8080/scRipt/url1', url_for('mod:Url1', _https=False))
 
 class TestPrefix(unittest.TestCase):
-    def setUp(self):
-        self.app = config.make_console(Prefixsettings)
-        self.app.start_request()
-    
-    def tearDown(self):
-        self.app.end_request()
-        self.app = None
-    
+
+    @classmethod
+    def setup_class(cls):
+        cls.app = config.make_wsgi(Prefixsettings)
+
+    @inrequest()
     def test_routes(self):
         self.assertEqual('/prefix/url1', url_for('mod:Url1'))
         self.assertEqual('/prefix/url1?foo=bar', url_for('mod:Url1', foo='bar'))
@@ -102,19 +95,16 @@ class TestPrefix(unittest.TestCase):
 
 class TestCurrentUrl(unittest.TestCase):
 
-    def setUp(self):
-        self.app = make_wsgi('Testruns')
-        self.client = Client(self.app, BaseResponse)
-
-    def tearDown(self):
-        self.client = None
-        self.app = None
+    @classmethod
+    def setup_class(cls):
+        cls.app = make_wsgi('Testruns')
+        cls.client = Client(cls.app, BaseResponse)
 
     def test_in_view(self):
         r = self.client.get('routingtests/currenturl?foo=bar')
 
         self.assertEqual(r.status, '200 OK')
-        
+
         self.assertEqual(r.data, 'http://localhost/routingtests/currenturl?foo=bar')
 
     def test_arguments(self):
@@ -155,7 +145,7 @@ class TestCurrentUrl(unittest.TestCase):
         self.assertEqual('http://localhost:8080/news/list', current_url(environ=env, strip_querystring=True, https=False))
         self.assertEqual('/news/list?param=foo', current_url(environ=env, strip_host=True, https=False))
         self.assertEqual('/', current_url(root_only=True, strip_host=True, environ=env))
-    
+
     def test_qs_replace_new(self):
         env = create_environ("/news/list?page=5&perpage=10", "http://localhost:8080/")
         self.assertEqual('http://localhost:8080/news/list?page=1&perpage=10', current_url(environ=env, qs_replace={'page':1, 'foo':'bar'}))

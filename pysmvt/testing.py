@@ -221,22 +221,29 @@ else:
         def __init__(self, *args, **kwargs):
             raise ImportError('You must have WebTest installed to use TestApp')
 
-@decorator
-def inrequest(f, *args, **kwargs):
-    """
-        This sets up rg and rg.respctx before calling the decorated function.
-        Primarily used when you have to test something that depends on those
-        objects being present.
-    """
-    rg._push_object(BlankObject())
-    Request(create_environ('/[[@inrequest]]'))
-    rg.respctx = BlankObject(**{
-        'respview': None,
-        'error_doc_code': None,
-        'css': [],
-        'js': [],
-    })
-    try:
-        return f(*args, **kwargs)
-    finally:
-        rg._pop_object()
+def inrequest(environ=None):
+    def inner(f, *args, **kwargs):
+        """
+            This sets up rg and rg.respctx before calling the decorated function.
+            Primarily used when you have to test something that depends on those
+            objects and/or the environ being present.
+        """
+        rg._push_object(BlankObject())
+        if environ:
+            inner_environ = environ
+        else:
+            inner_environ = create_environ('/[[@inrequest]]')
+        rg.environ = inner_environ
+        rg.urladapter = ag.route_map.bind_to_environ(inner_environ)
+        Request(rg.environ)
+        rg.respctx = BlankObject(**{
+            'respview': None,
+            'error_doc_code': None,
+            'css': [],
+            'js': [],
+        })
+        try:
+            return f(*args, **kwargs)
+        finally:
+            rg._pop_object()
+    return decorator(inner)
