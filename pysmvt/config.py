@@ -285,6 +285,10 @@ class DefaultSettings(QuickSettings):
         self.auto_copy_static.enabled = False
         self.auto_copy_static.delete_existing = True
 
+        # should we automatically create the writeable directories: data, logs,
+        # tmp
+        self.auto_create_writeable_dirs = True
+
     def add_plugin(self, appname, namespace, package=None):
         # a little hack to get the default value to hang an application's
         # plugin's off of

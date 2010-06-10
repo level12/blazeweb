@@ -12,12 +12,12 @@ class Testruns(DefaultSettings):
         self.dirs.base = path.dirname(__file__)
         self.appname = path.basename(self.dirs.base)
         DefaultSettings.init(self)
-        
+
         #######################################################################
         # EXCEPTION HANDLING
         #######################################################################
         self.exception_handling = False
-        
+
         #######################################################################
         # DEBUGGING
         #######################################################################
@@ -31,10 +31,13 @@ class Testruns(DefaultSettings):
         # environment
         self.debugger.enabled = False
         self.debugger.format = 'interactive'
-                
+
         self.emails.from_default = 'root@localhost'
         self.emails.programmers = ['you@example.com']
         self.email.subject_prefix = '[pysvmt test app] '
+
+    def get_storage_dir(self):
+        return path.join(self.dirs.base, 'test-output', self.appname)
 
 def make_console(settings_cls=Testruns, **kwargs):
     return Application(settings_cls())

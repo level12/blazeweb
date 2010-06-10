@@ -19,7 +19,10 @@ class TestSettings(DefaultSettings):
         self.apply_test_settings()
         self.static_files.enabled = False
 
-class TestWsgiApplication(WSGIApplication): 
+    def get_storage_dir(self):
+        return path.join(self.dirs.base, 'test-output', self.appname)
+
+class TestWsgiApplication(WSGIApplication):
     def dispatch_to_view(self, endpoint, args, called_from = None):
         vklass = endpoint
         return vklass('', vklass.__name__, args)()
@@ -32,7 +35,7 @@ class AsViewHelper(RespondingViewBase):
     func_mapping = {}
     def default(self, funckey=None):
         return self.func_mapping[funckey]()
-        
+
 def asview(f):
     AsViewHelper.func_mapping[f.__name__] = f
     return f

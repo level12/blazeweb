@@ -12,6 +12,9 @@ class Settings(DefaultSettings):
         self.appname = path.basename(self.dirs.base)
         DefaultSettings.init(self)
 
+    def get_storage_dir(self):
+        return path.join(self.dirs.base, '..', 'test-output', self.appname)
+
 settings = Settings()
 
 app = WSGIApplication(settings)

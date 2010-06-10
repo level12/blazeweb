@@ -78,9 +78,10 @@ class Application(object):
 
     def filesystem_setup(self):
         # create the writeable directories if they don't exist already
-        mkdirs(self.settings.dirs.data)
-        mkdirs(self.settings.dirs.logs)
-        mkdirs(self.settings.dirs.tmp)
+        if self.settings.auto_create_writeable_dirs:
+            mkdirs(self.settings.dirs.data)
+            mkdirs(self.settings.dirs.logs)
+            mkdirs(self.settings.dirs.tmp)
         # copy static files if requested
         if self.settings.auto_copy_static.enabled:
             copy_static_files(self.settings.auto_copy_static.delete_existing)

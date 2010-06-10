@@ -15,6 +15,9 @@ class Default(DefaultSettings):
         # loaded
         self.auto_load_views = True
 
+    def get_storage_dir(self):
+        return path.join(basedir, '..', 'test-output', appname)
+
 class Test(Default):
     def init(self):
         Default.init(self)
@@ -34,6 +37,10 @@ class TestStorageDir(Default):
         Default.init(self)
 
         self.apply_test_settings()
+        self.auto_create_writeable_dirs = False
+
+    def get_storage_dir(self):
+        return DefaultSettings.get_storage_dir(self)
 
 class NoAutoImportView(Default):
     def init(self):
