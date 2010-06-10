@@ -4,7 +4,6 @@ from os import path as ospath
 
 from pysutils.datastructures import BlankObject, OrderedDict
 from pysutils.error_handling import raise_unexpected_import_error
-from pysutils.helpers import tolist
 from pysmvt import ag, settings
 
 log = logging.getLogger(__name__)

@@ -1,13 +1,12 @@
-# -*- coding: utf-8 -*-
 from os import path
 import logging
-from pysutils import case_cw2us
-from pysmvt import ag, settings
-from pysmvt.exceptions import ProgrammingError
-from pysmvt.hierarchy import findfile, FileNotFound
-from pysmvt.utils import safe_strftime
+
 from jinja2 import FileSystemLoader, Environment, TemplateNotFound
-from jinja2.loaders import split_template_path
+from pysutils.datetime import safe_strftime
+from pysutils.strings import case_cw2us
+
+from pysmvt import ag
+from pysmvt.hierarchy import findfile, FileNotFound
 
 log = logging.getLogger(__name__)
 

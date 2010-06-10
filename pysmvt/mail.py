@@ -1,7 +1,3 @@
-"""
-Tools for sending email.
-"""
-
 import logging
 import mimetypes
 import os
@@ -17,11 +13,13 @@ from email.MIMEBase import MIMEBase
 from email.Header import Header
 from email.Utils import formatdate, parseaddr, formataddr
 
+from html2text import html2text
+from markdown2 import markdown
+from pysutils.helpers import tolist
+
 from pysmvt import settings
 from pysmvt.exceptions import SettingsError
 from pysmvt.utils.encoding import smart_str, force_unicode
-from pysmvt.utils import tolist, markdown
-from html2text import html2text
 
 log = logging.getLogger(__name__)
 

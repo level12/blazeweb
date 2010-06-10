@@ -1,7 +1,7 @@
 from StringIO import StringIO
 from pysmvt import rg
 from pysmvt.wrappers import Request
-from pysmvt.test import inrequest
+from pysmvt.testing import inrequest
 
 class TestRequest(object):
 
@@ -38,7 +38,7 @@ class TestRequest(object):
         assert req.form['foo'] == u'bar'
         assert len(req.files) == 1
         assert req.files['txtfile'].filename == 'test.txt'
-        
+
     def test_from_values_outside_context(self):
         req = Request.from_values({'foo':'bar'})
         assert req.form['foo'] == 'bar'
@@ -60,5 +60,3 @@ class TestRequest(object):
         first_req = rg.request
         sec_req = Request.from_values({'foo':'bar'}, bind_to_context=True)
         assert rg.request is sec_req
-
-

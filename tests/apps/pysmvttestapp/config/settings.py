@@ -10,6 +10,11 @@ class Default(DefaultSettings):
         self.dirs.base = basedir
         self.appname = appname
         DefaultSettings.init(self)
+        
+        self.auto_copy_static.enabled = True
+
+    def get_storage_dir(self):
+        return path.join(basedir, '..', '..', 'test-output', appname)
 
 class Testruns(Default):
     def init(self):

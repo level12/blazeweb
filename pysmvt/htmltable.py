@@ -1,6 +1,6 @@
 """
     Example:
-    
+
     t = Table()
     t.name = Link('Name', 'contentbase:AttributeCategoriesUpdate', 'id')
     t.display = Col('Display')
@@ -9,11 +9,13 @@
     t.last_edited = DateTime('Last Updated')
     t.render(dic_or_list)
 """
-from pysmvt.utils import OrderedProperties, isurl
-from pysmvt.routing import url_for
+from pysutils.datastructures import OrderedProperties
 from webhelpers.html import HTML, literal
 from webhelpers.html.tags import link_to
 from webhelpers.containers import NotGiven
+
+from pysmvt.utils import isurl
+from pysmvt.routing import url_for
 
 class StringIndentHelper(object):
 
@@ -21,27 +23,27 @@ class StringIndentHelper(object):
         self.output = []
         self.level = 0
         self.indent_with = '    '
-    
+
     def dec(self, value):
         self.level -= 1
         return self.render(value)
-            
+
     def inc(self, value):
         self.render(value)
         self.level += 1
-    
+
     def __call__(self, value, **kwargs):
         self.render(value)
-    
+
     def render(self, value, **kwargs):
         self.output.append('%s%s' % (self.indent(**kwargs), value) )
-    
+
     def indent(self, level = None):
         if level == None:
             return self.indent_with * self.level
         else:
             return self.indent_with * self.level
-    
+
     def get(self):
         retval = '\n'.join(self.output)
         self.output = []
@@ -52,18 +54,18 @@ class HtmlAttributeHolder(object):
         self._cleankeys(kwargs)
         #: a dictionary that represents html attributes
         self.attributes = kwargs
-        
+
     def set_attrs(self, **kwargs ):
         self._cleankeys(kwargs)
         self.attributes.update(kwargs)
     setAttributes = set_attrs
-    
+
     def set_attr(self, key, value):
         if key.endswith('_'):
             key = key[:-1]
         self.attributes[key] = value
     setAttribute = set_attr
-    
+
     def add_attr(self, key, value):
         """
             Creates a space separated string of attributes.  Mostly for the
@@ -75,16 +77,16 @@ class HtmlAttributeHolder(object):
             self.attributes[key] = self.attributes[key] + ' ' + value
         else:
             self.attributes[key] = value
-        
+
     def del_attr(self, key):
         if key.endswith('_'):
             key = key[:-1]
         del self.attributes[key]
-    
+
     def get_attrs(self):
         return self.attributes
     getAttributes = get_attrs
-    
+
     def get_attr(self, key, defaultval = NotGiven):
         try:
             if key.endswith('_'):
@@ -95,7 +97,7 @@ class HtmlAttributeHolder(object):
                 return defaultval
             raise
     getAttribute = get_attr
-    
+
     def _cleankeys(self, dict):
         """
             When using kwargs, some attributes can not be sent directly b/c
@@ -143,7 +145,7 @@ class Table(OrderedProperties):
                     self.row_dec(row_num+1, row_attrs, value)
                 ind.inc(HTML.tr(_closed=False, **row_attrs.attributes))
                 # loop through columns for data
-                for name, col in self._data.items():                    
+                for name, col in self._data.items():
                     ind(col.render_td(value, name))
                 ind.dec('</tr>')
             ind.dec('</tbody>')
@@ -151,7 +153,7 @@ class Table(OrderedProperties):
             return ind.get()
         else:
             return ''
-        
+
 class Col(object):
     def __init__(self, header, extractor=None, th_decorator = None, **kwargs):
         # attributes for column's <td> tags
@@ -166,46 +168,46 @@ class Col(object):
         self.extractor = extractor
         #: a callable that can style (alter) the contents of the TH
         self.th_decorator = th_decorator
-        
+
     def render_th(self):
         thcontent = self.header
         if self.th_decorator:
             thcontent = self.th_decorator(thcontent)
         return HTML.th(thcontent, **self.attrs_th)
-        
+
     def render_td(self, row, key):
         self.crow = row
         contents = self.process(key)
         return HTML.td(contents, **self.attrs_td)
-    
+
     def extract(self, name):
         """ extract a value from the current row """
         if self.extractor:
             return self.extractor(self.crow)
-        
+
         # dictionary style
         try:
             return self.crow[name]
         except TypeError:
             pass
-        
+
         # attribute style
         try:
             return getattr(self.crow, name)
         except AttributeError, e:
             if ("object has no attribute '%s'" % name) not in str(e):
                 raise
-        
+
         # can't figure out how to get value
         raise TypeError('could not retrieve value from row, unrecognized row type')
-        
+
     def process(self, key):
         return self.extract(key)
 
 class Link(Col):
     """
         Examples:
-        
+
         Link( 'Referred By',
             validate_url=False,
             urlfrom=lambda row: url_for('module:ReferringObjectDetail', id=row[referred_by_id]) if row[referred_by_id] else None
@@ -217,7 +219,7 @@ class Link(Col):
         self._link_attrs = {}
         self.require_tld = require_tld
         self.validate_url = validate_url
-        
+
     def process(self, key):
         try:
             url = self.urlfrom(self.crow)
@@ -229,7 +231,7 @@ class Link(Col):
         if url is not None and (not self.validate_url or isurl(url, require_tld=self.require_tld)):
             return link_to(self.extract(key), url, **self._link_attrs)
         return self.extract(key)
-    
+
     def attrs(self, **kwargs):
         self._link_attrs = kwargs
         # this is made to be tacked onto the initial instantiation, so
@@ -240,7 +242,7 @@ class Links(Col):
     def __init__(self, header, *args, **kwargs):
         Col.__init__(self, header, **kwargs)
         self.aobjs = args
-        
+
     def process(self, key):
         return literal(''.join([a.process(key, self.extract) for a in self.aobjs]))
 
@@ -255,7 +257,7 @@ class A(object):
             self.label = NotGiven
         self.url_arg_keys = args
         self.attrs = kwargs
-    
+
     def process(self, name, extract):
         url_args = dict([(key, extract(key)) for key in self.url_arg_keys])
         url = url_for(self.endpoint, **url_args)
@@ -271,7 +273,7 @@ class YesNo(Col):
         self.reversed = reverse
         self.yes = yes
         self.no = no
-        
+
     def process(self, key):
         value = self.extract(key)
         if self.reversed:
@@ -280,7 +282,7 @@ class YesNo(Col):
             return self.yes
         else:
             return self.no
-        
+
 class TrueFalse(YesNo):
     def __init__(self, header, reverse=False, true='true', false='false', **kwargs):
         YesNo.__init__(self, header, reverse, true, false, **kwargs)
@@ -290,7 +292,7 @@ class DateTime(Col):
         Col.__init__(self, header, **kwargs)
         self.format = format
         self.on_none = on_none
-    
+
     def process(self, key):
         value = self.extract(key)
         if value == None:

@@ -9,11 +9,9 @@ from werkzeug import EnvironHeaders, LimitedStream, \
     SharedDataMiddleware, DebuggedApplication
 
 from pysutils import randchars, pformat, tolist
-from pysutils.datastructures import BlankObject
-from pysmvt import ag, session, user, settings, rg, config
+from pysmvt import settings
 from pysmvt import routing
 from pysmvt.utils.filesystem import mkdirs
-from pysmvt.users import User
 
 class HttpRequestLogger(object):
     """

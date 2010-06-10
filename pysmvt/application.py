@@ -1,23 +1,21 @@
 import logging
-from os import path
 
+from pysutils.datastructures import BlankObject
+from pysutils.strings import randchars, randhash
 from werkzeug.exceptions import HTTPException, InternalServerError
 from werkzeug import create_environ
 from werkzeug.routing import Map, Submount
 
-from pysutils.datastructures import BlankObject
-from pysutils.strings import randchars
 import pysmvt
-from pysmvt import session, rg, user, config, _getview
-from pysmvt.config import DefaultSettings
+from pysmvt import session, rg, user, _getview
 from pysmvt.exceptions import ForwardException, ProgrammingError
 from pysmvt.hierarchy import findobj, HierarchyImportError, \
     listplugins, visitmods
-from pysmvt.logs import _create_handlers_from_settings
+from pysmvt.logs import create_handlers_from_settings
 from pysmvt.mail import mail_programmers
 from pysmvt.view import function_view_handler
 from pysmvt.users import User
-from pysmvt.utils import randhash, Context, exception_with_context
+from pysmvt.utils import exception_with_context
 from pysmvt.utils.filesystem import mkdirs, copy_static_files
 from pysmvt.wrappers import Request
 
@@ -88,7 +86,7 @@ class Application(object):
             copy_static_files(self.settings.auto_copy_static.delete_existing)
 
     def logging_setup(self):
-        _create_handlers_from_settings(self.settings)
+        create_handlers_from_settings(self.settings)
 
     def routing_setup(self):
         # setup the Map object with the appropriate settings
@@ -119,7 +117,7 @@ class Application(object):
                 self.ag.route_map.add(rule)
 
     def start_request(self, environ=None):
-        rg._push_object(Context())
+        rg._push_object(BlankObject())
 
         # create a fake environment if needed
         if not environ:

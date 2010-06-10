@@ -2,18 +2,20 @@ import unittest
 import config
 import logging
 
+from pysutils.testing import logging_handler
+
 from pysmvt import settings
-import pysmvt.config
 from pysmvt.application import Application
+import pysmvt.config
 from pysmvt.mail import EmailMessage, BadHeaderError, EmailMultiAlternatives, \
     MarkdownMessage, HtmlMessage, send_mail, _mail_programmers, _mail_admins
 from pysmvt.exceptions import SettingsError
-from pysmvt.test import mock_smtp, logging_handler
+from pysmvt.testing import mock_smtp
 
 class TestEmail(unittest.TestCase):
     def setUp(self):
         self.app = config.make_console()
-    
+
     def tearDown(self):
         self.app = None
 
@@ -21,56 +23,56 @@ class TestEmail(unittest.TestCase):
         """Test normal ascii character case"""
         email = EmailMessage('Subject', 'Content', 'from@example.com', ['to@example.com'])
         message = email.message()
-        
+
         assert message['Subject'].encode() == 'Subject'
         assert message.get_payload() == 'Content'
         assert message['From'] == 'from@example.com'
         assert message['To'] == 'to@example.com'
         assert email.recipients() == ['to@example.com']
-    
+
     def test_multi_recip(self):
         email = EmailMessage('Subject', 'Content', 'from@example.com', ['to@example.com','other@example.com'])
         message = email.message()
-        
+
         assert message['Subject'].encode() == 'Subject'
         assert message.get_payload() == 'Content'
         assert message['From'] == 'from@example.com'
         assert message['To'] == 'to@example.com, other@example.com'
         assert email.recipients() == ['to@example.com', 'other@example.com']
-    
+
     def test_header_inj_sub(self):
         email = EmailMessage('Subject\nInjection Test', 'Content', 'from@example.com', ['to@example.com'])
-        
+
         try:
             message = email.message()
         except BadHeaderError, e:
             assert 'Header values can\'t contain newlines' in str(e)
         else:
             self.fail("header injection allowed in subject")
-    
+
     def test_header_inj_from(self):
         email = EmailMessage('From Injection Test', 'Content', 'from@example.com\nto:spam@example.com', ['to@example.com'])
-        
+
         try:
             message = email.message()
         except BadHeaderError, e:
             assert 'Header values can\'t contain newlines' in str(e)
         else:
             self.fail("header injection allowed in from")
-    
+
     def test_header_inj_reply_to(self):
         email = EmailMessage('From Injection Test', 'Content', 'from@example.com', ['to@example.com'], reply_to='reply@example.com\nto:spam@example.com')
-        
+
         try:
             message = email.message()
         except BadHeaderError, e:
             assert 'Header values can\'t contain newlines' in str(e)
         else:
             self.fail("header injection allowed in reply_to")
-    
+
     def test_header_inj_custom(self):
         email = EmailMessage('From Injection Test', 'Content', 'from@example.com', ['to@example.com'], headers={'X-test':'reply@example.com\nto:spam@example.com'})
-        
+
         try:
             message = email.message()
         except BadHeaderError, e:
@@ -88,7 +90,7 @@ class TestEmail(unittest.TestCase):
     def test_default_from(self):
         email = EmailMessage('Subject', 'Content', to=['to@example.com'])
         message = email.message()
-        
+
         assert message['Subject'].encode() == 'Subject'
         assert message.get_payload() == 'Content'
         assert message['From'] == 'root@localhost'
@@ -97,58 +99,58 @@ class TestEmail(unittest.TestCase):
     def test_extra_header(self):
         email = EmailMessage('Subject', 'Content', to=['to@example.com'], headers = {'Reply-To': 'replyto@example.com'})
         message = email.message()
-        
+
         assert message['Subject'].encode() == 'Subject'
         assert message.get_payload() == 'Content'
         assert message['From'] == 'root@localhost'
         assert message['To'] == 'to@example.com'
         assert message['Reply-To'] == 'replyto@example.com'
-    
+
     def test_reply_to(self):
         email = EmailMessage('Subject', 'Content', to=['to@example.com'], reply_to='replyto@example.com')
         message = email.message()
-        
+
         assert message['Subject'].encode() == 'Subject'
         assert message.get_payload() == 'Content'
         assert message['From'] == 'root@localhost'
         assert message['To'] == 'to@example.com'
         assert message['Reply-To'] == 'replyto@example.com'
-    
+
     def test_reply_to_default(self):
         settings.emails.reply_to = 'replyto@example.com'
         email = EmailMessage('Subject', 'Content', to=['to@example.com'])
         message = email.message()
-        
+
         assert message['Subject'].encode() == 'Subject'
         assert message.get_payload() == 'Content'
         assert message['From'] == 'root@localhost'
         assert message['To'] == 'to@example.com'
         assert message['Reply-To'] == 'replyto@example.com'
-        
+
     def test_bcc(self):
         email = EmailMessage('Subject', 'Content', to=['to@example.com'], bcc=['bcc1@example.com', 'bcc2@example.com'])
         message = email.message()
-        
+
         assert message['Subject'].encode() == 'Subject'
         assert message.get_payload() == 'Content'
         assert message['From'] == 'root@localhost'
         assert message['To'] == 'to@example.com'
         assert email.recipients() == ['to@example.com', 'bcc1@example.com', 'bcc2@example.com']
-    
+
     def test_bcc_defaults(self):
         settings.emails.bcc_defaults = ['bcc1@example.com', 'bcc2@example.com']
         email = EmailMessage('Subject', 'Content', to=['to@example.com'])
         message = email.message()
-        
+
         assert message['Subject'].encode() == 'Subject'
         assert message.get_payload() == 'Content'
         assert message['From'] == 'root@localhost'
         assert message['To'] == 'to@example.com'
         assert email.recipients() == ['to@example.com', 'bcc1@example.com', 'bcc2@example.com']
-        
+
         email = EmailMessage('Subject', 'Content', to=['to@example.com'], bcc=['bcc3@example.com'])
         message = email.message()
-        
+
         assert message['Subject'].encode() == 'Subject'
         assert message.get_payload() == 'Content'
         assert message['From'] == 'root@localhost'
@@ -158,36 +160,36 @@ class TestEmail(unittest.TestCase):
     def test_cc(self):
         email = EmailMessage('Subject', 'Content', to=['to@example.com'], cc=['cc1@example.com', 'cc2@example.com'])
         message = email.message()
-        
+
         assert message['Subject'].encode() == 'Subject'
         assert message.get_payload() == 'Content'
         assert message['From'] == 'root@localhost'
         assert message['To'] == 'to@example.com'
         assert message['Cc'] == 'cc1@example.com, cc2@example.com'
         assert email.recipients() == ['to@example.com', 'cc1@example.com', 'cc2@example.com']
-    
+
     def test_cc_defaults(self):
         settings.emails.cc_defaults = ['cc1@example.com', 'cc2@example.com']
         email = EmailMessage('Subject', 'Content', to=['to@example.com'])
         message = email.message()
-        
+
         assert message['Subject'].encode() == 'Subject'
         assert message.get_payload() == 'Content'
         assert message['From'] == 'root@localhost'
         assert message['To'] == 'to@example.com'
         assert message['Cc'] == 'cc1@example.com, cc2@example.com'
         assert email.recipients() == ['to@example.com', 'cc1@example.com', 'cc2@example.com']
-        
+
         email = EmailMessage('Subject', 'Content', to=['to@example.com'], cc=['cc3@example.com'])
         message = email.message()
-        
+
         assert message['Subject'].encode() == 'Subject'
         assert message.get_payload() == 'Content'
         assert message['From'] == 'root@localhost'
         assert message['To'] == 'to@example.com'
         assert message['Cc'] == 'cc3@example.com'
         assert email.recipients() == ['to@example.com', 'cc3@example.com']
-        
+
     def test_bcc_always(self):
         settings.emails.bcc_always = ['bcc1@example.com', 'bcc2@example.com']
         email = EmailMessage('Subject', 'Content', to=['to@example.com'])
@@ -198,21 +200,21 @@ class TestEmail(unittest.TestCase):
         assert message.get_payload() == 'Content'
         assert message['From'] == 'root@localhost'
         assert message['To'] == 'to@example.com'
-        
+
         email = EmailMessage('Subject', 'Content', to=['to@example.com'], bcc=['bcc3@example.com'])
-        
+
         assert email.recipients() == ['to@example.com',  'bcc3@example.com', 'bcc1@example.com', 'bcc2@example.com']
         message = email.message()
         assert message['Subject'].encode() == 'Subject'
         assert message.get_payload() == 'Content'
         assert message['From'] == 'root@localhost'
         assert message['To'] == 'to@example.com'
-    
-        
+
+
     def test_cc_always(self):
         settings.emails.cc_always = ['cc1@example.com', 'cc2@example.com']
         email = EmailMessage('Subject', 'Content', to=['to@example.com'])
-        
+
         assert email.recipients() == ['to@example.com', 'cc1@example.com', 'cc2@example.com']
         message = email.message()
         assert message['Subject'].encode() == 'Subject'
@@ -220,34 +222,34 @@ class TestEmail(unittest.TestCase):
         assert message['From'] == 'root@localhost'
         assert message['To'] == 'to@example.com'
         assert message['Cc'] == 'cc1@example.com, cc2@example.com'
-        
+
         email = EmailMessage('Subject', 'Content', to=['to@example.com'], cc=['cc3@example.com'])
-        
+
         assert email.recipients() == ['to@example.com', 'cc3@example.com', 'cc1@example.com', 'cc2@example.com']
-        message = email.message()        
+        message = email.message()
         assert message['Subject'].encode() == 'Subject'
         assert message.get_payload() == 'Content'
         assert message['From'] == 'root@localhost'
         assert message['To'] == 'to@example.com'
         assert message['Cc'] == 'cc3@example.com, cc1@example.com, cc2@example.com'
-    
+
     @mock_smtp(cancel_override=False)
     def test_overrides(self, mm_tracker=None):
         """Test overrides"""
-        
+
         settings.emails.override = 'override@example.com'
         email = EmailMessage('Subject', 'Content', 'from@example.com', ['to@example.com'], cc=['cc@example.com'], bcc=['bcc@example.com'])
         message = email.message()
-        
+
         assert message['Subject'].encode() == 'Subject'
         assert message['From'] == 'from@example.com'
         assert message['To'] == 'override@example.com'
         assert message['Cc'] == None
         assert email.recipients() == ['override@example.com']
-        
+
         msg_body = '%s\n\nTo: to@example.com  =\n\nCc: cc@example.com  =\n\nBcc: bcc@example.com\n\n%s\n\nContent' % ('-'*70, '-'*70)
         assert msg_body in message.as_string()
-        
+
         email.send()
         look_for = """Called smtp_connection.sendmail(
     'from@example.com',
@@ -256,31 +258,31 @@ class TestEmail(unittest.TestCase):
 Called smtp_connection.quit()"""
         assert mm_tracker.check(look_for), mm_tracker.diff(look_for)
         mm_tracker.clear()
-        
-    
+
+
     def test_overrides_recipients_first(self):
         """
             Test overrides, but call recipients first just like the code does
             when sending an email
         """
-        
+
         settings.emails.override = 'override@example.com'
         email = EmailMessage('Subject', 'Content', 'from@example.com', ['to@example.com'], cc=['cc@example.com'], bcc=['bcc@example.com'])
         assert email.recipients() == ['override@example.com']
-        
+
         message = email.message()
         assert message['Subject'].encode() == 'Subject'
         assert message['From'] == 'from@example.com'
         assert message['To'] == 'override@example.com'
         assert message['Cc'] == None
-        
+
         msg_body = '%s\n\nTo: to@example.com  =\n\nCc: cc@example.com  =\n\nBcc: bcc@example.com\n\n%s\n\nContent' % ('-'*70, '-'*70)
         assert msg_body in message.as_string()
-    
+
     def test_multi_part(self):
         text_content = 'This is an important message.'
         email = EmailMultiAlternatives('Subject', text_content, 'from@example.com', ['to@example.com'], cc=['cc@example.com'], bcc=['bcc@example.com'])
-        
+
         html_content = '<p>This is an <strong>important</strong> message.</p>'
         email.attach_alternative(html_content, "text/html")
 
@@ -305,7 +307,7 @@ Content-Transfer-Encoding: quoted-printable
     def test_markdown_email(self):
         text_content = 'This is an **important** message.'
         email = MarkdownMessage('Subject', text_content, 'from@example.com', ['to@example.com'], cc=['cc@example.com'], bcc=['bcc@example.com'])
-        
+
         message = email.message()
         text_part = \
 r"""Content-Type: text/plain; charset="utf-8"
@@ -328,7 +330,7 @@ Content-Transfer-Encoding: quoted-printable
     def test_html_email(self):
         body = '<p>This is an <strong>important</strong> message.</p>'
         email = HtmlMessage('Subject', body, 'from@example.com', ['to@example.com'], cc=['cc@example.com'], bcc=['bcc@example.com'])
-        
+
         message = email.message()
         text_part = \
 r"""Content-Type: text/plain; charset="utf-8"
@@ -348,22 +350,22 @@ Content-Transfer-Encoding: quoted-printable
         text_message = message.as_string()
         assert text_part in text_message
         assert html_part in text_message
-    
+
     def test_html_overrides(self):
         """Test overrides with html content"""
-        
+
         settings.emails.override = 'override@example.com'
         body = '<p>This is an <strong>important</strong> message.</p>'
         email = EmailMessage('Subject', body, 'from@example.com', ['to@example.com'], cc=['cc@example.com'], bcc=['bcc@example.com'])
         email.content_subtype = "html"  # Main content is now text/html
         message = email.message()
-        
+
         msg_body = '<hr />\n\n<p>To: to@example.com <br />\nCc: cc@example.com <br />\nBcc: bcc@example.com</p>\n\n<hr />\n<p>This is an <strong>important</strong> message.</p>'
         assert msg_body in message.as_string()
         assert 'text/html;' in message['Content-Type']
-    
+
     def test_html_override_with_full_document(self):
-        html_doc = r"""<!DOCTYPE html 
+        html_doc = r"""<!DOCTYPE html
      PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
@@ -371,7 +373,7 @@ Content-Transfer-Encoding: quoted-printable
     <title>Minimal XHTML 1.0 Document with W3C DTD</title>
   </head>
   <body>
-    <p>This is a minimal <a href="http://www.w3.org/TR/xhtml1/">XHTML 1.0</a> 
+    <p>This is a minimal <a href="http://www.w3.org/TR/xhtml1/">XHTML 1.0</a>
     document with a W3C url for the DTD.</p>
   </body>
 </html>"""
@@ -379,13 +381,13 @@ Content-Transfer-Encoding: quoted-printable
         email = EmailMessage('Subject', html_doc, 'from@example.com', ['to@example.com'], cc=['cc@example.com'], bcc=['bcc@example.com'])
         email.content_subtype = "html"  # Main content is now text/html
         message = email.message()
-        
+
         msg_body = '<body><hr />\n\n<p>To: to@example.com <br />\nCc: cc@example.com <br />\nBcc: bcc@example.com</p>\n\n<hr />\n\n    <p>This is a minimal '
         assert msg_body in message.as_string()
         assert 'text/html;' in message['Content-Type']
 
     def test_multipart_html_override_with_full_document(self):
-        html_doc = r"""<!DOCTYPE html 
+        html_doc = r"""<!DOCTYPE html
      PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
@@ -393,14 +395,14 @@ Content-Transfer-Encoding: quoted-printable
     <title>Minimal XHTML 1.0 Document with W3C DTD</title>
   </head>
   <body>
-    <p>This is a minimal <a href="http://www.w3.org/TR/xhtml1/">XHTML 1.0</a> 
+    <p>This is a minimal <a href="http://www.w3.org/TR/xhtml1/">XHTML 1.0</a>
     document with a W3C url for the DTD.</p>
   </body>
 </html>"""
         settings.emails.override = 'override@example.com'
         email = HtmlMessage('Subject', html_doc, 'from@example.com', ['to@example.com'])
         message = email.message()
-        
+
         msg_body = '<body><hr />\n\n<p>To: to@example.com\nCc: cc@example.com\nBcc: bcc@example.com</p>\n\n<hr />\n\n    <p>This is a minimal '
         text_part = \
 r"""Content-Type: text/plain; charset="utf-8"
@@ -448,7 +450,7 @@ Bcc: </p>
 Called smtp_connection.quit()"""
         assert mm_tracker.check(look_for), mm_tracker.diff(look_for)
         mm_tracker.clear()
-        
+
         send_mail('test markdown email', '**important** email content', ['test@example.com'], format='markdown')
         look_for = """Called smtp_connection.sendmail(
     'root@localhost',
@@ -458,7 +460,7 @@ Called smtp_connection.quit()"""
 Called smtp_connection.quit()"""
         assert mm_tracker.check(look_for), mm_tracker.diff(look_for)
         mm_tracker.clear()
-        
+
         send_mail('test html email', '<strong>important</strong> email content', ['test@example.com'], format='html')
         look_for = """Called smtp_connection.sendmail(
     'root@localhost',
@@ -467,7 +469,7 @@ Called smtp_connection.quit()"""
     """**important** email content...<strong>important</strong> email content...
 Called smtp_connection.quit()"""
         assert mm_tracker.check(look_for), mm_tracker.diff(look_for)
-    
+
     @mock_smtp()
     def test_not_live(self, mm_tracker=None):
         settings.email.is_live = False
@@ -476,40 +478,40 @@ Called smtp_connection.quit()"""
         look_for = 'Called smtp_connection.quit()...'
         assert mm_tracker.check(look_for), mm_tracker.diff(look_for)
         assert 'email.is_live = False' in lh.messages['warning'][0]
-        
-    def test_duplicate_headers(self):	
+
+    def test_duplicate_headers(self):
         # Specifying dates or message-ids in the extra headers overrides the defaul
         # values (#9233).
 
         headers = {"date": "Fri, 09 Nov 2001 01:08:47 -0000", "Message-ID": "foo"}
         email = EmailMessage('subject', 'content', 'from@example.com', ['to@example.com'], headers=headers)
         assert email.message().as_string() == 'Content-Type: text/plain; charset="utf-8"\nMIME-Version: 1.0\nContent-Transfer-Encoding: quoted-printable\nSubject: subject\nFrom: from@example.com\nTo: to@example.com\ndate: Fri, 09 Nov 2001 01:08:47 -0000\nMessage-ID: foo\n\ncontent'
-    
+
     def test_mail_programmers(self):
         settings.email.subject_prefix = '[webapp] '
         settings.emails.programmers = ('p1@example.com', 'p2@example.com')
-        
+
         email = _mail_programmers('programmers email subject', '**email body**', 'markdown')
         msg = email.message()
-        
+
         assert msg['Subject'] == '[webapp] programmers email subject'
         assert email.recipients() == ['p1@example.com', 'p2@example.com']
         assert '<p><strong>email body</strong></p>' in msg.as_string()
-            
+
     def test_mail_admins(self):
         settings.email.subject_prefix = '[webapp] '
         settings.emails.admins = ('a1@example.com', 'a2@example.com')
         email = _mail_admins('admins email subject', '**email body**', 'markdown')
         msg = email.message()
-        
+
         assert msg['Subject'] == '[webapp] admins email subject'
         assert email.recipients() == ['a1@example.com', 'a2@example.com']
         assert '<p><strong>email body</strong></p>' in msg.as_string()
-    
+
     def test_nofrom(self):
         settings.emails.from_default = ''
         email = EmailMessage('Subject', 'Content', to=['to@example.com'])
-        
+
         try:
             message = email.message()
             self.fail('expected SettingsError since from was not set')
@@ -520,7 +522,7 @@ Called smtp_connection.quit()"""
         email = _mail_admins('admins email subject', '**email body**', 'markdown')
         msg = email.message()
         assert msg['From'] == 'root@localhost'
-        
+
         settings.emails.from_server = 'server@localhost'
         email = _mail_admins('admins email subject', '**email body**', 'markdown')
         msg = email.message()
@@ -530,11 +532,11 @@ Called smtp_connection.quit()"""
         email = _mail_programmers('programmers email subject', '**email body**', 'markdown')
         msg = email.message()
         assert msg['From'] == 'root@localhost'
-        
+
         settings.emails.from_server = 'server@localhost'
         email = _mail_programmers('programmers email subject', '**email body**', 'markdown')
         msg = email.message()
         assert msg['From'] == 'server@localhost'
-        
+
 if __name__ == '__main__':
     unittest.main()

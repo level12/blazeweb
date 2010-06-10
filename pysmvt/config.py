@@ -1,16 +1,11 @@
-# -*- coding: utf-8 -*-
 from os import path
 import os
-import logging
-import re
-from pysmvt import settings, ag
-from pysmvt.logs import _create_handlers_from_settings
-from werkzeug.routing import Rule, Map, Submount
-from pysmvt.utils import OrderedDict, Context
-from pysmvt.utils.filesystem import mkdirs
-from pysmvt.exceptions import SettingsError
-from pysutils import case_us2cw, multi_pop
+
+from werkzeug.routing import Rule
 from pysutils.config import QuickSettings
+from pysutils.datastructures import OrderedDict
+
+from pysmvt import settings
 
 class EnabledSettings(QuickSettings):
     """

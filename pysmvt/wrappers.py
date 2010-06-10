@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from pysmvt import rg
 from werkzeug import BaseRequest as WerkBaseRequest, BaseResponse, ResponseStreamMixin, MultiDict, \
     EnvironBuilder

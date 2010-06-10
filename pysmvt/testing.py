@@ -1,94 +1,18 @@
-"""
-    == Making The Plugins Available ==
-
-    If pysmvt is installed, you should see the following in the output of
-    `nosetests --help`:
-
-        ...
-        --pysmvt-app-profile=PYSMVT_PROFILE
-                    The name of the test profile in settings.py
-        ...
-
-    == Using the Plugins ==
-
-    You **must** be inside a pysmvt application's package directory for
-    these plugins to work:
-
-        `cd .../myproject/src/myapp-dist/myapp/`
-
-    === Init Current App Plugin ===
-
-    This plugin does two things:
-
-        - initializes a WSGI application for the current application
-          (optionally allowing you to specify which profile you want used
-          to initlize the application)
-        - automatically includes test's from packages if so defined in the
-          profile which is loaded.
-
-    You don't have to do anything explicit to use this plugin.  It is
-    enabled automatically when `nosetests` is run from inside an
-    application's directory structure.  Assuming your make_wsgi() function
-    is setup correctly, globaly proxy objects like 'ag' should now function
-    correctly.  Request level objects, like 'rg' will not yet be available
-    however.
-
-    In order to get access to the wsgi application that was instantiated,
-    you can do:
-
-        from pysmvt import ag
-
-        testapp = ag._wsgi_test_app
-
-    `testapp` could now be used w/ werkzeug.Client or webtest.TestApp
-
-    The default profile used with this plugin is 'Test'.  If you need to
-    specifiy a different profile, do:
-
-        `nosetests  --pymvt-app-profile=mytestprofile`
-
-    To include tests from packges outside the application's directory
-    structure, you can put a `testing.include_pkgs` attribute in your test
-    profile. For example:
-
-        class TestPysapp(Test):
-            def __init__(self):
-                # call parent init to setup default settings
-                Test.__init__(self)
-
-                # include pysapp tests
-                self.testing.include_pkgs = 'pysapp'
-        testpysapp = TestPysapp
-
-    Running:
-
-        `nosetests  --pysmvt-app-profile=testpysapp`
-
-    Would be equivelent to running:
-
-        `nosetests pysapp`
-
-    Packages can also be specified as a list/tuple:
-
-        # include multiple tests
-        self.testing.include_pkgs = ('pysapp', 'somepkg')
-"""
-
 import os
-import logging
 
 from decorator import decorator
 import nose.plugins
 from nose.tools import make_decorator
-from pysmvt import ag, settings, rg
-from pysmvt.scripting import load_current_app, UsageError
-from pysmvt.utils import import_app_str
-from pysmvt.wrappers import Request
 from pysutils import tolist
 from pysutils.datastructures import BlankObject
+from webhelpers.html import tools
 from werkzeug import Client as WClient, BaseRequest, BaseResponse, \
     cached_property, create_environ
-from webhelpers.html import tools
+
+from pysmvt import ag, settings, rg
+from pysmvt.hierarchy import findobj
+from pysmvt.scripting import load_current_app, UsageError
+from pysmvt.wrappers import Request
 
 try:
     from webtest import TestApp as WTTestApp
@@ -153,7 +77,7 @@ class InitCurrentAppPlugin(nose.plugins.Plugin):
                 # is initialized but before any test inspection is done or tests
                 # are ran.  We call those functions here:
                 for callstring in tolist(settings.testing.init_callables):
-                    tocall = import_app_str(callstring)
+                    tocall = findobj(callstring)
                     tocall()
             except UsageError, e:
                 if options.pysmvt_debug:
@@ -293,7 +217,7 @@ if WTTestApp:
 
     WTTestResponse.pyq = property(pyquery, doc=pyquery.__doc__)
 else:
-    def TestApp(object):
+    class TestApp(object):
         def __init__(self, *args, **kwargs):
             raise ImportError('You must have WebTest installed to use TestApp')
 
