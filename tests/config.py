@@ -1,6 +1,6 @@
 from os import path
 
-from pysmvt.application import Application
+from pysmvt.application import WSGIApp
 from pysmvt.config import DefaultSettings
 from pysmvt import settings
 
@@ -39,8 +39,8 @@ class Testruns(DefaultSettings):
     def get_storage_dir(self):
         return path.join(self.dirs.base, 'test-output', self.appname)
 
-def make_console(settings_cls=Testruns, **kwargs):
-    return Application(settings_cls())
+def make_wsgi(settings_cls=Testruns, **kwargs):
+    return WSGIApp(settings_cls())
 
 def init_settings(customsettings=None):
     if customsettings:

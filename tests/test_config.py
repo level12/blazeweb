@@ -4,7 +4,7 @@ import unittest
 import pysmvt
 from pysmvt import settings
 from minimal2.application import make_wsgi as make_wsgi_min2
-from pysmvttestapp.applications import make_console
+from pysmvttestapp.applications import make_wsgi
 from pysmvt.config import appslist, QuickSettings, EnabledSettings
 
 class Base(QuickSettings):
@@ -308,7 +308,7 @@ class TestQuickSettings(unittest.TestCase):
 
 class TestConfig(unittest.TestCase):
     def setUp(self):
-        self.app = make_console('Testruns')
+        self.app = make_wsgi('Testruns')
 
     def tearDown(self):
         pass

@@ -21,7 +21,87 @@ from pysmvt.wrappers import Request
 
 log = logging.getLogger(__name__)
 
-class Application(object):
+class RequestManager(object):
+    def __init__(self, app, environ):
+        self.app = app
+        self.environ = environ
+
+    def registry_setup(self):
+        environ = self.environ
+        environ['paste.registry'].register(pysmvt.settings, self.app.settings)
+        environ['paste.registry'].register(pysmvt.ag, self.app.ag)
+        if environ.has_key('beaker.session'):
+            environ['paste.registry'].register(session, environ['beaker.session'])
+            environ['paste.registry'].register(user, self.user_setup())
+        else:
+            environ['paste.registry'].register(session, None)
+            environ['paste.registry'].register(user, None)
+        environ['paste.registry'].register(rg, BlankObject())
+
+    def rg_setup(self):
+        # WSGI request setup
+        rg.ident = randchars()
+        rg.environ = self.environ
+        # the request object binds itself to rg.request
+        Request(self.environ)
+
+    def routing_setup(self):
+        rg.urladapter = pysmvt.ag.route_map.bind_to_environ(self.environ)
+
+    def user_setup(self):
+        environ = self.environ
+        try:
+            return environ['beaker.session'].setdefault('__pysmvt_user', User())
+        except KeyError, e:
+            if '__pysmvt_user' not in str(e):
+                raise
+            environ['beaker.session']['__pysmvt_user'] = User()
+            return environ['beaker.session']['__pysmvt_user']
+
+    def __enter__(self):
+        self.registry_setup()
+        self.rg_setup()
+        self.routing_setup()
+        # allow middleware higher in the stack to help initilize the request
+        # after the registry variables have been setup
+        if 'pysmvt.request_setup' in self.environ:
+            for callable in self.environ['pysmvt.request_setup']:
+                callable()
+
+    def __exit__(self, exc_type, exc_value, tb):
+        if 'pysmvt.request_teardown' in self.environ:
+            for callable in self.environ['pysmvt.request_teardown']:
+                callable()
+
+class ResponseContext(object):
+    def __init__(self, error_doc_code):
+        self.environ = rg.environ
+        self.respview = None
+        self.error_doc_code = error_doc_code
+        self.css = []
+        self.js = []
+
+    def __enter__(self):
+        rg.respctx = self
+        # allow middleware higher in the stack to help initilize the response
+        if 'pysmvt.response_setup' in self.environ:
+            for callable in self.environ['pysmvt.response_setup']:
+                callable()
+
+    def __exit__(self, exc_type, e, tb):
+        if 'pysmvt.response_teardown' in self.environ:
+            for callable in self.environ['pysmvt.response_teardown']:
+                callable()
+        if isinstance(e, ForwardException):
+            log.debug('forwarding to %s (%s)', e.forward_endpoint, e.forward_args)
+            rg.forward_queue.append((e.forward_endpoint, e.forward_args))
+            if len(rg.forward_queue) == 10:
+                raise ProgrammingError('forward loop detected: %s' % '->'.join([g[0] for g in rg.forward_queue]))
+            return True
+        if 'beaker.session' in self.environ:
+            self.environ['beaker.session'].save()
+
+class WSGIApp(object):
 
     def __init__(self, module_or_settings, profile=None):
         self._id = randhash()
@@ -116,112 +196,6 @@ class Application(object):
         else:
             for rule in rules or ():
                 self.ag.route_map.add(rule)
-
-    def start_request(self, environ=None):
-        rg._push_object(BlankObject())
-
-        # create a fake environment if needed
-        if not environ:
-            environ = create_environ('/[pysmvt_test]')
-
-        # this might throw an exception, but we are letting that go
-        # b/c we need to make sure the url adapter gets created
-        rg.urladapter = self.ag.route_map.bind_to_environ(environ)
-
-    def console_dispatch(self, callable, environ=None):
-        self.start_request(environ)
-        try:
-            callable()
-        finally:
-            self.end_request()
-
-    def end_request(self):
-        rg._pop_object()
-
-class RequestManager(object):
-    def __init__(self, app, environ):
-        self.app = app
-        self.environ = environ
-
-    def registry_setup(self):
-        environ = self.environ
-        environ['paste.registry'].register(pysmvt.settings, self.app.settings)
-        environ['paste.registry'].register(pysmvt.ag, self.app.ag)
-        if environ.has_key('beaker.session'):
-            environ['paste.registry'].register(session, environ['beaker.session'])
-            environ['paste.registry'].register(user, self.user_setup())
-        else:
-            environ['paste.registry'].register(session, None)
-            environ['paste.registry'].register(user, None)
-        environ['paste.registry'].register(rg, BlankObject())
-
-    def rg_setup(self):
-        # WSGI request setup
-        rg.ident = randchars()
-        rg.environ = self.environ
-        # the request object binds itself to rg.request
-        Request(self.environ)
-
-    def routing_setup(self):
-        rg.urladapter = pysmvt.ag.route_map.bind_to_environ(self.environ)
-
-    def user_setup(self):
-        environ = self.environ
-        try:
-            return environ['beaker.session'].setdefault('__pysmvt_user', User())
-        except KeyError, e:
-            if '__pysmvt_user' not in str(e):
-                raise
-            environ['beaker.session']['__pysmvt_user'] = User()
-            return environ['beaker.session']['__pysmvt_user']
-
-    def __enter__(self):
-        self.registry_setup()
-        self.rg_setup()
-        self.routing_setup()
-        # allow middleware higher in the stack to help initilize the request
-        # after the registry variables have been setup
-        if 'pysmvt.request_setup' in self.environ:
-            for callable in self.environ['pysmvt.request_setup']:
-                callable()
-
-    def __exit__(self, exc_type, exc_value, tb):
-        if 'pysmvt.request_teardown' in self.environ:
-            for callable in self.environ['pysmvt.request_teardown']:
-                callable()
-
-class ResponseContext(object):
-    def __init__(self, error_doc_code):
-        self.environ = rg.environ
-        self.respview = None
-        self.error_doc_code = error_doc_code
-        self.css = []
-        self.js = []
-
-    def __enter__(self):
-        rg.respctx = self
-        # allow middleware higher in the stack to help initilize the response
-        if 'pysmvt.response_setup' in self.environ:
-            for callable in self.environ['pysmvt.response_setup']:
-                callable()
-
-    def __exit__(self, exc_type, e, tb):
-        if 'pysmvt.response_teardown' in self.environ:
-            for callable in self.environ['pysmvt.response_teardown']:
-                callable()
-        if isinstance(e, ForwardException):
-            log.debug('forwarding to %s (%s)', e.forward_endpoint, e.forward_args)
-            rg.forward_queue.append((e.forward_endpoint, e.forward_args))
-            if len(rg.forward_queue) == 10:
-                raise ProgrammingError('forward loop detected: %s' % '->'.join([g[0] for g in rg.forward_queue]))
-            return True
-        if 'beaker.session' in self.environ:
-            self.environ['beaker.session'].save()
-
-class WSGIApplication(Application):
-
-    def __init__(self, module_or_settings, profile=None):
-        Application.__init__(self, module_or_settings, profile)
 
     def request_manager(self, environ):
         return RequestManager(self, environ)

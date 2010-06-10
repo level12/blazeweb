@@ -1,6 +1,6 @@
 from os import path
 from pysmvt import rg
-from pysmvt.application import WSGIApplication
+from pysmvt.application import WSGIApp
 from pysmvt.config import DefaultSettings
 from pysmvt.middleware import minimal_wsgi_stack
 from pysmvt.view import asview
@@ -17,7 +17,7 @@ class Settings(DefaultSettings):
 
 settings = Settings()
 
-app = WSGIApplication(settings)
+app = WSGIApp(settings)
 wsgiapp = minimal_wsgi_stack(app)
 
 @asview()

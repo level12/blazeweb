@@ -25,7 +25,7 @@ class HttpRequestLogger(object):
 
                 config.appinit(settingsmod, profile)
 
-                app = WSGIApplication()
+                app = WSGIApp()
 
                 <...snip...>
 
@@ -77,7 +77,7 @@ class HttpRequestLogger(object):
 
 def full_wsgi_stack(app):
     """
-        returns the WSGIApplication wrapped in common middleware
+        returns the WSGIApp wrapped in common middleware
     """
 
     settings = app.settings

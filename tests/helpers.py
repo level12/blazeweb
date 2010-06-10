@@ -1,7 +1,7 @@
 from os import path
 
 from werkzeug.routing import Rule
-from pysmvt.application import WSGIApplication
+from pysmvt.application import WSGIApp
 from pysmvt.middleware import full_wsgi_stack, minimal_wsgi_stack
 from pysmvt import settings
 from pysmvt.config import DefaultSettings
@@ -22,7 +22,7 @@ class TestSettings(DefaultSettings):
     def get_storage_dir(self):
         return path.join(self.dirs.base, 'test-output', self.appname)
 
-class TestWsgiApplication(WSGIApplication):
+class TestWsgiApplication(WSGIApp):
     def dispatch_to_view(self, endpoint, args, called_from = None):
         vklass = endpoint
         return vklass('', vklass.__name__, args)()

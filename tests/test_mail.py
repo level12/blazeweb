@@ -5,7 +5,6 @@ import logging
 from pysutils.testing import logging_handler
 
 from pysmvt import settings
-from pysmvt.application import Application
 import pysmvt.config
 from pysmvt.mail import EmailMessage, BadHeaderError, EmailMultiAlternatives, \
     MarkdownMessage, HtmlMessage, send_mail, _mail_programmers, _mail_admins
@@ -14,7 +13,7 @@ from pysmvt.testing import mock_smtp
 
 class TestEmail(unittest.TestCase):
     def setUp(self):
-        self.app = config.make_console()
+        self.app = config.make_wsgi()
 
     def tearDown(self):
         self.app = None

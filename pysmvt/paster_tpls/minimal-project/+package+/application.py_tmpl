@@ -1,11 +1,11 @@
 from os import path
-from pysmvt.application import WSGIApplication
+from pysmvt.application import WSGIApp
 from pysmvt.middleware import minimal_wsgi_stack
 import settings as settingsmod
 from pysmvt.scripting import application_entry
 
 def make_wsgi(profile='Default'):
-    app = WSGIApplication(settingsmod, profile)
+    app = WSGIApp(settingsmod, profile)
     # need an explicit import so the decorators get a chance
     # wrap our app in middleware and return
     return minimal_wsgi_stack(app)
