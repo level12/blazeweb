@@ -87,10 +87,7 @@ def full_wsgi_stack(app):
 
     app = RegistryManager(app)
 
-    # serve static files from main app and supporting apps (need to reverse order b/c
-    # middleware stack is run in bottom up order).  This works b/c if a
-    # static file isn't found, the ShardDataMiddleware just forwards the request
-    # to the next app.
+    # serve static files from static directory
     if settings.static_files.enabled:
         app = SharedDataMiddleware(app, {routing.add_prefix('/static/') : settings.dirs.static})
 
