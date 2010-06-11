@@ -328,6 +328,12 @@ class DefaultSettings(QuickSettings):
         # ditto
         self.debugger.enabled = False
 
+    def apply_dev_settings(self):
+
+        self.exception_handling = None
+        self.debugger.enabled = True
+        self.auto_copy_static.enabled = True
+
 def appslist(reverse=False):
     if reverse:
         apps = list(settings.supporting_apps)
