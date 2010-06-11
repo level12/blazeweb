@@ -141,6 +141,10 @@ class DefaultSettings(QuickSettings):
         #       an exception is encountered
         # example of all:
         #   self.exception_handling = ['handle', 'format', 'email']
+        # DEV SERVER NOTE: the development server supresses exceptions and
+        # converts them to 500 responses. If you really want the exception to
+        # pass through, you can send --pass-through-errors to the serve
+        # command.
         self.exception_handling = ['handle', 'email']
 
         #######################################################################
