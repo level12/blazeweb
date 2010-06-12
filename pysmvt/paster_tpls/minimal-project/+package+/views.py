@@ -1,4 +1,4 @@
-from pysmvt.view import asview
+from pysmvt.views import asview
 
 @asview('/')
 def index():
