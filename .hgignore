@@ -9,3 +9,4 @@
 
 glob:*/writeable/logs/*.log
 glob:tests/test-output*
+glob:.coverage
