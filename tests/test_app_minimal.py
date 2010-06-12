@@ -38,9 +38,9 @@ class TestMinimal1(object):
         r = self.ta.get('/cooler/hot?foo=1&bar=2&willstaynone=3')
         r.mustcontain('1, 2, hot, None')
 
-    def test_argprec(self):
+    def test_url_args_overwrite_get_args(self):
         r = self.ta.get('/ap/2?foo=1')
-        r.mustcontain("[u'1', u'2']")
+        assert r.body == '2', r.body
 
     def test_list(self):
         r = self.ta.get('/tolist?foo=1&foo=2')
@@ -69,16 +69,6 @@ class TestMinimal1(object):
     def test_return_wsgiapp(self):
         r = self.ta.get('/returnwsgiapp')
         r.mustcontain('wsgi hw')
-
-class TestMinimal2(object):
-
-    @classmethod
-    def setup_class(cls):
-        cls.ta = TestApp(make_wsgi())
-
-    def test_workingview(self):
-        r = self.ta.get('/')
-        r.mustcontain('index')
 
 class TestMinimal2(object):
 

@@ -3,7 +3,7 @@ from pysmvt import rg
 from pysmvt.application import WSGIApp
 from pysmvt.config import DefaultSettings
 from pysmvt.middleware import minimal_wsgi_stack
-from pysmvt.view import asview
+from pysmvt.views import asview
 from pysmvt.wrappers import Response
 
 class Settings(DefaultSettings):

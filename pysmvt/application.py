@@ -13,7 +13,7 @@ from pysmvt.hierarchy import findobj, HierarchyImportError, \
     listplugins, visitmods
 from pysmvt.logs import create_handlers_from_settings
 from pysmvt.mail import mail_programmers
-from pysmvt.view import function_view_handler
+from pysmvt.views import FunctionViewHandler
 from pysmvt.users import User
 from pysmvt.utils import exception_with_context
 from pysmvt.utils.filesystem import mkdirs, copy_static_files
@@ -217,7 +217,8 @@ class WSGIApp(object):
             called_from = called_from or 'client'
         log.debug('dispatch to %s (%s)', endpoint, args)
         if endpoint.startswith('__viewfuncs__:'):
-            return function_view_handler(endpoint, args)
+            v = FunctionViewHandler(endpoint, args)
+            return v.process()
         return _getview(endpoint, args, called_from)
 
     def wsgi_app(self, environ, start_response):
