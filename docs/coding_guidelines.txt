@@ -1,0 +1,17 @@
+
+when naming things, go from generic to specific:
+
+# ok
+def setup_something():
+    pass
+
+# don't use
+def something_setup():
+    pass
+
+
+when initilizing something, use the "init" prefix since this corresponds with
+python's __init__ method and should be intuative.
+
+when possible, methods of a class should proceed in the order called.  Methods
+called first should be higher in the class definition.

@@ -1,0 +1,36 @@
+When do we need to detect an application?
+
+- when running nosetests
+
+Detecting an Application
+----------------------------
+
+When we run a command from the command line, we have to be able to detect
+what application is associated with running that command.  The method
+for detecting that is:
+
+- check the environment for a PYSMVT_CURRENT_APP variable
+
+    - if its a filesystem directory, test it to see if its the root of an application
+    - else assume it is the name of a python package and is on the python path,
+      use import to get the module and from the module get the filesystem path
+      
+- see if the app name was sent as an option on the command line, if so assume its
+    the name of a python package like above
+- see if the app root directory was sent as an option on the command line
+- starting from the current working directory, walk up looking for the top
+    most python package, then test it to see if its the root of an application
+    
+
+- split the scripts up so that each application has its own console command
+- myapp
+    - serve
+    - shell
+    - testrun
+    - routes
+    - tasks
+    + those defined in the appstack and plugstack
+- pysmvt
+    - project
+    - plugin
+

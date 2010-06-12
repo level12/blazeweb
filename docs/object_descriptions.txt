@@ -1,0 +1,45 @@
+
+Virtual Env
+-----------
+
+Contains a python installation and python libraries seperate from your system
+python, that are needed by your Project.  Only libraries requried by your
+Distributions are installed.
+
+Project
+----------
+
+A collection of your python Distributions that are working together to accomplish a
+task.  Most web projects will be constituted by one primary Distribution plus
+its dependencies.
+
+Distribution
+------------
+
+The python distribution, it usually includes:
+
+- docs
+- setup.py
+- yourpackage
+
+Application
+-----------
+
+Uppermost python package of your distribution. It defines:
+
+- settings
+- application code
+    - views
+    -
+- plugins
+
+WSGIApp
+
+Is a WSGI application that
+
+Content
+
+- has primary content (ex. HTML)
+- may have secondary supporting content (ex. css, javascript)
+- may be used without a template
+- is the interface to template processing
