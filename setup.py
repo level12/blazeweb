@@ -121,7 +121,7 @@ setup(
     pysmvt = pysmvt.paster_tpl:ModuleTemplate
 
     [nose.plugins]
-    pysmvt_initcurrentapp = pysmvt.testing:InitCurrentAppPlugin
+    pysmvt_initapp = pysmvt.nose_plugin:InitAppPlugin
     """,
     zip_safe=False
 )
