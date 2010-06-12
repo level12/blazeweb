@@ -32,10 +32,9 @@ class RequestManager(object):
         environ['paste.registry'].register(pysmvt.ag, self.app.ag)
         if environ.has_key('beaker.session'):
             environ['paste.registry'].register(session, environ['beaker.session'])
-            environ['paste.registry'].register(user, self.user_setup())
         else:
             environ['paste.registry'].register(session, None)
-            environ['paste.registry'].register(user, None)
+        environ['paste.registry'].register(user, self.user_setup())
         environ['paste.registry'].register(rg, BlankObject())
 
     def rg_setup(self):
@@ -50,13 +49,13 @@ class RequestManager(object):
 
     def user_setup(self):
         environ = self.environ
-        try:
-            return environ['beaker.session'].setdefault('__pysmvt_user', User())
-        except KeyError, e:
-            if '__pysmvt_user' not in str(e):
-                raise
-            environ['beaker.session']['__pysmvt_user'] = User()
+        if 'beaker.session' in environ:
+            if '__pysmvt_user' not in environ['beaker.session']:
+                environ['beaker.session']['__pysmvt_user'] = User()
             return environ['beaker.session']['__pysmvt_user']
+        # having a user object that is not in a session makes sense for testing
+        # purposes, but probably not in production use
+        return User()
 
     def __enter__(self):
         self.registry_setup()
@@ -127,6 +126,7 @@ class WSGIApp(object):
 
     def ag_setup(self):
         self.ag = BlankObject()
+        self.ag.app = self
         self.ag.view_functions = {}
         self.ag.hierarchy_import_cache = {}
         self.ag.hierarchy_file_cache = {}

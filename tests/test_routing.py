@@ -51,7 +51,7 @@ class TestRoutingSSL(unittest.TestCase):
     def setup_class(cls):
         cls.app = config.make_wsgi(RoutingSettings)
 
-    @inrequest(create_environ("/test/url", "https://localhost:8080/script"))
+    @inrequest("/test/url", "https://localhost:8080/script")
     def test_routes(self):
         self.assertEqual( '/script/url1', url_for('mod:Url1'))
         self.assertEqual('/script/url1?foo=bar', url_for('mod:Url1', foo='bar'))
@@ -69,7 +69,7 @@ class TestRoutingSSLCaseSensitive(unittest.TestCase):
     def setup_class(cls):
         cls.app = config.make_wsgi(RoutingSettings)
 
-    @inrequest(create_environ("/test/url", "HTTPS://localhost:8080/scRipt"))
+    @inrequest("/test/url", "HTTPS://localhost:8080/scRipt")
     def test_routes(self):
         self.assertEqual('https://localhost:8080/scRipt/url1', url_for('mod:Url1', True))
         self.assertEqual('https://localhost:8080/scRipt/url1', url_for('mod:Url1', _https=True))
