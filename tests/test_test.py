@@ -6,17 +6,23 @@ from pysmvt.routing import current_url
 from pysmvt.testing import inrequest
 from scripting_helpers import env, here, script_test_path, base_environ, apps_path
 
+import config
+from newlayout.application import make_wsgi
+
+def setup_module():
+   make_wsgi()
+
 # call test_currenturl() with a fake request setup.  current_url()
 # depends on a correct environment being setup and would not work
 # otherwise.
-@inrequest
+@inrequest()
 def test_currenturl():
     assert current_url(host_only=True) == 'http://localhost/'
 
 class TestThis(object):
     """ Works for class methods too """
 
-    @inrequest
+    @inrequest()
     def test_currenturl(self):
         assert current_url(host_only=True) == 'http://localhost/'
 

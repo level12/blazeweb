@@ -1,7 +1,14 @@
 from StringIO import StringIO
+
 from pysmvt import rg
 from pysmvt.wrappers import Request
 from pysmvt.testing import inrequest
+
+import config
+from newlayout.application import make_wsgi
+
+def setup_module():
+   make_wsgi()
 
 class TestRequest(object):
 
@@ -17,7 +24,7 @@ class TestRequest(object):
         assert req.args['val2'] == u'2'
         req.args['new'] = 1
 
-    @inrequest
+    @inrequest()
     def test_replace_http_args(self):
         req = rg.request
         assert req.path == '/[[@inrequest]]', rg.request.path
@@ -43,7 +50,7 @@ class TestRequest(object):
         req = Request.from_values({'foo':'bar'})
         assert req.form['foo'] == 'bar'
 
-    @inrequest
+    @inrequest()
     def test_from_values_inside_context(self):
         """
             creating a request should not affect rg.request by default
@@ -52,7 +59,7 @@ class TestRequest(object):
         sec_req = Request.from_values({'foo':'bar'})
         assert rg.request is first_req
 
-    @inrequest
+    @inrequest()
     def test_from_values_inside_context_with_new_bind(self):
         """
             creating a request can affect rg.request
