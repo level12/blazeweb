@@ -86,20 +86,27 @@ def list_plugin_mappings(target_plugin=None, reverse=False, inc_apps=False):
         retval.reverse()
     return retval
 
-def findview(endpoint):
-    """
-        locate a view object in the hierarchy based on an endpoint.  Usage:
+def findcontent(endpoint):
+    return findendpoint(endpoint, 'content')
 
-        findview('Index') => from appstack.views import Index
-        findview('news:Index') => from plugstack.news.views import Index
+def findview(endpoint):
+    return findendpoint(endpoint, 'views')
+
+def findendpoint(endpoint, where):
+    """
+        locate an object in the hierarchy based on an endpoint.  Usage:
+
+        findendpoint('Index', 'views') => from appstack.views import Index
+        findendpoint('news:Index', 'views') => from plugstack.news.views import Index
+        findendpoint('news:Something', 'content') => from plugstack.news.content import Something
 
         Raises: ImportError if view is not found.  But can also raise an
             ImportError if other
     """
     if ':' not in endpoint:
-        return AppFinder('views', endpoint).search()
+        return AppFinder(where, endpoint).search()
     plugin, attr = endpoint.split(':')
-    return PluginFinder(plugin, 'views', attr).search()
+    return PluginFinder(plugin, where, attr).search()
 
 def findfile(endpoint_path):
     """
