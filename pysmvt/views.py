@@ -3,6 +3,7 @@ import logging
 import formencode
 from pysutils.sentinels import NotGiven
 from pysutils.helpers import tolist
+from pysutils.strings import case_cw2us
 from werkzeug import MultiDict, validate_arguments, ArgumentValidationError, \
     abort
 from werkzeug.exceptions import BadRequest
@@ -10,6 +11,7 @@ from werkzeug.routing import Rule
 
 from pysmvt import ag, rg, user
 from pysmvt import routing
+from pysmvt.content import getcontent
 from pysmvt.exceptions import ViewCallStackAbort, ProgrammingError
 from pysmvt.utils import registry_has_object, werkzeug_multi_dict_conv
 from pysmvt.wrappers import Response
@@ -55,6 +57,12 @@ class View(object):
         # names of GET arguments that should be "melded" with the routing
         # arguments
         self.expected_get_args = []
+        # holds the variables that will be sent to the template when
+        # rendering
+        self.template_vars = {}
+        # the name of the template
+        self.template_name = None
+        self.template_ext_default = 'html'
 
         log.debug('%s view instantiated', self.__class__.__name__)
 
@@ -351,6 +359,22 @@ class View(object):
         if hasattr(self.retval, '__call__'):
             return self.retval
         raise TypeError('View "%s" returned a value with an unexpected type: %s' % (self.__class__.__name__, type(self.retval)))
+
+    def render_template(self):
+        if not self.template_name:
+            # the template name must have an extensions, that is how
+            # getcontent() knows we are looking for a file and not a Content
+            # instance.
+            self.template_name = '%s.%s' % (case_cw2us(self.__class__.__name__), self.template_ext_default)
+        if rg.respctx.current_plugin:
+            endpoint = '%s:%s' % (rg.respctx.current_plugin, self.template_name)
+        else:
+            endpoint = self.template_name
+        c = getcontent(endpoint, **self.template_vars)
+        self.retval = Response(c.data, mimetype=c.type)
+
+    def assign(self, name, value):
+        self.template_vars[name] = value
 
     def send_response(self):
         """

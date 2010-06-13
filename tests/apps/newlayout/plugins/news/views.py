@@ -22,6 +22,16 @@ class ForwardWithArgs(View):
     def default(self, sendby=None):
         forward('AppLevelView', v1='a', v2='b')
 
+class Template(View):
+    def init(self):
+        self.expect_getargs('tname')
+
+    def default(self, tname=None):
+        if tname:
+            self.template_name = tname
+        self.assign('a', 1)
+        self.render_template()
+
 class FakeView(object):
     pass
 

@@ -420,3 +420,24 @@ def test_view_redirect():
 
     r = ta.get('/news?sendby=303')
     assert r.status_int == 303
+
+def test_templating():
+
+    # test template based on view name
+    r = ta.get('/index/index')
+    assert 'app index: 1' == r.body, r
+
+    # choose an alternate template
+    r = ta.get('/index/index2.html')
+    assert 'index2: 1' in r.body, r
+    # test a global
+    assert 'curl: http://localhost:80/index/index2.html' in r.body, r
+    # test a filter
+    assert 'markdown: <p><strong>cool</strong></p>' in r.body, r
+    # test embedded content
+    assert 'content: hello world' in r.body, r
+    assert 'customized content: hello fred' in r.body, r
+
+    # test plugin template default name
+    r = ta.get('/news/template')
+    assert 'news index: 1' == r.body, r

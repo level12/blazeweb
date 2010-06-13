@@ -10,9 +10,10 @@ import pysmvt
 from pysmvt import session, rg, user
 from pysmvt.exceptions import Forward, ProgrammingError, Redirect
 from pysmvt.hierarchy import findobj, HierarchyImportError, \
-    listplugins, visitmods, findview
+    listplugins, visitmods, findview, split_endpoint
 from pysmvt.logs import create_handlers_from_settings
 from pysmvt.mail import mail_programmers
+from pysmvt.templating import default_engine
 from pysmvt.views import FunctionViewHandler
 from pysmvt.users import User
 from pysmvt.utils import exception_with_context
@@ -75,10 +76,14 @@ class RequestManager(object):
 class ResponseContext(object):
     def __init__(self, error_doc_code):
         self.environ = rg.environ
-        self.respview = None
+        self.current_plugin = None
         self.error_doc_code = error_doc_code
         self.css = []
         self.js = []
+
+    def assign_current_plugin(self, endpoint):
+        plugin, _ = split_endpoint(endpoint)
+        self.current_plugin = plugin
 
     def __enter__(self):
         rg.respctx = self
@@ -119,6 +124,7 @@ class WSGIApp(object):
         self.filesystem_setup()
         self.logging_setup()
         self.routing_setup()
+        self.init_templating()
 
     def registry_setup(self):
         pysmvt.settings._push_object(self.settings)
@@ -189,6 +195,10 @@ class WSGIApp(object):
                 if "no attribute 'routes'" not in str(e):
                     raise
 
+    def init_templating(self):
+        engine = default_engine()
+        self.ag.tplengine = engine()
+
     def add_routing_rules(self, rules):
         if self.settings.routing.prefix:
             # prefix the routes with the prefix in the app settings class
@@ -216,6 +226,7 @@ class WSGIApp(object):
             v = FunctionViewHandler(endpoint, args)
         else:
             vklass = findview(endpoint)
+            rg.respctx.assign_current_plugin(endpoint)
             v = vklass(args)
         return v.process()
 

@@ -112,7 +112,9 @@ class DefaultSettings(QuickSettings):
         #######################################################################
         # TEMPLATES
         #######################################################################
+        self.templating.default_engine = 'jinja'
         self.template.default = 'default.html'
+        self.jinja.autoescape=False
 
         #######################################################################
         # SYSTEM VIEW ENDPOINTS

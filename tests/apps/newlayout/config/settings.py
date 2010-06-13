@@ -12,6 +12,7 @@ class Default(nlDefault):
         nlDefault.init(self)
 
         self.add_route('/applevelview/<v1>', 'AppLevelView')
+        self.add_route('/index/<tname>', 'Index')
 
         self.supporting_apps.append('nlsupporting')
         self.setup_plugins()
