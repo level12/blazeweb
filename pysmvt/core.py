@@ -1,7 +1,9 @@
 import sys
 from os import path
 import logging
+
 from paste.registry import StackedObjectProxy
+import werkzeug
 
 log = logging.getLogger(__name__)
 
@@ -13,8 +15,6 @@ __all__ = [
     'user',
     'redirect',
     'forward',
-    '_getview',
-    'getview',
     'db',
 ]
 
@@ -33,7 +33,7 @@ user = StackedObjectProxy(name="user")
 # the db object (application scope)
 db = StackedObjectProxy(name="db")
 
-from pysmvt.exceptions import Redirect, ProgrammingError, ForwardException
+from pysmvt.exceptions import Redirect, Forward
 
 def redirect(location, permanent=False, code=302 ):
     """
@@ -46,34 +46,8 @@ def redirect(location, permanent=False, code=302 ):
     if permanent:
         code = 301
     log.debug('%d redirct to %s' % (code, location))
-    raise Redirect(location, code)
+    raise Redirect(werkzeug.redirect(location, code))
 
-def forward(endpoint, args = {}):
-    raise ForwardException(endpoint, args)
+def forward(endpoint, **kwargs):
+    raise Forward(endpoint, kwargs)
 
-def getview(endpoint, **kwargs):
-    return _getview(endpoint, kwargs, 'getview')
-
-def _getview(endpoint, args, called_from ):
-    """
-        called_from options: client, forward, getview, template
-    """
-    from pysmvt.hierarchy import HierarchyImportError, findview
-    from pysmvt.view import RespondingViewBase
-
-    app_mod_name, vclassname = endpoint.split(':')
-
-    vklass = findview(endpoint)
-    if called_from in ('client', 'forward', 'error docs'):
-        if not issubclass(vklass, RespondingViewBase):
-            if called_from == 'client':
-                raise ProgrammingError('Route exists to non-RespondingViewBase view "%s"' % vklass.__name__)
-            elif called_from == 'error docs':
-                raise ProgrammingError('Error document handling endpoint used non-RespondingViewBase view "%s"' % vklass.__name__)
-            else:
-                raise ProgrammingError('forward to non-RespondingViewBase view "%s"' % vklass.__name__)
-
-    vmod_dir = path.dirname(sys.modules[vklass.__module__].__file__)
-
-    oView = vklass(vmod_dir, endpoint, args )
-    return oView()

@@ -1,5 +1,7 @@
 from formencode.validators import Int
 from nose.tools import eq_
+from pysutils.testing import logging_handler
+from webtest import TestApp
 from werkzeug import MultiDict, run_wsgi_app, Headers
 from werkzeug.exceptions import BadRequest
 
@@ -12,8 +14,11 @@ from pysmvt.wrappers import Response
 import config
 from newlayout.application import make_wsgi
 
+ta = None
 def setup_module():
-   make_wsgi()
+    global ta
+    wsgiapp = make_wsgi('WithTestSettings')
+    ta = TestApp(wsgiapp)
 
 @inrequest()
 def test_basic_view():
@@ -380,3 +385,38 @@ def test_view_callstack_with_ajax():
             methods_called.append('xhr')
     r = TestView({}).process()
     eq_(methods_called, ['xhr'])
+
+def test_application_to_view_coupling():
+    r = ta.get('/applevelview', status=404)
+
+    r = ta.get('/applevelview/foo')
+    assert 'alv: foo, None' in r
+
+    r = ta.get('/applevelview/foo?v2=bar')
+    assert 'alv: foo, bar' in r, r
+
+    r = ta.get('/news')
+    assert 'news index' in r
+
+def test_view_forwarding():
+    r = ta.get('/news?sendby=forward')
+    assert 'alv: None, None' in r
+
+    r = ta.get('/forwardwithargs')
+    assert 'alv: a, b' in r
+
+def test_view_redirect():
+    eh = logging_handler('pysmvt.application')
+    r = ta.get('/news?sendby=redirect')
+    assert '/applevelview/foo' in r
+    assert r.status_int == 302
+    dmesgs = ''.join(eh.messages['debug'])
+    assert 'handling http exception' not in dmesgs , dmesgs
+    r = r.follow()
+    assert 'alv: foo, None' in r, r
+
+    r = ta.get('/news?sendby=rdp')
+    assert r.status_int == 301
+
+    r = ta.get('/news?sendby=303')
+    assert r.status_int == 303

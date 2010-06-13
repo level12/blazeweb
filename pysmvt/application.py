@@ -7,10 +7,10 @@ from werkzeug import create_environ
 from werkzeug.routing import Map, Submount
 
 import pysmvt
-from pysmvt import session, rg, user, _getview
-from pysmvt.exceptions import ForwardException, ProgrammingError
+from pysmvt import session, rg, user
+from pysmvt.exceptions import Forward, ProgrammingError, Redirect
 from pysmvt.hierarchy import findobj, HierarchyImportError, \
-    listplugins, visitmods
+    listplugins, visitmods, findview
 from pysmvt.logs import create_handlers_from_settings
 from pysmvt.mail import mail_programmers
 from pysmvt.views import FunctionViewHandler
@@ -91,7 +91,7 @@ class ResponseContext(object):
         if 'pysmvt.response_teardown' in self.environ:
             for callable in self.environ['pysmvt.response_teardown']:
                 callable()
-        if isinstance(e, ForwardException):
+        if isinstance(e, Forward):
             log.debug('forwarding to %s (%s)', e.forward_endpoint, e.forward_args)
             rg.forward_queue.append((e.forward_endpoint, e.forward_args))
             if len(rg.forward_queue) == 10:
@@ -203,23 +203,21 @@ class WSGIApp(object):
     def response_context(self, error_doc_code):
         return ResponseContext(error_doc_code)
 
-    def response_cycle(self, endpoint, args, called_from=None, error_doc_code=None):
+    def response_cycle(self, endpoint, args, error_doc_code=None):
         rg.forward_queue = [(endpoint, args)]
         while True:
             with self.response_context(error_doc_code):
                 endpoint, args = rg.forward_queue[-1]
-                return self.dispatch_to_view(endpoint, args, called_from)
+                return self.dispatch_to_view(endpoint, args)
 
-    def dispatch_to_view(self, endpoint, args, called_from=None):
-        if len(rg.forward_queue) > 1:
-            called_from = 'forward'
-        else:
-            called_from = called_from or 'client'
+    def dispatch_to_view(self, endpoint, args):
         log.debug('dispatch to %s (%s)', endpoint, args)
         if endpoint.startswith('__viewfuncs__:'):
             v = FunctionViewHandler(endpoint, args)
-            return v.process()
-        return _getview(endpoint, args, called_from)
+        else:
+            vklass = findview(endpoint)
+            v = vklass(args)
+        return v.process()
 
     def wsgi_app(self, environ, start_response):
         with self.request_manager(environ):
@@ -231,6 +229,8 @@ class WSGIApp(object):
                     raise
                 log.debug('wsgi_app processing %s (%s)', endpoint, args)
                 response = self.response_cycle(endpoint, args)
+            except Redirect, e:
+                response = e.response
             except HTTPException, e:
                 response = self.handle_http_exception(e)
             except Exception, e:
@@ -249,7 +249,7 @@ class WSGIApp(object):
         if endpoint is None:
             return e
         try:
-            return self.response_cycle(endpoint, {}, 'error docs', error_doc_code=e.code)
+            return self.response_cycle(endpoint, {}, error_doc_code=e.code)
         except HTTPException, httpe:
             log.debug('error doc endpoint %s raised HTTPException: %s', endpoint, httpe)
             # the document handler is bad, so send back the original exception
@@ -288,7 +288,7 @@ class WSGIApp(object):
             else:
                 log.debug('handling exception with error doc endpoint %s' % endpoint)
                 try:
-                    return self.response_cycle(endpoint, {}, 'error docs', error_doc_code=500)
+                    return self.response_cycle(endpoint, {}, error_doc_code=500)
                 except HTTPException, httpe:
                     log.debug('error doc endpoint %s raised HTTPException: %s', endpoint, httpe)
                 except Exception, exc:

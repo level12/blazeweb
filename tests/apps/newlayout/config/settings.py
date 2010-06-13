@@ -11,6 +11,8 @@ class Default(nlDefault):
         self.appname = appname
         nlDefault.init(self)
 
+        self.add_route('/applevelview/<v1>', 'AppLevelView')
+
         self.supporting_apps.append('nlsupporting')
         self.setup_plugins()
 
@@ -37,3 +39,8 @@ class AutoCopyStatic(Default):
         Default.init(self)
 
         self.auto_copy_static.enabled = True
+
+class WithTestSettings(Default):
+    def init(self):
+        Default.init(self)
+        self.apply_test_settings()

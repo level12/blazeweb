@@ -23,7 +23,7 @@ class TestSettings(DefaultSettings):
         return path.join(self.dirs.base, 'test-output', self.appname)
 
 class TestWsgiApplication(WSGIApp):
-    def dispatch_to_view(self, endpoint, args, called_from = None):
+    def dispatch_to_view(self, endpoint, args):
         vklass = endpoint
         return vklass('', vklass.__name__, args)()
 

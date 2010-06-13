@@ -1,15 +1,12 @@
-from werkzeug.routing import Rule
+from pysmvt.config import PluginSettings
 
-from pysmvt.config import QuickSettings
+class Settings(PluginSettings):
 
-class Settings(QuickSettings):
+    def init(self):
 
-    def __init__(self):
-        QuickSettings.__init__(self)
-
-        self.routes = ([
-            Rule('/fake/route', endpoint='news:notthere'),
-        ])
+        self.add_route('/fake/route', 'news:notthere')
+        self.add_route('/news', 'news:Index')
+        self.add_route('/forwardwithargs', 'news:ForwardWithArgs')
 
         self.foo = 1
         self.bar = 2
