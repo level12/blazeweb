@@ -331,10 +331,19 @@ class DefaultSettings(QuickSettings):
         self.debugger.enabled = True
         self.auto_copy_static.enabled = True
 
-def appslist(reverse=False):
-    if reverse:
-        apps = list(settings.supporting_apps)
-        apps.reverse()
-        apps.append(settings.appname)
-        return apps
-    return [settings.appname] + settings.supporting_apps
+    def add_route(self, route, endpoint, *args, **kwargs):
+        kwargs['endpoint'] = endpoint
+        self.routing.routes.append(Rule(route, *args, **kwargs))
+
+class PluginSettings(QuickSettings):
+    def __init__(self):
+        QuickSettings.__init__(self)
+        self.routes = []
+        self.init()
+
+    def init(self):
+        pass
+
+    def add_route(self, route, endpoint, *args, **kwargs):
+        kwargs['endpoint'] = endpoint
+        self.routes.append(Rule(route, *args, **kwargs))
