@@ -392,3 +392,8 @@ class AppstackImport(ImportOverrideHelper):
     def find_attrobj(self, attr):
         _, name = self.name.split('.', 1)
         return AppFinder(name, attr).search()
+
+def split_endpoint(endpoint):
+    if ':' in endpoint:
+        return endpoint.split(':')
+    return None, endpoint
