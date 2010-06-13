@@ -11,7 +11,6 @@ __all__ = [
     'url_for',
     'style_url',
     'js_url',
-    'index_url',
     'add_prefix',
     'current_url'
 ]
@@ -41,30 +40,6 @@ def style_url(file, app = None):
 def js_url(file, app = None):
     endpoint = 'javascript'
     return static_url(endpoint, file=file, app=app)
-
-def index_url(full=False):
-    from warnings import warn
-    warn(DeprecationWarning('index_url() is deprecated.  Functionality is now'
-                            ' provided by current_url(root_only=True).'),
-            stacklevel=2
-        )
-    try:
-        if settings.routing.prefix:
-            url = '/%s/' % settings.routing.prefix.strip('/')
-        else:
-            url = '/'
-        
-        endpoint, args = rg.urladapter.match( url )
-        return url_for(endpoint, _external=full, **args)
-    except NotFound:
-        raise SettingsError('the index url "%s" could not be located' % url)
-    except MethodNotAllowed :
-        raise ProgrammingError('index_url(): MethodNotAllowed exception encountered')
-    except RequestRedirect, e:
-        if full:
-            return e.new_url
-        parts = urlparse(e.new_url)
-        return parts.path.lstrip('/')
 
 def add_prefix(path):
     if settings.routing.prefix:
@@ -110,10 +85,10 @@ def current_url(root_only=False, host_only=False, strip_querystring=False,
         ro = BaseRequest(environ, shallow=True)
     else:
         ro = rg.request
-    
+
     if qs_replace or qs_update:
         strip_querystring = True
-    
+
     if root_only:
         retval = ro.url_root
     elif host_only:
@@ -130,16 +105,16 @@ def current_url(root_only=False, host_only=False, strip_querystring=False,
             retval = retval.replace('http://', 'https://', 1)
         elif not https and retval.startswith('https://'):
             retval = retval.replace('https://', 'http://', 1)
-    
+
     if qs_update or qs_replace:
         href = Href(retval, sort=True)
         args = MultiDict(ro.args)
-        
+
         if qs_update:
             # convert to md first so that if we have lists in the kwargs, they
             # are converted appropriately
             qs_update = MultiDict(qs_update)
-            
+
             for key, value_list in qs_update.iterlists():
                 # multidicts extend, not replace, so we need
                 # to get rid of the key first
@@ -148,12 +123,12 @@ def current_url(root_only=False, host_only=False, strip_querystring=False,
                 except KeyError:
                     pass
                 args.setlistdefault(key, []).extend(value_list)
-        
+
         if qs_replace:
             # convert to md first so that if we have lists in the kwargs, they
             # are converted appropriately
             qs_replace = MultiDict(qs_replace)
-            
+
             for key, value_list in qs_replace.iterlists():
                 # multidicts extend, not replace, so we need
                 # to get rid of the key first
@@ -162,7 +137,7 @@ def current_url(root_only=False, host_only=False, strip_querystring=False,
                     args.setlistdefault(key, []).extend(value_list)
                 except KeyError:
                     pass
-            
+
         return href(args)
     elif qs_update:
         href = Href(retval, sort=True)
