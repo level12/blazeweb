@@ -81,7 +81,6 @@ def test_app_tasks():
 
 def test_app_routes():
     res = run_application('minimal2', 'routes')
-    assert "'/[pysmvt_test]'" in res.stdout, res.stdout
     assert "'/'" in res.stdout, res.stdout
 
 def test_minimal_project_checkout_and_functionality():

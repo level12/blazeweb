@@ -74,10 +74,7 @@ class DefaultSettings(QuickSettings):
         #######################################################################
         # ROUTING
         #######################################################################
-        self.routing.routes = [
-            # a special route for testing purposes
-            Rule('/[pysmvt_test]', endpoint='[pysmvt_test]')
-        ]
+        self.routing.routes = []
 
         # note that you shouldn't really need to use the routing prefix if
         # SCRIPT_NAME and PATH_INFO are set correctly as the Werkzeug

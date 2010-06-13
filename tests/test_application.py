@@ -12,6 +12,4 @@ def test_plugin_settings():
     assert settings.plugins.news.foo == 1
     assert settings.plugins.news.bar == 3
 
-    eq_( """Map([[<Rule '/[pysmvt_test]' -> [pysmvt_test]>,
- <Rule '/fake/route' -> news:notthere>]]) """.strip(), str(ag.route_map))
-
+    eq_( """Map([[<Rule '/fake/route' -> news:notthere>]]) """.strip(), str(ag.route_map))
