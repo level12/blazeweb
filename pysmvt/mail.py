@@ -86,11 +86,11 @@ def forbid_multi_line_headers(name, val):
             result = []
             for item in val.split(', '):
                 nm, addr = parseaddr(item)
-                nm = str(Header(nm, settings.default_charset))
+                nm = str(Header(nm, settings.default.charset))
                 result.append(formataddr((nm, str(addr))))
             val = ', '.join(result)
         else:
-            val = Header(val, settings.default_charset)
+            val = Header(val, settings.default.charset)
     else:
         if name.lower() == 'subject':
             val = Header(val)
@@ -249,8 +249,8 @@ class EmailMessage(object):
     def message(self):
         self._extend_recipients()
         self._perform_override()
-        encoding = self.encoding or settings.default_charset
-        msg = SafeMIMEText(smart_str(self.body, settings.default_charset),
+        encoding = self.encoding or settings.default.charset
+        msg = SafeMIMEText(smart_str(self.body, settings.default.charset),
                            self.content_subtype, encoding)
         if self.attachments:
             body_msg = msg
@@ -376,7 +376,7 @@ class EmailMessage(object):
         basetype, subtype = mimetype.split('/', 1)
         if basetype == 'text':
             attachment = SafeMIMEText(smart_str(content,
-                settings.default_charset), subtype, settings.default_charset)
+                settings.default.charset), subtype, settings.default.charset)
         else:
             # Encode non-text attachments with base64.
             attachment = MIMEBase(basetype, subtype)

@@ -211,7 +211,7 @@ class DefaultSettings(QuickSettings):
         #######################################################################
         # OTHER DEFAULTS
         #######################################################################
-        self.default_charset = 'utf-8'
+        self.default.charset = 'utf-8'
         self.default.file_mode = 0640
         self.default.dir_mode = 0750
 
