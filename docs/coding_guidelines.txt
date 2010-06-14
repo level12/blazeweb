@@ -11,7 +11,8 @@ def something_setup():
 
 
 when initilizing something, use the "init" prefix since this corresponds with
-python's __init__ method and should be intuative.
+python's __init__ method and should be intuative.  This is to be preferred over
+the "prep" or "setup" prefix/postfix.
 
-when possible, methods of a class should proceed in the order called.  Methods
+when possible, methods of a class should be defined in the order used.  Methods
 called first should be higher in the class definition.
