@@ -137,19 +137,29 @@ def findfile(endpoint_path):
         raise FileNotFound('could not find: %s' % endpoint_path)
     return fpath
 
-def findobj(endpoint, attr):
+def findobj(endpoint):
     """
         Allows hieararchy importing based on strings:
 
         findobject('news:views', 'Index') => from plugstack.news.views import Index
         findobject('views', 'Index') => from appstack.views import Index
+
+        findobject('news:views.Index') => from plugstack.news.views import Index
+        findobject('views.Index') => from appstack.views import Index
     """
+    if '.' not in endpoint:
+        raise ValueError('endpoint should have a "."; see docstring for usage')
+
     if ':' in endpoint:
         plugin, impname = endpoint.split(':')
-        impstring = 'plugstack.%s.%s' % (plugin, impname)
+        impstring = 'plugstack.%s.' % plugin
     else:
-        impstring = 'appstack.%s' % endpoint
-    collector = ImportOverrideHelper.doimport(impstring, [attr])
+        impname = endpoint
+        impstring = 'appstack.'
+    parts = impname.split('.')
+    attr = parts[-1]
+    impname = '.'.join(parts[:-1])
+    collector = ImportOverrideHelper.doimport(impstring + impname, [attr])
     return getattr(collector, attr)
 
 def visitmods(dotpath, reverse=False, call_with_mod=None):

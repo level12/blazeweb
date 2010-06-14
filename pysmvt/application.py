@@ -138,7 +138,7 @@ class WSGIApp(object):
         # now we need to assign plugin's settings to the main setting object
         for pname in listplugins():
             try:
-                Settings = findobj('%s:config.settings' % pname, 'Settings')
+                Settings = findobj('%s:config.settings.Settings' % pname)
                 ms = Settings()
                 # update the plugin's settings with any plugin level settings made
                 # at the app level.  This allows us to override plugin settings

@@ -241,10 +241,10 @@ class TestMostStuff(object):
         eh.reset()
 
     def test_findobj(self):
-        view = findobj('news:views', 'FakeView')
+        view = findobj('news:views.FakeView')
         assert 'newlayout.plugins.news.views.FakeView' in str(view), view
 
-        view = findobj('views', 'AppLevelView')
+        view = findobj('views.AppLevelView')
         assert 'newlayout.views.AppLevelView' in str(view), view
 
     def test_list_plugins(self):
