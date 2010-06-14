@@ -1,37 +1,11 @@
-from helpers import create_testapp, asview, create_altstack_app, AsViewHelper
+from helpers import create_testapp, create_altstack_app
 from webtest import TestApp
 
 from pysmvt import session, user, forward
+from pysmvt.views import asview
 
 wsgiapp = None
 ta = None
-
-def setup_module():
-    global wsgiapp, ta
-    wsgiapp = create_testapp()
-    ta = TestApp(wsgiapp)
-
-def test_working_view():
-
-    @asview
-    def workingview():
-        return 'hello world!'
-
-    r = ta.get('/workingview')
-    r.mustcontain('hello world!')
-
-def test_forward():
-    @asview
-    def page1():
-        forward(AsViewHelper, {'funckey': 'page2'})
-        return 'hello nosession!'
-
-    @asview
-    def page2():
-        return 'page2!'
-
-    r = ta.get('/page1')
-    r.mustcontain('page2!')
 
 class TestAltStack(object):
 
@@ -41,7 +15,7 @@ class TestAltStack(object):
         cls.ta = TestApp(cls.wsgiapp)
 
     def test_workingview(self):
-        @asview
+        @asview()
         def workingview():
             return 'hello foo!'
 
@@ -49,7 +23,7 @@ class TestAltStack(object):
         r.mustcontain('hello foo!')
 
     def test_no_session(self):
-        @asview
+        @asview()
         def nosession():
             assert not session
             # but we still have a user object, even though info won't get persisted
@@ -60,12 +34,12 @@ class TestAltStack(object):
         r.mustcontain('hello nosession!')
 
     def test_forward(self):
-        @asview
+        @asview()
         def page1():
-            forward(AsViewHelper, {'funckey': 'page2'})
+            forward('__viewfuncs__:page2')
             return 'hello nosession!'
 
-        @asview
+        @asview()
         def page2():
             return 'page2!'
 
@@ -80,7 +54,7 @@ class TestAltStackWithSession(object):
         cls.ta = TestApp(cls.wsgiapp)
 
     def test_workingview(self):
-        @asview
+        @asview()
         def workingview():
             return 'hello foo!'
 
@@ -88,7 +62,7 @@ class TestAltStackWithSession(object):
         r.mustcontain('hello foo!')
 
     def test_hassession(self):
-        @asview
+        @asview()
         def hassession():
             assert session
             assert user
@@ -98,21 +72,21 @@ class TestAltStackWithSession(object):
         r.mustcontain('hello hassession!')
 
     def test_session_saves(self):
-        @asview
+        @asview()
         def session1():
             session['session1'] = 'foo'
             return ''
 
         r = self.ta.get('/session1')
 
-        @asview
+        @asview()
         def session2():
             assert session['session1'] == 'foo'
             return ''
 
         r = self.ta.get('/session2')
 
-        @asview
+        @asview()
         def session3():
             assert 'session1' not in session
             return ''
