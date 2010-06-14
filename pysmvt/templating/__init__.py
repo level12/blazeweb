@@ -4,7 +4,6 @@ from pysutils.numbers import moneyfmt
 from pysutils.strings import simplify_string, reindent
 
 from pysmvt import ag, settings
-from pysmvt.content import getcontent
 from pysmvt.routing import url_for, current_url
 from pysmvt.utils.html import strip_tags
 
@@ -28,12 +27,14 @@ class EngineBase(object):
         raise NotImplementedError('Translor must be subclassed')
 
     def get_globals(self):
+        # circular import fun!!
+        from pysmvt.content import getcontent
         globals = {}
         globals['url_for'] = url_for
         globals['current_url'] = current_url
         #globals['inc_css'] = self.include_css
         #globals['inc_js'] = self.include_js
-        globals['inc_content'] = getcontent
+        globals['getcontent'] = getcontent
         #globals['response_css'] = self.page_css
         #globals['response_js'] = self.page_js
         return globals

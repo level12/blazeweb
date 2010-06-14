@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from pysmvt import session, user, rg
-from pysmvt.view import RespondingViewBase
+from pysmvt.views import View
 
-class SetFoo(RespondingViewBase):
-    
+class SetFoo(View):
+
     def default(self):
         try:
             existing = session['foo']
@@ -14,8 +14,7 @@ class SetFoo(RespondingViewBase):
         session['foo'] = 'bar'
         return 'foo set'
 
-class GetFoo(RespondingViewBase):
+class GetFoo(View):
 
     def default(self):
         return session['foo']
-        

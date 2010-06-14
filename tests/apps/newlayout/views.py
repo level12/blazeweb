@@ -9,7 +9,7 @@ class AppLevelView(View):
 
 class Index(View):
     def default(self, tname):
-        if tname != 'index':
-            self.template_name = tname
         self.assign('a', 1)
+        if tname != 'index':
+            self.render_template(tname)
         self.render_template()

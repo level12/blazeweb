@@ -1,5 +1,5 @@
-from pysmvt.view import HtmlTemplatePage
+from pysmvt.views import View
 
-class Index(HtmlTemplatePage):
+class Index(View):
     def default(self):
-        pass
+        self.render_template()

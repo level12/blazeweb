@@ -1,10 +1,7 @@
-# -*- coding: utf-8 -*-
-
-from pysmvt.view import RespondingViewBase
+from pysmvt.views import View
 from pysmvt.routing import current_url
 
-class CurrentUrl(RespondingViewBase):
+class CurrentUrl(View):
 
     def default(self):
         return current_url()
-        

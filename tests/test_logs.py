@@ -1,7 +1,6 @@
 from os import path
 from nose.tools import eq_
 from pysmvt.tasks import run_tasks
-from pysmvt import getview
 from pysmvt import settings
 from pysmvt.logs import clear_settings_handlers
 import logging

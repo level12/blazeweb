@@ -2,7 +2,7 @@ import unittest
 
 from werkzeug import Client, BaseResponse
 
-from pysmvt import settings
+from pysmvt import settings, user
 from pysmvt.exceptions import ProgrammingError
 from pysmvt.hierarchy import HierarchyImportError
 
@@ -58,14 +58,14 @@ class TestViews(unittest.TestCase):
             r = self.client.get('tests/badmod')
             self.fail('should have got ProgrammingError since URL exists but module does not')
         except HierarchyImportError, e:
-            assert 'module "fatfinger.views" not found' in str(e)
+            assert 'An object for View endpoint "fatfinger:NotExistant" was not found' == str(e), e
 
     def test_noview(self):
         try:
             r = self.client.get('tests/noview')
             self.fail('should have got ProgrammingError since URL exists but view does not')
         except HierarchyImportError, e:
-            assert 'attribute "NotExistant" not found; searched plugstack.tests.views' in str(e)
+            assert 'An object for View endpoint "tests:NotExistant" was not found' == str(e), e
 
     def test_prep(self):
         r = self.client.get('tests/prep')
@@ -77,7 +77,7 @@ class TestViews(unittest.TestCase):
         try:
             r = self.client.get('tests/noactionmethod')
         except ProgrammingError, e:
-            self.assertTrue( 'there were no "action" methods on the view class "tests:NoActionMethod"' in str(e))
+            assert 'there were no "action" methods on the view class "NoActionMethod"' in str(e), e
         else:
             self.fail('should have gotten an exception b/c view does not have action method')
 
@@ -96,34 +96,11 @@ class TestViews(unittest.TestCase):
         self.assertEqual(r.status, '200 OK')
         self.assertEqual(r.data, 'Hello World!')
 
-    def test_tworespondingviews(self):
-        try:
-            r = self.client.get('tests/tworespondingviews')
-            self.fail('should have gotten an exception b/c we initialized two responding views in the same request')
-        except ProgrammingError, e:
-            self.assertTrue( 'Responding view (tests:Rvb) intialized but one already exists' in str(e))
-
     def test_forward(self):
         r = self.client.get('tests/doforward')
 
         self.assertEqual(r.status, '200 OK')
         self.assertEqual(r.data, 'forward to me')
-
-    def test_badforward(self):
-        try:
-            r = self.client.get('tests/badforward')
-        except ProgrammingError, e:
-            self.assertTrue( 'forward to non-RespondingViewBase view "HwSnippet"' in str(e))
-        else:
-            self.fail('should have gotten an exception b/c we forwarded to a non-responding view')
-
-    def test_badroute(self):
-        try:
-            r = self.client.get('tests/badroute')
-        except ProgrammingError, e:
-            self.assertEqual( 'Route exists to non-RespondingViewBase view "HwSnippet"', str(e))
-        else:
-            self.fail('should have gotten an exception b/c we routed to a non-responding view')
 
     def test_text(self):
         r = self.client.get('tests/text')
@@ -193,13 +170,13 @@ class TestViews(unittest.TestCase):
         self.assertEqual(r.data, 'Hello World!')
 
     def test_errordocexc(self):
-        settings.error_docs[503] = 'tests:BadForward'
+        settings.error_docs[503] = 'tests:RaiseExc'
         try:
             r = self.client.get('tests/heraise')
-        except ProgrammingError, e:
-            self.assertTrue( 'forward to non-RespondingViewBase view "HwSnippet"' in str(e))
+        except ValueError, e:
+            self.assertTrue( 'exception for testing' in str(e))
         else:
-            self.fail('should have gotten an exception b/c we forwarded to a non-responding view')
+            self.fail('should have gotten an exception b/c our error handler raised one')
 
         # now turn exception handling on and we should see a generic 500
         # response since the document handler raised an exception
@@ -268,16 +245,15 @@ class TestViews(unittest.TestCase):
         self.assertEqual(r.status_code, 400)
         # we are no longer going to manipulate the response object to include
         # user messages
-        self.assertTrue('(error) num: must be an integer' not in r.data)
-        self.assertTrue('(error) num: Please enter an integer value' not in r.data)
+        self.assertTrue('integer' not in r.data)
 
         #If you want user messages included in an error response
         # you need to use an error document that will include them, like so:
         settings.error_docs[400] = 'tests:UserMessages'
         r = self.client.get('tests/getargs3?num=ten&num2=ten')
         self.assertEqual(r.status_code, 400)
-        self.assertTrue('(error) num: must be an integer' in r.data)
-        self.assertTrue('(error) num: Please enter an integer value' in r.data)
+        assert '(error) num2: num: must be an integer' in r.data, r.data
+        assert '(error) num: Please enter an integer value' in r.data, r.data
 
     def test_reqgetargs(self):
         settings.error_docs[400] = 'tests:UserMessages'
@@ -287,7 +263,7 @@ class TestViews(unittest.TestCase):
 
         r = self.client.get('/tests/reqgetargs?num2=ten')
         self.assertEqual(r.status_code, 400)
-        self.assertTrue('(error) num: argument required' in r.data)
+        self.assertTrue('(error) num: Please enter a value' in r.data, r.data)
         self.assertTrue('(error) num2: Please enter an integer value' in r.data)
 
         r = self.client.get('tests/reqgetargs?num1&num=2')
@@ -302,7 +278,7 @@ class TestViews(unittest.TestCase):
 
         r = self.client.get('tests/listgetargs?nums=ten&nums=2')
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(r.data, '[]')
+        self.assertEqual(r.data, '[2]')
 
     def test_customvalidator(self):
 
@@ -322,7 +298,7 @@ class TestViews(unittest.TestCase):
         try:
             r = self.client.get('tests/badvalidator')
         except TypeError, e:
-            self.assertEqual( 'validator must be a Formencode validator or a callable', str(e))
+            self.assertEqual( 'processor must be a Formencode validator or a callable', str(e))
         else:
             self.fail('excpected exception for bad validator')
 
@@ -351,7 +327,7 @@ class TestViews(unittest.TestCase):
         try:
             r = self.client.get('tests/htmltemplateerror1')
         except ProgrammingError, e:
-            self.assertEqual( 'a view can only set template_name or template_file, not both', str(e))
+            self.assertEqual( 'only one of filename or endpoint can be used, not both', str(e))
         else:
             self.fail('excpected exception for bad template arguments')
 

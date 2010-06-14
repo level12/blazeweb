@@ -12,4 +12,4 @@ def test_plugin_settings():
     assert settings.plugins.news.foo == 1
     assert settings.plugins.news.bar == 3
 
-    eq_( """Map([[<Rule '/fake/route' -> news:notthere>]]) """.strip(), str(ag.route_map))
+    assert "<Rule '/fake/route' -> news:notthere>" in str(ag.route_map), ag.route_map

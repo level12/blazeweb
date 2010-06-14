@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
-
 from pysmvt import session, user
-from pysmvt.view import RespondingViewBase
+from pysmvt.views import View
 
-class SetFoo(RespondingViewBase):
-    
+class SetFoo(View):
+
     def default(self):
         existing = user.get_attr('foo')
         if existing:
@@ -13,33 +11,33 @@ class SetFoo(RespondingViewBase):
         user.set_attr('bar', 'baz')
         return 'foo set'
 
-class GetFoo(RespondingViewBase):
+class GetFoo(View):
 
     def default(self):
         return '%s%s' % (user.get_attr('foo'), user.get_attr('bar'))
 
 
-class SetAuthenticated(RespondingViewBase):
+class SetAuthenticated(View):
 
     def default(self):
         user.authenticated()
 
-class GetAuthenticated(RespondingViewBase):
+class GetAuthenticated(View):
 
     def default(self):
-        return user.is_authenticated()
+        return str(user.is_authenticated())
 
-class AddPerm(RespondingViewBase):
+class AddPerm(View):
 
     def default(self):
         user.add_perm('foo-bar')
 
-class GetPerms(RespondingViewBase):
+class GetPerms(View):
 
     def default(self):
         return '%s%s' % (user.has_perm('foo-bar'), user.has_perm('foo-baz'))
 
-class Clear(RespondingViewBase):
+class Clear(View):
 
     def default(self):
         user.set_attr('foo', 'bar')
@@ -48,17 +46,17 @@ class Clear(RespondingViewBase):
         user.clear()
         return '%s%s%s' % (user.is_authenticated(), user.has_perm('foo-bar'), user.get_attr('foo'))
 
-class SetMessage(RespondingViewBase):
+class SetMessage(View):
 
     def default(self):
         user.add_message('test', 'my message')
 
-class GetMessage(RespondingViewBase):
+class GetMessage(View):
 
     def default(self):
-        return user.get_messages()[0]
+        return str(user.get_messages()[0])
 
-class GetNoMessage(RespondingViewBase):
+class GetNoMessage(View):
 
     def default(self):
-        return len(user.get_messages())
+        return str(len(user.get_messages()))

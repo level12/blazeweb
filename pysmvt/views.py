@@ -60,9 +60,9 @@ class View(object):
         # holds the variables that will be sent to the template when
         # rendering
         self.template_vars = {}
-        # the name of the template
-        self.template_name = None
-        self.template_ext_default = 'html'
+        # the name of the template file relative to the location of the View
+        # status code for the response
+        self.status_code = 200
 
         log.debug('%s view instantiated', self.__class__.__name__)
 
@@ -249,6 +249,7 @@ class View(object):
 
         for argname, processor, required, takes_list, list_item_invalidates, \
                 strict, show_msg, custom_msg in self._processors:
+            is_invalid = False
             argval = self.calling_args.get(argname, None)
             try:
                 if isinstance(argval, list):
@@ -277,17 +278,18 @@ class View(object):
                         processed_val = processor.to_python(new_list)
                     self.calling_args[argname] = processed_val
             except formencode.Invalid, e:
-                if takes_list:
-                    self.calling_args[argname] = []
-                else:
-                    self.calling_args[argname] = None
+                is_invalid = True
                 if self.strict_args or strict:
                     had_strict_arg_failure = True
                 self.invalid_arg_keys.append(argname)
                 if show_msg:
                     invalid_msg = '%s: %s' % (argname, custom_msg or str(e))
                     user.add_message('error', invalid_msg)
-
+            try:
+                if is_invalid or self.calling_args[argname] is None or self.calling_args[argname] == '':
+                    del self.calling_args[argname]
+            except KeyError:
+                pass
         if len(self.invalid_arg_keys) > 0:
             log.debug('%s had bad args: %s', self.__class__.__name__, self.invalid_arg_keys)
         if had_strict_arg_failure:
@@ -348,7 +350,7 @@ class View(object):
 
     def handle_response(self):
         # if retval is None, assume respctx.response was altered directly
-        if self.retval is None:
+        if self.retval is None or self.retval is NotGiven:
             return rg.respctx.response
         # if the retval is a string, add it as the response data
         if isinstance(self.retval, basestring):
@@ -360,18 +362,54 @@ class View(object):
             return self.retval
         raise TypeError('View "%s" returned a value with an unexpected type: %s' % (self.__class__.__name__, type(self.retval)))
 
-    def render_template(self):
-        if not self.template_name:
-            # the template name must have an extensions, that is how
-            # getcontent() knows we are looking for a file and not a Content
-            # instance.
-            self.template_name = '%s.%s' % (case_cw2us(self.__class__.__name__), self.template_ext_default)
-        if rg.respctx.current_plugin:
-            endpoint = '%s:%s' % (rg.respctx.current_plugin, self.template_name)
-        else:
-            endpoint = self.template_name
+    def render_template(self, filename=None, endpoint=None, default_ext='html', send_response=True):
+        """
+            Render a template:
+
+                # use a template based on the view's name.  If the view is named
+                # "MyView" then the template should be named 'my_view.html'.
+                self.render_template()
+
+                # you can also set a different extension if the template is
+                # named like the view, but is not html:
+                self.render_template(default_ext='txt')
+
+                # look for a template file with the name given.  If the view
+                # is app level, then the search is done in the appstack's
+                # templates.  If the view is plugin level, then the search is
+                # done in the plugstack for that plugin.
+                self.render_template('some_file.html')
+
+                # look for a template file by endpoint, useful if you need a
+                # template from another plugin:
+                self.render_template(endpoint='otherplugin:some_template.html')
+
+                # or if the view is plugin level and a template from the main
+                # application is needed.
+                self.render_template(endpoint='app_level.html')
+
+            Calling render_template() will setup the Response object based on
+            the content and type of the template.  If send_response is True
+            (default), then the response will be sent immediately.  If False,
+            render_template() will return the content of the template.
+        """
+        if filename and endpoint:
+            raise ProgrammingError('only one of filename or endpoint can be used, not both')
+        if not endpoint:
+            if not filename:
+                # the filename must have an extension, that is how
+                # getcontent() knows we are looking for a file and not a Content
+                # instance.
+                filename = '%s.%s' % (case_cw2us(self.__class__.__name__), default_ext)
+            if rg.respctx.current_plugin:
+                endpoint = '%s:%s' % (rg.respctx.current_plugin, filename)
+            else:
+                endpoint = filename
         c = getcontent(endpoint, **self.template_vars)
-        self.retval = Response(c.data, mimetype=c.type)
+        rg.respctx.response = Response(c.primary, status=self.status_code, mimetype=c.primary_type)
+        if send_response:
+            self.send_response()
+        return c.primary
 
     def assign(self, name, value):
         self.template_vars[name] = value
@@ -396,6 +434,7 @@ def asview(rule=None, **options):
         getargs = options.pop('getargs', [])
         ag.view_functions[fname] = f, getargs
         endpoint = '__viewfuncs__:%s' % fname
+        log.debug('@asview adding route "%s" to endpoint "%s"', lrule, endpoint)
         ag.route_map.add(Rule(lrule, endpoint=endpoint), **options)
         return f
     return decorator

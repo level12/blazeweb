@@ -6,6 +6,7 @@ from werkzeug import MultiDict, run_wsgi_app, Headers
 from werkzeug.exceptions import BadRequest
 
 from pysmvt import rg, user
+from pysmvt.exceptions import ProgrammingError
 from pysmvt.views import View
 from pysmvt.testing import inrequest
 from pysmvt.wrappers import Response
@@ -154,13 +155,16 @@ def test_arg_validation():
             except TypeError, e:
                 if 'processor must be a Formencode validator or a callable' != str(e):
                     raise # pragma: no cover
-        def default(self, a, b, c, d):
+        def default(self, a, c, d, b=5):
             eq_(a, 1)
             eq_(c, 2)
             eq_(d, 3)
-            assert b is None, b
+            # if an argument fails validation it is completely ignored, as if
+            # the client did not send it.  Therefore, we can set default
+            # values and they will apply if the argument is not sent or if the
+            # value that is sent fails validation
+            eq_(b, 5)
     r = TestView({'c':u'2'}).process()
-
 
 @inrequest('/foo?a=1&b=b')
 def test_arg_validation_with_strict():
@@ -190,7 +194,7 @@ def test_arg_validation_with_strict():
         def init(self):
             self.add_processor('a', int, strict=True)
             self.add_processor('b', int, custom_msg='mycustom')
-        def default(self, a, b):
+        def default(self, a, b=None):
             msgs = user.get_messages()
             eq_(a, 1)
             assert b is None, b
@@ -229,7 +233,7 @@ def test_processing_with_lists():
             self.add_processor('f', takes_list=True)
             self.add_processor('g', int, takes_list=True)
             self.add_processor('h', int, takes_list=True, list_item_invalidates=True, show_msg=True)
-        def default(self, a, b, f, c, d, e, g, h):
+        def default(self, a, b, f, d, e, g, h=[], c=None):
             msgs = user.get_messages()
             eq_(a, '1')
             eq_(b, 1)
@@ -350,7 +354,7 @@ def test_view_callstack():
     try:
         r = TestView({}).process()
         assert False
-    except Exception, e:
+    except ProgrammingError, e:
         if 'there were no "action" methods on the view class' not in str(e):
             assert False, e
 
@@ -361,7 +365,7 @@ def test_view_callstack():
     try:
         r = TestView({}).process()
         assert False
-    except Exception, e:
+    except AttributeError, e:
         if "'TestView' object has no attribute 'notthere'" != str(e):
             assert False, e
 
@@ -441,3 +445,34 @@ def test_templating():
     # test plugin template default name
     r = ta.get('/news/template')
     assert 'news index: 1' == r.body, r
+
+@inrequest('/foo')
+def test_templating_in_request():
+
+    # test incorrect use of render_template
+    class TestView(View):
+        def default(self):
+            try:
+                self.render_template(filename='a', endpoint='a')
+                assert False
+            except ProgrammingError, e:
+                assert 'only one of filename or endpoint can be used, not both' == str(e)
+    r = TestView({}).process()
+
+    # test send response
+    class TestViews2A(View):
+        def default(self):
+            self.render_template()
+            # we shouldn't get here b/c send_response() should be called by
+            # default
+            assert False
+    r = TestViews2A({}).process()
+    eq_( r.data.strip(), 'a')
+
+    # but it can be overridden
+    class TestViews2A(View):
+        def default(self):
+            self.render_template(send_response=False)
+            return 'foo'
+    r = TestViews2A({}).process()
+    eq_( r.data, 'foo')

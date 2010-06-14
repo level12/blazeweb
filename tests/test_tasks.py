@@ -1,6 +1,5 @@
 from nose.tools import eq_
 from pysmvt.tasks import run_tasks
-from pysmvt import getview
 
 # create the wsgi application that will be used for testing
 import config

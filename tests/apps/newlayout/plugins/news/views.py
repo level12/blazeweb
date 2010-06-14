@@ -27,9 +27,9 @@ class Template(View):
         self.expect_getargs('tname')
 
     def default(self, tname=None):
-        if tname:
-            self.template_name = tname
         self.assign('a', 1)
+        if tname:
+            self.render_template(tname)
         self.render_template()
 
 class FakeView(object):

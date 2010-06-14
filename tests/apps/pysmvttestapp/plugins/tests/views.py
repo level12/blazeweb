@@ -1,125 +1,113 @@
 # -*- coding: utf-8 -*-
 
-from pysmvt import getview, redirect, forward, rg
-from pysmvt.view import RespondingViewBase, SnippetViewBase, TextTemplatePage, \
-    TextTemplateSnippet, HtmlTemplateSnippet, HtmlTemplatePage, HtmlPageViewBase
+from pysmvt import redirect, forward, rg
+from pysmvt.content import getcontent
+from pysmvt.views import View
 from werkzeug.exceptions import ServiceUnavailable
 from formencode.validators import UnicodeString, Int
 
-class Rvb(RespondingViewBase):
-    
+class Rvb(View):
+
     def default(self):
         # this view is used as a error doc handler, so we need to set the
         # status code appropriately
         if rg.respctx.error_doc_code:
-            self.response.status_code = rg.respctx.error_doc_code
+            rg.respctx.response.status_code = rg.respctx.error_doc_code
         self.retval = 'Hello World!'
 
-class HwSnippet(SnippetViewBase):
-    def default(self):
-        self.retval = 'Hello World!'
+class RvbWithSnippet(View):
 
-class RvbWithSnippet(RespondingViewBase):
-    
     def default(self):
-        self.retval = getview('tests:HwSnippet')
+        self.retval = getcontent('tests:HwSnippet').primary
 
-class Get(RespondingViewBase):
-    
+class Get(View):
+
     def get(self):
         self.retval = 'Hello World!'
 
-class Post(RespondingViewBase):
-    
+class Post(View):
+
     def post(self):
         return 'Hello World!'
 
-class Prep(RespondingViewBase):
-    def prep(self):
+class Prep(View):
+    def init(self):
         self.retval = 'Hello World!'
-        
+
     def default(self):
         pass
 
-class NoActionMethod(RespondingViewBase):
-    def prep(self):
+class NoActionMethod(View):
+    def init(self):
         self.retval = 'Hello World!'
 
-class TwoRespondingViews(RespondingViewBase):
-    
-    def default(self):
-        return getview('tests:Rvb')
-
-class DoForward(RespondingViewBase):
+class DoForward(View):
     def default(self):
         forward('tests:ForwardTo')
 
-class ForwardTo(RespondingViewBase):
+class ForwardTo(View):
     def default(self):
         return 'forward to me'
 
-class BadForward(RespondingViewBase):
+class RaiseExc(View):
     def default(self):
-        forward('tests:HwSnippet')
+        raise ValueError('exception for testing')
 
-class TextSnippet(TextTemplateSnippet):
+#class TextSnippet(TextTemplateSnippet):
+#    def default(self):
+#        pass
+#
+class Text(View):
     def default(self):
-        pass
+        self.render_template(default_ext='txt')
 
-class Text(TextTemplatePage):
+class TextWithSnippet(View):
     def default(self):
-        pass
+        self.assign('output',  getcontent('tests:text_snippet.txt'))
+        self.render_template(default_ext='txt')
 
-class TextWithSnippet(TextTemplatePage):
+class TextWithSnippet2(View):
     def default(self):
-        self.assign('output',  getview('tests:TextSnippet'))
+        self.render_template(default_ext='txt')
 
-class TextWithSnippet2(TextTemplatePage):
+class Html(View):
     def default(self):
-        pass
+        self.render_template()
 
-class HtmlSnippet(HtmlTemplateSnippet):
+class HtmlCssJs(View):
     def default(self):
-        pass
+        self.render_template()
 
-class Html(HtmlTemplatePage):
-    def default(self):
-        pass
-
-class HtmlCssJs(HtmlTemplatePage):
-    def default(self):
-        pass
-
-class Redirect(RespondingViewBase):
+class Redirect(View):
     def default(self):
         redirect('some/other/page')
 
-class PermRedirect(RespondingViewBase):
+class PermRedirect(View):
     def default(self):
         redirect('some/other/page', permanent=True)
 
-class CustRedirect(RespondingViewBase):
+class CustRedirect(View):
     def default(self):
         redirect('some/other/page', code=303)
 
-class HttpExceptionRaise(RespondingViewBase):
+class HttpExceptionRaise(View):
     def default(self):
         raise ServiceUnavailable()
 
-class ForwardLoop(RespondingViewBase):
+class ForwardLoop(View):
     def default(self):
         forward('tests:ForwardLoop')
 
-class UrlArguments(RespondingViewBase):
+class UrlArguments(View):
     def default(self, towho='World', anum=None):
         if anum==None:
             return 'Hello %s!' % towho
         else:
             return 'Give me a name!'
 
-class GetArguments(RespondingViewBase):
-    def prep(self):
-        self.validate('towho', UnicodeString())
+class GetArguments(View):
+    def init(self):
+        self.add_processor('towho', UnicodeString())
 
     def default(self, greeting='Hello', towho='World', anum=None):
         if anum==None:
@@ -127,11 +115,10 @@ class GetArguments(RespondingViewBase):
         else:
             return 'Give me a name!'
 
-
-class GetArguments2(RespondingViewBase):
-    def prep(self):
-        self.validate('towho', UnicodeString())
-        self.validate('num', Int())
+class GetArguments2(View):
+    def init(self):
+        self.add_processor('towho', UnicodeString())
+        self.add_processor('num', Int())
 
     def default(self, towho='World', num=None):
         if num:
@@ -139,11 +126,11 @@ class GetArguments2(RespondingViewBase):
         else:
             return 'Hello %s!' % towho
 
-class GetArguments3(RespondingViewBase):
-    def prep(self):
-        self.validate('towho', UnicodeString())
-        self.validate('num', Int(), True)
-        self.validate('num2', Int(), 'num: must be an integer')
+class GetArguments3(View):
+    def init(self):
+        self.add_processor('towho', UnicodeString())
+        self.add_processor('num', Int(), show_msg=True)
+        self.add_processor('num2', Int(), custom_msg='num: must be an integer')
         self.strict_args = True
 
     def default(self, towho='World', num=None, num2=None):
@@ -152,80 +139,80 @@ class GetArguments3(RespondingViewBase):
         else:
             return 'Hello %s!' % towho
 
-class RequiredGetArguments(RespondingViewBase):
-    def prep(self):
-        self.validate('towho', UnicodeString(), msg=True)
-        self.validate('num', Int, required=True, msg=True)
-        self.validate('num2', Int, strict=True, msg=True)
-        self.validate('num3', Int, msg=True)
+class RequiredGetArguments(View):
+    def init(self):
+        self.add_processor('towho', UnicodeString(), show_msg=True)
+        self.add_processor('num', Int, required=True, show_msg=True)
+        self.add_processor('num2', Int, strict=True, show_msg=True)
+        self.add_processor('num3', Int, show_msg=True)
 
     def default(self, towho='World', num=None, num2=10, num3=10):
         if num:
             return 'Hello %s, %d %d %d!' % (towho, num, num2, num3)
-        
-class ListGetArguments(RespondingViewBase):
-    def prep(self):
-        self.validate('nums', Int(), msg=True, takes_list=True)
+
+class ListGetArguments(View):
+    def init(self):
+        self.add_processor('nums', Int(), show_msg=True, takes_list=True)
 
     def default(self, nums=[]):
         return str(nums)
-        
-class CustomValidator(RespondingViewBase):
-    def prep(self):
-        self.validate('num', self.validate_num)
+
+class CustomValidator(View):
+    def init(self):
+        self.add_processor('num', self.validate_num)
 
     def default(self, num=10):
-        return num
-    
+        return str(num)
+
     def validate_num(self, value):
         return int(value)
-        
-class BadValidator(RespondingViewBase):
-    def prep(self):
-        self.validate('num', 'notavalidator')
+
+class BadValidator(View):
+    def init(self):
+        self.add_processor('num', 'notavalidator')
 
     def default(self, num=10):
         return num
 
-class HtmlTemplateError1(HtmlTemplatePage):
+class HtmlTemplateFileArg(View):
     def default(self):
-        self.template_name = 'test'
-        self.template_file = 'test'
+        self.render_template('filearg.html')
 
-class HtmlTemplateFileArg(HtmlTemplatePage):
+class TemplateInheritance(View):
     def default(self):
-        self.template_file = 'filearg.html'
-        
-class TemplateInheritance(HtmlTemplatePage):
-    def default(self):
-        pass
-    
-class ParentTemplate(HtmlTemplatePage):
-    def default(self):
-        pass
-    
-class ParentTemplateInheritance(HtmlTemplatePage):
-    def default(self):
-        pass
-    
-class ModLevelPriority(HtmlTemplatePage):
-    def default(self):
-        pass
-    
-class HtmlTemplateFileArgCss(HtmlTemplatePage):
-    def default(self):
-        self.template_file = 'fileargcss.html'
+        self.render_template()
 
-class HtmlSnippetWithCss(HtmlTemplateSnippet):
+class ParentTemplate(View):
     def default(self):
-        pass
-    
-class HtmlSnippetWithCssParent(HtmlPageViewBase):
+        self.render_template()
+
+class ParentTemplateInheritance(View):
+    def default(self):
+        self.render_template()
+
+class ModLevelPriority(View):
+    def default(self):
+        self.render_template()
+
+class HtmlTemplateError1(View):
+    def default(self):
+        self.render_template('tests.html', 'test')
+
+class HtmlTemplateFileArgCss(View):
+    def default(self):
+        self.render_template('fileargcss.html')
+
+class HtmlSnippetWithCss(View):
+    def default(self):
+        self.render_template()
+
+class HtmlSnippetWithCssParent(View):
     def default(self):
         self.retval = getview('tests:HtmlSnippetWithCss')
+        self.render_template()
 
-class UserMessages(HtmlTemplatePage):
+class UserMessages(View):
     def default(self):
         if rg.respctx.error_doc_code:
-            self.response.status_code = rg.respctx.error_doc_code
-        pass
+            self.status_code = rg.respctx.error_doc_code
+        self.render_template()

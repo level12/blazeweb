@@ -3,8 +3,8 @@ from os import path
 
 from jinja2 import Environment, TemplateNotFound, BaseLoader
 
-from pysmvt import settings
-from pysmvt.hierarchy import FileNotFound, findfile
+from pysmvt import settings, user
+from pysmvt.hierarchy import FileNotFound, findfile, split_endpoint
 import pysmvt.templating as templating
 
 log = logging.getLogger(__name__)
@@ -39,7 +39,9 @@ class Translator(templating.EngineBase):
         return self.env.get_template(endpoint).render(context)
 
     def update_context(self, context):
-        pass
+        context.update({
+            'user': user._current_obj(),
+        })
 
 class HierarchyLoader(BaseLoader):
     """
@@ -53,11 +55,10 @@ class HierarchyLoader(BaseLoader):
     def find_template_path(self, endpoint):
         # try module level first
         try:
-            if ':' in endpoint:
-                plugin, template = endpoint.split(':')
-                endpoint = '%s:%s' % (plugin, path.join('templates', template))
-            else:
-                endpoint = path.join('templates', endpoint)
+            plugin, template = split_endpoint(endpoint)
+            endpoint = path.join('templates', template)
+            if plugin:
+                endpoint = '%s:%s' % (plugin, endpoint)
             return findfile(endpoint)
         except FileNotFound:
             pass

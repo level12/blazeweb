@@ -11,6 +11,5 @@ class TestContent(object):
 
    def test_class_usage(self):
       c = getcontent('HelloWorld')
-      print c
-   #def test_template_usage(self):
-   #   c = getcontent('hello_world.html')
+      assert c.primary == 'hello world', c.primary
+
