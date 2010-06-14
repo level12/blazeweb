@@ -1,15 +1,73 @@
 from nose.tools import eq_
 
-from pysmvt import settings, ag
+from pysutils.datastructures import BlankObject
+from webtest import TestApp
+from werkzeug import run_wsgi_app
+
+from pysmvt import settings, ag, rg
 
 import config
 from newlayout.application import make_wsgi
 
-def setup_module():
+def test_plugin_settings():
     app = make_wsgi()
 
-def test_plugin_settings():
     assert settings.plugins.news.foo == 1
     assert settings.plugins.news.bar == 3
+    assert settings.plugins.pnoroutes.noroutes == True
 
     assert "<Rule '/fake/route' -> news:notthere>" in str(ag.route_map), ag.route_map
+
+def test_bad_settings_profile():
+    try:
+        app = make_wsgi('notthere')
+        assert False
+    except ValueError, e:
+        assert 'settings profile "notthere" not found in this application' == str(e), e
+
+    try:
+        app = make_wsgi('AttributeErrorInSettings')
+        assert False
+    except AttributeError, e:
+        assert "'module' object has no attribute 'notthere'" == str(e), e
+
+def test_environ_hooks():
+    tracker = []
+    class TestMiddleware(object):
+        def __init__(self, app):
+            self.app = app
+
+        def __call__(self, environ, start_response):
+            def request_setup():
+                rg.testattr = 'foo'
+                tracker.append('reqs')
+                print 'request_setup'
+            def request_teardown():
+                tracker.append('reqt')
+                print 'request_teardown'
+            def response_setup():
+                tracker.append('resps')
+                print 'response_setup'
+            def response_teardown():
+                tracker.append('respt')
+                print 'response_teardown'
+            environ.setdefault('pysmvt.request_setup', [])
+            environ.setdefault('pysmvt.request_teardown', [])
+            environ.setdefault('pysmvt.response_setup', [])
+            environ.setdefault('pysmvt.response_teardown', [])
+            environ['pysmvt.request_setup'].append(request_setup)
+            environ['pysmvt.request_teardown'].append(request_teardown)
+            environ['pysmvt.response_setup'].append(response_setup)
+            environ['pysmvt.response_teardown'].append(response_teardown)
+            return self.app(environ, start_response)
+    app = TestMiddleware(make_wsgi())
+    ta = TestApp(app)
+
+    r = ta.get('/news')
+    r.mustcontain('news index')
+    eq_(tracker, ['reqs', 'resps','respt','reqt'])
+    tracker = []
+
+    r = ta.get('/news/reqsetupattr')
+    r.mustcontain('foo')
+

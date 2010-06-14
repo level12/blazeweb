@@ -1,4 +1,4 @@
-from pysmvt import forward, redirect
+from pysmvt import forward, redirect, rg
 from pysmvt.views import View
 
 class Index(View):
@@ -31,6 +31,11 @@ class Template(View):
         if tname:
             self.render_template(tname)
         self.render_template()
+
+class TestRequestSetupAttr(View):
+    def default(self, sendby=None):
+        return rg.testattr
+
 
 class FakeView(object):
     pass

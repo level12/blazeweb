@@ -30,6 +30,7 @@ class Default(nlDefault):
         self.add_plugin(appname, 'news', 'newsplug1')
         self.add_plugin(appname, 'news', 'newsplug2')
         self.add_plugin(appname, 'pdisabled')
+        self.add_plugin(appname, 'pnoroutes')
         self.pluginmap.newlayout.pdisabled.enabled = False
         self.add_plugin(appname, 'badimport')
 
@@ -45,3 +46,8 @@ class WithTestSettings(Default):
     def init(self):
         Default.init(self)
         self.apply_test_settings()
+
+class AttributeErrorInSettings(Default):
+    def init(self):
+        Default.init(self)
+        print path.notthere

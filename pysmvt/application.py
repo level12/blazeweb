@@ -66,6 +66,7 @@ class RequestManager(object):
         # after the registry variables have been setup
         if 'pysmvt.request_setup' in self.environ:
             for callable in self.environ['pysmvt.request_setup']:
+                print callable
                 callable()
 
     def __exit__(self, exc_type, exc_value, tb):
@@ -150,11 +151,11 @@ class WSGIApp(object):
                     ms.update(self.settings.plugins[pname])
                 except KeyError, e:
                     if pname not in str(e):
-                        raise
+                        raise # pragma: no cover
                 self.settings.plugins[pname] = ms
             except HierarchyImportError, e:
                 if '%s.config.settings' % pname not in str(e) and 'Settings' not in str(e):
-                    raise
+                    raise # pragma: no cover
 
         # lock the settings, this ensures that an attribute error is thrown if an
         # attribute is accessed that doesn't exist.  Without the lock, a new attr
@@ -193,7 +194,7 @@ class WSGIApp(object):
                 self.add_routing_rules(psettings.routes)
             except AttributeError, e:
                 if "no attribute 'routes'" not in str(e):
-                    raise
+                    raise  # pragma: no cover
 
     def init_templating(self):
         engine = default_engine()

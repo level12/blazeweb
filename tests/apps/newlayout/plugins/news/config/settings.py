@@ -8,6 +8,7 @@ class Settings(PluginSettings):
         self.add_route('/news', 'news:Index')
         self.add_route('/forwardwithargs', 'news:ForwardWithArgs')
         self.add_route('/news/template', 'news:Template')
+        self.add_route('/news/reqsetupattr', 'news:TestRequestSetupAttr')
 
         self.foo = 1
         self.bar = 2

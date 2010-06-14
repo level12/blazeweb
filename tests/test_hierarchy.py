@@ -248,18 +248,18 @@ class TestMostStuff(object):
         assert 'newlayout.views.AppLevelView' in str(view), view
 
     def test_list_plugins(self):
-        plist = ['news', 'badimport']
+        plist = ['news', 'pnoroutes', 'badimport']
         eq_(plist, listplugins())
 
         plist.reverse()
         eq_(plist, listplugins(reverse=True))
 
     def test_plugin_mappings(self):
-        plist = [('newlayout', 'news', None), ('newlayout', 'news', 'newsplug1'), ('newlayout', 'news', 'newsplug2'), ('newlayout', 'badimport', None), ('nlsupporting', 'news', None), ('nlsupporting', 'news', 'newsplug3')]
+        plist = [('newlayout', 'news', None), ('newlayout', 'news', 'newsplug1'), ('newlayout', 'news', 'newsplug2'), ('newlayout', 'pnoroutes', None), ('newlayout', 'badimport', None), ('nlsupporting', 'news', None), ('nlsupporting', 'news', 'newsplug3')]
         eq_(plist, list_plugin_mappings())
 
 
-        plistwapps = [('newlayout',  None, None), ('newlayout', 'news', None), ('newlayout', 'news', 'newsplug1'), ('newlayout', 'news', 'newsplug2'), ('newlayout', 'badimport', None), ('nlsupporting',  None, None), ('nlsupporting', 'news', None), ('nlsupporting', 'news', 'newsplug3')]
+        plistwapps = [('newlayout',  None, None), ('newlayout', 'news', None), ('newlayout', 'news', 'newsplug1'), ('newlayout', 'news', 'newsplug2'), ('newlayout', 'pnoroutes', None), ('newlayout', 'badimport', None), ('nlsupporting',  None, None), ('nlsupporting', 'news', None), ('nlsupporting', 'news', 'newsplug3')]
         eq_(plistwapps, list_plugin_mappings(inc_apps=True))
 
         plist.reverse()
