@@ -1,4 +1,4 @@
-from formencode.validators import Int
+from formencode.validators import Int, String, Email, Number
 from nose.tools import eq_
 from pysutils.testing import logging_handler
 from webtest import TestApp
@@ -128,7 +128,7 @@ def test_arg_processor():
     r = TestView({'a1':2}).process()
     eq_(r.data, '2')
 
-@inrequest('/foo?a=1&b=b&d=3')
+@inrequest('/foo?a=1&b=b&d=3&e=foo@bar.com')
 def test_arg_validation():
     class TestView(View):
         def init(self):
@@ -136,6 +136,7 @@ def test_arg_validation():
             self.add_processor('b', int)
             self.add_processor('c', int)
             self.add_processor('d', Int)
+            self.add_processor('z', int)
             try:
                 # try a bad processor type
                 self.add_processor('e', 5)
@@ -143,7 +144,7 @@ def test_arg_validation():
             except TypeError, e:
                 if 'processor must be a Formencode validator or a callable' != str(e):
                     raise # pragma: no cover
-        def default(self, a, c, d, b=5):
+        def default(self, a, c, d, b=5, z=None):
             eq_(a, 1)
             eq_(c, 2)
             eq_(d, 3)
@@ -152,7 +153,24 @@ def test_arg_validation():
             # values and they will apply if the argument is not sent or if the
             # value that is sent fails validation
             eq_(b, 5)
+            # the argument wasn't sent at all
+            eq_(z, None)
     r = TestView({'c':u'2'}).process()
+
+    # try multiple validators for the same item
+    class TestView(View):
+        def init(self):
+            self.add_processor('e', (String, Email))
+        def default(self, e):
+            eq_(e, 'foo@bar.com')
+    r = TestView({}).process()
+
+    class TestView(View):
+        def init(self):
+            self.add_processor('e', (Number, Email))
+        def default(self, e=None):
+            eq_(e, None)
+    r = TestView({}).process()
 
 @inrequest('/foo?a=1&b=b')
 def test_arg_validation_with_strict():
@@ -221,8 +239,7 @@ def test_processing_with_lists():
             self.add_processor('f', takes_list=True)
             self.add_processor('g', int, takes_list=True)
             self.add_processor('h', int, takes_list=True, list_item_invalidates=True, show_msg=True)
-            self.add_processor('z', int)
-        def default(self, a, b, f, d, e, g, h=[], c=None, z=None):
+        def default(self, a, b, d, e, g, h=[], c=None, f=[]):
             msgs = user.get_messages()
             eq_(a, '1')
             eq_(b, 1)
@@ -241,8 +258,6 @@ def test_processing_with_lists():
             eq_(g, [])
             # single bad value invalidates all values
             eq_(h, [])
-            # the argument wasn't sent at all, non-list
-            eq_(z, None)
     r = TestView({}).process()
 
     # no list strict

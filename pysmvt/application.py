@@ -17,6 +17,7 @@ from pysmvt.templating import default_engine
 from pysmvt.users import User
 from pysmvt.utils import exception_with_context
 from pysmvt.utils.filesystem import mkdirs, copy_static_files
+from pysmvt.views import _RouteToTemplate
 from pysmvt.wrappers import Request
 
 log = logging.getLogger(__name__)
@@ -214,11 +215,14 @@ class WSGIApp(object):
         while True:
             with self.response_context(error_doc_code):
                 endpoint, args = rg.forward_queue[-1]
-                return self.dispatch_to_view(endpoint, args)
+                return self.dispatch_to_endpoint(endpoint, args)
 
-    def dispatch_to_view(self, endpoint, args):
+    def dispatch_to_endpoint(self, endpoint, args):
         log.debug('dispatch to %s (%s)', endpoint, args)
-        vklass = findview(endpoint)
+        if '.' not in endpoint:
+            vklass = findview(endpoint)
+        else:
+            vklass = _RouteToTemplate
         v = vklass(args, endpoint)
         return v.process()
 

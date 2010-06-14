@@ -378,6 +378,12 @@ class TestViews(unittest.TestCase):
         r = self.client.get('/tests/tchooser/content')
         assert 'Hello World!' in r.data, r.data
 
+    def test_render_template_directly(self):
+        # app level endpoint
+        r = self.client.get('/tests/text.txt/&fred')
+        assert r.headers['Content-Type'] == 'text/plain; charset=utf-8', r.headers
+        assert 'Hello &amp;fred!' in r.data, r.data
+
 class TestApp2(unittest.TestCase):
 
     def setUp(self):

@@ -90,6 +90,8 @@ class View(object):
         self.response_class = Response
         # mime/type of the response
         self.mimetype = 'text/html'
+        # store endpoint for later use
+        self.endpoint = endpoint
         # store the plugin name for later use
         plugin, _ = split_endpoint(endpoint)
         self._plugin_name = plugin
@@ -208,17 +210,21 @@ class View(object):
             self.expect_getargs(argname)
         if custom_msg:
             show_msg = True
-        if processor:
-            if not formencode.is_validator(processor):
-                if not hasattr(processor, '__call__'):
-                    raise TypeError('processor must be a Formencode validator or a callable')
-                processor = _ProcessorWrapper(to_python=processor)
         if required:
             if not processor:
                 processor = formencode.validators.NotEmpty()
             strict = True
-        self._processors.append((argname, processor, required, takes_list,
-            list_item_invalidates, strict, show_msg, custom_msg))
+        if processor:
+            for proc in tolist(processor):
+                if not formencode.is_validator(proc):
+                    if not hasattr(proc, '__call__'):
+                        raise TypeError('processor must be a Formencode validator or a callable')
+                    proc = _ProcessorWrapper(to_python=proc)
+                self._processors.append((argname, proc, required, takes_list,
+                    list_item_invalidates, strict, show_msg, custom_msg))
+        else:
+            self._processors.append((argname, None, required, takes_list,
+                list_item_invalidates, strict, show_msg, custom_msg))
 
     ###
     ### methods related to processing the view
@@ -270,7 +276,6 @@ class View(object):
 
     def process_args(self):
         had_strict_arg_failure = False
-
         for argname, processor, required, takes_list, list_item_invalidates, \
                 strict, show_msg, custom_msg in self._processors:
             is_invalid = False
@@ -484,7 +489,7 @@ def asview(rule=None, **options):
 
 
         # create the class that will handle this function
-        fvh = classobj(fname, (AsViewHandler, ), {})
+        fvh = classobj(fname, (_AsViewHandler, ), {})
         fvh.__module__ = f.__module__
 
         # assign the default method
@@ -499,7 +504,12 @@ def asview(rule=None, **options):
         return fvh
     return decorate
 
-class AsViewHandler(View):
+class _AsViewHandler(View):
     def __init__(self, urlargs, endpoint):
         View.__init__(self, urlargs, endpoint)
         self.expect_getargs(*self._asview_getargs)
+
+class _RouteToTemplate(View):
+    def default(self, **kwargs):
+        self.template_vars = kwargs
+        self.render_endpoint(self.endpoint)
