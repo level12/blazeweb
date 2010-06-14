@@ -64,6 +64,9 @@ class Content(object):
     def __unicode__(self):
         return self.primary
 
+    def __str__(self):
+        return self.primary.encode(self.charset)
+
 class TemplateContent(Content):
 
     def __init__(self, endpoint):
@@ -124,4 +127,3 @@ ext_registry = {
     'css': 'text/css',
     'js': 'text/javascript'
 }
-

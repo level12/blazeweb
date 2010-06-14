@@ -70,7 +70,7 @@ def positionalurl3(foo, baz):
 
 @asview()
 def cssresponse():
-    rg.respctx.response = Response('body {color:black}', mimetype='text/css')
+    return Response('body {color:black}', mimetype='text/css')
 
 @asview()
 def returnwsgiapp():

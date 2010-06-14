@@ -46,20 +46,7 @@ def test_retval_edit():
     r = v.process()
 
     assert isinstance(r, Response)
-    eq_(r.data, 'foobar')
-
-@inrequest()
-def test_direct_response_edit():
-
-    class TestView(View):
-        def default(self):
-            rg.respctx.response.data = 'hw2'
-
-    v = TestView({})
-    r = v.process()
-
-    assert isinstance(r, Response)
-    eq_(r.data, 'hw2')
+    eq_(r.data, 'hw')
 
 @inrequest()
 def test_wsgi_app_return():
@@ -79,18 +66,15 @@ def test_wsgi_app_return():
 
 
 @inrequest()
-def test_incorrect_return():
+def test_non_string_return():
 
     class TestView(View):
         def default(self):
             return 2
 
     v = TestView({})
-    try:
-        r = v.process()
-        assert False
-    except TypeError, e:
-        eq_('View "TestView" returned a value with an unexpected type: <type \'int\'>', str(e))
+    r = v.process()
+    eq_(r.data, '2')
 
 @inrequest('/foo?bar=baz')
 def test_get_args():
@@ -296,14 +280,13 @@ def test_processing_with_lists():
 
 def test_call_method_changes():
     v = View({})
-    assert v._cm_stack[0][0] == 'init_response'
     v.add_call_method('foo')
-    assert v._cm_stack[1][0] == 'foo'
+    assert v._cm_stack[0][0] == 'foo'
     v.insert_call_method('bar', 'before', 'foo')
-    assert v._cm_stack[1][0] == 'bar', v._cm_stack
+    assert v._cm_stack[0][0] == 'bar', v._cm_stack
     v.insert_call_method('baz', 'after', 'bar')
-    assert v._cm_stack[2][0] == 'baz', v._cm_stack
-    assert v._cm_stack[3][0] == 'foo', v._cm_stack
+    assert v._cm_stack[1][0] == 'baz', v._cm_stack
+    assert v._cm_stack[2][0] == 'foo', v._cm_stack
 
     try:
         v.insert_call_method('foo', 'after', 'nothere')
@@ -321,8 +304,8 @@ def test_view_callstack():
     methods_called = []
     class TestView(View):
         def init(self):
-            self.add_call_method('test1')
-            self.add_call_method('test2')
+            self.add_call_method('test1', takes_args=False)
+            self.add_call_method('test2', required=False, takes_args=False)
         def test1(self):
             methods_called.append('test1')
         def default(self):

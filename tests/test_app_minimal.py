@@ -61,7 +61,7 @@ class TestMinimal1(object):
         r = self.ta.get('/positional/posurlok')
         r.mustcontain("posurlok")
 
-    def test_request_modified_directly(self):
+    def test_response_changes(self):
         r = self.ta.get('/cssresponse')
         r.mustcontain('body {color:black}')
         assert 'text/css' in r.headers['content-type']

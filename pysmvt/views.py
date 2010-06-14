@@ -11,8 +11,8 @@ from werkzeug.routing import Rule
 
 from pysmvt import ag, rg, user
 from pysmvt import routing
-from pysmvt.content import getcontent
-from pysmvt.exceptions import ViewCallStackAbort, ProgrammingError
+from pysmvt.content import getcontent, Content
+from pysmvt.exceptions import ProgrammingError
 from pysmvt.utils import registry_has_object, werkzeug_multi_dict_conv
 from pysmvt.wrappers import Response
 
@@ -32,6 +32,14 @@ class _ProcessorWrapper(formencode.validators.Wrapper):
             except (ValueError, TypeError), e:
                 raise formencode.Invalid(str(e), {}, value, state)
         return result
+
+class _ViewCallStackAbort(Exception):
+    """
+        used to stop the views from running through all the methods in the
+        call stack. Don't use directly, use the send_response() method on the
+        view instead.
+    """
+
 
 class View(object):
     """
@@ -63,6 +71,10 @@ class View(object):
         # the name of the template file relative to the location of the View
         # status code for the response
         self.status_code = 200
+        # the default Response object to be used when creating a response
+        self.response_class = Response
+        # mime/type of the response
+        self.mimetype = 'text/html'
 
         log.debug('%s view instantiated', self.__class__.__name__)
 
@@ -73,7 +85,7 @@ class View(object):
     ### method stack helpers
     ###
     def init_call_methods(self):
-        self.add_call_method('init_response', True, False)
+        pass
 
     def add_call_method(self, name, required=False, takes_args=True):
         self._cm_stack.append((name, required, takes_args))
@@ -191,12 +203,6 @@ class View(object):
             list_item_invalidates, strict, show_msg, custom_msg))
 
     ###
-    ### methods in the default call stack
-    ###
-    def init_response(self):
-        rg.respctx.response = Response()
-
-    ###
     ### methods related to processing the view
     ###
     def process(self):
@@ -222,7 +228,7 @@ class View(object):
 
             # call the action method
             self.process_action_method()
-        except ViewCallStackAbort:
+        except _ViewCallStackAbort:
             pass
         return self.handle_response()
 
@@ -324,11 +330,9 @@ class View(object):
                     raise ProgrammingError('there were no "action" methods on the view class "%s".  Expecting get(), post(), or default()' % self.__class__.__name__)
                 raise
 
-        # we allow the views to work on self.retval directly, so if it has
-        # been used, we do not replace it with the returned value.  If it
-        # hasn't been used, then we replace it with what was returned
-        # above
-        if self.retval is NotGiven:
+        # we allow the views to work on self.retval directly, but if the
+        # action method returns a non-None value, it takes precedence
+        if retval is not None:
             self.retval = retval
 
     def _call_with_expected_args(self, method, method_is_bound=True):
@@ -349,18 +353,22 @@ class View(object):
         return method(*args, **kwargs)
 
     def handle_response(self):
-        # if retval is None, assume respctx.response was altered directly
+        # nothing returned is fine, I guess
         if self.retval is None or self.retval is NotGiven:
-            return rg.respctx.response
+            self.retval = u''
+        # is the return value a Content instance?
+        if isinstance(self.retval, Content):
+            c = self.retval
+            return self.create_response(c.primary, mimetype=c.primary_type)
         # if the retval is a string, add it as the response data
         if isinstance(self.retval, basestring):
-            rg.respctx.response.data = self.retval
-            return rg.respctx.response
+            return self.create_response(self.retval)
         # if its callable, assume it is a WSGI application and return it
         # directly
         if hasattr(self.retval, '__call__'):
             return self.retval
-        raise TypeError('View "%s" returned a value with an unexpected type: %s' % (self.__class__.__name__, type(self.retval)))
+        # convert it to a string and send as the response
+        return self.create_response(str(self.retval))
 
     def render_template(self, filename=None, endpoint=None, default_ext='html', send_response=True):
         """
@@ -391,7 +399,8 @@ class View(object):
             Calling render_template() will setup the Response object based on
             the content and type of the template.  If send_response is True
             (default), then the response will be sent immediately.  If False,
-            render_template() will return the content of the template.
+            render_template() will return the Content object.  In either case,
+            self.retval will be set to the Content object.
         """
         if filename and endpoint:
             raise ProgrammingError('only one of filename or endpoint can be used, not both')
@@ -406,10 +415,17 @@ class View(object):
             else:
                 endpoint = filename
         c = getcontent(endpoint, **self.template_vars)
-        rg.respctx.response = Response(c.primary, status=self.status_code, mimetype=c.primary_type)
+        self.retval = c
         if send_response:
             self.send_response()
-        return c.primary
+        return c
+
+    def create_response(self, response, status=None, mimetype=None):
+        if status is None:
+            status = self.status_code
+        if mimetype is None:
+            mimetype = self.mimetype
+        return self.response_class(response, status=status, mimetype=mimetype)
 
     def assign(self, name, value):
         self.template_vars[name] = value
@@ -419,7 +435,7 @@ class View(object):
             Can be used during "processing" to abort the call stack process
             and immediately return the response.
         """
-        raise ViewCallStackAbort
+        raise _ViewCallStackAbort
 
 ###
 ### functions and classes related to processing functions as views

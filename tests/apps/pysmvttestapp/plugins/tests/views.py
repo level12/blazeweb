@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from pysmvt import redirect, forward, rg
 from pysmvt.content import getcontent
 from pysmvt.views import View
@@ -12,7 +10,7 @@ class Rvb(View):
         # this view is used as a error doc handler, so we need to set the
         # status code appropriately
         if rg.respctx.error_doc_code:
-            rg.respctx.response.status_code = rg.respctx.error_doc_code
+            self.status_code = rg.respctx.error_doc_code
         self.retval = 'Hello World!'
 
 class RvbWithSnippet(View):
