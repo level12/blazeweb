@@ -1,4 +1,5 @@
 import logging
+from new import classobj
 
 import formencode
 from pysutils.sentinels import NotGiven
@@ -441,27 +442,39 @@ class View(object):
 ### functions and classes related to processing functions as views
 ###
 def asview(rule=None, **options):
-    def decorator(f):
+    def decorate(f):
         lrule = rule
         fname = f.__name__
+        getargs = options.pop('getargs', [])
+
+        # setup the routing
         if lrule is None:
             lrule = '/%s' % fname
         lrule = routing.add_prefix(lrule)
-        getargs = options.pop('getargs', [])
-        ag.view_functions[fname] = f, getargs
-        endpoint = '__viewfuncs__:%s' % fname
+        endpoint = fname
         log.debug('@asview adding route "%s" to endpoint "%s"', lrule, endpoint)
         ag.route_map.add(Rule(lrule, endpoint=endpoint), **options)
-        return f
-    return decorator
 
-class FunctionViewHandler(View):
-    def __init__(self, endpoint, urlargs):
-        fname = endpoint.split(':')[1]
-        func, expected_get_args = ag.view_functions[fname]
-        self.func = func
+
+        # create the class that will handle this function
+        fvh = classobj(fname, (AsViewHandler, ), {})
+        fvh.__module__ = f.__module__
+
+        # assign the default method
+        def defmethod(self):
+            return self._call_with_expected_args(f, method_is_bound=False)
+        fvh.default = defmethod
+
+        # make the getargs available
+        fvh._asview_getargs = tolist(getargs)
+
+        # return the class instead of the function
+        return fvh
+    return decorate
+
+class AsViewHandler(View):
+    def __init__(self, urlargs):
         View.__init__(self, urlargs)
-        self.expected_get_args = expected_get_args
-
-    def default(self):
-        return self._call_with_expected_args(self.func, method_is_bound=False)
+        print self._asview_getargs
+        self.expect_getargs(*self._asview_getargs)
+        print self.expected_get_args

@@ -18,6 +18,13 @@ class Default(DefaultSettings):
     def get_storage_dir(self):
         return path.join(basedir, '..', 'test-output', appname)
 
+class Dispatching(Default):
+
+    def init(self):
+        Default.init(self)
+        self.apply_test_settings()
+        self.static_files.enabled = False
+
 class Test(Default):
     def init(self):
         Default.init(self)

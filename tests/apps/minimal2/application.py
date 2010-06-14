@@ -11,9 +11,10 @@ try:
 except ImportError:
     prependsitedir(path.dirname(settingsmod.basedir), 'apps')
 
-def make_wsgi(profile='Default', middleware='minimal'):
+def make_wsgi(profile='Default', use_session=True):
     app = WSGIApp(settingsmod, profile)
-    # wrap our app in middleware and return
+    if not use_session:
+        app.settings.beaker.enabled=False
     return full_wsgi_stack(app)
 
 def script_entry():

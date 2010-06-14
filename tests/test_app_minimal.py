@@ -48,6 +48,7 @@ class TestMinimal1(object):
 
     def test_badargspec(self):
         r = self.ta.get('/wontwork?foo=1', status=400)
+        print r
         assert r.status_int == 400
 
         r = self.ta.get('/positional3/posurlok', status=400)

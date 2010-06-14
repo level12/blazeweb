@@ -69,7 +69,7 @@ def test_app_tasks():
     assert 'You must provide at least 1 argument' in res.stdout
 
     res = run_application('minimal2', 'tasks', 'notasksthere')
-    assert res.stdout.strip() == ''
+    assert res.stdout.strip() == '', res.stdout
 
     res = run_application('minimal2', 'tasks', 'init_data')
     assert 'appstack.tasks.init_data:action_010' in res.stdout, res
