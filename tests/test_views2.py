@@ -436,16 +436,6 @@ def test_templating():
 @inrequest('/foo')
 def test_templating_in_request():
 
-    # test incorrect use of render_template
-    class TestView(View):
-        def default(self):
-            try:
-                self.render_template(filename='a', endpoint='a')
-                assert False
-            except ProgrammingError, e:
-                assert 'only one of filename or endpoint can be used, not both' == str(e)
-    r = TestView({}).process()
-
     # test send response
     class TestViews2A(View):
         def default(self):

@@ -192,10 +192,6 @@ class ModLevelPriority(View):
     def default(self):
         self.render_template()
 
-class HtmlTemplateError1(View):
-    def default(self):
-        self.render_template('tests.html', 'test')
-
 class HtmlTemplateFileArgCss(View):
     def default(self):
         self.render_template('fileargcss.html')
@@ -214,3 +210,10 @@ class UserMessages(View):
         if rg.respctx.error_doc_code:
             self.status_code = rg.respctx.error_doc_code
         self.render_template()
+
+class TemplateChooser(View):
+    def default(self, rtype):
+        if rtype == 'endpoint':
+            self.render_endpoint('app_level.html')
+        if rtype == 'content':
+            self.render_endpoint('tests:HwSnippet')

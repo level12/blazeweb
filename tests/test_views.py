@@ -323,14 +323,6 @@ class TestViews(unittest.TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.data, 'Hello app2!')
 
-    def test_htmltemplateerror1(self):
-        try:
-            r = self.client.get('tests/htmltemplateerror1')
-        except ProgrammingError, e:
-            self.assertEqual( 'only one of filename or endpoint can be used, not both', str(e))
-        else:
-            self.fail('excpected exception for bad template arguments')
-
     def test_htmltemplatefilearg(self):
         r = self.client.get('tests/htmltemplatefilearg')
         self.assertEqual(r.status_code, 200)
@@ -377,6 +369,14 @@ class TestViews(unittest.TestCase):
         self.assertTrue('Not Found' in r.data)
         self.assertTrue('If you entered the URL manually please check your spelling and try again.' in r.data)
 
+    def test_render_endpoint(self):
+        # app level endpoint
+        r = self.client.get('/tests/tchooser/endpoint')
+        assert 'app level' in r.data, r.data
+
+        # render content
+        r = self.client.get('/tests/tchooser/content')
+        assert 'Hello World!' in r.data, r.data
 
 class TestApp2(unittest.TestCase):
 

@@ -388,7 +388,7 @@ class View(object):
         # convert it to a string and send as the response
         return self.create_response(str(self.retval))
 
-    def render_template(self, filename=None, endpoint=None, default_ext='html', send_response=True):
+    def render_template(self, filename=None, default_ext='html', send_response=True):
         """
             Render a template:
 
@@ -406,32 +406,37 @@ class View(object):
                 # done in the plugstack for that plugin.
                 self.render_template('some_file.html')
 
-                # look for a template file by endpoint, useful if you need a
-                # template from another plugin:
-                self.render_template(endpoint='otherplugin:some_template.html')
-
-                # or if the view is plugin level and a template from the main
-                # application is needed.
-                self.render_template(endpoint='app_level.html')
-
             Calling render_template() will setup the Response object based on
             the content and type of the template.  If send_response is True
             (default), then the response will be sent immediately.  If False,
             render_template() will return the Content object.  In either case,
             self.retval will be set to the Content object.
         """
-        if filename and endpoint:
-            raise ProgrammingError('only one of filename or endpoint can be used, not both')
-        if not endpoint:
-            if not filename:
-                # the filename must have an extension, that is how
-                # getcontent() knows we are looking for a file and not a Content
-                # instance.
-                filename = '%s.%s' % (case_cw2us(self.__class__.__name__), default_ext)
-            if self._plugin_name:
-                endpoint = '%s:%s' % (self._plugin_name, filename)
-            else:
-                endpoint = filename
+        if not filename:
+            # the filename must have an extension, that is how
+            # getcontent() knows we are looking for a file and not a Content
+            # instance.
+            filename = '%s.%s' % (case_cw2us(self.__class__.__name__), default_ext)
+        endpoint = filename
+        if self._plugin_name:
+            endpoint = '%s:%s' % (self._plugin_name, endpoint)
+        return self.render_endpoint(endpoint, send_response)
+
+    def render_endpoint(self, endpoint, send_response=True):
+        """
+            Render a template or Content object by endpoint:
+
+            # look for a template file by endpoint, useful if you need a
+            # template from another plugin:
+            self.render_endpoint('otherplugin:some_template.html')
+
+            # or if the view is plugin level and a template from the main
+            # application is needed.
+            self.render_endpoint('app_level.html')
+
+            # a Content object can also be rendered by omitting an extension:
+            self.render_endpoint('myplugin:SomeContent')
+        """
         c = getcontent(endpoint, **self.template_vars)
         self.retval = c
         if send_response:
