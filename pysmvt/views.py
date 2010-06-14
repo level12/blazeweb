@@ -13,7 +13,7 @@ from werkzeug.routing import Rule
 from pysmvt import ag, rg, user, settings
 from pysmvt import routing
 from pysmvt.content import getcontent, Content
-from pysmvt.hierarchy import listapps
+from pysmvt.hierarchy import listapps, split_endpoint
 from pysmvt.exceptions import ProgrammingError
 from pysmvt.utils import registry_has_object, werkzeug_multi_dict_conv
 from pysmvt.wrappers import Response
@@ -61,7 +61,7 @@ class View(object):
     The base class all our views will inherit
     """
 
-    def __init__(self, urlargs):
+    def __init__(self, urlargs, endpoint):
         # the view methods are responsible for filling self.retval1
         # with the response string or returning the value
         self.retval = NotGiven
@@ -90,6 +90,9 @@ class View(object):
         self.response_class = Response
         # mime/type of the response
         self.mimetype = 'text/html'
+        # store the plugin name for later use
+        plugin, _ = split_endpoint(endpoint)
+        self._plugin_name = plugin
 
         log.debug('%s view instantiated', self.__class__.__name__)
 
@@ -425,8 +428,8 @@ class View(object):
                 # getcontent() knows we are looking for a file and not a Content
                 # instance.
                 filename = '%s.%s' % (case_cw2us(self.__class__.__name__), default_ext)
-            if rg.respctx.current_plugin:
-                endpoint = '%s:%s' % (rg.respctx.current_plugin, filename)
+            if self._plugin_name:
+                endpoint = '%s:%s' % (self._plugin_name, filename)
             else:
                 endpoint = filename
         c = getcontent(endpoint, **self.template_vars)
@@ -492,6 +495,6 @@ def asview(rule=None, **options):
     return decorate
 
 class AsViewHandler(View):
-    def __init__(self, urlargs):
-        View.__init__(self, urlargs)
+    def __init__(self, urlargs, endpoint):
+        View.__init__(self, urlargs, endpoint)
         self.expect_getargs(*self._asview_getargs)

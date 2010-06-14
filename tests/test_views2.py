@@ -7,7 +7,7 @@ from werkzeug.exceptions import BadRequest
 
 from pysmvt import rg, user
 from pysmvt.exceptions import ProgrammingError
-from pysmvt.views import View
+import pysmvt.views
 from pysmvt.testing import inrequest
 from pysmvt.wrappers import Response
 
@@ -20,6 +20,10 @@ def setup_module():
     global ta
     wsgiapp = make_wsgi('WithTestSettings')
     ta = TestApp(wsgiapp)
+
+class View(pysmvt.views.View):
+    def __init__(self, urlargs, endpoint='test'):
+        pysmvt.views.View.__init__(self, urlargs, endpoint)
 
 @inrequest()
 def test_basic_view():

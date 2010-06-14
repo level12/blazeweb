@@ -75,16 +75,11 @@ class RequestManager(object):
 class ResponseContext(object):
     def __init__(self, error_doc_code):
         self.environ = rg.environ
-        self.current_plugin = None
         # this gets set if this response context is initilized b/c
         # an error document handler is being called.  It allows the View
         # that handles the error code to know what code it is being called
         # for.
         self.error_doc_code = error_doc_code
-
-    def assign_current_plugin(self, endpoint):
-        plugin, _ = split_endpoint(endpoint)
-        self.current_plugin = plugin
 
     def __enter__(self):
         rg.respctx = self
@@ -224,8 +219,7 @@ class WSGIApp(object):
     def dispatch_to_view(self, endpoint, args):
         log.debug('dispatch to %s (%s)', endpoint, args)
         vklass = findview(endpoint)
-        rg.respctx.assign_current_plugin(endpoint)
-        v = vklass(args)
+        v = vklass(args, endpoint)
         return v.process()
 
     def wsgi_app(self, environ, start_response):
@@ -290,11 +284,7 @@ class WSGIApp(object):
             return response
         if 'handle' in self.settings.exception_handling:
             endpoint = self.settings.error_docs.get(500)
-            if endpoint is None:
-                # turn the exception into a 500 server response
-                log.debug('handling exception with generic 500 response')
-                return InternalServerError()
-            else:
+            if endpoint is not None:
                 log.debug('handling exception with error doc endpoint %s' % endpoint)
                 try:
                     return self.response_cycle(endpoint, {}, error_doc_code=500)
@@ -302,8 +292,9 @@ class WSGIApp(object):
                     log.debug('error doc endpoint %s raised HTTPException: %s', endpoint, httpe)
                 except Exception, exc:
                     log.exception('error doc endpoint %s raised exception:', endpoint)
-                # the document handler is bad, so give a generic response
-                return InternalServerError()
+            # turn the exception into a 500 server response
+            log.debug('handling exception with generic 500 response')
+            return InternalServerError()
         raise
 
     def __call__(self, environ, start_response):
