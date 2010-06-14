@@ -87,10 +87,16 @@ def list_plugin_mappings(target_plugin=None, reverse=False, inc_apps=False):
     return retval
 
 def findcontent(endpoint):
-    return findendpoint(endpoint, 'content')
+    try:
+        return findendpoint(endpoint, 'content')
+    except HierarchyImportError:
+        raise HierarchyImportError('An object for Content endpoint "%s" was not found' % endpoint)
 
 def findview(endpoint):
-    return findendpoint(endpoint, 'views')
+    try:
+        return findendpoint(endpoint, 'views')
+    except HierarchyImportError:
+        raise HierarchyImportError('An object for View endpoint "%s" was not found' % endpoint)
 
 def findendpoint(endpoint, where):
     """
