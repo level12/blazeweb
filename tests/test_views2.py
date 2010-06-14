@@ -221,7 +221,8 @@ def test_processing_with_lists():
             self.add_processor('f', takes_list=True)
             self.add_processor('g', int, takes_list=True)
             self.add_processor('h', int, takes_list=True, list_item_invalidates=True, show_msg=True)
-        def default(self, a, b, f, d, e, g, h=[], c=None):
+            self.add_processor('z', int)
+        def default(self, a, b, f, d, e, g, h=[], c=None, z=None):
             msgs = user.get_messages()
             eq_(a, '1')
             eq_(b, 1)
@@ -240,6 +241,8 @@ def test_processing_with_lists():
             eq_(g, [])
             # single bad value invalidates all values
             eq_(h, [])
+            # the argument wasn't sent at all, non-list
+            eq_(z, None)
     r = TestView({}).process()
 
     # no list strict
