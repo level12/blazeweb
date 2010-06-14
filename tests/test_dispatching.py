@@ -2,7 +2,7 @@ import sys
 
 from webtest import TestApp
 
-from pysmvt import session, user, forward, ag
+from pysmvt import user, forward, ag
 from pysmvt.views import asview
 
 import config

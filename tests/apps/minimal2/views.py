@@ -1,4 +1,4 @@
-from pysmvt import rg, session, user, forward
+from pysmvt import rg, user, forward
 from pysmvt.views import asview
 from pysmvt.wrappers import Response
 
@@ -12,9 +12,9 @@ def workingview():
 
 @asview()
 def nosession():
-    assert not session
+    assert not rg.session
     # but we still have a user object, even though info won't get persisted
-    assert user
+    assert user is not None
     return 'hello nosession!'
 
 @asview()
@@ -28,21 +28,21 @@ def page2():
 
 @asview()
 def hassession():
-    assert session
-    assert user
+    assert rg.session
+    assert user is not None
     return 'hello hassession!'
 
 @asview()
 def session1():
-    session['session1'] = 'foo'
+    rg.session['session1'] = 'foo'
     return ''
 
 @asview()
 def session2():
-    assert session['session1'] == 'foo'
+    assert rg.session['session1'] == 'foo'
     return ''
 
 @asview()
 def session3():
-    assert 'session1' not in session
+    assert 'session1' not in rg.session
     return ''

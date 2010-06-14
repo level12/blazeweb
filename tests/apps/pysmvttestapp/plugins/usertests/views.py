@@ -1,50 +1,49 @@
-from pysmvt import session, user
+from pysmvt import user
 from pysmvt.views import View
 
 class SetFoo(View):
 
     def default(self):
-        existing = user.get_attr('foo')
+        existing = getattr(user, 'foo', None)
         if existing:
             raise Exception('user attribute "foo" existed')
-        user.set_attr('foo', 'bar')
-        user.set_attr('bar', 'baz')
+        user.foo = 'bar'
+        user.bar = 'baz'
         return 'foo set'
 
 class GetFoo(View):
 
     def default(self):
-        return '%s%s' % (user.get_attr('foo'), user.get_attr('bar'))
-
+        return '%s%s' % (user.foo, user.bar)
 
 class SetAuthenticated(View):
 
     def default(self):
-        user.authenticated()
+        user.is_authenticated = True
 
 class GetAuthenticated(View):
 
     def default(self):
-        return str(user.is_authenticated())
+        return str(user.is_authenticated)
 
 class AddPerm(View):
 
     def default(self):
-        user.add_perm('foo-bar')
+        user.add_token('foo-bar')
 
 class GetPerms(View):
 
     def default(self):
-        return '%s%s' % (user.has_perm('foo-bar'), user.has_perm('foo-baz'))
+        return '%s%s%s' % (user.has_token('foo-bar'), user.has_token('foo-baz'), user.has_any_token('foo-bar', 'foo-baz'))
 
 class Clear(View):
 
     def default(self):
-        user.set_attr('foo', 'bar')
-        user.add_perm('foo-bar')
-        user.authenticated()
+        user.foo = 'bar'
+        user.add_token('foo-bar')
+        user.is_authenticated = True
         user.clear()
-        return '%s%s%s' % (user.is_authenticated(), user.has_perm('foo-bar'), user.get_attr('foo'))
+        return '%s%s%s' % (user.is_authenticated, user.has_token('foo-bar'), getattr(user, 'foo', None))
 
 class SetMessage(View):
 

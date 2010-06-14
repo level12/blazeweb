@@ -1,56 +1,45 @@
 import logging
 import random
 
-from pysutils.datastructures import OrderedDict
+from pysutils.datastructures import LazyDict, OrderedDict
 from pysutils.helpers import tolist
+from pysutils.strings import randchars
+
+from pysmvt import rg
 
 log = logging.getLogger(__name__)
 
-class User(object):
+class User(LazyDict):
 
     def __init__(self):
         self.messages = OrderedDict()
         # initialize values
         self.clear()
+        LazyDict.__init__(self)
 
     def clear(self):
         log.debug('SessionUser object getting cleared() of auth info')
-        self._is_authenticated = False
-        self.attributes = {}
+        self.is_authenticated = False
         self.tokens = {}
+        LazyDict.clear(self)
 
-    def set_attr(self, attribute, value):
-        self.attributes[attribute] = value
-
-    def get_attr(self, attribute, default_value = None):
-        try:
-            return self.attributes[attribute]
-        except KeyError:
-            return default_value
-
-    def has_attr(self, attribute):
-        return self.attributes.has_key(attribute)
-
-    def del_attr(self, attribute):
-        del self.attributes[attribute]
-
-    def add_perm(self, token):
+    def add_token(self, token):
         self.tokens[token] = True
 
-    def has_perm(self, token):
+    def has_token(self, token):
         return self.tokens.has_key(token)
 
-    def has_any_perm(self, tokens, *args):
+    def has_any_token(self, tokens, *args):
         tokens = tolist(tokens)
         if len(args) > 0:
             tokens.extend(args)
         for token in tokens:
-            if self.has_perm(token):
+            if self.has_token(token):
                 return True
         return False
 
-    def add_message(self, severity, text, ident = None):
-        log.debug('SessionUser message added')
+    def add_message(self, severity, text, ident=None):
+        log.debug('SessionUser message added: %s, %s, %s', severity, text, ident)
         # generate random ident making sure random ident doesn't already
         # exist
         if ident is None:
@@ -68,14 +57,8 @@ class User(object):
             self.messages = {}
         return msgs
 
-    def authenticated(self):
-        self._is_authenticated = True
-
-    def is_authenticated(self):
-        return self._is_authenticated
-
     def __repr__(self):
-        return '<User (%s): %s, %s, %s>' % (hex(id(self)), self.is_authenticated(), self.attributes, self.messages)
+        return '<User (%s): %s, %s, %s>' % (hex(id(self)), self.is_authenticated, self.copy(), self.messages)
 
 class UserMessage(object):
 

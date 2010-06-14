@@ -7,7 +7,6 @@ from werkzeug import create_environ
 from werkzeug.routing import Map, Submount
 
 import pysmvt
-from pysmvt import session, rg, user
 from pysmvt.exceptions import Forward, ProgrammingError, Redirect
 from pysmvt.hierarchy import findobj, HierarchyImportError, \
     listplugins, visitmods, findview, split_endpoint
@@ -29,24 +28,24 @@ class RequestManager(object):
 
     def registry_setup(self):
         environ = self.environ
+        environ['paste.registry'].register(pysmvt.rg, BlankObject())
         environ['paste.registry'].register(pysmvt.settings, self.app.settings)
         environ['paste.registry'].register(pysmvt.ag, self.app.ag)
-        if environ.has_key('beaker.session'):
-            environ['paste.registry'].register(session, environ['beaker.session'])
-        else:
-            environ['paste.registry'].register(session, None)
-        environ['paste.registry'].register(user, self.user_setup())
-        environ['paste.registry'].register(rg, BlankObject())
+        environ['paste.registry'].register(pysmvt.user, self.user_setup())
 
     def rg_setup(self):
-        # WSGI request setup
-        rg.ident = randchars()
-        rg.environ = self.environ
+        pysmvt.rg.ident = randchars()
+        pysmvt.rg.environ = self.environ
         # the request object binds itself to rg.request
         Request(self.environ)
+        if self.environ.has_key('beaker.session'):
+            pysmvt.rg.session = self.environ['beaker.session']
+            log.debug('beaker session found, id: %s', pysmvt.rg.session.id)
+        else:
+            pysmvt.rg.session = None
 
     def routing_setup(self):
-        rg.urladapter = pysmvt.ag.route_map.bind_to_environ(self.environ)
+        pysmvt.rg.urladapter = pysmvt.ag.route_map.bind_to_environ(self.environ)
 
     def user_setup(self):
         environ = self.environ
@@ -75,7 +74,7 @@ class RequestManager(object):
 
 class ResponseContext(object):
     def __init__(self, error_doc_code):
-        self.environ = rg.environ
+        self.environ = pysmvt.rg.environ
         # this gets set if this response context is initilized b/c
         # an error document handler is being called.  It allows the View
         # that handles the error code to know what code it is being called
@@ -83,24 +82,27 @@ class ResponseContext(object):
         self.error_doc_code = error_doc_code
 
     def __enter__(self):
-        rg.respctx = self
+        log.debug('enter response context')
+        pysmvt.rg.respctx = self
         # allow middleware higher in the stack to help initilize the response
         if 'pysmvt.response_cycle_setup' in self.environ:
             for callable in self.environ['pysmvt.response_cycle_setup']:
                 callable()
 
     def __exit__(self, exc_type, e, tb):
+        log.debug('exit response context started')
         if 'pysmvt.response_cycle_teardown' in self.environ:
             for callable in self.environ['pysmvt.response_cycle_teardown']:
                 callable()
         if isinstance(e, Forward):
             log.debug('forwarding to %s (%s)', e.forward_endpoint, e.forward_args)
-            rg.forward_queue.append((e.forward_endpoint, e.forward_args))
-            if len(rg.forward_queue) == 10:
-                raise ProgrammingError('forward loop detected: %s' % '->'.join([g[0] for g in rg.forward_queue]))
+            pysmvt.rg.forward_queue.append((e.forward_endpoint, e.forward_args))
+            if len(pysmvt.rg.forward_queue) == 10:
+                raise ProgrammingError('forward loop detected: %s' % '->'.join([g[0] for g in pysmvt.rg.forward_queue]))
             return True
         if 'beaker.session' in self.environ:
             self.environ['beaker.session'].save()
+        log.debug('exit response context finished')
 
 class WSGIApp(object):
 
@@ -211,10 +213,10 @@ class WSGIApp(object):
         return ResponseContext(error_doc_code)
 
     def response_cycle(self, endpoint, args, error_doc_code=None):
-        rg.forward_queue = [(endpoint, args)]
+        pysmvt.rg.forward_queue = [(endpoint, args)]
         while True:
             with self.response_context(error_doc_code):
-                endpoint, args = rg.forward_queue[-1]
+                endpoint, args = pysmvt.rg.forward_queue[-1]
                 return self.dispatch_to_endpoint(endpoint, args)
 
     def dispatch_to_endpoint(self, endpoint, args):
@@ -230,9 +232,9 @@ class WSGIApp(object):
         with self.request_manager(environ):
             try:
                 try:
-                    endpoint, args = rg.urladapter.match()
+                    endpoint, args = pysmvt.rg.urladapter.match()
                 except HTTPException, e:
-                    log.debug('routing HTTP exception %s from %s', e, rg.request.url)
+                    log.debug('routing HTTP exception %s from %s', e, pysmvt.rg.request.url)
                     raise
                 log.debug('wsgi_app processing %s (%s)', endpoint, args)
                 response = self.response_cycle(endpoint, args)

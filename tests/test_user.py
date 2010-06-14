@@ -44,7 +44,7 @@ class TestUser(unittest.TestCase):
         r = self.client.get('/usertests/getperms')
 
         self.assertEqual(r.status, '200 OK')
-        self.assertEqual(r.data, 'TrueFalse')
+        self.assertEqual(r.data, 'TrueFalseTrue')
 
     def test_clear(self):
         r = self.client.get('/usertests/clear')

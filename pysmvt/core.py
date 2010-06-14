@@ -11,7 +11,6 @@ __all__ = [
     'ag',
     'rg',
     'settings',
-    'session',
     'user',
     'redirect',
     'forward',
@@ -26,8 +25,6 @@ ag = StackedObjectProxy(name="ag")
 rg = StackedObjectProxy(name="rg")
 # all of the settings data (application scope)
 settings = StackedObjectProxy(name="settings")
-# the http session (request only)
-session = StackedObjectProxy(name="session")
 # the user object (request only)
 user = StackedObjectProxy(name="user")
 # the db object (application scope)
@@ -50,4 +47,3 @@ def redirect(location, permanent=False, code=302 ):
 
 def forward(endpoint, **kwargs):
     raise Forward(endpoint, kwargs)
-
