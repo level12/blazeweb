@@ -78,9 +78,11 @@ class ResponseContext(object):
     def __init__(self, error_doc_code):
         self.environ = rg.environ
         self.current_plugin = None
+        # this gets set if this response context is initilized b/c
+        # an error document handler is being called.  It allows the View
+        # that handles the error code to know what code it is being called
+        # for.
         self.error_doc_code = error_doc_code
-        self.css = []
-        self.js = []
 
     def assign_current_plugin(self, endpoint):
         plugin, _ = split_endpoint(endpoint)
@@ -89,13 +91,13 @@ class ResponseContext(object):
     def __enter__(self):
         rg.respctx = self
         # allow middleware higher in the stack to help initilize the response
-        if 'pysmvt.response_setup' in self.environ:
-            for callable in self.environ['pysmvt.response_setup']:
+        if 'pysmvt.response_cycle_setup' in self.environ:
+            for callable in self.environ['pysmvt.response_cycle_setup']:
                 callable()
 
     def __exit__(self, exc_type, e, tb):
-        if 'pysmvt.response_teardown' in self.environ:
-            for callable in self.environ['pysmvt.response_teardown']:
+        if 'pysmvt.response_cycle_teardown' in self.environ:
+            for callable in self.environ['pysmvt.response_cycle_teardown']:
                 callable()
         if isinstance(e, Forward):
             log.debug('forwarding to %s (%s)', e.forward_endpoint, e.forward_args)

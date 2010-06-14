@@ -41,24 +41,20 @@ def test_environ_hooks():
             def request_setup():
                 rg.testattr = 'foo'
                 tracker.append('reqs')
-                print 'request_setup'
             def request_teardown():
                 tracker.append('reqt')
-                print 'request_teardown'
             def response_setup():
                 tracker.append('resps')
-                print 'response_setup'
             def response_teardown():
                 tracker.append('respt')
-                print 'response_teardown'
             environ.setdefault('pysmvt.request_setup', [])
             environ.setdefault('pysmvt.request_teardown', [])
-            environ.setdefault('pysmvt.response_setup', [])
-            environ.setdefault('pysmvt.response_teardown', [])
+            environ.setdefault('pysmvt.response_cycle_setup', [])
+            environ.setdefault('pysmvt.response_cycle_teardown', [])
             environ['pysmvt.request_setup'].append(request_setup)
             environ['pysmvt.request_teardown'].append(request_teardown)
-            environ['pysmvt.response_setup'].append(response_setup)
-            environ['pysmvt.response_teardown'].append(response_teardown)
+            environ['pysmvt.response_cycle_setup'].append(response_setup)
+            environ['pysmvt.response_cycle_teardown'].append(response_teardown)
             return self.app(environ, start_response)
     app = TestMiddleware(make_wsgi())
     ta = TestApp(app)
