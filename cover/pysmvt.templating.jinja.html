@@ -1,0 +1,107 @@
+<html>
+<head>
+<title>pysmvt.templating.jinja</title>
+</head>
+<body>
+pysmvt.templating.jinja
+<style>
+.coverage pre {float: left; margin: 0px 1em; border: none;
+               padding: 0px; }
+.num pre { margin: 0px }
+.nocov, .nocov pre {background-color: #faa}
+.cov, .cov pre {background-color: #cfc}
+div.coverage div { clear: both; height: 1.1em}
+</style>
+<div class="stats">
+Covered: 53 lines<br/>
+Missed: 4 lines<br/>
+Skipped 25 lines<br/>
+Percent: 92 %<br/>
+
+</div>
+<div class="coverage">
+<div class="cov"><span class="num"><pre> 1</pre></span><pre>import logging</pre></div>
+<div class="cov"><span class="num"><pre> 2</pre></span><pre>from os import path</pre></div>
+<div class="skip"><span class="num"><pre> 3</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 4</pre></span><pre>from jinja2 import Environment, TemplateNotFound, BaseLoader</pre></div>
+<div class="skip"><span class="num"><pre> 5</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 6</pre></span><pre>from pysmvt import settings, user</pre></div>
+<div class="cov"><span class="num"><pre> 7</pre></span><pre>from pysmvt.hierarchy import FileNotFound, findfile, split_endpoint</pre></div>
+<div class="cov"><span class="num"><pre> 8</pre></span><pre>import pysmvt.templating as templating</pre></div>
+<div class="skip"><span class="num"><pre> 9</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>10</pre></span><pre>log = logging.getLogger(__name__)</pre></div>
+<div class="skip"><span class="num"><pre>11</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>12</pre></span><pre>class Translator(templating.EngineBase):</pre></div>
+<div class="skip"><span class="num"><pre>13</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>14</pre></span><pre>    def __init__(self):</pre></div>
+<div class="cov"><span class="num"><pre>15</pre></span><pre>        self.env = Environment(</pre></div>
+<div class="cov"><span class="num"><pre>16</pre></span><pre>            loader=self.create_loader(),</pre></div>
+<div class="cov"><span class="num"><pre>17</pre></span><pre>            **self.get_settings()</pre></div>
+<div class="cov"><span class="num"><pre>18</pre></span><pre>            )</pre></div>
+<div class="cov"><span class="num"><pre>19</pre></span><pre>        self.init_globals()</pre></div>
+<div class="cov"><span class="num"><pre>20</pre></span><pre>        self.init_filters()</pre></div>
+<div class="skip"><span class="num"><pre>21</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>22</pre></span><pre>    def create_loader(self):</pre></div>
+<div class="cov"><span class="num"><pre>23</pre></span><pre>        return HierarchyLoader()</pre></div>
+<div class="skip"><span class="num"><pre>24</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>25</pre></span><pre>    def get_settings(self):</pre></div>
+<div class="cov"><span class="num"><pre>26</pre></span><pre>        return settings.jinja.todict()</pre></div>
+<div class="skip"><span class="num"><pre>27</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>28</pre></span><pre>    def init_globals(self):</pre></div>
+<div class="cov"><span class="num"><pre>29</pre></span><pre>        self.env.globals.update(self.get_globals())</pre></div>
+<div class="skip"><span class="num"><pre>30</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>31</pre></span><pre>    def init_filters(self):</pre></div>
+<div class="cov"><span class="num"><pre>32</pre></span><pre>        self.env.filters.update(self.get_filters())</pre></div>
+<div class="skip"><span class="num"><pre>33</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>34</pre></span><pre>    def render_string(self, string, context):</pre></div>
+<div class="nocov"><span class="num"><pre>35</pre></span><pre>        raise NotImplementedError('Translor must be subclassed')</pre></div>
+<div class="skip"><span class="num"><pre>36</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>37</pre></span><pre>    def render_template(self, endpoint, context):</pre></div>
+<div class="cov"><span class="num"><pre>38</pre></span><pre>        self.update_context(context)</pre></div>
+<div class="cov"><span class="num"><pre>39</pre></span><pre>        return self.env.get_template(endpoint).render(context)</pre></div>
+<div class="skip"><span class="num"><pre>40</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>41</pre></span><pre>    def update_context(self, context):</pre></div>
+<div class="cov"><span class="num"><pre>42</pre></span><pre>        context.update({</pre></div>
+<div class="cov"><span class="num"><pre>43</pre></span><pre>            'user': user._current_obj(),</pre></div>
+<div class="cov"><span class="num"><pre>44</pre></span><pre>        })</pre></div>
+<div class="skip"><span class="num"><pre>45</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>46</pre></span><pre>class HierarchyLoader(BaseLoader):</pre></div>
+<div class="cov"><span class="num"><pre>47</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>48</pre></span><pre>        A modification of Jinja's FileSystemLoader to take into account</pre></div>
+<div class="cov"><span class="num"><pre>49</pre></span><pre>        the hierarchy.</pre></div>
+<div class="cov"><span class="num"><pre>50</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="skip"><span class="num"><pre>51</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>52</pre></span><pre>    def __init__(self, encoding=settings.default.charset):</pre></div>
+<div class="cov"><span class="num"><pre>53</pre></span><pre>        self.encoding = encoding</pre></div>
+<div class="skip"><span class="num"><pre>54</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>55</pre></span><pre>    def find_template_path(self, endpoint):</pre></div>
+<div class="skip"><span class="num"><pre>56</pre></span><pre>        # try module level first</pre></div>
+<div class="cov"><span class="num"><pre>57</pre></span><pre>        try:</pre></div>
+<div class="cov"><span class="num"><pre>58</pre></span><pre>            plugin, template = split_endpoint(endpoint)</pre></div>
+<div class="cov"><span class="num"><pre>59</pre></span><pre>            endpoint = path.join('templates', template)</pre></div>
+<div class="cov"><span class="num"><pre>60</pre></span><pre>            if plugin:</pre></div>
+<div class="cov"><span class="num"><pre>61</pre></span><pre>                endpoint = '%s:%s' % (plugin, endpoint)</pre></div>
+<div class="cov"><span class="num"><pre>62</pre></span><pre>            return findfile(endpoint)</pre></div>
+<div class="nocov"><span class="num"><pre>63</pre></span><pre>        except FileNotFound:</pre></div>
+<div class="nocov"><span class="num"><pre>64</pre></span><pre>            pass</pre></div>
+<div class="skip"><span class="num"><pre>65</pre></span><pre>        ## try app level second if module wasn't specified</pre></div>
+<div class="skip"><span class="num"><pre>66</pre></span><pre>        #try:</pre></div>
+<div class="skip"><span class="num"><pre>67</pre></span><pre>        #    if ':' not in template:</pre></div>
+<div class="skip"><span class="num"><pre>68</pre></span><pre>        #        endpoint = 'templates/%s' % template</pre></div>
+<div class="skip"><span class="num"><pre>69</pre></span><pre>        #    return findfile(endpoint)</pre></div>
+<div class="skip"><span class="num"><pre>70</pre></span><pre>        #except FileNotFound:</pre></div>
+<div class="skip"><span class="num"><pre>71</pre></span><pre>        #    pass</pre></div>
+<div class="skip"><span class="num"><pre>72</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>73</pre></span><pre>    def get_source(self, environment, endpoint):</pre></div>
+<div class="cov"><span class="num"><pre>74</pre></span><pre>        log.debug('get_source() processing: %s' % endpoint)</pre></div>
+<div class="cov"><span class="num"><pre>75</pre></span><pre>        fpath = self.find_template_path(endpoint)</pre></div>
+<div class="cov"><span class="num"><pre>76</pre></span><pre>        if not fpath:</pre></div>
+<div class="nocov"><span class="num"><pre>77</pre></span><pre>            raise TemplateNotFound(endpoint)</pre></div>
+<div class="cov"><span class="num"><pre>78</pre></span><pre>        with open(fpath) as f:</pre></div>
+<div class="cov"><span class="num"><pre>79</pre></span><pre>            contents = f.read().decode(self.encoding)</pre></div>
+<div class="cov"><span class="num"><pre>80</pre></span><pre>        old = path.getmtime(fpath)</pre></div>
+<div class="cov"><span class="num"><pre>81</pre></span><pre>        return contents, fpath, lambda: path.getmtime(fpath) == old</pre></div>
+<div class="skip"><span class="num"><pre>82</pre></span><pre></pre></div>
+</div>
+</body>
+</html>

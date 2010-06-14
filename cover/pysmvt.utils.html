@@ -1,0 +1,88 @@
+<html>
+<head>
+<title>pysmvt.utils</title>
+</head>
+<body>
+pysmvt.utils
+<style>
+.coverage pre {float: left; margin: 0px 1em; border: none;
+               padding: 0px; }
+.num pre { margin: 0px }
+.nocov, .nocov pre {background-color: #faa}
+.cov, .cov pre {background-color: #cfc}
+div.coverage div { clear: both; height: 1.1em}
+</style>
+<div class="stats">
+Covered: 39 lines<br/>
+Missed: 14 lines<br/>
+Skipped 10 lines<br/>
+Percent: 73 %<br/>
+
+</div>
+<div class="coverage">
+<div class="cov"><span class="num"><pre> 1</pre></span><pre>import re</pre></div>
+<div class="cov"><span class="num"><pre> 2</pre></span><pre>import logging</pre></div>
+<div class="cov"><span class="num"><pre> 3</pre></span><pre>from traceback import format_exc</pre></div>
+<div class="cov"><span class="num"><pre> 4</pre></span><pre>from formencode.validators import URL</pre></div>
+<div class="cov"><span class="num"><pre> 5</pre></span><pre>from formencode import Invalid</pre></div>
+<div class="skip"><span class="num"><pre> 6</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 7</pre></span><pre>from pysmvt import rg</pre></div>
+<div class="cov"><span class="num"><pre> 8</pre></span><pre>from pysmvt.exceptions import Abort</pre></div>
+<div class="cov"><span class="num"><pre> 9</pre></span><pre>from pysutils.helpers import pformat</pre></div>
+<div class="skip"><span class="num"><pre>10</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>11</pre></span><pre>log = logging.getLogger(__name__)</pre></div>
+<div class="skip"><span class="num"><pre>12</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>13</pre></span><pre>def isurl(s, require_tld=True):</pre></div>
+<div class="nocov"><span class="num"><pre>14</pre></span><pre>    u = URL(add_http=False, require_tld=require_tld)</pre></div>
+<div class="nocov"><span class="num"><pre>15</pre></span><pre>    try:</pre></div>
+<div class="nocov"><span class="num"><pre>16</pre></span><pre>        u.to_python(s)</pre></div>
+<div class="nocov"><span class="num"><pre>17</pre></span><pre>        return True</pre></div>
+<div class="nocov"><span class="num"><pre>18</pre></span><pre>    except Invalid:</pre></div>
+<div class="nocov"><span class="num"><pre>19</pre></span><pre>        url_local = re.compile(r'//localhost(:|/)').search(s)</pre></div>
+<div class="nocov"><span class="num"><pre>20</pre></span><pre>        if url_local is not None:</pre></div>
+<div class="nocov"><span class="num"><pre>21</pre></span><pre>            return True</pre></div>
+<div class="nocov"><span class="num"><pre>22</pre></span><pre>        return False</pre></div>
+<div class="skip"><span class="num"><pre>23</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>24</pre></span><pre>def abort(outputobj=None, code=200):</pre></div>
+<div class="nocov"><span class="num"><pre>25</pre></span><pre>    raise Abort(outputobj, code)</pre></div>
+<div class="skip"><span class="num"><pre>26</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>27</pre></span><pre>def werkzeug_multi_dict_conv(md):</pre></div>
+<div class="cov"><span class="num"><pre>28</pre></span><pre>    '''</pre></div>
+<div class="cov"><span class="num"><pre>29</pre></span><pre>        Werzeug Multi-Dicts are either flat or lists, but we want a single value</pre></div>
+<div class="cov"><span class="num"><pre>30</pre></span><pre>        if only one value or a list if multiple values</pre></div>
+<div class="cov"><span class="num"><pre>31</pre></span><pre>    '''</pre></div>
+<div class="cov"><span class="num"><pre>32</pre></span><pre>    retval = {}</pre></div>
+<div class="cov"><span class="num"><pre>33</pre></span><pre>    for key, value in md.to_dict(flat=False).iteritems():</pre></div>
+<div class="cov"><span class="num"><pre>34</pre></span><pre>        if len(value) == 1:</pre></div>
+<div class="cov"><span class="num"><pre>35</pre></span><pre>            retval[key] = value[0]</pre></div>
+<div class="cov"><span class="num"><pre>36</pre></span><pre>        else:</pre></div>
+<div class="cov"><span class="num"><pre>37</pre></span><pre>            retval[key] = value</pre></div>
+<div class="cov"><span class="num"><pre>38</pre></span><pre>    return retval</pre></div>
+<div class="skip"><span class="num"><pre>39</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>40</pre></span><pre>def registry_has_object(to_check):</pre></div>
+<div class="cov"><span class="num"><pre>41</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>42</pre></span><pre>        can be used to check the registry objects (rg, ag, etc.) in a safe way</pre></div>
+<div class="cov"><span class="num"><pre>43</pre></span><pre>        to see if they have been registered</pre></div>
+<div class="cov"><span class="num"><pre>44</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="skip"><span class="num"><pre>45</pre></span><pre>    # try/except is a workaround for paste bug:</pre></div>
+<div class="skip"><span class="num"><pre>46</pre></span><pre>    # http://trac.pythonpaste.org/pythonpaste/ticket/408</pre></div>
+<div class="cov"><span class="num"><pre>47</pre></span><pre>    try:</pre></div>
+<div class="cov"><span class="num"><pre>48</pre></span><pre>        return bool(to_check._object_stack())</pre></div>
+<div class="nocov"><span class="num"><pre>49</pre></span><pre>    except AttributeError, e:</pre></div>
+<div class="nocov"><span class="num"><pre>50</pre></span><pre>        if &quot;'thread._local' object has no attribute 'objects'&quot; != str(e):</pre></div>
+<div class="nocov"><span class="num"><pre>51</pre></span><pre>            raise</pre></div>
+<div class="nocov"><span class="num"><pre>52</pre></span><pre>        return False</pre></div>
+<div class="skip"><span class="num"><pre>53</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>54</pre></span><pre>def exception_with_context():</pre></div>
+<div class="cov"><span class="num"><pre>55</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>56</pre></span><pre>        formats the last exception as a string and adds context about the</pre></div>
+<div class="cov"><span class="num"><pre>57</pre></span><pre>        request.</pre></div>
+<div class="cov"><span class="num"><pre>58</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>59</pre></span><pre>    retval = '\n== TRACE ==\n\n%s' % format_exc()</pre></div>
+<div class="cov"><span class="num"><pre>60</pre></span><pre>    retval += '\n\n== ENVIRON ==\n\n%s' % pformat(rg.environ, 4)</pre></div>
+<div class="cov"><span class="num"><pre>61</pre></span><pre>    retval += '\n\n== POST ==\n\n%s\n\n' % pformat(werkzeug_multi_dict_conv(rg.request.form), 4)</pre></div>
+<div class="cov"><span class="num"><pre>62</pre></span><pre>    return retval</pre></div>
+<div class="skip"><span class="num"><pre>63</pre></span><pre></pre></div>
+</div>
+</body>
+</html>

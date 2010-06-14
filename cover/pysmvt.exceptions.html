@@ -1,0 +1,67 @@
+<html>
+<head>
+<title>pysmvt.exceptions</title>
+</head>
+<body>
+pysmvt.exceptions
+<style>
+.coverage pre {float: left; margin: 0px 1em; border: none;
+               padding: 0px; }
+.num pre { margin: 0px }
+.nocov, .nocov pre {background-color: #faa}
+.cov, .cov pre {background-color: #cfc}
+div.coverage div { clear: both; height: 1.1em}
+</style>
+<div class="stats">
+Covered: 4 lines<br/>
+Missed: 31 lines<br/>
+Skipped 7 lines<br/>
+Percent: 11 %<br/>
+
+</div>
+<div class="coverage">
+<div class="nocov"><span class="num"><pre> 1</pre></span><pre>from werkzeug.exceptions import HTTPException, InternalServerError</pre></div>
+<div class="nocov"><span class="num"><pre> 2</pre></span><pre>from werkzeug import MultiDict</pre></div>
+<div class="nocov"><span class="num"><pre> 3</pre></span><pre>from pysutils import pformat</pre></div>
+<div class="skip"><span class="num"><pre> 4</pre></span><pre></pre></div>
+<div class="nocov"><span class="num"><pre> 5</pre></span><pre>class Redirect(Exception):</pre></div>
+<div class="nocov"><span class="num"><pre> 6</pre></span><pre>    def __init__(self, response):</pre></div>
+<div class="cov"><span class="num"><pre> 7</pre></span><pre>        self.response = response</pre></div>
+<div class="skip"><span class="num"><pre> 8</pre></span><pre></pre></div>
+<div class="nocov"><span class="num"><pre> 9</pre></span><pre>class Forward(Exception):</pre></div>
+<div class="nocov"><span class="num"><pre>10</pre></span><pre>    def __init__(self, endpoint, args):</pre></div>
+<div class="cov"><span class="num"><pre>11</pre></span><pre>        Exception.__init__(self)</pre></div>
+<div class="cov"><span class="num"><pre>12</pre></span><pre>        self.forward_endpoint = endpoint</pre></div>
+<div class="cov"><span class="num"><pre>13</pre></span><pre>        self.forward_args = args</pre></div>
+<div class="skip"><span class="num"><pre>14</pre></span><pre></pre></div>
+<div class="nocov"><span class="num"><pre>15</pre></span><pre>class Abort(HTTPException):</pre></div>
+<div class="nocov"><span class="num"><pre>16</pre></span><pre>    def __init__(self, outputobj=None, code=200):</pre></div>
+<div class="nocov"><span class="num"><pre>17</pre></span><pre>        from pysmvt.utils import werkzeug_multi_dict_conv</pre></div>
+<div class="nocov"><span class="num"><pre>18</pre></span><pre>        from pysmvt.utils.html import escape</pre></div>
+<div class="nocov"><span class="num"><pre>19</pre></span><pre>        self.code = code</pre></div>
+<div class="nocov"><span class="num"><pre>20</pre></span><pre>        if isinstance(outputobj, MultiDict):</pre></div>
+<div class="nocov"><span class="num"><pre>21</pre></span><pre>            outputobj = werkzeug_multi_dict_conv(outputobj)</pre></div>
+<div class="nocov"><span class="num"><pre>22</pre></span><pre>        self.description = &quot;&lt;pre&gt;%s&lt;/pre&gt;&quot; % escape(pformat(outputobj)) if outputobj else ''</pre></div>
+<div class="nocov"><span class="num"><pre>23</pre></span><pre>        HTTPException.__init__(self)</pre></div>
+<div class="skip"><span class="num"><pre>24</pre></span><pre></pre></div>
+<div class="nocov"><span class="num"><pre>25</pre></span><pre>class ProgrammingError(Exception):</pre></div>
+<div class="nocov"><span class="num"><pre>26</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="nocov"><span class="num"><pre>27</pre></span><pre>        Raised when an API is not used correctly and the exception does</pre></div>
+<div class="nocov"><span class="num"><pre>28</pre></span><pre>        not fit any of the builtin exceptions</pre></div>
+<div class="nocov"><span class="num"><pre>29</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="skip"><span class="num"><pre>30</pre></span><pre></pre></div>
+<div class="nocov"><span class="num"><pre>31</pre></span><pre>class SettingsError(Exception):</pre></div>
+<div class="nocov"><span class="num"><pre>32</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="nocov"><span class="num"><pre>33</pre></span><pre>        raised when a settings error is detected</pre></div>
+<div class="nocov"><span class="num"><pre>34</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="skip"><span class="num"><pre>35</pre></span><pre></pre></div>
+<div class="nocov"><span class="num"><pre>36</pre></span><pre>class ViewCallStackAbort(Exception):</pre></div>
+<div class="nocov"><span class="num"><pre>37</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="nocov"><span class="num"><pre>38</pre></span><pre>        used to stop the views from running through all the methods in the</pre></div>
+<div class="nocov"><span class="num"><pre>39</pre></span><pre>        call stack. Don't use directly, use the send_response() method on the</pre></div>
+<div class="nocov"><span class="num"><pre>40</pre></span><pre>        view instead.</pre></div>
+<div class="nocov"><span class="num"><pre>41</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="skip"><span class="num"><pre>42</pre></span><pre></pre></div>
+</div>
+</body>
+</html>

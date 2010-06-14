@@ -1,0 +1,129 @@
+<html>
+<head>
+<title>pysmvt.utils.encoding</title>
+</head>
+<body>
+pysmvt.utils.encoding
+<style>
+.coverage pre {float: left; margin: 0px 1em; border: none;
+               padding: 0px; }
+.num pre { margin: 0px }
+.nocov, .nocov pre {background-color: #faa}
+.cov, .cov pre {background-color: #cfc}
+div.coverage div { clear: both; height: 1.1em}
+</style>
+<div class="stats">
+Covered: 45 lines<br/>
+Missed: 31 lines<br/>
+Skipped 28 lines<br/>
+Percent: 59 %<br/>
+
+</div>
+<div class="coverage">
+<div class="cov"><span class="num"><pre>  1</pre></span><pre>import types</pre></div>
+<div class="cov"><span class="num"><pre>  2</pre></span><pre>import urllib</pre></div>
+<div class="cov"><span class="num"><pre>  3</pre></span><pre>import datetime</pre></div>
+<div class="skip"><span class="num"><pre>  4</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>  5</pre></span><pre>class DjangoUnicodeDecodeError(UnicodeDecodeError):</pre></div>
+<div class="cov"><span class="num"><pre>  6</pre></span><pre>    def __init__(self, obj, *args):</pre></div>
+<div class="nocov"><span class="num"><pre>  7</pre></span><pre>        self.obj = obj</pre></div>
+<div class="nocov"><span class="num"><pre>  8</pre></span><pre>        UnicodeDecodeError.__init__(self, *args)</pre></div>
+<div class="skip"><span class="num"><pre>  9</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 10</pre></span><pre>    def __str__(self):</pre></div>
+<div class="nocov"><span class="num"><pre> 11</pre></span><pre>        original = UnicodeDecodeError.__str__(self)</pre></div>
+<div class="nocov"><span class="num"><pre> 12</pre></span><pre>        return '%s. You passed in %r (%s)' % (original, self.obj,</pre></div>
+<div class="nocov"><span class="num"><pre> 13</pre></span><pre>                type(self.obj))</pre></div>
+<div class="skip"><span class="num"><pre> 14</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 15</pre></span><pre>class StrAndUnicode(object):</pre></div>
+<div class="cov"><span class="num"><pre> 16</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre> 17</pre></span><pre>    A class whose __str__ returns its __unicode__ as a UTF-8 bytestring.</pre></div>
+<div class="skip"><span class="num"><pre> 18</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 19</pre></span><pre>    Useful as a mix-in.</pre></div>
+<div class="cov"><span class="num"><pre> 20</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre> 21</pre></span><pre>    def __str__(self):</pre></div>
+<div class="nocov"><span class="num"><pre> 22</pre></span><pre>        return self.__unicode__().encode('utf-8')</pre></div>
+<div class="skip"><span class="num"><pre> 23</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 24</pre></span><pre>def force_unicode(s, encoding='utf-8', strings_only=False, errors='strict'):</pre></div>
+<div class="cov"><span class="num"><pre> 25</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre> 26</pre></span><pre>    Similar to smart_unicode, except that lazy instances are resolved to</pre></div>
+<div class="cov"><span class="num"><pre> 27</pre></span><pre>    strings, rather than kept as lazy objects.</pre></div>
+<div class="skip"><span class="num"><pre> 28</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 29</pre></span><pre>    If strings_only is True, don't convert (some) non-string-like objects.</pre></div>
+<div class="cov"><span class="num"><pre> 30</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre> 31</pre></span><pre>    if strings_only and isinstance(s, (types.NoneType, int, long, datetime.datetime, datetime.date, datetime.time, float)):</pre></div>
+<div class="nocov"><span class="num"><pre> 32</pre></span><pre>        return s</pre></div>
+<div class="cov"><span class="num"><pre> 33</pre></span><pre>    try:</pre></div>
+<div class="cov"><span class="num"><pre> 34</pre></span><pre>        if not isinstance(s, basestring,):</pre></div>
+<div class="nocov"><span class="num"><pre> 35</pre></span><pre>            if hasattr(s, '__unicode__'):</pre></div>
+<div class="nocov"><span class="num"><pre> 36</pre></span><pre>                s = unicode(s)</pre></div>
+<div class="nocov"><span class="num"><pre> 37</pre></span><pre>            else:</pre></div>
+<div class="nocov"><span class="num"><pre> 38</pre></span><pre>                try:</pre></div>
+<div class="nocov"><span class="num"><pre> 39</pre></span><pre>                    s = unicode(str(s), encoding, errors)</pre></div>
+<div class="nocov"><span class="num"><pre> 40</pre></span><pre>                except UnicodeEncodeError:</pre></div>
+<div class="nocov"><span class="num"><pre> 41</pre></span><pre>                    if not isinstance(s, Exception):</pre></div>
+<div class="nocov"><span class="num"><pre> 42</pre></span><pre>                        raise</pre></div>
+<div class="skip"><span class="num"><pre> 43</pre></span><pre>                    # If we get to here, the caller has passed in an Exception</pre></div>
+<div class="skip"><span class="num"><pre> 44</pre></span><pre>                    # subclass populated with non-ASCII data without special</pre></div>
+<div class="skip"><span class="num"><pre> 45</pre></span><pre>                    # handling to display as a string. We need to handle this</pre></div>
+<div class="skip"><span class="num"><pre> 46</pre></span><pre>                    # without raising a further exception. We do an</pre></div>
+<div class="skip"><span class="num"><pre> 47</pre></span><pre>                    # approximation to what the Exception's standard str()</pre></div>
+<div class="skip"><span class="num"><pre> 48</pre></span><pre>                    # output should be.</pre></div>
+<div class="nocov"><span class="num"><pre> 49</pre></span><pre>                    s = ' '.join([force_unicode(arg, encoding, strings_only,</pre></div>
+<div class="nocov"><span class="num"><pre> 50</pre></span><pre>                            errors) for arg in s])</pre></div>
+<div class="cov"><span class="num"><pre> 51</pre></span><pre>        elif not isinstance(s, unicode):</pre></div>
+<div class="skip"><span class="num"><pre> 52</pre></span><pre>            # Note: We use .decode() here, instead of unicode(s, encoding,</pre></div>
+<div class="skip"><span class="num"><pre> 53</pre></span><pre>            # errors), so that if s is a SafeString, it ends up being a</pre></div>
+<div class="skip"><span class="num"><pre> 54</pre></span><pre>            # SafeUnicode at the end.</pre></div>
+<div class="cov"><span class="num"><pre> 55</pre></span><pre>            s = s.decode(encoding, errors)</pre></div>
+<div class="nocov"><span class="num"><pre> 56</pre></span><pre>    except UnicodeDecodeError, e:</pre></div>
+<div class="nocov"><span class="num"><pre> 57</pre></span><pre>        raise DjangoUnicodeDecodeError(s, *e.args)</pre></div>
+<div class="cov"><span class="num"><pre> 58</pre></span><pre>    return s</pre></div>
+<div class="skip"><span class="num"><pre> 59</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 60</pre></span><pre>def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):</pre></div>
+<div class="cov"><span class="num"><pre> 61</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre> 62</pre></span><pre>    Returns a bytestring version of 's', encoded as specified in 'encoding'.</pre></div>
+<div class="skip"><span class="num"><pre> 63</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 64</pre></span><pre>    If strings_only is True, don't convert (some) non-string-like objects.</pre></div>
+<div class="cov"><span class="num"><pre> 65</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre> 66</pre></span><pre>    if strings_only and isinstance(s, (types.NoneType, int)):</pre></div>
+<div class="nocov"><span class="num"><pre> 67</pre></span><pre>        return s</pre></div>
+<div class="cov"><span class="num"><pre> 68</pre></span><pre>    elif not isinstance(s, basestring):</pre></div>
+<div class="nocov"><span class="num"><pre> 69</pre></span><pre>        try:</pre></div>
+<div class="nocov"><span class="num"><pre> 70</pre></span><pre>            return str(s)</pre></div>
+<div class="nocov"><span class="num"><pre> 71</pre></span><pre>        except UnicodeEncodeError:</pre></div>
+<div class="nocov"><span class="num"><pre> 72</pre></span><pre>            if isinstance(s, Exception):</pre></div>
+<div class="skip"><span class="num"><pre> 73</pre></span><pre>                # An Exception subclass containing non-ASCII data that doesn't</pre></div>
+<div class="skip"><span class="num"><pre> 74</pre></span><pre>                # know how to print itself properly. We shouldn't raise a</pre></div>
+<div class="skip"><span class="num"><pre> 75</pre></span><pre>                # further exception.</pre></div>
+<div class="nocov"><span class="num"><pre> 76</pre></span><pre>                return ' '.join([smart_str(arg, encoding, strings_only,</pre></div>
+<div class="nocov"><span class="num"><pre> 77</pre></span><pre>                        errors) for arg in s])</pre></div>
+<div class="nocov"><span class="num"><pre> 78</pre></span><pre>            return unicode(s).encode(encoding, errors)</pre></div>
+<div class="cov"><span class="num"><pre> 79</pre></span><pre>    elif isinstance(s, unicode):</pre></div>
+<div class="cov"><span class="num"><pre> 80</pre></span><pre>        return s.encode(encoding, errors)</pre></div>
+<div class="cov"><span class="num"><pre> 81</pre></span><pre>    elif s and encoding != 'utf-8':</pre></div>
+<div class="nocov"><span class="num"><pre> 82</pre></span><pre>        return s.decode('utf-8', errors).encode(encoding, errors)</pre></div>
+<div class="cov"><span class="num"><pre> 83</pre></span><pre>    else:</pre></div>
+<div class="cov"><span class="num"><pre> 84</pre></span><pre>        return s</pre></div>
+<div class="skip"><span class="num"><pre> 85</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 86</pre></span><pre>def iri_to_uri(iri):</pre></div>
+<div class="cov"><span class="num"><pre> 87</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre> 88</pre></span><pre>    Convert an Internationalized Resource Identifier (IRI) portion to a URI</pre></div>
+<div class="cov"><span class="num"><pre> 89</pre></span><pre>    portion that is suitable for inclusion in a URL.</pre></div>
+<div class="skip"><span class="num"><pre> 90</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 91</pre></span><pre>    This is the algorithm from section 3.1 of RFC 3987.  However, since we are</pre></div>
+<div class="cov"><span class="num"><pre> 92</pre></span><pre>    assuming input is either UTF-8 or unicode already, we can simplify things a</pre></div>
+<div class="cov"><span class="num"><pre> 93</pre></span><pre>    little from the full method.</pre></div>
+<div class="skip"><span class="num"><pre> 94</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 95</pre></span><pre>    Returns an ASCII string containing the encoded result.</pre></div>
+<div class="cov"><span class="num"><pre> 96</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="skip"><span class="num"><pre> 97</pre></span><pre>    # The list of safe characters here is constructed from the printable ASCII</pre></div>
+<div class="skip"><span class="num"><pre> 98</pre></span><pre>    # characters that are not explicitly excluded by the list at the end of</pre></div>
+<div class="skip"><span class="num"><pre> 99</pre></span><pre>    # section 3.1 of RFC 3987.</pre></div>
+<div class="nocov"><span class="num"><pre>100</pre></span><pre>    if iri is None:</pre></div>
+<div class="nocov"><span class="num"><pre>101</pre></span><pre>        return iri</pre></div>
+<div class="nocov"><span class="num"><pre>102</pre></span><pre>    return urllib.quote(smart_str(iri), safe='/#%[]=:;$&amp;()+,!?*')</pre></div>
+<div class="skip"><span class="num"><pre>103</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre>104</pre></span><pre></pre></div>
+</div>
+</body>
+</html>

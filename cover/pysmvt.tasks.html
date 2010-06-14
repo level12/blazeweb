@@ -1,0 +1,133 @@
+<html>
+<head>
+<title>pysmvt.tasks</title>
+</head>
+<body>
+pysmvt.tasks
+<style>
+.coverage pre {float: left; margin: 0px 1em; border: none;
+               padding: 0px; }
+.num pre { margin: 0px }
+.nocov, .nocov pre {background-color: #faa}
+.cov, .cov pre {background-color: #cfc}
+div.coverage div { clear: both; height: 1.1em}
+</style>
+<div class="stats">
+Covered: 77 lines<br/>
+Missed: 3 lines<br/>
+Skipped 28 lines<br/>
+Percent: 96 %<br/>
+
+</div>
+<div class="coverage">
+<div class="cov"><span class="num"><pre>  1</pre></span><pre>from decorator import decorator</pre></div>
+<div class="cov"><span class="num"><pre>  2</pre></span><pre>from pysutils import tolist, OrderedDict</pre></div>
+<div class="cov"><span class="num"><pre>  3</pre></span><pre>from pysmvt.hierarchy import gatherobjs</pre></div>
+<div class="skip"><span class="num"><pre>  4</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>  5</pre></span><pre>def _attributes(f, *args, **kwargs):</pre></div>
+<div class="cov"><span class="num"><pre>  6</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>  7</pre></span><pre>        does the work of calling the function decorated by `attributes`</pre></div>
+<div class="cov"><span class="num"><pre>  8</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>  9</pre></span><pre>    return f(*args, **kwargs)</pre></div>
+<div class="skip"><span class="num"><pre> 10</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 11</pre></span><pre>def attributes(*args):</pre></div>
+<div class="cov"><span class="num"><pre> 12</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre> 13</pre></span><pre>        a decorator to add an &quot;attribute&quot; to an action, which can be used</pre></div>
+<div class="cov"><span class="num"><pre> 14</pre></span><pre>        as a filtering mechanism to control what actions in given task are run.</pre></div>
+<div class="cov"><span class="num"><pre> 15</pre></span><pre>        If we have the following in tasks.init_data:</pre></div>
+<div class="skip"><span class="num"><pre> 16</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 17</pre></span><pre>            @attributes('test', 'dev')</pre></div>
+<div class="cov"><span class="num"><pre> 18</pre></span><pre>            def action_020_a_little_data():</pre></div>
+<div class="cov"><span class="num"><pre> 19</pre></span><pre>                pass</pre></div>
+<div class="skip"><span class="num"><pre> 20</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 21</pre></span><pre>            @attributes('prod')</pre></div>
+<div class="cov"><span class="num"><pre> 22</pre></span><pre>            def action_020_a_lot_of_data():</pre></div>
+<div class="cov"><span class="num"><pre> 23</pre></span><pre>                pass</pre></div>
+<div class="skip"><span class="num"><pre> 24</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 25</pre></span><pre>        Given the above, then:</pre></div>
+<div class="skip"><span class="num"><pre> 26</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 27</pre></span><pre>            run_tasks('init-data') # both functions called</pre></div>
+<div class="cov"><span class="num"><pre> 28</pre></span><pre>            run_tasks('init-data:prod') # only action_020_a_lot_of_data</pre></div>
+<div class="cov"><span class="num"><pre> 29</pre></span><pre>            run_tasks('init-data:test') # only action_020_a_little_data</pre></div>
+<div class="cov"><span class="num"><pre> 30</pre></span><pre>            run_tasks('init-data:dev') # only action_020_a_little_data</pre></div>
+<div class="cov"><span class="num"><pre> 31</pre></span><pre>            run_tasks('init-data:foo') # neither function called</pre></div>
+<div class="skip"><span class="num"><pre> 32</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 33</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre> 34</pre></span><pre>    def decorate_func(f):</pre></div>
+<div class="cov"><span class="num"><pre> 35</pre></span><pre>        if args:</pre></div>
+<div class="cov"><span class="num"><pre> 36</pre></span><pre>            f.__pysmvt_task_attrs = args</pre></div>
+<div class="cov"><span class="num"><pre> 37</pre></span><pre>        return decorator(_attributes, f)</pre></div>
+<div class="cov"><span class="num"><pre> 38</pre></span><pre>    return decorate_func</pre></div>
+<div class="skip"><span class="num"><pre> 39</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre> 40</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 41</pre></span><pre>def run_tasks(tasks, print_call=True, test_only=False, *args, **kwargs):</pre></div>
+<div class="cov"><span class="num"><pre> 42</pre></span><pre>    tasks = tolist(tasks)</pre></div>
+<div class="cov"><span class="num"><pre> 43</pre></span><pre>    retval = OrderedDict()</pre></div>
+<div class="cov"><span class="num"><pre> 44</pre></span><pre>    for task in tasks:</pre></div>
+<div class="skip"><span class="num"><pre> 45</pre></span><pre>        # split off the attribute if it is present:</pre></div>
+<div class="cov"><span class="num"><pre> 46</pre></span><pre>        if ':' in task:</pre></div>
+<div class="cov"><span class="num"><pre> 47</pre></span><pre>            task, attr = task.split(':', 1)</pre></div>
+<div class="skip"><span class="num"><pre> 48</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre> 49</pre></span><pre>            # get the soft attribute flag</pre></div>
+<div class="cov"><span class="num"><pre> 50</pre></span><pre>            if attr.startswith('~'):</pre></div>
+<div class="cov"><span class="num"><pre> 51</pre></span><pre>                soft_attribute_matching = True</pre></div>
+<div class="cov"><span class="num"><pre> 52</pre></span><pre>                attr = attr[1:]</pre></div>
+<div class="cov"><span class="num"><pre> 53</pre></span><pre>            else:</pre></div>
+<div class="cov"><span class="num"><pre> 54</pre></span><pre>                soft_attribute_matching = False</pre></div>
+<div class="cov"><span class="num"><pre> 55</pre></span><pre>        else:</pre></div>
+<div class="cov"><span class="num"><pre> 56</pre></span><pre>            attr = None</pre></div>
+<div class="skip"><span class="num"><pre> 57</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre> 58</pre></span><pre>        # allow tasks to be defined with dashes, but convert to</pre></div>
+<div class="skip"><span class="num"><pre> 59</pre></span><pre>        # underscore to follow file naming conventions</pre></div>
+<div class="cov"><span class="num"><pre> 60</pre></span><pre>        underscore_task = task.replace('-', '_')</pre></div>
+<div class="skip"><span class="num"><pre> 61</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 62</pre></span><pre>        collection = gatherobjs('tasks.%s' % underscore_task, lambda objname, obj: objname.startswith('action_'))</pre></div>
+<div class="skip"><span class="num"><pre> 63</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 64</pre></span><pre>        callables = []</pre></div>
+<div class="cov"><span class="num"><pre> 65</pre></span><pre>        for modkey, modattrs in collection.iteritems():</pre></div>
+<div class="cov"><span class="num"><pre> 66</pre></span><pre>            for actname, actobj in modattrs.iteritems():</pre></div>
+<div class="cov"><span class="num"><pre> 67</pre></span><pre>                plus_exit = False</pre></div>
+<div class="cov"><span class="num"><pre> 68</pre></span><pre>                callable_attrs = getattr(actobj, '__pysmvt_task_attrs', tuple())</pre></div>
+<div class="skip"><span class="num"><pre> 69</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre> 70</pre></span><pre>                # if callable has a &quot;+&quot; attribute</pre></div>
+<div class="cov"><span class="num"><pre> 71</pre></span><pre>                for cattr in callable_attrs:</pre></div>
+<div class="cov"><span class="num"><pre> 72</pre></span><pre>                    if cattr.startswith('+') and cattr[1:] != attr:</pre></div>
+<div class="cov"><span class="num"><pre> 73</pre></span><pre>                        plus_exit = True</pre></div>
+<div class="cov"><span class="num"><pre> 74</pre></span><pre>                        break</pre></div>
+<div class="skip"><span class="num"><pre> 75</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 76</pre></span><pre>                if plus_exit:</pre></div>
+<div class="cov"><span class="num"><pre> 77</pre></span><pre>                    continue</pre></div>
+<div class="skip"><span class="num"><pre> 78</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre> 79</pre></span><pre>                # attribute given, callable is required to have it</pre></div>
+<div class="cov"><span class="num"><pre> 80</pre></span><pre>                if attr is not None:</pre></div>
+<div class="cov"><span class="num"><pre> 81</pre></span><pre>                    if soft_attribute_matching:</pre></div>
+<div class="cov"><span class="num"><pre> 82</pre></span><pre>                        if '-' + attr in callable_attrs:</pre></div>
+<div class="cov"><span class="num"><pre> 83</pre></span><pre>                            continue</pre></div>
+<div class="cov"><span class="num"><pre> 84</pre></span><pre>                    elif attr not in callable_attrs and '+' + attr not in callable_attrs:</pre></div>
+<div class="cov"><span class="num"><pre> 85</pre></span><pre>                        continue</pre></div>
+<div class="skip"><span class="num"><pre> 86</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre> 87</pre></span><pre>                # function name, module name, function object</pre></div>
+<div class="skip"><span class="num"><pre> 88</pre></span><pre>                # we added module name as the second value for</pre></div>
+<div class="skip"><span class="num"><pre> 89</pre></span><pre>                # sorting purposes, it gives us a predictable</pre></div>
+<div class="skip"><span class="num"><pre> 90</pre></span><pre>                # order</pre></div>
+<div class="cov"><span class="num"><pre> 91</pre></span><pre>                callables.append((actname, modkey, actobj, None))</pre></div>
+<div class="cov"><span class="num"><pre> 92</pre></span><pre>        retval[task] = []</pre></div>
+<div class="cov"><span class="num"><pre> 93</pre></span><pre>        for call_tuple in sorted(callables):</pre></div>
+<div class="cov"><span class="num"><pre> 94</pre></span><pre>            if print_call == True:</pre></div>
+<div class="nocov"><span class="num"><pre> 95</pre></span><pre>                print '--- Calling: %s:%s ---' % (call_tuple[1], call_tuple[0])</pre></div>
+<div class="cov"><span class="num"><pre> 96</pre></span><pre>            if test_only:</pre></div>
+<div class="nocov"><span class="num"><pre> 97</pre></span><pre>                callable_retval = 'test_only=True'</pre></div>
+<div class="cov"><span class="num"><pre> 98</pre></span><pre>            else:</pre></div>
+<div class="cov"><span class="num"><pre> 99</pre></span><pre>                callable_retval = call_tuple[2]()</pre></div>
+<div class="cov"><span class="num"><pre>100</pre></span><pre>            retval[task].append((</pre></div>
+<div class="cov"><span class="num"><pre>101</pre></span><pre>                call_tuple[0],</pre></div>
+<div class="cov"><span class="num"><pre>102</pre></span><pre>                call_tuple[1],</pre></div>
+<div class="cov"><span class="num"><pre>103</pre></span><pre>                callable_retval</pre></div>
+<div class="cov"><span class="num"><pre>104</pre></span><pre>                ))</pre></div>
+<div class="cov"><span class="num"><pre>105</pre></span><pre>    if print_call and test_only:</pre></div>
+<div class="nocov"><span class="num"><pre>106</pre></span><pre>        print '*** NOTICE: test_only=True, no actions called ***'</pre></div>
+<div class="cov"><span class="num"><pre>107</pre></span><pre>    return retval</pre></div>
+<div class="skip"><span class="num"><pre>108</pre></span><pre></pre></div>
+</div>
+</body>
+</html>

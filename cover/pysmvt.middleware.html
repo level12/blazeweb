@@ -1,0 +1,138 @@
+<html>
+<head>
+<title>pysmvt.middleware</title>
+</head>
+<body>
+pysmvt.middleware
+<style>
+.coverage pre {float: left; margin: 0px 1em; border: none;
+               padding: 0px; }
+.num pre { margin: 0px }
+.nocov, .nocov pre {background-color: #faa}
+.cov, .cov pre {background-color: #cfc}
+div.coverage div { clear: both; height: 1.1em}
+</style>
+<div class="stats">
+Covered: 47 lines<br/>
+Missed: 39 lines<br/>
+Skipped 27 lines<br/>
+Percent: 54 %<br/>
+
+</div>
+<div class="coverage">
+<div class="cov"><span class="num"><pre>  1</pre></span><pre>from os import path</pre></div>
+<div class="cov"><span class="num"><pre>  2</pre></span><pre>import time</pre></div>
+<div class="cov"><span class="num"><pre>  3</pre></span><pre>from tempfile import TemporaryFile</pre></div>
+<div class="cov"><span class="num"><pre>  4</pre></span><pre>from StringIO import StringIO</pre></div>
+<div class="skip"><span class="num"><pre>  5</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>  6</pre></span><pre>from beaker.middleware import SessionMiddleware</pre></div>
+<div class="cov"><span class="num"><pre>  7</pre></span><pre>from paste.registry import RegistryManager</pre></div>
+<div class="cov"><span class="num"><pre>  8</pre></span><pre>from werkzeug import EnvironHeaders, LimitedStream, \</pre></div>
+<div class="cov"><span class="num"><pre>  9</pre></span><pre>    SharedDataMiddleware, DebuggedApplication</pre></div>
+<div class="skip"><span class="num"><pre> 10</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 11</pre></span><pre>from pysutils import randchars, pformat, tolist</pre></div>
+<div class="cov"><span class="num"><pre> 12</pre></span><pre>from pysmvt import settings</pre></div>
+<div class="cov"><span class="num"><pre> 13</pre></span><pre>from pysmvt import routing</pre></div>
+<div class="cov"><span class="num"><pre> 14</pre></span><pre>from pysmvt.utils.filesystem import mkdirs</pre></div>
+<div class="skip"><span class="num"><pre> 15</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 16</pre></span><pre>class HttpRequestLogger(object):</pre></div>
+<div class="cov"><span class="num"><pre> 17</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre> 18</pre></span><pre>        Logs the full HTTP request to text files for debugging purposes</pre></div>
+<div class="skip"><span class="num"><pre> 19</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 20</pre></span><pre>        Note: should only be used low-request applications and/or with filters.</pre></div>
+<div class="skip"><span class="num"><pre> 21</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 22</pre></span><pre>        Example (&lt;project&gt;/applications.py):</pre></div>
+<div class="skip"><span class="num"><pre> 23</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 24</pre></span><pre>            def make_wsgi(profile='Default'):</pre></div>
+<div class="skip"><span class="num"><pre> 25</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 26</pre></span><pre>                config.appinit(settingsmod, profile)</pre></div>
+<div class="skip"><span class="num"><pre> 27</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 28</pre></span><pre>                app = WSGIApp()</pre></div>
+<div class="skip"><span class="num"><pre> 29</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 30</pre></span><pre>                &lt;...snip...&gt;</pre></div>
+<div class="skip"><span class="num"><pre> 31</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 32</pre></span><pre>                app = HttpRequestLogger(app, enabled=True, path_info_filter='files/add', request_method_filter='post')</pre></div>
+<div class="skip"><span class="num"><pre> 33</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 34</pre></span><pre>                return app</pre></div>
+<div class="skip"><span class="num"><pre> 35</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 36</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre> 37</pre></span><pre>    def __init__(self, application, enabled=False, path_info_filter=None, request_method_filter=None ):</pre></div>
+<div class="nocov"><span class="num"><pre> 38</pre></span><pre>        self.log_dir = path.join(settings.dirs.logs, 'http_requests')</pre></div>
+<div class="nocov"><span class="num"><pre> 39</pre></span><pre>        mkdirs(self.log_dir)</pre></div>
+<div class="nocov"><span class="num"><pre> 40</pre></span><pre>        self.application = application</pre></div>
+<div class="nocov"><span class="num"><pre> 41</pre></span><pre>        self.enabled = enabled</pre></div>
+<div class="nocov"><span class="num"><pre> 42</pre></span><pre>        self.pi_filter = path_info_filter</pre></div>
+<div class="nocov"><span class="num"><pre> 43</pre></span><pre>        self.rm_filter = request_method_filter</pre></div>
+<div class="skip"><span class="num"><pre> 44</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 45</pre></span><pre>    def __call__(self, environ, start_response):</pre></div>
+<div class="nocov"><span class="num"><pre> 46</pre></span><pre>        if self.enabled:</pre></div>
+<div class="nocov"><span class="num"><pre> 47</pre></span><pre>            self.headers = EnvironHeaders(environ)</pre></div>
+<div class="nocov"><span class="num"><pre> 48</pre></span><pre>            should_log = True</pre></div>
+<div class="nocov"><span class="num"><pre> 49</pre></span><pre>            if self.pi_filter is not None and self.pi_filter not in environ['PATH_INFO']:</pre></div>
+<div class="nocov"><span class="num"><pre> 50</pre></span><pre>                should_log = False</pre></div>
+<div class="nocov"><span class="num"><pre> 51</pre></span><pre>            if self.rm_filter is not None and environ['REQUEST_METHOD'].lower() not in map(lambda x: x.lower(), tolist(self.rm_filter)):</pre></div>
+<div class="nocov"><span class="num"><pre> 52</pre></span><pre>                should_log = False</pre></div>
+<div class="nocov"><span class="num"><pre> 53</pre></span><pre>            if should_log:</pre></div>
+<div class="nocov"><span class="num"><pre> 54</pre></span><pre>                wsgi_input = self.replace_wsgi_input(environ)</pre></div>
+<div class="nocov"><span class="num"><pre> 55</pre></span><pre>                fname = '%s_%s' % (time.time(), randchars())</pre></div>
+<div class="nocov"><span class="num"><pre> 56</pre></span><pre>                fh = open(path.join(self.log_dir, fname), 'wb+')</pre></div>
+<div class="nocov"><span class="num"><pre> 57</pre></span><pre>                try:</pre></div>
+<div class="nocov"><span class="num"><pre> 58</pre></span><pre>                    fh.write(pformat(environ))</pre></div>
+<div class="nocov"><span class="num"><pre> 59</pre></span><pre>                    fh.write('\n')</pre></div>
+<div class="nocov"><span class="num"><pre> 60</pre></span><pre>                    fh.write(wsgi_input.read())</pre></div>
+<div class="nocov"><span class="num"><pre> 61</pre></span><pre>                    wsgi_input.seek(0)</pre></div>
+<div class="nocov"><span class="num"><pre> 62</pre></span><pre>                finally:</pre></div>
+<div class="nocov"><span class="num"><pre> 63</pre></span><pre>                    fh.close()</pre></div>
+<div class="nocov"><span class="num"><pre> 64</pre></span><pre>        return self.application(environ, start_response)</pre></div>
+<div class="skip"><span class="num"><pre> 65</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 66</pre></span><pre>    def replace_wsgi_input(self, environ):</pre></div>
+<div class="nocov"><span class="num"><pre> 67</pre></span><pre>        content_length = self.headers.get('content-length', type=int)</pre></div>
+<div class="nocov"><span class="num"><pre> 68</pre></span><pre>        limited_stream = LimitedStream(environ['wsgi.input'], content_length)</pre></div>
+<div class="nocov"><span class="num"><pre> 69</pre></span><pre>        if content_length is not None and content_length &gt; 1024 * 500:</pre></div>
+<div class="nocov"><span class="num"><pre> 70</pre></span><pre>            wsgi_input = TemporaryFile('wb+')</pre></div>
+<div class="nocov"><span class="num"><pre> 71</pre></span><pre>        else:</pre></div>
+<div class="nocov"><span class="num"><pre> 72</pre></span><pre>            wsgi_input = StringIO()</pre></div>
+<div class="nocov"><span class="num"><pre> 73</pre></span><pre>        wsgi_input.write(limited_stream.read())</pre></div>
+<div class="nocov"><span class="num"><pre> 74</pre></span><pre>        wsgi_input.seek(0)</pre></div>
+<div class="nocov"><span class="num"><pre> 75</pre></span><pre>        environ['wsgi.input'] = wsgi_input</pre></div>
+<div class="nocov"><span class="num"><pre> 76</pre></span><pre>        return environ['wsgi.input']</pre></div>
+<div class="skip"><span class="num"><pre> 77</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 78</pre></span><pre>def full_wsgi_stack(app):</pre></div>
+<div class="cov"><span class="num"><pre> 79</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre> 80</pre></span><pre>        returns the WSGIApp wrapped in common middleware</pre></div>
+<div class="cov"><span class="num"><pre> 81</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="skip"><span class="num"><pre> 82</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 83</pre></span><pre>    settings = app.settings</pre></div>
+<div class="skip"><span class="num"><pre> 84</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 85</pre></span><pre>    if settings.beaker.enabled:</pre></div>
+<div class="cov"><span class="num"><pre> 86</pre></span><pre>        app = SessionMiddleware(app, **dict(settings.beaker))</pre></div>
+<div class="skip"><span class="num"><pre> 87</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 88</pre></span><pre>    app = RegistryManager(app)</pre></div>
+<div class="skip"><span class="num"><pre> 89</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre> 90</pre></span><pre>    # serve static files from static directory</pre></div>
+<div class="cov"><span class="num"><pre> 91</pre></span><pre>    if settings.static_files.enabled:</pre></div>
+<div class="cov"><span class="num"><pre> 92</pre></span><pre>        app = SharedDataMiddleware(app, {routing.add_prefix('/static/') : settings.dirs.static})</pre></div>
+<div class="skip"><span class="num"><pre> 93</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre> 94</pre></span><pre>    # show nice stack traces and debug output if enabled</pre></div>
+<div class="cov"><span class="num"><pre> 95</pre></span><pre>    if settings.debugger.enabled:</pre></div>
+<div class="nocov"><span class="num"><pre> 96</pre></span><pre>        app = DebuggedApplication(app, evalex=settings.debugger.interactive)</pre></div>
+<div class="skip"><span class="num"><pre> 97</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre> 98</pre></span><pre>    # log http requests, use sparingly on production servers</pre></div>
+<div class="cov"><span class="num"><pre> 99</pre></span><pre>    if settings.logs.http_requests.enabled:</pre></div>
+<div class="nocov"><span class="num"><pre>100</pre></span><pre>        app = HttpRequestLogger(app, True,</pre></div>
+<div class="nocov"><span class="num"><pre>101</pre></span><pre>                settings.logs.http_requests.filters.path_info,</pre></div>
+<div class="nocov"><span class="num"><pre>102</pre></span><pre>                settings.logs.http_requests.filters.request_method)</pre></div>
+<div class="skip"><span class="num"><pre>103</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>104</pre></span><pre>    return app</pre></div>
+<div class="skip"><span class="num"><pre>105</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>106</pre></span><pre>def minimal_wsgi_stack(app):</pre></div>
+<div class="cov"><span class="num"><pre>107</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>108</pre></span><pre>        returns a WSGI application wrapped in minimal middleware, mostly useful</pre></div>
+<div class="cov"><span class="num"><pre>109</pre></span><pre>        for internal testing</pre></div>
+<div class="cov"><span class="num"><pre>110</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>111</pre></span><pre>    app = RegistryManager(app)</pre></div>
+<div class="cov"><span class="num"><pre>112</pre></span><pre>    return app</pre></div>
+<div class="skip"><span class="num"><pre>113</pre></span><pre></pre></div>
+</div>
+</body>
+</html>

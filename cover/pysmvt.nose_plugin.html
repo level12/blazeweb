@@ -1,0 +1,106 @@
+<html>
+<head>
+<title>pysmvt.nose_plugin</title>
+</head>
+<body>
+pysmvt.nose_plugin
+<style>
+.coverage pre {float: left; margin: 0px 1em; border: none;
+               padding: 0px; }
+.num pre { margin: 0px }
+.nocov, .nocov pre {background-color: #faa}
+.cov, .cov pre {background-color: #cfc}
+div.coverage div { clear: both; height: 1.1em}
+</style>
+<div class="stats">
+Covered: 4 lines<br/>
+Missed: 58 lines<br/>
+Skipped 19 lines<br/>
+Percent: 6 %<br/>
+
+</div>
+<div class="coverage">
+<div class="cov"><span class="num"><pre> 1</pre></span><pre>&quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre> 2</pre></span><pre>This needs to go in its own mode so that we can avoid any pysmvt imports unless</pre></div>
+<div class="cov"><span class="num"><pre> 3</pre></span><pre>the plugin is active.  This helps with test coverage of pysmvt.</pre></div>
+<div class="cov"><span class="num"><pre> 4</pre></span><pre>&quot;&quot;&quot;</pre></div>
+<div class="skip"><span class="num"><pre> 5</pre></span><pre></pre></div>
+<div class="nocov"><span class="num"><pre> 6</pre></span><pre>import os</pre></div>
+<div class="skip"><span class="num"><pre> 7</pre></span><pre></pre></div>
+<div class="nocov"><span class="num"><pre> 8</pre></span><pre>import nose.plugins</pre></div>
+<div class="nocov"><span class="num"><pre> 9</pre></span><pre>from pysutils import tolist</pre></div>
+<div class="skip"><span class="num"><pre>10</pre></span><pre></pre></div>
+<div class="nocov"><span class="num"><pre>11</pre></span><pre>class InitAppPlugin(nose.plugins.Plugin):</pre></div>
+<div class="nocov"><span class="num"><pre>12</pre></span><pre>    opt_app_profile = 'pysmvt_profile'</pre></div>
+<div class="nocov"><span class="num"><pre>13</pre></span><pre>    val_app_profile = None</pre></div>
+<div class="nocov"><span class="num"><pre>14</pre></span><pre>    opt_app_name = 'pysmvt_name'</pre></div>
+<div class="nocov"><span class="num"><pre>15</pre></span><pre>    val_app_name = None</pre></div>
+<div class="nocov"><span class="num"><pre>16</pre></span><pre>    opt_disable = 'pysmvt_disable'</pre></div>
+<div class="nocov"><span class="num"><pre>17</pre></span><pre>    val_disable = False</pre></div>
+<div class="nocov"><span class="num"><pre>18</pre></span><pre>    opt_debug = 'pysmvt_debug'</pre></div>
+<div class="nocov"><span class="num"><pre>19</pre></span><pre>    val_debug = False</pre></div>
+<div class="skip"><span class="num"><pre>20</pre></span><pre></pre></div>
+<div class="nocov"><span class="num"><pre>21</pre></span><pre>    def add_options(self, parser, env=os.environ):</pre></div>
+<div class="nocov"><span class="num"><pre>22</pre></span><pre>        &quot;&quot;&quot;Add command-line options for this plugin&quot;&quot;&quot;</pre></div>
+<div class="nocov"><span class="num"><pre>23</pre></span><pre>        env_opt = 'NOSE_WITH_%s' % self.name.upper()</pre></div>
+<div class="nocov"><span class="num"><pre>24</pre></span><pre>        env_opt.replace('-', '_')</pre></div>
+<div class="skip"><span class="num"><pre>25</pre></span><pre></pre></div>
+<div class="nocov"><span class="num"><pre>26</pre></span><pre>        parser.add_option(&quot;--pysmvt-profile&quot;,</pre></div>
+<div class="nocov"><span class="num"><pre>27</pre></span><pre>                          dest=self.opt_app_profile, type=&quot;string&quot;,</pre></div>
+<div class="nocov"><span class="num"><pre>28</pre></span><pre>                          default=&quot;Test&quot;,</pre></div>
+<div class="nocov"><span class="num"><pre>29</pre></span><pre>                          help=&quot;The name of the test profile in settings.py&quot;</pre></div>
+<div class="nocov"><span class="num"><pre>30</pre></span><pre>                        )</pre></div>
+<div class="skip"><span class="num"><pre>31</pre></span><pre></pre></div>
+<div class="nocov"><span class="num"><pre>32</pre></span><pre>        parser.add_option(&quot;--pysmvt-appname&quot;,</pre></div>
+<div class="nocov"><span class="num"><pre>33</pre></span><pre>                          dest=self.opt_app_name, type=&quot;string&quot;,</pre></div>
+<div class="nocov"><span class="num"><pre>34</pre></span><pre>                          help=&quot;The name of the application's package, defaults&quot;</pre></div>
+<div class="nocov"><span class="num"><pre>35</pre></span><pre>                          &quot; to top package of current working directory&quot;</pre></div>
+<div class="nocov"><span class="num"><pre>36</pre></span><pre>                        )</pre></div>
+<div class="skip"><span class="num"><pre>37</pre></span><pre></pre></div>
+<div class="nocov"><span class="num"><pre>38</pre></span><pre>        parser.add_option(&quot;--pysmvt-disable&quot;,</pre></div>
+<div class="nocov"><span class="num"><pre>39</pre></span><pre>                          dest=self.opt_disable,</pre></div>
+<div class="nocov"><span class="num"><pre>40</pre></span><pre>                          action=&quot;store_true&quot;,</pre></div>
+<div class="nocov"><span class="num"><pre>41</pre></span><pre>                          help=&quot;Disable plugin&quot;</pre></div>
+<div class="nocov"><span class="num"><pre>42</pre></span><pre>                        )</pre></div>
+<div class="skip"><span class="num"><pre>43</pre></span><pre></pre></div>
+<div class="nocov"><span class="num"><pre>44</pre></span><pre>        parser.add_option(&quot;--pysmvt-debug&quot;,</pre></div>
+<div class="nocov"><span class="num"><pre>45</pre></span><pre>                          dest=self.opt_debug,</pre></div>
+<div class="nocov"><span class="num"><pre>46</pre></span><pre>                          action=&quot;store_true&quot;,</pre></div>
+<div class="nocov"><span class="num"><pre>47</pre></span><pre>                          help=&quot;Disable plugin&quot;</pre></div>
+<div class="nocov"><span class="num"><pre>48</pre></span><pre>                        )</pre></div>
+<div class="skip"><span class="num"><pre>49</pre></span><pre></pre></div>
+<div class="nocov"><span class="num"><pre>50</pre></span><pre>    def configure(self, options, conf):</pre></div>
+<div class="nocov"><span class="num"><pre>51</pre></span><pre>        &quot;&quot;&quot;Configure the plugin&quot;&quot;&quot;</pre></div>
+<div class="nocov"><span class="num"><pre>52</pre></span><pre>        self.val_disable = getattr(options, self.opt_disable, False)</pre></div>
+<div class="nocov"><span class="num"><pre>53</pre></span><pre>        if self.val_disable:</pre></div>
+<div class="nocov"><span class="num"><pre>54</pre></span><pre>            return</pre></div>
+<div class="skip"><span class="num"><pre>55</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre>56</pre></span><pre>        # import here so we can avoid test coverage issues</pre></div>
+<div class="nocov"><span class="num"><pre>57</pre></span><pre>        from pysmvt import ag, settings</pre></div>
+<div class="nocov"><span class="num"><pre>58</pre></span><pre>        from pysmvt.hierarchy import findobj</pre></div>
+<div class="nocov"><span class="num"><pre>59</pre></span><pre>        from pysmvt.scripting import load_current_app, UsageError</pre></div>
+<div class="skip"><span class="num"><pre>60</pre></span><pre></pre></div>
+<div class="nocov"><span class="num"><pre>61</pre></span><pre>        if hasattr(options, self.opt_app_profile):</pre></div>
+<div class="nocov"><span class="num"><pre>62</pre></span><pre>            self.val_app_profile = getattr(options, self.opt_app_profile)</pre></div>
+<div class="nocov"><span class="num"><pre>63</pre></span><pre>        if hasattr(options, self.opt_app_name) and getattr(options, self.opt_app_name):</pre></div>
+<div class="nocov"><span class="num"><pre>64</pre></span><pre>            self.val_app_name = getattr(options, self.opt_app_name)</pre></div>
+<div class="nocov"><span class="num"><pre>65</pre></span><pre>        try:</pre></div>
+<div class="nocov"><span class="num"><pre>66</pre></span><pre>            _, _, _, wsgiapp = load_current_app(self.val_app_name, self.val_app_profile)</pre></div>
+<div class="skip"><span class="num"><pre>67</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre>68</pre></span><pre>            # make the app available to the tests</pre></div>
+<div class="nocov"><span class="num"><pre>69</pre></span><pre>            ag.wsgiapp = wsgiapp</pre></div>
+<div class="skip"><span class="num"><pre>70</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre>71</pre></span><pre>            # an application can define functions to be called after the app</pre></div>
+<div class="skip"><span class="num"><pre>72</pre></span><pre>            # is initialized but before any test inspection is done or tests</pre></div>
+<div class="skip"><span class="num"><pre>73</pre></span><pre>            # are ran.  We call those functions here:</pre></div>
+<div class="nocov"><span class="num"><pre>74</pre></span><pre>            for callstring in tolist(settings.testing.init_callables):</pre></div>
+<div class="nocov"><span class="num"><pre>75</pre></span><pre>                tocall = findobj(callstring)</pre></div>
+<div class="nocov"><span class="num"><pre>76</pre></span><pre>                tocall()</pre></div>
+<div class="nocov"><span class="num"><pre>77</pre></span><pre>        except UsageError, e:</pre></div>
+<div class="nocov"><span class="num"><pre>78</pre></span><pre>            if options.pysmvt_debug:</pre></div>
+<div class="nocov"><span class="num"><pre>79</pre></span><pre>                raise</pre></div>
+<div class="nocov"><span class="num"><pre>80</pre></span><pre>            self.val_disable = True</pre></div>
+<div class="skip"><span class="num"><pre>81</pre></span><pre></pre></div>
+</div>
+</body>
+</html>

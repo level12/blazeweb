@@ -1,0 +1,171 @@
+<html>
+<head>
+<title>pysmvt.routing</title>
+</head>
+<body>
+pysmvt.routing
+<style>
+.coverage pre {float: left; margin: 0px 1em; border: none;
+               padding: 0px; }
+.num pre { margin: 0px }
+.nocov, .nocov pre {background-color: #faa}
+.cov, .cov pre {background-color: #cfc}
+div.coverage div { clear: both; height: 1.1em}
+</style>
+<div class="stats">
+Covered: 112 lines<br/>
+Missed: 5 lines<br/>
+Skipped 29 lines<br/>
+Percent: 95 %<br/>
+
+</div>
+<div class="coverage">
+<div class="cov"><span class="num"><pre>  1</pre></span><pre>from urlparse import urlparse</pre></div>
+<div class="cov"><span class="num"><pre>  2</pre></span><pre>from pysmvt import settings, rg</pre></div>
+<div class="cov"><span class="num"><pre>  3</pre></span><pre>from werkzeug import Href, MultiDict</pre></div>
+<div class="cov"><span class="num"><pre>  4</pre></span><pre>from werkzeug.routing import Rule, RequestRedirect</pre></div>
+<div class="cov"><span class="num"><pre>  5</pre></span><pre>from werkzeug.exceptions import NotFound, MethodNotAllowed</pre></div>
+<div class="cov"><span class="num"><pre>  6</pre></span><pre>from werkzeug.wrappers import BaseRequest</pre></div>
+<div class="cov"><span class="num"><pre>  7</pre></span><pre>from pysmvt.exceptions import SettingsError, ProgrammingError</pre></div>
+<div class="skip"><span class="num"><pre>  8</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>  9</pre></span><pre>__all__ = [</pre></div>
+<div class="cov"><span class="num"><pre> 10</pre></span><pre>    'Rule',</pre></div>
+<div class="cov"><span class="num"><pre> 11</pre></span><pre>    'url_for',</pre></div>
+<div class="cov"><span class="num"><pre> 12</pre></span><pre>    'style_url',</pre></div>
+<div class="cov"><span class="num"><pre> 13</pre></span><pre>    'js_url',</pre></div>
+<div class="cov"><span class="num"><pre> 14</pre></span><pre>    'add_prefix',</pre></div>
+<div class="cov"><span class="num"><pre> 15</pre></span><pre>    'current_url'</pre></div>
+<div class="cov"><span class="num"><pre> 16</pre></span><pre>]</pre></div>
+<div class="skip"><span class="num"><pre> 17</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 18</pre></span><pre>def url_for(endpoint, _external=False, _https=None, **values):</pre></div>
+<div class="cov"><span class="num"><pre> 19</pre></span><pre>    if _https is not None:</pre></div>
+<div class="cov"><span class="num"><pre> 20</pre></span><pre>        _external = True</pre></div>
+<div class="cov"><span class="num"><pre> 21</pre></span><pre>    url = rg.urladapter.build(endpoint, values, force_external=_external)</pre></div>
+<div class="cov"><span class="num"><pre> 22</pre></span><pre>    if _https and url.startswith('http:'):</pre></div>
+<div class="cov"><span class="num"><pre> 23</pre></span><pre>        url = url.replace('http:', 'https:', 1)</pre></div>
+<div class="cov"><span class="num"><pre> 24</pre></span><pre>    elif _https == False and url.startswith('https:'):</pre></div>
+<div class="skip"><span class="num"><pre> 25</pre></span><pre>        # need to specify _external=True for this to fire</pre></div>
+<div class="cov"><span class="num"><pre> 26</pre></span><pre>        url = url.replace('https:', 'http:', 1)</pre></div>
+<div class="cov"><span class="num"><pre> 27</pre></span><pre>    return url</pre></div>
+<div class="skip"><span class="num"><pre> 28</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 29</pre></span><pre>def static_url(endpoint, file, app = None):</pre></div>
+<div class="cov"><span class="num"><pre> 30</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre> 31</pre></span><pre>        all this does is remove app right now, but we are anticipating:</pre></div>
+<div class="cov"><span class="num"><pre> 32</pre></span><pre>        https://apache.rcslocal.com:8443/projects/pysmvt/ticket/40</pre></div>
+<div class="cov"><span class="num"><pre> 33</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre> 34</pre></span><pre>    return url_for(endpoint, file=file)</pre></div>
+<div class="skip"><span class="num"><pre> 35</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 36</pre></span><pre>def style_url(file, app = None):</pre></div>
+<div class="cov"><span class="num"><pre> 37</pre></span><pre>    endpoint = 'styles'</pre></div>
+<div class="cov"><span class="num"><pre> 38</pre></span><pre>    return static_url(endpoint, file=file, app=app)</pre></div>
+<div class="skip"><span class="num"><pre> 39</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 40</pre></span><pre>def js_url(file, app = None):</pre></div>
+<div class="cov"><span class="num"><pre> 41</pre></span><pre>    endpoint = 'javascript'</pre></div>
+<div class="cov"><span class="num"><pre> 42</pre></span><pre>    return static_url(endpoint, file=file, app=app)</pre></div>
+<div class="skip"><span class="num"><pre> 43</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 44</pre></span><pre>def add_prefix(path):</pre></div>
+<div class="cov"><span class="num"><pre> 45</pre></span><pre>    if settings.routing.prefix:</pre></div>
+<div class="nocov"><span class="num"><pre> 46</pre></span><pre>        return '/%s/%s' % (settings.routing.prefix.strip('/'), path.lstrip('/'))</pre></div>
+<div class="cov"><span class="num"><pre> 47</pre></span><pre>    return path</pre></div>
+<div class="skip"><span class="num"><pre> 48</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 49</pre></span><pre>def current_url(root_only=False, host_only=False, strip_querystring=False,</pre></div>
+<div class="cov"><span class="num"><pre> 50</pre></span><pre>    strip_host=False, https=None, environ=None, qs_replace=None,</pre></div>
+<div class="cov"><span class="num"><pre> 51</pre></span><pre>    qs_update=None):</pre></div>
+<div class="cov"><span class="num"><pre> 52</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre> 53</pre></span><pre>    Returns strings based on the current URL.  Assume a request with path:</pre></div>
+<div class="skip"><span class="num"><pre> 54</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 55</pre></span><pre>        /news/list?param=foo</pre></div>
+<div class="skip"><span class="num"><pre> 56</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 57</pre></span><pre>    to an application mounted at:</pre></div>
+<div class="skip"><span class="num"><pre> 58</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 59</pre></span><pre>        http://localhost:8080/script</pre></div>
+<div class="skip"><span class="num"><pre> 60</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 61</pre></span><pre>    Then:</pre></div>
+<div class="cov"><span class="num"><pre> 62</pre></span><pre>    :param root_only: set `True` if you only want the root URL.</pre></div>
+<div class="cov"><span class="num"><pre> 63</pre></span><pre>        http://localhost:8080/script/</pre></div>
+<div class="cov"><span class="num"><pre> 64</pre></span><pre>    :param host_only: set `True` if you only want the scheme, host, &amp; port.</pre></div>
+<div class="cov"><span class="num"><pre> 65</pre></span><pre>        http://localhost:8080/</pre></div>
+<div class="cov"><span class="num"><pre> 66</pre></span><pre>    :param strip_querystring: set to `True` if you don't want the querystring.</pre></div>
+<div class="cov"><span class="num"><pre> 67</pre></span><pre>        http://localhost:8080/script/news/list</pre></div>
+<div class="cov"><span class="num"><pre> 68</pre></span><pre>    :param strip_host: set to `True` you want to remove the scheme, host, &amp; port:</pre></div>
+<div class="cov"><span class="num"><pre> 69</pre></span><pre>        /script/news/list?param=foo</pre></div>
+<div class="cov"><span class="num"><pre> 70</pre></span><pre>    :param https: None = use schem of current environ; True = force https</pre></div>
+<div class="cov"><span class="num"><pre> 71</pre></span><pre>        scheme; False = force http scheme.  Has no effect if strip_host = True.</pre></div>
+<div class="cov"><span class="num"><pre> 72</pre></span><pre>    :param qs_update: a dict of key/value pairs that will be used to replace</pre></div>
+<div class="cov"><span class="num"><pre> 73</pre></span><pre>        or add values to the current query string arguments.</pre></div>
+<div class="cov"><span class="num"><pre> 74</pre></span><pre>    :param qs_replace: a dict of key/value pairs that will be used to replace</pre></div>
+<div class="cov"><span class="num"><pre> 75</pre></span><pre>        values of the current query string.  Unlike qs_update, if a key is not</pre></div>
+<div class="cov"><span class="num"><pre> 76</pre></span><pre>        present in the currenty query string, it will not be added to the</pre></div>
+<div class="cov"><span class="num"><pre> 77</pre></span><pre>        returned url.</pre></div>
+<div class="cov"><span class="num"><pre> 78</pre></span><pre>    :param environ: the WSGI environment to get the current URL from.  If not</pre></div>
+<div class="cov"><span class="num"><pre> 79</pre></span><pre>        given, the environement from the current request will be used.  This</pre></div>
+<div class="cov"><span class="num"><pre> 80</pre></span><pre>        is mostly for use in our unit tests and probably wouldn't have</pre></div>
+<div class="cov"><span class="num"><pre> 81</pre></span><pre>        much application in normal use.</pre></div>
+<div class="cov"><span class="num"><pre> 82</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre> 83</pre></span><pre>    retval = ''</pre></div>
+<div class="cov"><span class="num"><pre> 84</pre></span><pre>    if environ:</pre></div>
+<div class="cov"><span class="num"><pre> 85</pre></span><pre>        ro = BaseRequest(environ, shallow=True)</pre></div>
+<div class="cov"><span class="num"><pre> 86</pre></span><pre>    else:</pre></div>
+<div class="cov"><span class="num"><pre> 87</pre></span><pre>        ro = rg.request</pre></div>
+<div class="skip"><span class="num"><pre> 88</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 89</pre></span><pre>    if qs_replace or qs_update:</pre></div>
+<div class="cov"><span class="num"><pre> 90</pre></span><pre>        strip_querystring = True</pre></div>
+<div class="skip"><span class="num"><pre> 91</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 92</pre></span><pre>    if root_only:</pre></div>
+<div class="cov"><span class="num"><pre> 93</pre></span><pre>        retval = ro.url_root</pre></div>
+<div class="cov"><span class="num"><pre> 94</pre></span><pre>    elif host_only:</pre></div>
+<div class="cov"><span class="num"><pre> 95</pre></span><pre>        retval = ro.host_url</pre></div>
+<div class="cov"><span class="num"><pre> 96</pre></span><pre>    else:</pre></div>
+<div class="cov"><span class="num"><pre> 97</pre></span><pre>        if strip_querystring:</pre></div>
+<div class="cov"><span class="num"><pre> 98</pre></span><pre>            retval = ro.base_url</pre></div>
+<div class="cov"><span class="num"><pre> 99</pre></span><pre>        else:</pre></div>
+<div class="cov"><span class="num"><pre>100</pre></span><pre>            retval = ro.url</pre></div>
+<div class="cov"><span class="num"><pre>101</pre></span><pre>    if strip_host:</pre></div>
+<div class="cov"><span class="num"><pre>102</pre></span><pre>        retval = retval.replace(ro.host_url.rstrip('/'), '', 1)</pre></div>
+<div class="cov"><span class="num"><pre>103</pre></span><pre>    if not strip_host and https != None:</pre></div>
+<div class="cov"><span class="num"><pre>104</pre></span><pre>        if https and retval.startswith('http://'):</pre></div>
+<div class="nocov"><span class="num"><pre>105</pre></span><pre>            retval = retval.replace('http://', 'https://', 1)</pre></div>
+<div class="cov"><span class="num"><pre>106</pre></span><pre>        elif not https and retval.startswith('https://'):</pre></div>
+<div class="nocov"><span class="num"><pre>107</pre></span><pre>            retval = retval.replace('https://', 'http://', 1)</pre></div>
+<div class="skip"><span class="num"><pre>108</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>109</pre></span><pre>    if qs_update or qs_replace:</pre></div>
+<div class="cov"><span class="num"><pre>110</pre></span><pre>        href = Href(retval, sort=True)</pre></div>
+<div class="cov"><span class="num"><pre>111</pre></span><pre>        args = MultiDict(ro.args)</pre></div>
+<div class="skip"><span class="num"><pre>112</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>113</pre></span><pre>        if qs_update:</pre></div>
+<div class="skip"><span class="num"><pre>114</pre></span><pre>            # convert to md first so that if we have lists in the kwargs, they</pre></div>
+<div class="skip"><span class="num"><pre>115</pre></span><pre>            # are converted appropriately</pre></div>
+<div class="cov"><span class="num"><pre>116</pre></span><pre>            qs_update = MultiDict(qs_update)</pre></div>
+<div class="skip"><span class="num"><pre>117</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>118</pre></span><pre>            for key, value_list in qs_update.iterlists():</pre></div>
+<div class="skip"><span class="num"><pre>119</pre></span><pre>                # multidicts extend, not replace, so we need</pre></div>
+<div class="skip"><span class="num"><pre>120</pre></span><pre>                # to get rid of the key first</pre></div>
+<div class="cov"><span class="num"><pre>121</pre></span><pre>                try:</pre></div>
+<div class="cov"><span class="num"><pre>122</pre></span><pre>                    del args[key]</pre></div>
+<div class="cov"><span class="num"><pre>123</pre></span><pre>                except KeyError:</pre></div>
+<div class="cov"><span class="num"><pre>124</pre></span><pre>                    pass</pre></div>
+<div class="cov"><span class="num"><pre>125</pre></span><pre>                args.setlistdefault(key, []).extend(value_list)</pre></div>
+<div class="skip"><span class="num"><pre>126</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>127</pre></span><pre>        if qs_replace:</pre></div>
+<div class="skip"><span class="num"><pre>128</pre></span><pre>            # convert to md first so that if we have lists in the kwargs, they</pre></div>
+<div class="skip"><span class="num"><pre>129</pre></span><pre>            # are converted appropriately</pre></div>
+<div class="cov"><span class="num"><pre>130</pre></span><pre>            qs_replace = MultiDict(qs_replace)</pre></div>
+<div class="skip"><span class="num"><pre>131</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>132</pre></span><pre>            for key, value_list in qs_replace.iterlists():</pre></div>
+<div class="skip"><span class="num"><pre>133</pre></span><pre>                # multidicts extend, not replace, so we need</pre></div>
+<div class="skip"><span class="num"><pre>134</pre></span><pre>                # to get rid of the key first</pre></div>
+<div class="cov"><span class="num"><pre>135</pre></span><pre>                try:</pre></div>
+<div class="cov"><span class="num"><pre>136</pre></span><pre>                    del args[key]</pre></div>
+<div class="cov"><span class="num"><pre>137</pre></span><pre>                    args.setlistdefault(key, []).extend(value_list)</pre></div>
+<div class="cov"><span class="num"><pre>138</pre></span><pre>                except KeyError:</pre></div>
+<div class="cov"><span class="num"><pre>139</pre></span><pre>                    pass</pre></div>
+<div class="skip"><span class="num"><pre>140</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>141</pre></span><pre>        return href(args)</pre></div>
+<div class="cov"><span class="num"><pre>142</pre></span><pre>    elif qs_update:</pre></div>
+<div class="nocov"><span class="num"><pre>143</pre></span><pre>        href = Href(retval, sort=True)</pre></div>
+<div class="nocov"><span class="num"><pre>144</pre></span><pre>        return href(MultiDict(querystring_new))</pre></div>
+<div class="cov"><span class="num"><pre>145</pre></span><pre>    return retval</pre></div>
+<div class="skip"><span class="num"><pre>146</pre></span><pre></pre></div>
+</div>
+</body>
+</html>

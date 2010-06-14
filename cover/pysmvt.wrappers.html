@@ -1,0 +1,105 @@
+<html>
+<head>
+<title>pysmvt.wrappers</title>
+</head>
+<body>
+pysmvt.wrappers
+<style>
+.coverage pre {float: left; margin: 0px 1em; border: none;
+               padding: 0px; }
+.num pre { margin: 0px }
+.nocov, .nocov pre {background-color: #faa}
+.cov, .cov pre {background-color: #cfc}
+div.coverage div { clear: both; height: 1.1em}
+</style>
+<div class="stats">
+Covered: 56 lines<br/>
+Missed: 6 lines<br/>
+Skipped 18 lines<br/>
+Percent: 90 %<br/>
+
+</div>
+<div class="coverage">
+<div class="cov"><span class="num"><pre> 1</pre></span><pre>from pysmvt import rg</pre></div>
+<div class="cov"><span class="num"><pre> 2</pre></span><pre>from werkzeug import BaseRequest as WerkBaseRequest, BaseResponse, ResponseStreamMixin, MultiDict, \</pre></div>
+<div class="cov"><span class="num"><pre> 3</pre></span><pre>    EnvironBuilder</pre></div>
+<div class="cov"><span class="num"><pre> 4</pre></span><pre>from pysmvt.utils import registry_has_object</pre></div>
+<div class="skip"><span class="num"><pre> 5</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 6</pre></span><pre>class BaseRequest(WerkBaseRequest):</pre></div>
+<div class="skip"><span class="num"><pre> 7</pre></span><pre>    # we want mutable request objects</pre></div>
+<div class="cov"><span class="num"><pre> 8</pre></span><pre>    parameter_storage_class = MultiDict</pre></div>
+<div class="skip"><span class="num"><pre> 9</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>10</pre></span><pre>class Request(BaseRequest):</pre></div>
+<div class="cov"><span class="num"><pre>11</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>12</pre></span><pre>    Simple request subclass that allows to bind the object to the</pre></div>
+<div class="cov"><span class="num"><pre>13</pre></span><pre>    current context.</pre></div>
+<div class="cov"><span class="num"><pre>14</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="skip"><span class="num"><pre>15</pre></span><pre>    </pre></div>
+<div class="cov"><span class="num"><pre>16</pre></span><pre>    @classmethod</pre></div>
+<div class="cov"><span class="num"><pre>17</pre></span><pre>    def from_values(cls, data, method='POST', bind_to_context=False, **kwargs):</pre></div>
+<div class="cov"><span class="num"><pre>18</pre></span><pre>        env = EnvironBuilder(method=method, data=data, **kwargs).get_environ()</pre></div>
+<div class="cov"><span class="num"><pre>19</pre></span><pre>        return cls(env, bind_to_context=bind_to_context)</pre></div>
+<div class="skip"><span class="num"><pre>20</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>21</pre></span><pre>    def replace_http_args(self, method='POST', *args, **kwargs):</pre></div>
+<div class="cov"><span class="num"><pre>22</pre></span><pre>        &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>23</pre></span><pre>            using the same parameters as from_values(),</pre></div>
+<div class="cov"><span class="num"><pre>24</pre></span><pre>            creates a new BaseRequest from args and kwargs and then replaces</pre></div>
+<div class="cov"><span class="num"><pre>25</pre></span><pre>            .args, .form, and .files on the current request object with the</pre></div>
+<div class="cov"><span class="num"><pre>26</pre></span><pre>            values from the new request.</pre></div>
+<div class="cov"><span class="num"><pre>27</pre></span><pre>        &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>28</pre></span><pre>        nreq = BaseRequest.from_values(method=method, *args, **kwargs)</pre></div>
+<div class="cov"><span class="num"><pre>29</pre></span><pre>        self.args = nreq.args</pre></div>
+<div class="cov"><span class="num"><pre>30</pre></span><pre>        self.form = nreq.form</pre></div>
+<div class="cov"><span class="num"><pre>31</pre></span><pre>        self.files = nreq.files</pre></div>
+<div class="skip"><span class="num"><pre>32</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>33</pre></span><pre>    def __init__(self, environ, populate_request=True, shallow=False, bind_to_context=True):</pre></div>
+<div class="cov"><span class="num"><pre>34</pre></span><pre>        if bind_to_context:</pre></div>
+<div class="cov"><span class="num"><pre>35</pre></span><pre>            self.bind_to_context()</pre></div>
+<div class="cov"><span class="num"><pre>36</pre></span><pre>        BaseRequest.__init__(self, environ, populate_request, shallow)</pre></div>
+<div class="skip"><span class="num"><pre>37</pre></span><pre>        </pre></div>
+<div class="cov"><span class="num"><pre>38</pre></span><pre>    def bind_to_context(self):</pre></div>
+<div class="cov"><span class="num"><pre>39</pre></span><pre>        if registry_has_object(rg):</pre></div>
+<div class="cov"><span class="num"><pre>40</pre></span><pre>            rg.request = self</pre></div>
+<div class="skip"><span class="num"><pre>41</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>42</pre></span><pre>    @property</pre></div>
+<div class="cov"><span class="num"><pre>43</pre></span><pre>    def is_xhr(self):</pre></div>
+<div class="cov"><span class="num"><pre>44</pre></span><pre>        rw = self.headers.get('X-Requested-With', None)</pre></div>
+<div class="cov"><span class="num"><pre>45</pre></span><pre>        if rw == 'XMLHttpRequest':</pre></div>
+<div class="cov"><span class="num"><pre>46</pre></span><pre>            return True</pre></div>
+<div class="cov"><span class="num"><pre>47</pre></span><pre>        return False</pre></div>
+<div class="skip"><span class="num"><pre>48</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>49</pre></span><pre>class Response(BaseResponse):</pre></div>
+<div class="cov"><span class="num"><pre>50</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>51</pre></span><pre>    Response Object</pre></div>
+<div class="cov"><span class="num"><pre>52</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="skip"><span class="num"><pre>53</pre></span><pre>        </pre></div>
+<div class="cov"><span class="num"><pre>54</pre></span><pre>    default_mimetype = 'text/html'</pre></div>
+<div class="skip"><span class="num"><pre>55</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>56</pre></span><pre>class StreamResponse(Response, ResponseStreamMixin):</pre></div>
+<div class="cov"><span class="num"><pre>57</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>58</pre></span><pre>    Response Object with a .stream method</pre></div>
+<div class="cov"><span class="num"><pre>59</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="skip"><span class="num"><pre>60</pre></span><pre>        </pre></div>
+<div class="cov"><span class="num"><pre>61</pre></span><pre>    default_mimetype = 'application/octet-stream'</pre></div>
+<div class="skip"><span class="num"><pre>62</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre>63</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>64</pre></span><pre>try:</pre></div>
+<div class="cov"><span class="num"><pre>65</pre></span><pre>    import simplejson as json</pre></div>
+<div class="cov"><span class="num"><pre>66</pre></span><pre>    class JSONResponse(Response):</pre></div>
+<div class="skip"><span class="num"><pre>67</pre></span><pre>        </pre></div>
+<div class="cov"><span class="num"><pre>68</pre></span><pre>        default_mimetype = 'application/json'</pre></div>
+<div class="skip"><span class="num"><pre>69</pre></span><pre>        </pre></div>
+<div class="cov"><span class="num"><pre>70</pre></span><pre>        def _get_jsondata(self):</pre></div>
+<div class="nocov"><span class="num"><pre>71</pre></span><pre>            return self.data</pre></div>
+<div class="cov"><span class="num"><pre>72</pre></span><pre>        def _set_jsondata(self, data):</pre></div>
+<div class="nocov"><span class="num"><pre>73</pre></span><pre>            self.data = json.dumps(data)</pre></div>
+<div class="cov"><span class="num"><pre>74</pre></span><pre>        json_data = property(_get_jsondata, _set_jsondata)</pre></div>
+<div class="skip"><span class="num"><pre>75</pre></span><pre>    </pre></div>
+<div class="nocov"><span class="num"><pre>76</pre></span><pre>except ImportError:</pre></div>
+<div class="nocov"><span class="num"><pre>77</pre></span><pre>    class JSONResponse(Response):</pre></div>
+<div class="nocov"><span class="num"><pre>78</pre></span><pre>        def __init__(self, *args, **kwargs):</pre></div>
+<div class="nocov"><span class="num"><pre>79</pre></span><pre>            raise ImportError('simplejson package required to use JSONResponse')</pre></div>
+<div class="skip"><span class="num"><pre>80</pre></span><pre>        </pre></div>
+</div>
+</body>
+</html>

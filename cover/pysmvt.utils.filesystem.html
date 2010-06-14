@@ -1,0 +1,174 @@
+<html>
+<head>
+<title>pysmvt.utils.filesystem</title>
+</head>
+<body>
+pysmvt.utils.filesystem
+<style>
+.coverage pre {float: left; margin: 0px 1em; border: none;
+               padding: 0px; }
+.num pre { margin: 0px }
+.nocov, .nocov pre {background-color: #faa}
+.cov, .cov pre {background-color: #cfc}
+div.coverage div { clear: both; height: 1.1em}
+</style>
+<div class="stats">
+Covered: 104 lines<br/>
+Missed: 17 lines<br/>
+Skipped 28 lines<br/>
+Percent: 85 %<br/>
+
+</div>
+<div class="coverage">
+<div class="cov"><span class="num"><pre>  1</pre></span><pre>&quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>  2</pre></span><pre>Portions of this module were taken from shutil.py in the Python 2.6.5 standard</pre></div>
+<div class="cov"><span class="num"><pre>  3</pre></span><pre>library.</pre></div>
+<div class="skip"><span class="num"><pre>  4</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>  5</pre></span><pre>- modified copytree() to work when the directory exists</pre></div>
+<div class="skip"><span class="num"><pre>  6</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>  7</pre></span><pre>&quot;&quot;&quot;</pre></div>
+<div class="skip"><span class="num"><pre>  8</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>  9</pre></span><pre>import os</pre></div>
+<div class="cov"><span class="num"><pre> 10</pre></span><pre>from os import path</pre></div>
+<div class="cov"><span class="num"><pre> 11</pre></span><pre>from shutil import copy2, copystat, rmtree</pre></div>
+<div class="skip"><span class="num"><pre> 12</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 13</pre></span><pre>from pysutils import NotGiven</pre></div>
+<div class="skip"><span class="num"><pre> 14</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 15</pre></span><pre>from pysmvt import settings</pre></div>
+<div class="cov"><span class="num"><pre> 16</pre></span><pre>from pysmvt.hierarchy import list_plugin_mappings, hm</pre></div>
+<div class="skip"><span class="num"><pre> 17</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 18</pre></span><pre>__all__ = [</pre></div>
+<div class="cov"><span class="num"><pre> 19</pre></span><pre>    'mkdirs',</pre></div>
+<div class="cov"><span class="num"><pre> 20</pre></span><pre>    'copy_static_files',</pre></div>
+<div class="cov"><span class="num"><pre> 21</pre></span><pre>]</pre></div>
+<div class="skip"><span class="num"><pre> 22</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 23</pre></span><pre>class Error(EnvironmentError):</pre></div>
+<div class="cov"><span class="num"><pre> 24</pre></span><pre>    pass</pre></div>
+<div class="skip"><span class="num"><pre> 25</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 26</pre></span><pre>try:</pre></div>
+<div class="cov"><span class="num"><pre> 27</pre></span><pre>    WindowsError</pre></div>
+<div class="cov"><span class="num"><pre> 28</pre></span><pre>except NameError:</pre></div>
+<div class="cov"><span class="num"><pre> 29</pre></span><pre>    WindowsError = None</pre></div>
+<div class="skip"><span class="num"><pre> 30</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 31</pre></span><pre>def mkdirs(newdir, mode=NotGiven):</pre></div>
+<div class="cov"><span class="num"><pre> 32</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre> 33</pre></span><pre>        a &quot;safe&quot; verision of makedirs() that will only create the directory</pre></div>
+<div class="cov"><span class="num"><pre> 34</pre></span><pre>        if it doesn't already exist.  This avoids having to catch an Error</pre></div>
+<div class="cov"><span class="num"><pre> 35</pre></span><pre>        Exception that might be a result of the directory already existing</pre></div>
+<div class="cov"><span class="num"><pre> 36</pre></span><pre>        or might be a result of an error creating the directory.  By checking</pre></div>
+<div class="cov"><span class="num"><pre> 37</pre></span><pre>        for the diretory first, any exception was created by the directory</pre></div>
+<div class="cov"><span class="num"><pre> 38</pre></span><pre>        not being able to be created.</pre></div>
+<div class="cov"><span class="num"><pre> 39</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre> 40</pre></span><pre>    if mode is NotGiven:</pre></div>
+<div class="cov"><span class="num"><pre> 41</pre></span><pre>        mode = settings.default.dir_mode</pre></div>
+<div class="cov"><span class="num"><pre> 42</pre></span><pre>    if os.path.isdir(newdir):</pre></div>
+<div class="cov"><span class="num"><pre> 43</pre></span><pre>        pass</pre></div>
+<div class="cov"><span class="num"><pre> 44</pre></span><pre>    elif os.path.isfile(newdir):</pre></div>
+<div class="nocov"><span class="num"><pre> 45</pre></span><pre>        raise OSError(&quot;a file with the same name as the desired &quot; \</pre></div>
+<div class="nocov"><span class="num"><pre> 46</pre></span><pre>                      &quot;dir, '%s', already exists.&quot; % newdir)</pre></div>
+<div class="cov"><span class="num"><pre> 47</pre></span><pre>    else:</pre></div>
+<div class="cov"><span class="num"><pre> 48</pre></span><pre>        os.makedirs(newdir, mode)</pre></div>
+<div class="skip"><span class="num"><pre> 49</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 50</pre></span><pre>def copy_static_files(delete_existing=False):</pre></div>
+<div class="cov"><span class="num"><pre> 51</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre> 52</pre></span><pre>        copy's files from the apps and plugins to the static directory</pre></div>
+<div class="cov"><span class="num"><pre> 53</pre></span><pre>        defined in the settings.  Files are copied in a hierarchical way</pre></div>
+<div class="cov"><span class="num"><pre> 54</pre></span><pre>        such that apps and plugins lower in priority have their files</pre></div>
+<div class="cov"><span class="num"><pre> 55</pre></span><pre>        overwritten by apps/plugins with higher priority.</pre></div>
+<div class="cov"><span class="num"><pre> 56</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre> 57</pre></span><pre>    statroot = settings.dirs.static</pre></div>
+<div class="skip"><span class="num"><pre> 58</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 59</pre></span><pre>    if delete_existing:</pre></div>
+<div class="cov"><span class="num"><pre> 60</pre></span><pre>        app_stat_path = path.join(statroot, 'app')</pre></div>
+<div class="cov"><span class="num"><pre> 61</pre></span><pre>        if path.exists(app_stat_path):</pre></div>
+<div class="cov"><span class="num"><pre> 62</pre></span><pre>            rmtree(app_stat_path)</pre></div>
+<div class="cov"><span class="num"><pre> 63</pre></span><pre>        plugin_stat_path = path.join(statroot, 'plugins')</pre></div>
+<div class="cov"><span class="num"><pre> 64</pre></span><pre>        if path.exists(plugin_stat_path):</pre></div>
+<div class="cov"><span class="num"><pre> 65</pre></span><pre>            rmtree(plugin_stat_path)</pre></div>
+<div class="skip"><span class="num"><pre> 66</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 67</pre></span><pre>    for app, pname, package in list_plugin_mappings(reverse=True, inc_apps=True):</pre></div>
+<div class="skip"><span class="num"><pre> 68</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 69</pre></span><pre>        package_mod = hm.builtin_import(package or app, fromlist=[''])</pre></div>
+<div class="cov"><span class="num"><pre> 70</pre></span><pre>        pkgdir = path.dirname(package_mod.__file__)</pre></div>
+<div class="cov"><span class="num"><pre> 71</pre></span><pre>        if package or not pname:</pre></div>
+<div class="cov"><span class="num"><pre> 72</pre></span><pre>            srcpath = pkgdir</pre></div>
+<div class="cov"><span class="num"><pre> 73</pre></span><pre>        else:</pre></div>
+<div class="cov"><span class="num"><pre> 74</pre></span><pre>            srcpath = path.join(pkgdir, 'plugins', pname)</pre></div>
+<div class="cov"><span class="num"><pre> 75</pre></span><pre>        srcpath = path.join(srcpath, 'static')</pre></div>
+<div class="cov"><span class="num"><pre> 76</pre></span><pre>        if path.isdir(srcpath):</pre></div>
+<div class="cov"><span class="num"><pre> 77</pre></span><pre>            if not pname:</pre></div>
+<div class="cov"><span class="num"><pre> 78</pre></span><pre>                targetpath = 'app'</pre></div>
+<div class="cov"><span class="num"><pre> 79</pre></span><pre>            else:</pre></div>
+<div class="cov"><span class="num"><pre> 80</pre></span><pre>                targetpath = path.join('plugins', pname)</pre></div>
+<div class="cov"><span class="num"><pre> 81</pre></span><pre>            targetpath = path.join(statroot, targetpath)</pre></div>
+<div class="skip"><span class="num"><pre> 82</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 83</pre></span><pre>            copytree(srcpath, targetpath)</pre></div>
+<div class="skip"><span class="num"><pre> 84</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 85</pre></span><pre>def copytree(src, dst, symlinks=False, ignore=None):</pre></div>
+<div class="cov"><span class="num"><pre> 86</pre></span><pre>    &quot;&quot;&quot;Recursively copy a directory tree using copy2().</pre></div>
+<div class="skip"><span class="num"><pre> 87</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 88</pre></span><pre>    The destination directory must not already exist.</pre></div>
+<div class="cov"><span class="num"><pre> 89</pre></span><pre>    If exception(s) occur, an Error is raised with a list of reasons.</pre></div>
+<div class="skip"><span class="num"><pre> 90</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 91</pre></span><pre>    If the optional symlinks flag is true, symbolic links in the</pre></div>
+<div class="cov"><span class="num"><pre> 92</pre></span><pre>    source tree result in symbolic links in the destination tree; if</pre></div>
+<div class="cov"><span class="num"><pre> 93</pre></span><pre>    it is false, the contents of the files pointed to by symbolic</pre></div>
+<div class="cov"><span class="num"><pre> 94</pre></span><pre>    links are copied.</pre></div>
+<div class="skip"><span class="num"><pre> 95</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 96</pre></span><pre>    The optional ignore argument is a callable. If given, it</pre></div>
+<div class="cov"><span class="num"><pre> 97</pre></span><pre>    is called with the `src` parameter, which is the directory</pre></div>
+<div class="cov"><span class="num"><pre> 98</pre></span><pre>    being visited by copytree(), and `names` which is the list of</pre></div>
+<div class="cov"><span class="num"><pre> 99</pre></span><pre>    `src` contents, as returned by os.listdir():</pre></div>
+<div class="skip"><span class="num"><pre>100</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>101</pre></span><pre>        callable(src, names) -&gt; ignored_names</pre></div>
+<div class="skip"><span class="num"><pre>102</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>103</pre></span><pre>    Since copytree() is called recursively, the callable will be</pre></div>
+<div class="cov"><span class="num"><pre>104</pre></span><pre>    called once for each directory that is copied. It returns a</pre></div>
+<div class="cov"><span class="num"><pre>105</pre></span><pre>    list of names relative to the `src` directory that should</pre></div>
+<div class="cov"><span class="num"><pre>106</pre></span><pre>    not be copied.</pre></div>
+<div class="skip"><span class="num"><pre>107</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>108</pre></span><pre>    XXX Consider this example code rather than the ultimate tool.</pre></div>
+<div class="skip"><span class="num"><pre>109</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>110</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>111</pre></span><pre>    names = os.listdir(src)</pre></div>
+<div class="cov"><span class="num"><pre>112</pre></span><pre>    if ignore is not None:</pre></div>
+<div class="nocov"><span class="num"><pre>113</pre></span><pre>        ignored_names = ignore(src, names)</pre></div>
+<div class="cov"><span class="num"><pre>114</pre></span><pre>    else:</pre></div>
+<div class="cov"><span class="num"><pre>115</pre></span><pre>        ignored_names = set()</pre></div>
+<div class="skip"><span class="num"><pre>116</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>117</pre></span><pre>    mkdirs(dst)</pre></div>
+<div class="cov"><span class="num"><pre>118</pre></span><pre>    errors = []</pre></div>
+<div class="cov"><span class="num"><pre>119</pre></span><pre>    for name in names:</pre></div>
+<div class="cov"><span class="num"><pre>120</pre></span><pre>        if name in ignored_names:</pre></div>
+<div class="nocov"><span class="num"><pre>121</pre></span><pre>            continue</pre></div>
+<div class="cov"><span class="num"><pre>122</pre></span><pre>        srcname = os.path.join(src, name)</pre></div>
+<div class="cov"><span class="num"><pre>123</pre></span><pre>        dstname = os.path.join(dst, name)</pre></div>
+<div class="cov"><span class="num"><pre>124</pre></span><pre>        try:</pre></div>
+<div class="cov"><span class="num"><pre>125</pre></span><pre>            if symlinks and os.path.islink(srcname):</pre></div>
+<div class="nocov"><span class="num"><pre>126</pre></span><pre>                linkto = os.readlink(srcname)</pre></div>
+<div class="nocov"><span class="num"><pre>127</pre></span><pre>                os.symlink(linkto, dstname)</pre></div>
+<div class="cov"><span class="num"><pre>128</pre></span><pre>            elif os.path.isdir(srcname):</pre></div>
+<div class="nocov"><span class="num"><pre>129</pre></span><pre>                copytree(srcname, dstname, symlinks, ignore)</pre></div>
+<div class="cov"><span class="num"><pre>130</pre></span><pre>            else:</pre></div>
+<div class="cov"><span class="num"><pre>131</pre></span><pre>                copy2(srcname, dstname)</pre></div>
+<div class="skip"><span class="num"><pre>132</pre></span><pre>            # XXX What about devices, sockets etc.?</pre></div>
+<div class="nocov"><span class="num"><pre>133</pre></span><pre>        except (IOError, os.error), why:</pre></div>
+<div class="nocov"><span class="num"><pre>134</pre></span><pre>            errors.append((srcname, dstname, str(why)))</pre></div>
+<div class="skip"><span class="num"><pre>135</pre></span><pre>        # catch the Error from the recursive copytree so that we can</pre></div>
+<div class="skip"><span class="num"><pre>136</pre></span><pre>        # continue with other files</pre></div>
+<div class="nocov"><span class="num"><pre>137</pre></span><pre>        except Error, err:</pre></div>
+<div class="nocov"><span class="num"><pre>138</pre></span><pre>            errors.extend(err.args[0])</pre></div>
+<div class="cov"><span class="num"><pre>139</pre></span><pre>    try:</pre></div>
+<div class="cov"><span class="num"><pre>140</pre></span><pre>        copystat(src, dst)</pre></div>
+<div class="nocov"><span class="num"><pre>141</pre></span><pre>    except OSError, why:</pre></div>
+<div class="nocov"><span class="num"><pre>142</pre></span><pre>        if WindowsError is not None and isinstance(why, WindowsError):</pre></div>
+<div class="skip"><span class="num"><pre>143</pre></span><pre>            # Copying file access times may fail on Windows</pre></div>
+<div class="nocov"><span class="num"><pre>144</pre></span><pre>            pass</pre></div>
+<div class="nocov"><span class="num"><pre>145</pre></span><pre>        else:</pre></div>
+<div class="nocov"><span class="num"><pre>146</pre></span><pre>            errors.extend((src, dst, str(why)))</pre></div>
+<div class="cov"><span class="num"><pre>147</pre></span><pre>    if errors:</pre></div>
+<div class="nocov"><span class="num"><pre>148</pre></span><pre>        raise Error, errors</pre></div>
+<div class="skip"><span class="num"><pre>149</pre></span><pre></pre></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<html>
+<head>
+<title>pysmvt.utils.http</title>
+</head>
+<body>
+pysmvt.utils.http
+<style>
+.coverage pre {float: left; margin: 0px 1em; border: none;
+               padding: 0px; }
+.num pre { margin: 0px }
+.nocov, .nocov pre {background-color: #faa}
+.cov, .cov pre {background-color: #cfc}
+div.coverage div { clear: both; height: 1.1em}
+</style>
+<div class="stats">
+Covered: 51 lines<br/>
+Missed: 28 lines<br/>
+Skipped 18 lines<br/>
+Percent: 64 %<br/>
+
+</div>
+<div class="coverage">
+<div class="cov"><span class="num"><pre> 1</pre></span><pre>import urllib</pre></div>
+<div class="cov"><span class="num"><pre> 2</pre></span><pre>from email.Utils import formatdate</pre></div>
+<div class="skip"><span class="num"><pre> 3</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 4</pre></span><pre>from pysmvt.utils.encoding import smart_str, force_unicode</pre></div>
+<div class="cov"><span class="num"><pre> 5</pre></span><pre>from pysmvt.utils.functional import allow_lazy</pre></div>
+<div class="skip"><span class="num"><pre> 6</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 7</pre></span><pre>def urlquote(url, safe='/'):</pre></div>
+<div class="cov"><span class="num"><pre> 8</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre> 9</pre></span><pre>    A version of Python's urllib.quote() function that can operate on unicode</pre></div>
+<div class="cov"><span class="num"><pre>10</pre></span><pre>    strings. The url is first UTF-8 encoded before quoting. The returned string</pre></div>
+<div class="cov"><span class="num"><pre>11</pre></span><pre>    can safely be used as part of an argument to a subsequent iri_to_uri() call</pre></div>
+<div class="cov"><span class="num"><pre>12</pre></span><pre>    without double-quoting occurring.</pre></div>
+<div class="cov"><span class="num"><pre>13</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="nocov"><span class="num"><pre>14</pre></span><pre>    return force_unicode(urllib.quote(smart_str(url), safe))</pre></div>
+<div class="skip"><span class="num"><pre>15</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>16</pre></span><pre>urlquote = allow_lazy(urlquote, unicode)</pre></div>
+<div class="skip"><span class="num"><pre>17</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>18</pre></span><pre>def urlquote_plus(url, safe=''):</pre></div>
+<div class="cov"><span class="num"><pre>19</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>20</pre></span><pre>    A version of Python's urllib.quote_plus() function that can operate on</pre></div>
+<div class="cov"><span class="num"><pre>21</pre></span><pre>    unicode strings. The url is first UTF-8 encoded before quoting. The</pre></div>
+<div class="cov"><span class="num"><pre>22</pre></span><pre>    returned string can safely be used as part of an argument to a subsequent</pre></div>
+<div class="cov"><span class="num"><pre>23</pre></span><pre>    iri_to_uri() call without double-quoting occurring.</pre></div>
+<div class="cov"><span class="num"><pre>24</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="nocov"><span class="num"><pre>25</pre></span><pre>    return force_unicode(urllib.quote_plus(smart_str(url), safe))</pre></div>
+<div class="cov"><span class="num"><pre>26</pre></span><pre>urlquote_plus = allow_lazy(urlquote_plus, unicode)</pre></div>
+<div class="skip"><span class="num"><pre>27</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>28</pre></span><pre>def urlencode(query, doseq=0):</pre></div>
+<div class="cov"><span class="num"><pre>29</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>30</pre></span><pre>    A version of Python's urllib.urlencode() function that can operate on</pre></div>
+<div class="cov"><span class="num"><pre>31</pre></span><pre>    unicode strings. The parameters are first case to UTF-8 encoded strings and</pre></div>
+<div class="cov"><span class="num"><pre>32</pre></span><pre>    then encoded as per normal.</pre></div>
+<div class="cov"><span class="num"><pre>33</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="nocov"><span class="num"><pre>34</pre></span><pre>    if hasattr(query, 'items'):</pre></div>
+<div class="nocov"><span class="num"><pre>35</pre></span><pre>        query = query.items()</pre></div>
+<div class="nocov"><span class="num"><pre>36</pre></span><pre>    return urllib.urlencode(</pre></div>
+<div class="nocov"><span class="num"><pre>37</pre></span><pre>        [(smart_str(k),</pre></div>
+<div class="nocov"><span class="num"><pre>38</pre></span><pre>         isinstance(v, (list,tuple)) and [smart_str(i) for i in v] or smart_str(v))</pre></div>
+<div class="nocov"><span class="num"><pre>39</pre></span><pre>            for k, v in query],</pre></div>
+<div class="nocov"><span class="num"><pre>40</pre></span><pre>        doseq)</pre></div>
+<div class="skip"><span class="num"><pre>41</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>42</pre></span><pre>def cookie_date(epoch_seconds=None):</pre></div>
+<div class="cov"><span class="num"><pre>43</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>44</pre></span><pre>    Formats the time to ensure compatibility with Netscape's cookie standard.</pre></div>
+<div class="skip"><span class="num"><pre>45</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>46</pre></span><pre>    Accepts a floating point number expressed in seconds since the epoch, in</pre></div>
+<div class="cov"><span class="num"><pre>47</pre></span><pre>    UTC - such as that outputted by time.time(). If set to None, defaults to</pre></div>
+<div class="cov"><span class="num"><pre>48</pre></span><pre>    the current time.</pre></div>
+<div class="skip"><span class="num"><pre>49</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>50</pre></span><pre>    Outputs a string in the format 'Wdy, DD-Mon-YYYY HH:MM:SS GMT'.</pre></div>
+<div class="cov"><span class="num"><pre>51</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="nocov"><span class="num"><pre>52</pre></span><pre>    rfcdate = formatdate(epoch_seconds)</pre></div>
+<div class="nocov"><span class="num"><pre>53</pre></span><pre>    return '%s-%s-%s GMT' % (rfcdate[:7], rfcdate[8:11], rfcdate[12:25])</pre></div>
+<div class="skip"><span class="num"><pre>54</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>55</pre></span><pre>def http_date(epoch_seconds=None):</pre></div>
+<div class="cov"><span class="num"><pre>56</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>57</pre></span><pre>    Formats the time to match the RFC1123 date format as specified by HTTP</pre></div>
+<div class="cov"><span class="num"><pre>58</pre></span><pre>    RFC2616 section 3.3.1.</pre></div>
+<div class="skip"><span class="num"><pre>59</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>60</pre></span><pre>    Accepts a floating point number expressed in seconds since the epoch, in</pre></div>
+<div class="cov"><span class="num"><pre>61</pre></span><pre>    UTC - such as that outputted by time.time(). If set to None, defaults to</pre></div>
+<div class="cov"><span class="num"><pre>62</pre></span><pre>    the current time.</pre></div>
+<div class="skip"><span class="num"><pre>63</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>64</pre></span><pre>    Outputs a string in the format 'Wdy, DD Mon YYYY HH:MM:SS GMT'.</pre></div>
+<div class="cov"><span class="num"><pre>65</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="nocov"><span class="num"><pre>66</pre></span><pre>    rfcdate = formatdate(epoch_seconds)</pre></div>
+<div class="nocov"><span class="num"><pre>67</pre></span><pre>    return '%s GMT' % rfcdate[:25]</pre></div>
+<div class="skip"><span class="num"><pre>68</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre>69</pre></span><pre># Base 36 functions: useful for generating compact URLs</pre></div>
+<div class="skip"><span class="num"><pre>70</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>71</pre></span><pre>def base36_to_int(s):</pre></div>
+<div class="cov"><span class="num"><pre>72</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>73</pre></span><pre>    Convertd a base 36 string to an integer</pre></div>
+<div class="cov"><span class="num"><pre>74</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="nocov"><span class="num"><pre>75</pre></span><pre>    return int(s, 36)</pre></div>
+<div class="skip"><span class="num"><pre>76</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>77</pre></span><pre>def int_to_base36(i):</pre></div>
+<div class="cov"><span class="num"><pre>78</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>79</pre></span><pre>    Converts an integer to a base36 string</pre></div>
+<div class="cov"><span class="num"><pre>80</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="nocov"><span class="num"><pre>81</pre></span><pre>    digits = &quot;0123456789abcdefghijklmnopqrstuvwxyz&quot;</pre></div>
+<div class="nocov"><span class="num"><pre>82</pre></span><pre>    factor = 0</pre></div>
+<div class="skip"><span class="num"><pre>83</pre></span><pre>    # Find starting factor</pre></div>
+<div class="nocov"><span class="num"><pre>84</pre></span><pre>    while True:</pre></div>
+<div class="nocov"><span class="num"><pre>85</pre></span><pre>        factor += 1</pre></div>
+<div class="nocov"><span class="num"><pre>86</pre></span><pre>        if i &lt; 36 ** factor:</pre></div>
+<div class="nocov"><span class="num"><pre>87</pre></span><pre>            factor -= 1</pre></div>
+<div class="nocov"><span class="num"><pre>88</pre></span><pre>            break</pre></div>
+<div class="nocov"><span class="num"><pre>89</pre></span><pre>    base36 = []</pre></div>
+<div class="skip"><span class="num"><pre>90</pre></span><pre>    # Construct base36 representation</pre></div>
+<div class="nocov"><span class="num"><pre>91</pre></span><pre>    while factor &gt;= 0:</pre></div>
+<div class="nocov"><span class="num"><pre>92</pre></span><pre>        j = 36 ** factor</pre></div>
+<div class="nocov"><span class="num"><pre>93</pre></span><pre>        base36.append(digits[i / j])</pre></div>
+<div class="nocov"><span class="num"><pre>94</pre></span><pre>        i = i % j</pre></div>
+<div class="nocov"><span class="num"><pre>95</pre></span><pre>        factor -= 1</pre></div>
+<div class="nocov"><span class="num"><pre>96</pre></span><pre>    return ''.join(base36)</pre></div>
+<div class="skip"><span class="num"><pre>97</pre></span><pre></pre></div>
+</div>
+</body>
+</html>

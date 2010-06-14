@@ -1,0 +1,191 @@
+<html>
+<head>
+<title>pysmvt.utils.html</title>
+</head>
+<body>
+pysmvt.utils.html
+<style>
+.coverage pre {float: left; margin: 0px 1em; border: none;
+               padding: 0px; }
+.num pre { margin: 0px }
+.nocov, .nocov pre {background-color: #faa}
+.cov, .cov pre {background-color: #cfc}
+div.coverage div { clear: both; height: 1.1em}
+</style>
+<div class="stats">
+Covered: 70 lines<br/>
+Missed: 68 lines<br/>
+Skipped 28 lines<br/>
+Percent: 50 %<br/>
+
+</div>
+<div class="coverage">
+<div class="cov"><span class="num"><pre>  1</pre></span><pre>&quot;&quot;&quot;HTML utilities suitable for global use.&quot;&quot;&quot;</pre></div>
+<div class="skip"><span class="num"><pre>  2</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>  3</pre></span><pre>import re</pre></div>
+<div class="cov"><span class="num"><pre>  4</pre></span><pre>import string</pre></div>
+<div class="skip"><span class="num"><pre>  5</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>  6</pre></span><pre>from pysmvt.utils.safestring import SafeData, mark_safe</pre></div>
+<div class="cov"><span class="num"><pre>  7</pre></span><pre>from pysmvt.utils.encoding import force_unicode</pre></div>
+<div class="cov"><span class="num"><pre>  8</pre></span><pre>from pysmvt.utils.functional import allow_lazy</pre></div>
+<div class="cov"><span class="num"><pre>  9</pre></span><pre>from pysmvt.utils.http import urlquote</pre></div>
+<div class="skip"><span class="num"><pre> 10</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre> 11</pre></span><pre># Configuration for urlize() function.</pre></div>
+<div class="cov"><span class="num"><pre> 12</pre></span><pre>LEADING_PUNCTUATION  = ['(', '&lt;', '&amp;lt;']</pre></div>
+<div class="cov"><span class="num"><pre> 13</pre></span><pre>TRAILING_PUNCTUATION = ['.', ',', ')', '&gt;', '\n', '&amp;gt;']</pre></div>
+<div class="skip"><span class="num"><pre> 14</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre> 15</pre></span><pre># List of possible strings used for bullets in bulleted lists.</pre></div>
+<div class="cov"><span class="num"><pre> 16</pre></span><pre>DOTS = ['&amp;middot;', '*', '\xe2\x80\xa2', '&amp;#149;', '&amp;bull;', '&amp;#8226;']</pre></div>
+<div class="skip"><span class="num"><pre> 17</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 18</pre></span><pre>unencoded_ampersands_re = re.compile(r'&amp;(?!(\w+|#\d+);)')</pre></div>
+<div class="cov"><span class="num"><pre> 19</pre></span><pre>word_split_re = re.compile(r'(\s+)')</pre></div>
+<div class="cov"><span class="num"><pre> 20</pre></span><pre>punctuation_re = re.compile('^(?P&lt;lead&gt;(?:%s)*)(?P&lt;middle&gt;.*?)(?P&lt;trail&gt;(?:%s)*)$' % \</pre></div>
+<div class="cov"><span class="num"><pre> 21</pre></span><pre>    ('|'.join([re.escape(x) for x in LEADING_PUNCTUATION]),</pre></div>
+<div class="cov"><span class="num"><pre> 22</pre></span><pre>    '|'.join([re.escape(x) for x in TRAILING_PUNCTUATION])))</pre></div>
+<div class="cov"><span class="num"><pre> 23</pre></span><pre>simple_email_re = re.compile(r'^\S+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+$')</pre></div>
+<div class="cov"><span class="num"><pre> 24</pre></span><pre>link_target_attribute_re = re.compile(r'(&lt;a [^&gt;]*?)target=[^\s&gt;]+')</pre></div>
+<div class="cov"><span class="num"><pre> 25</pre></span><pre>html_gunk_re = re.compile(r'(?:&lt;br clear=&quot;all&quot;&gt;|&lt;i&gt;&lt;\/i&gt;|&lt;b&gt;&lt;\/b&gt;|&lt;em&gt;&lt;\/em&gt;|&lt;strong&gt;&lt;\/strong&gt;|&lt;\/?smallcaps&gt;|&lt;\/?uppercase&gt;)', re.IGNORECASE)</pre></div>
+<div class="cov"><span class="num"><pre> 26</pre></span><pre>hard_coded_bullets_re = re.compile(r'((?:&lt;p&gt;(?:%s).*?[a-zA-Z].*?&lt;/p&gt;\s*)+)' % '|'.join([re.escape(x) for x in DOTS]), re.DOTALL)</pre></div>
+<div class="cov"><span class="num"><pre> 27</pre></span><pre>trailing_empty_content_re = re.compile(r'(?:&lt;p&gt;(?:&amp;nbsp;|\s|&lt;br \/&gt;)*?&lt;/p&gt;\s*)+\Z')</pre></div>
+<div class="cov"><span class="num"><pre> 28</pre></span><pre>del x # Temporary variable</pre></div>
+<div class="skip"><span class="num"><pre> 29</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 30</pre></span><pre>def escape(html):</pre></div>
+<div class="cov"><span class="num"><pre> 31</pre></span><pre>    &quot;&quot;&quot;Returns the given HTML with ampersands, quotes and carets encoded.&quot;&quot;&quot;</pre></div>
+<div class="nocov"><span class="num"><pre> 32</pre></span><pre>    return mark_safe(force_unicode(html).replace('&amp;', '&amp;amp;').replace('&lt;', '&amp;lt;').replace('&gt;', '&amp;gt;').replace('&quot;', '&amp;quot;').replace(&quot;'&quot;, '&amp;#39;'))</pre></div>
+<div class="cov"><span class="num"><pre> 33</pre></span><pre>escape = allow_lazy(escape, unicode)</pre></div>
+<div class="skip"><span class="num"><pre> 34</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 35</pre></span><pre>def conditional_escape(html):</pre></div>
+<div class="cov"><span class="num"><pre> 36</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre> 37</pre></span><pre>    Similar to escape(), except that it doesn't operate on pre-escaped strings.</pre></div>
+<div class="cov"><span class="num"><pre> 38</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="nocov"><span class="num"><pre> 39</pre></span><pre>    if isinstance(html, SafeData):</pre></div>
+<div class="nocov"><span class="num"><pre> 40</pre></span><pre>        return html</pre></div>
+<div class="nocov"><span class="num"><pre> 41</pre></span><pre>    else:</pre></div>
+<div class="nocov"><span class="num"><pre> 42</pre></span><pre>        return escape(html)</pre></div>
+<div class="skip"><span class="num"><pre> 43</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 44</pre></span><pre>def linebreaks(value, autoescape=False):</pre></div>
+<div class="cov"><span class="num"><pre> 45</pre></span><pre>    &quot;&quot;&quot;Converts newlines into &lt;p&gt; and &lt;br /&gt;s.&quot;&quot;&quot;</pre></div>
+<div class="nocov"><span class="num"><pre> 46</pre></span><pre>    value = re.sub(r'\r\n|\r|\n', '\n', force_unicode(value)) # normalize newlines</pre></div>
+<div class="nocov"><span class="num"><pre> 47</pre></span><pre>    paras = re.split('\n{2,}', value)</pre></div>
+<div class="nocov"><span class="num"><pre> 48</pre></span><pre>    if autoescape:</pre></div>
+<div class="nocov"><span class="num"><pre> 49</pre></span><pre>        paras = [u'&lt;p&gt;%s&lt;/p&gt;' % escape(p.strip()).replace('\n', '&lt;br /&gt;') for p in paras]</pre></div>
+<div class="nocov"><span class="num"><pre> 50</pre></span><pre>    else:</pre></div>
+<div class="nocov"><span class="num"><pre> 51</pre></span><pre>        paras = [u'&lt;p&gt;%s&lt;/p&gt;' % p.strip().replace('\n', '&lt;br /&gt;') for p in paras]</pre></div>
+<div class="nocov"><span class="num"><pre> 52</pre></span><pre>    return u'\n\n'.join(paras)</pre></div>
+<div class="cov"><span class="num"><pre> 53</pre></span><pre>linebreaks = allow_lazy(linebreaks, unicode)</pre></div>
+<div class="skip"><span class="num"><pre> 54</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 55</pre></span><pre>def strip_tags(value):</pre></div>
+<div class="cov"><span class="num"><pre> 56</pre></span><pre>    &quot;&quot;&quot;Returns the given HTML with all tags stripped.&quot;&quot;&quot;</pre></div>
+<div class="nocov"><span class="num"><pre> 57</pre></span><pre>    return re.sub(r'&lt;[^&gt;]*?&gt;', '', force_unicode(value))</pre></div>
+<div class="cov"><span class="num"><pre> 58</pre></span><pre>strip_tags = allow_lazy(strip_tags)</pre></div>
+<div class="skip"><span class="num"><pre> 59</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 60</pre></span><pre>def strip_spaces_between_tags(value):</pre></div>
+<div class="cov"><span class="num"><pre> 61</pre></span><pre>    &quot;&quot;&quot;Returns the given HTML with spaces between tags removed.&quot;&quot;&quot;</pre></div>
+<div class="nocov"><span class="num"><pre> 62</pre></span><pre>    return re.sub(r'&gt;\s+&lt;', '&gt;&lt;', force_unicode(value))</pre></div>
+<div class="cov"><span class="num"><pre> 63</pre></span><pre>strip_spaces_between_tags = allow_lazy(strip_spaces_between_tags, unicode)</pre></div>
+<div class="skip"><span class="num"><pre> 64</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 65</pre></span><pre>def strip_entities(value):</pre></div>
+<div class="cov"><span class="num"><pre> 66</pre></span><pre>    &quot;&quot;&quot;Returns the given HTML with all entities (&amp;something;) stripped.&quot;&quot;&quot;</pre></div>
+<div class="nocov"><span class="num"><pre> 67</pre></span><pre>    return re.sub(r'&amp;(?:\w+|#\d+);', '', force_unicode(value))</pre></div>
+<div class="cov"><span class="num"><pre> 68</pre></span><pre>strip_entities = allow_lazy(strip_entities, unicode)</pre></div>
+<div class="skip"><span class="num"><pre> 69</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 70</pre></span><pre>def fix_ampersands(value):</pre></div>
+<div class="cov"><span class="num"><pre> 71</pre></span><pre>    &quot;&quot;&quot;Returns the given HTML with all unencoded ampersands encoded correctly.&quot;&quot;&quot;</pre></div>
+<div class="nocov"><span class="num"><pre> 72</pre></span><pre>    return unencoded_ampersands_re.sub('&amp;amp;', force_unicode(value))</pre></div>
+<div class="cov"><span class="num"><pre> 73</pre></span><pre>fix_ampersands = allow_lazy(fix_ampersands, unicode)</pre></div>
+<div class="skip"><span class="num"><pre> 74</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 75</pre></span><pre>def urlize(text, trim_url_limit=None, nofollow=False, autoescape=False):</pre></div>
+<div class="cov"><span class="num"><pre> 76</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre> 77</pre></span><pre>    Converts any URLs in text into clickable links.</pre></div>
+<div class="skip"><span class="num"><pre> 78</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 79</pre></span><pre>    Works on http://, https://, www. links and links ending in .org, .net or</pre></div>
+<div class="cov"><span class="num"><pre> 80</pre></span><pre>    .com. Links can have trailing punctuation (periods, commas, close-parens)</pre></div>
+<div class="cov"><span class="num"><pre> 81</pre></span><pre>    and leading punctuation (opening parens) and it'll still do the right</pre></div>
+<div class="cov"><span class="num"><pre> 82</pre></span><pre>    thing.</pre></div>
+<div class="skip"><span class="num"><pre> 83</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 84</pre></span><pre>    If trim_url_limit is not None, the URLs in link text longer than this limit</pre></div>
+<div class="cov"><span class="num"><pre> 85</pre></span><pre>    will truncated to trim_url_limit-3 characters and appended with an elipsis.</pre></div>
+<div class="skip"><span class="num"><pre> 86</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 87</pre></span><pre>    If nofollow is True, the URLs in link text will get a rel=&quot;nofollow&quot;</pre></div>
+<div class="cov"><span class="num"><pre> 88</pre></span><pre>    attribute.</pre></div>
+<div class="skip"><span class="num"><pre> 89</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 90</pre></span><pre>    If autoescape is True, the link text and URLs will get autoescaped.</pre></div>
+<div class="cov"><span class="num"><pre> 91</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="nocov"><span class="num"><pre> 92</pre></span><pre>    trim_url = lambda x, limit=trim_url_limit: limit is not None and (len(x) &gt; limit and ('%s...' % x[:max(0, limit - 3)])) or x</pre></div>
+<div class="nocov"><span class="num"><pre> 93</pre></span><pre>    safe_input = isinstance(text, SafeData)</pre></div>
+<div class="nocov"><span class="num"><pre> 94</pre></span><pre>    words = word_split_re.split(force_unicode(text))</pre></div>
+<div class="nocov"><span class="num"><pre> 95</pre></span><pre>    nofollow_attr = nofollow and ' rel=&quot;nofollow&quot;' or ''</pre></div>
+<div class="nocov"><span class="num"><pre> 96</pre></span><pre>    for i, word in enumerate(words):</pre></div>
+<div class="nocov"><span class="num"><pre> 97</pre></span><pre>        match = None</pre></div>
+<div class="nocov"><span class="num"><pre> 98</pre></span><pre>        if '.' in word or '@' in word or ':' in word:</pre></div>
+<div class="nocov"><span class="num"><pre> 99</pre></span><pre>            match = punctuation_re.match(word)</pre></div>
+<div class="nocov"><span class="num"><pre>100</pre></span><pre>        if match:</pre></div>
+<div class="nocov"><span class="num"><pre>101</pre></span><pre>            lead, middle, trail = match.groups()</pre></div>
+<div class="skip"><span class="num"><pre>102</pre></span><pre>            # Make URL we want to point to.</pre></div>
+<div class="nocov"><span class="num"><pre>103</pre></span><pre>            url = None</pre></div>
+<div class="nocov"><span class="num"><pre>104</pre></span><pre>            if middle.startswith('http://') or middle.startswith('https://'):</pre></div>
+<div class="nocov"><span class="num"><pre>105</pre></span><pre>                url = urlquote(middle, safe='/&amp;=:;#?+*')</pre></div>
+<div class="nocov"><span class="num"><pre>106</pre></span><pre>            elif middle.startswith('www.') or ('@' not in middle and \</pre></div>
+<div class="nocov"><span class="num"><pre>107</pre></span><pre>                    middle and middle[0] in string.ascii_letters + string.digits and \</pre></div>
+<div class="nocov"><span class="num"><pre>108</pre></span><pre>                    (middle.endswith('.org') or middle.endswith('.net') or middle.endswith('.com'))):</pre></div>
+<div class="nocov"><span class="num"><pre>109</pre></span><pre>                url = urlquote('http://%s' % middle, safe='/&amp;=:;#?+*')</pre></div>
+<div class="nocov"><span class="num"><pre>110</pre></span><pre>            elif '@' in middle and not ':' in middle and simple_email_re.match(middle):</pre></div>
+<div class="nocov"><span class="num"><pre>111</pre></span><pre>                url = 'mailto:%s' % middle</pre></div>
+<div class="nocov"><span class="num"><pre>112</pre></span><pre>                nofollow_attr = ''</pre></div>
+<div class="skip"><span class="num"><pre>113</pre></span><pre>            # Make link.</pre></div>
+<div class="nocov"><span class="num"><pre>114</pre></span><pre>            if url:</pre></div>
+<div class="nocov"><span class="num"><pre>115</pre></span><pre>                trimmed = trim_url(middle)</pre></div>
+<div class="nocov"><span class="num"><pre>116</pre></span><pre>                if autoescape and not safe_input:</pre></div>
+<div class="nocov"><span class="num"><pre>117</pre></span><pre>                    lead, trail = escape(lead), escape(trail)</pre></div>
+<div class="nocov"><span class="num"><pre>118</pre></span><pre>                    url, trimmed = escape(url), escape(trimmed)</pre></div>
+<div class="nocov"><span class="num"><pre>119</pre></span><pre>                middle = '&lt;a href=&quot;%s&quot;%s&gt;%s&lt;/a&gt;' % (url, nofollow_attr, trimmed)</pre></div>
+<div class="nocov"><span class="num"><pre>120</pre></span><pre>                words[i] = mark_safe('%s%s%s' % (lead, middle, trail))</pre></div>
+<div class="nocov"><span class="num"><pre>121</pre></span><pre>            else:</pre></div>
+<div class="nocov"><span class="num"><pre>122</pre></span><pre>                if safe_input:</pre></div>
+<div class="nocov"><span class="num"><pre>123</pre></span><pre>                    words[i] = mark_safe(word)</pre></div>
+<div class="nocov"><span class="num"><pre>124</pre></span><pre>                elif autoescape:</pre></div>
+<div class="nocov"><span class="num"><pre>125</pre></span><pre>                    words[i] = escape(word)</pre></div>
+<div class="nocov"><span class="num"><pre>126</pre></span><pre>        elif safe_input:</pre></div>
+<div class="nocov"><span class="num"><pre>127</pre></span><pre>            words[i] = mark_safe(word)</pre></div>
+<div class="nocov"><span class="num"><pre>128</pre></span><pre>        elif autoescape:</pre></div>
+<div class="nocov"><span class="num"><pre>129</pre></span><pre>            words[i] = escape(word)</pre></div>
+<div class="nocov"><span class="num"><pre>130</pre></span><pre>    return u''.join(words)</pre></div>
+<div class="cov"><span class="num"><pre>131</pre></span><pre>urlize = allow_lazy(urlize, unicode)</pre></div>
+<div class="skip"><span class="num"><pre>132</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>133</pre></span><pre>def clean_html(text):</pre></div>
+<div class="cov"><span class="num"><pre>134</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>135</pre></span><pre>    Clean the given HTML.  Specifically, do the following:</pre></div>
+<div class="cov"><span class="num"><pre>136</pre></span><pre>        * Convert &lt;b&gt; and &lt;i&gt; to &lt;strong&gt; and &lt;em&gt;.</pre></div>
+<div class="cov"><span class="num"><pre>137</pre></span><pre>        * Encode all ampersands correctly.</pre></div>
+<div class="cov"><span class="num"><pre>138</pre></span><pre>        * Remove all &quot;target&quot; attributes from &lt;a&gt; tags.</pre></div>
+<div class="cov"><span class="num"><pre>139</pre></span><pre>        * Remove extraneous HTML, such as presentational tags that open and</pre></div>
+<div class="cov"><span class="num"><pre>140</pre></span><pre>          immediately close and &lt;br clear=&quot;all&quot;&gt;.</pre></div>
+<div class="cov"><span class="num"><pre>141</pre></span><pre>        * Convert hard-coded bullets into HTML unordered lists.</pre></div>
+<div class="cov"><span class="num"><pre>142</pre></span><pre>        * Remove stuff like &quot;&lt;p&gt;&amp;nbsp;&amp;nbsp;&lt;/p&gt;&quot;, but only if it's at the</pre></div>
+<div class="cov"><span class="num"><pre>143</pre></span><pre>          bottom of the text.</pre></div>
+<div class="cov"><span class="num"><pre>144</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="nocov"><span class="num"><pre>145</pre></span><pre>    from django.utils.text import normalize_newlines</pre></div>
+<div class="nocov"><span class="num"><pre>146</pre></span><pre>    text = normalize_newlines(force_unicode(text))</pre></div>
+<div class="nocov"><span class="num"><pre>147</pre></span><pre>    text = re.sub(r'&lt;(/?)\s*b\s*&gt;', '&lt;\\1strong&gt;', text)</pre></div>
+<div class="nocov"><span class="num"><pre>148</pre></span><pre>    text = re.sub(r'&lt;(/?)\s*i\s*&gt;', '&lt;\\1em&gt;', text)</pre></div>
+<div class="nocov"><span class="num"><pre>149</pre></span><pre>    text = fix_ampersands(text)</pre></div>
+<div class="skip"><span class="num"><pre>150</pre></span><pre>    # Remove all target=&quot;&quot; attributes from &lt;a&gt; tags.</pre></div>
+<div class="nocov"><span class="num"><pre>151</pre></span><pre>    text = link_target_attribute_re.sub('\\1', text)</pre></div>
+<div class="skip"><span class="num"><pre>152</pre></span><pre>    # Trim stupid HTML such as &lt;br clear=&quot;all&quot;&gt;.</pre></div>
+<div class="nocov"><span class="num"><pre>153</pre></span><pre>    text = html_gunk_re.sub('', text)</pre></div>
+<div class="skip"><span class="num"><pre>154</pre></span><pre>    # Convert hard-coded bullets into HTML unordered lists.</pre></div>
+<div class="nocov"><span class="num"><pre>155</pre></span><pre>    def replace_p_tags(match):</pre></div>
+<div class="nocov"><span class="num"><pre>156</pre></span><pre>        s = match.group().replace('&lt;/p&gt;', '&lt;/li&gt;')</pre></div>
+<div class="nocov"><span class="num"><pre>157</pre></span><pre>        for d in DOTS:</pre></div>
+<div class="nocov"><span class="num"><pre>158</pre></span><pre>            s = s.replace('&lt;p&gt;%s' % d, '&lt;li&gt;')</pre></div>
+<div class="nocov"><span class="num"><pre>159</pre></span><pre>        return u'&lt;ul&gt;\n%s\n&lt;/ul&gt;' % s</pre></div>
+<div class="nocov"><span class="num"><pre>160</pre></span><pre>    text = hard_coded_bullets_re.sub(replace_p_tags, text)</pre></div>
+<div class="skip"><span class="num"><pre>161</pre></span><pre>    # Remove stuff like &quot;&lt;p&gt;&amp;nbsp;&amp;nbsp;&lt;/p&gt;&quot;, but only if it's at the bottom</pre></div>
+<div class="skip"><span class="num"><pre>162</pre></span><pre>    # of the text.</pre></div>
+<div class="nocov"><span class="num"><pre>163</pre></span><pre>    text = trailing_empty_content_re.sub('', text)</pre></div>
+<div class="nocov"><span class="num"><pre>164</pre></span><pre>    return text</pre></div>
+<div class="cov"><span class="num"><pre>165</pre></span><pre>clean_html = allow_lazy(clean_html, unicode)</pre></div>
+<div class="skip"><span class="num"><pre>166</pre></span><pre></pre></div>
+</div>
+</body>
+</html>

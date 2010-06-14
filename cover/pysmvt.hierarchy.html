@@ -1,0 +1,431 @@
+<html>
+<head>
+<title>pysmvt.hierarchy</title>
+</head>
+<body>
+pysmvt.hierarchy
+<style>
+.coverage pre {float: left; margin: 0px 1em; border: none;
+               padding: 0px; }
+.num pre { margin: 0px }
+.nocov, .nocov pre {background-color: #faa}
+.cov, .cov pre {background-color: #cfc}
+div.coverage div { clear: both; height: 1.1em}
+</style>
+<div class="stats">
+Covered: 316 lines<br/>
+Missed: 13 lines<br/>
+Skipped 77 lines<br/>
+Percent: 96 %<br/>
+
+</div>
+<div class="coverage">
+<div class="cov"><span class="num"><pre>  1</pre></span><pre>import __builtin__</pre></div>
+<div class="cov"><span class="num"><pre>  2</pre></span><pre>import logging</pre></div>
+<div class="cov"><span class="num"><pre>  3</pre></span><pre>from os import path as ospath</pre></div>
+<div class="skip"><span class="num"><pre>  4</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>  5</pre></span><pre>from pysutils.datastructures import BlankObject, OrderedDict</pre></div>
+<div class="cov"><span class="num"><pre>  6</pre></span><pre>from pysutils.error_handling import raise_unexpected_import_error</pre></div>
+<div class="cov"><span class="num"><pre>  7</pre></span><pre>from pysmvt import ag, settings</pre></div>
+<div class="skip"><span class="num"><pre>  8</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>  9</pre></span><pre>log = logging.getLogger(__name__)</pre></div>
+<div class="skip"><span class="num"><pre> 10</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 11</pre></span><pre>class HierarchyImportError(ImportError):</pre></div>
+<div class="cov"><span class="num"><pre> 12</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre> 13</pre></span><pre>        Used to signal an import error when a request is made to the hierarchy</pre></div>
+<div class="cov"><span class="num"><pre> 14</pre></span><pre>        tools that can not be filled. Its distinguishable from ImportError so</pre></div>
+<div class="cov"><span class="num"><pre> 15</pre></span><pre>        that if you receive an ImportError when doing hiearchy processing, you</pre></div>
+<div class="cov"><span class="num"><pre> 16</pre></span><pre>        know the import error is not from the hierarchy itself but from some</pre></div>
+<div class="cov"><span class="num"><pre> 17</pre></span><pre>        import in one of the modules the hieararchy lookup accessed.</pre></div>
+<div class="cov"><span class="num"><pre> 18</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="skip"><span class="num"><pre> 19</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 20</pre></span><pre>class FileNotFound(Exception):</pre></div>
+<div class="cov"><span class="num"><pre> 21</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre> 22</pre></span><pre>        raised when a file is not found in findfile()</pre></div>
+<div class="cov"><span class="num"><pre> 23</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="skip"><span class="num"><pre> 24</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre> 25</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 26</pre></span><pre>class HierarchyManager(object):</pre></div>
+<div class="skip"><span class="num"><pre> 27</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 28</pre></span><pre>    def __init__(self):</pre></div>
+<div class="cov"><span class="num"><pre> 29</pre></span><pre>        self.builtin_import = __builtin__.__import__</pre></div>
+<div class="cov"><span class="num"><pre> 30</pre></span><pre>        self.replace_builtin()</pre></div>
+<div class="skip"><span class="num"><pre> 31</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 32</pre></span><pre>    def replace_builtin(self):</pre></div>
+<div class="cov"><span class="num"><pre> 33</pre></span><pre>        __builtin__.__import__ = self.pysmvt_import</pre></div>
+<div class="cov"><span class="num"><pre> 34</pre></span><pre>        log.debug('HierarchyManager replaced __builtin__.__import__')</pre></div>
+<div class="skip"><span class="num"><pre> 35</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 36</pre></span><pre>    def restore_builtin(self):</pre></div>
+<div class="nocov"><span class="num"><pre> 37</pre></span><pre>        __builtin__.__import__ = self.builtin_import</pre></div>
+<div class="nocov"><span class="num"><pre> 38</pre></span><pre>        log.debug('HierarchyManager restored __builtin__.__import__')</pre></div>
+<div class="skip"><span class="num"><pre> 39</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 40</pre></span><pre>    def pysmvt_import(self, name, globals={}, locals={}, fromlist=[], level=-1):</pre></div>
+<div class="cov"><span class="num"><pre> 41</pre></span><pre>        instack_collection = ImportOverrideHelper.doimport(name, fromlist)</pre></div>
+<div class="cov"><span class="num"><pre> 42</pre></span><pre>        if instack_collection:</pre></div>
+<div class="cov"><span class="num"><pre> 43</pre></span><pre>            return instack_collection</pre></div>
+<div class="cov"><span class="num"><pre> 44</pre></span><pre>        return self.builtin_import(name, globals, locals, fromlist, level)</pre></div>
+<div class="cov"><span class="num"><pre> 45</pre></span><pre>hm = HierarchyManager()</pre></div>
+<div class="skip"><span class="num"><pre> 46</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre> 47</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 48</pre></span><pre>def listapps(reverse=False):</pre></div>
+<div class="cov"><span class="num"><pre> 49</pre></span><pre>    if reverse:</pre></div>
+<div class="nocov"><span class="num"><pre> 50</pre></span><pre>        apps = list(settings.supporting_apps)</pre></div>
+<div class="nocov"><span class="num"><pre> 51</pre></span><pre>        apps.reverse()</pre></div>
+<div class="nocov"><span class="num"><pre> 52</pre></span><pre>        apps.append(settings.appname)</pre></div>
+<div class="nocov"><span class="num"><pre> 53</pre></span><pre>        return apps</pre></div>
+<div class="cov"><span class="num"><pre> 54</pre></span><pre>    return [settings.appname] + settings.supporting_apps</pre></div>
+<div class="skip"><span class="num"><pre> 55</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 56</pre></span><pre>def listplugins(reverse=False):</pre></div>
+<div class="cov"><span class="num"><pre> 57</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre> 58</pre></span><pre>        a flat list of the namespace of each enabled plugin</pre></div>
+<div class="cov"><span class="num"><pre> 59</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre> 60</pre></span><pre>    retval = list(set([pname for _, pname, _ in list_plugin_mappings()]))</pre></div>
+<div class="cov"><span class="num"><pre> 61</pre></span><pre>    if reverse:</pre></div>
+<div class="cov"><span class="num"><pre> 62</pre></span><pre>        retval.reverse()</pre></div>
+<div class="cov"><span class="num"><pre> 63</pre></span><pre>    return retval</pre></div>
+<div class="skip"><span class="num"><pre> 64</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 65</pre></span><pre>def list_plugin_mappings(target_plugin=None, reverse=False, inc_apps=False):</pre></div>
+<div class="cov"><span class="num"><pre> 66</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre> 67</pre></span><pre>        a list of tuples: (app name, plugin name, package name)</pre></div>
+<div class="skip"><span class="num"><pre> 68</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 69</pre></span><pre>        package name will be none of the location of the plugin is internal</pre></div>
+<div class="cov"><span class="num"><pre> 70</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre> 71</pre></span><pre>    retval = []</pre></div>
+<div class="cov"><span class="num"><pre> 72</pre></span><pre>    for app in listapps():</pre></div>
+<div class="cov"><span class="num"><pre> 73</pre></span><pre>        if inc_apps:</pre></div>
+<div class="cov"><span class="num"><pre> 74</pre></span><pre>            retval.append((app, None, None))</pre></div>
+<div class="cov"><span class="num"><pre> 75</pre></span><pre>        aplugins = getattr(settings.pluginmap, app)</pre></div>
+<div class="cov"><span class="num"><pre> 76</pre></span><pre>        for pname in aplugins.keys():</pre></div>
+<div class="cov"><span class="num"><pre> 77</pre></span><pre>            if target_plugin is None or pname == target_plugin:</pre></div>
+<div class="cov"><span class="num"><pre> 78</pre></span><pre>                retval.append((app, pname, None))</pre></div>
+<div class="cov"><span class="num"><pre> 79</pre></span><pre>                try:</pre></div>
+<div class="cov"><span class="num"><pre> 80</pre></span><pre>                    for package in aplugins.get_dotted('%s.packages' % pname):</pre></div>
+<div class="cov"><span class="num"><pre> 81</pre></span><pre>                        retval.append((app, pname, package))</pre></div>
+<div class="nocov"><span class="num"><pre> 82</pre></span><pre>                except AttributeError, e:</pre></div>
+<div class="nocov"><span class="num"><pre> 83</pre></span><pre>                    if 'packages' not in str(e):</pre></div>
+<div class="nocov"><span class="num"><pre> 84</pre></span><pre>                        raise</pre></div>
+<div class="cov"><span class="num"><pre> 85</pre></span><pre>    if reverse:</pre></div>
+<div class="cov"><span class="num"><pre> 86</pre></span><pre>        retval.reverse()</pre></div>
+<div class="cov"><span class="num"><pre> 87</pre></span><pre>    return retval</pre></div>
+<div class="skip"><span class="num"><pre> 88</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 89</pre></span><pre>def findcontent(endpoint):</pre></div>
+<div class="cov"><span class="num"><pre> 90</pre></span><pre>    try:</pre></div>
+<div class="cov"><span class="num"><pre> 91</pre></span><pre>        return findendpoint(endpoint, 'content')</pre></div>
+<div class="nocov"><span class="num"><pre> 92</pre></span><pre>    except HierarchyImportError:</pre></div>
+<div class="nocov"><span class="num"><pre> 93</pre></span><pre>        raise HierarchyImportError('An object for Content endpoint &quot;%s&quot; was not found' % endpoint)</pre></div>
+<div class="skip"><span class="num"><pre> 94</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 95</pre></span><pre>def findview(endpoint):</pre></div>
+<div class="cov"><span class="num"><pre> 96</pre></span><pre>    try:</pre></div>
+<div class="cov"><span class="num"><pre> 97</pre></span><pre>        return findendpoint(endpoint, 'views')</pre></div>
+<div class="cov"><span class="num"><pre> 98</pre></span><pre>    except HierarchyImportError:</pre></div>
+<div class="cov"><span class="num"><pre> 99</pre></span><pre>        raise HierarchyImportError('An object for View endpoint &quot;%s&quot; was not found' % endpoint)</pre></div>
+<div class="skip"><span class="num"><pre>100</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>101</pre></span><pre>def findendpoint(endpoint, where):</pre></div>
+<div class="cov"><span class="num"><pre>102</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>103</pre></span><pre>        locate an object in the hierarchy based on an endpoint.  Usage:</pre></div>
+<div class="skip"><span class="num"><pre>104</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>105</pre></span><pre>        findendpoint('Index', 'views') =&gt; from appstack.views import Index</pre></div>
+<div class="cov"><span class="num"><pre>106</pre></span><pre>        findendpoint('news:Index', 'views') =&gt; from plugstack.news.views import Index</pre></div>
+<div class="cov"><span class="num"><pre>107</pre></span><pre>        findendpoint('news:Something', 'content') =&gt; from plugstack.news.content import Something</pre></div>
+<div class="skip"><span class="num"><pre>108</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>109</pre></span><pre>        Raises: ImportError if view is not found.  But can also raise an</pre></div>
+<div class="cov"><span class="num"><pre>110</pre></span><pre>            ImportError if other</pre></div>
+<div class="cov"><span class="num"><pre>111</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>112</pre></span><pre>    if ':' not in endpoint:</pre></div>
+<div class="cov"><span class="num"><pre>113</pre></span><pre>        return AppFinder(where, endpoint).search()</pre></div>
+<div class="cov"><span class="num"><pre>114</pre></span><pre>    plugin, attr = endpoint.split(':')</pre></div>
+<div class="cov"><span class="num"><pre>115</pre></span><pre>    return PluginFinder(plugin, where, attr).search()</pre></div>
+<div class="skip"><span class="num"><pre>116</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>117</pre></span><pre>def findfile(endpoint_path):</pre></div>
+<div class="cov"><span class="num"><pre>118</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>119</pre></span><pre>        locate a file in the hierarchy based on an endpoint and path.  Usage:</pre></div>
+<div class="skip"><span class="num"><pre>120</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>121</pre></span><pre>        findfile('templates/index.html') could return one of the following:</pre></div>
+<div class="skip"><span class="num"><pre>122</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>123</pre></span><pre>            .../myapp-dist/myapp/templates/index.html</pre></div>
+<div class="cov"><span class="num"><pre>124</pre></span><pre>            .../supportingapp-dist/supportingapp/templates/index.html</pre></div>
+<div class="skip"><span class="num"><pre>125</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>126</pre></span><pre>        findfile('news:templates/index.html') could return one of the following:</pre></div>
+<div class="skip"><span class="num"><pre>127</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>128</pre></span><pre>            .../myapp-dist/myapp/plugins/news/templates/index.html</pre></div>
+<div class="cov"><span class="num"><pre>129</pre></span><pre>            .../newsplugin-dist/newsplugin/templates/index.html</pre></div>
+<div class="cov"><span class="num"><pre>130</pre></span><pre>            .../supportingapp-dist/supportingapp/plugins/news/templates/index.html</pre></div>
+<div class="skip"><span class="num"><pre>131</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>132</pre></span><pre>        Raises: FileNotFound if the path can not be found in the hierarchy</pre></div>
+<div class="cov"><span class="num"><pre>133</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>134</pre></span><pre>    log.debug('findfile() looking for: %s' % endpoint_path)</pre></div>
+<div class="cov"><span class="num"><pre>135</pre></span><pre>    fpath = FileFinderBase.findfile(endpoint_path)</pre></div>
+<div class="cov"><span class="num"><pre>136</pre></span><pre>    if not fpath:</pre></div>
+<div class="cov"><span class="num"><pre>137</pre></span><pre>        raise FileNotFound('could not find: %s' % endpoint_path)</pre></div>
+<div class="cov"><span class="num"><pre>138</pre></span><pre>    return fpath</pre></div>
+<div class="skip"><span class="num"><pre>139</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>140</pre></span><pre>def findobj(endpoint, attr):</pre></div>
+<div class="cov"><span class="num"><pre>141</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>142</pre></span><pre>        Allows hieararchy importing based on strings:</pre></div>
+<div class="skip"><span class="num"><pre>143</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>144</pre></span><pre>        findobject('news:views', 'Index') =&gt; from plugstack.news.views import Index</pre></div>
+<div class="cov"><span class="num"><pre>145</pre></span><pre>        findobject('views', 'Index') =&gt; from appstack.views import Index</pre></div>
+<div class="cov"><span class="num"><pre>146</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>147</pre></span><pre>    if ':' in endpoint:</pre></div>
+<div class="cov"><span class="num"><pre>148</pre></span><pre>        plugin, impname = endpoint.split(':')</pre></div>
+<div class="cov"><span class="num"><pre>149</pre></span><pre>        impstring = 'plugstack.%s.%s' % (plugin, impname)</pre></div>
+<div class="cov"><span class="num"><pre>150</pre></span><pre>    else:</pre></div>
+<div class="cov"><span class="num"><pre>151</pre></span><pre>        impstring = 'appstack.%s' % endpoint</pre></div>
+<div class="cov"><span class="num"><pre>152</pre></span><pre>    collector = ImportOverrideHelper.doimport(impstring, [attr])</pre></div>
+<div class="cov"><span class="num"><pre>153</pre></span><pre>    return getattr(collector, attr)</pre></div>
+<div class="skip"><span class="num"><pre>154</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>155</pre></span><pre>def visitmods(dotpath, reverse=False, call_with_mod=None):</pre></div>
+<div class="cov"><span class="num"><pre>156</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>157</pre></span><pre>        Visit python modules installed in the appstack or module stack.</pre></div>
+<div class="cov"><span class="num"><pre>158</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>159</pre></span><pre>    visitlist = list_plugin_mappings(inc_apps=True, reverse=reverse)</pre></div>
+<div class="cov"><span class="num"><pre>160</pre></span><pre>    for app, pname, package in visitlist:</pre></div>
+<div class="cov"><span class="num"><pre>161</pre></span><pre>        try:</pre></div>
+<div class="cov"><span class="num"><pre>162</pre></span><pre>            if not pname and not package:</pre></div>
+<div class="cov"><span class="num"><pre>163</pre></span><pre>                impstr = '%s.%s' % (app, dotpath)</pre></div>
+<div class="cov"><span class="num"><pre>164</pre></span><pre>            elif package:</pre></div>
+<div class="cov"><span class="num"><pre>165</pre></span><pre>                impstr = '%s.%s' % (package, dotpath)</pre></div>
+<div class="cov"><span class="num"><pre>166</pre></span><pre>            else:</pre></div>
+<div class="cov"><span class="num"><pre>167</pre></span><pre>                impstr = '%s.plugins.%s.%s' % (app, pname, dotpath)</pre></div>
+<div class="cov"><span class="num"><pre>168</pre></span><pre>            module = hm.builtin_import(impstr, fromlist=[''])</pre></div>
+<div class="cov"><span class="num"><pre>169</pre></span><pre>            if call_with_mod:</pre></div>
+<div class="cov"><span class="num"><pre>170</pre></span><pre>                call_with_mod(module, app=app, pname=pname, package=package)</pre></div>
+<div class="cov"><span class="num"><pre>171</pre></span><pre>        except ImportError, e:</pre></div>
+<div class="cov"><span class="num"><pre>172</pre></span><pre>            raise_unexpected_import_error(impstr, e)</pre></div>
+<div class="skip"><span class="num"><pre>173</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>174</pre></span><pre>def gatherobjs(dotpath, filter):</pre></div>
+<div class="cov"><span class="num"><pre>175</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>176</pre></span><pre>        like visitmods(), but instead of just importing the module it gathers</pre></div>
+<div class="cov"><span class="num"><pre>177</pre></span><pre>        objects out of the module, passing them to filter to determine if they</pre></div>
+<div class="cov"><span class="num"><pre>178</pre></span><pre>        should be kept or not.</pre></div>
+<div class="cov"><span class="num"><pre>179</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>180</pre></span><pre>    def getkey(app, pname):</pre></div>
+<div class="cov"><span class="num"><pre>181</pre></span><pre>        if not pname:</pre></div>
+<div class="cov"><span class="num"><pre>182</pre></span><pre>            return 'appstack.%s' % dotpath</pre></div>
+<div class="cov"><span class="num"><pre>183</pre></span><pre>        return 'plugstack.%s.%s' % (pname, dotpath)</pre></div>
+<div class="cov"><span class="num"><pre>184</pre></span><pre>    collected = OrderedDict()</pre></div>
+<div class="cov"><span class="num"><pre>185</pre></span><pre>    def process_module(module, app, pname, package):</pre></div>
+<div class="cov"><span class="num"><pre>186</pre></span><pre>        modkey = getkey(app, pname)</pre></div>
+<div class="cov"><span class="num"><pre>187</pre></span><pre>        for k, v in vars(module).iteritems():</pre></div>
+<div class="cov"><span class="num"><pre>188</pre></span><pre>            if filter(k, v):</pre></div>
+<div class="cov"><span class="num"><pre>189</pre></span><pre>                modattrs = collected.setdefault(modkey, OrderedDict())</pre></div>
+<div class="cov"><span class="num"><pre>190</pre></span><pre>                modattrs.setdefault(k, v)</pre></div>
+<div class="cov"><span class="num"><pre>191</pre></span><pre>    visitmods(dotpath, call_with_mod=process_module)</pre></div>
+<div class="cov"><span class="num"><pre>192</pre></span><pre>    return collected</pre></div>
+<div class="skip"><span class="num"><pre>193</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>194</pre></span><pre>class FileFinderBase(object):</pre></div>
+<div class="skip"><span class="num"><pre>195</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>196</pre></span><pre>    def __init__(self, pathpart):</pre></div>
+<div class="cov"><span class="num"><pre>197</pre></span><pre>        self.pathpart = ospath.normpath(pathpart)</pre></div>
+<div class="cov"><span class="num"><pre>198</pre></span><pre>        self.assign_cachekey()</pre></div>
+<div class="skip"><span class="num"><pre>199</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>200</pre></span><pre>    def cached_path(self):</pre></div>
+<div class="cov"><span class="num"><pre>201</pre></span><pre>        fullpath = ag.hierarchy_file_cache.get(self.cachekey)</pre></div>
+<div class="cov"><span class="num"><pre>202</pre></span><pre>        if fullpath:</pre></div>
+<div class="cov"><span class="num"><pre>203</pre></span><pre>            log.debug('found %s in cache: %s', self.cachekey, fullpath)</pre></div>
+<div class="cov"><span class="num"><pre>204</pre></span><pre>            return fullpath</pre></div>
+<div class="skip"><span class="num"><pre>205</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>206</pre></span><pre>    @classmethod</pre></div>
+<div class="cov"><span class="num"><pre>207</pre></span><pre>    def findfile(cls, endpoint_path):</pre></div>
+<div class="cov"><span class="num"><pre>208</pre></span><pre>        if ':' not in endpoint_path:</pre></div>
+<div class="cov"><span class="num"><pre>209</pre></span><pre>            return AppFileFinder(endpoint_path).search()</pre></div>
+<div class="cov"><span class="num"><pre>210</pre></span><pre>        plugin, pathpart = endpoint_path.split(':')</pre></div>
+<div class="cov"><span class="num"><pre>211</pre></span><pre>        return PluginFileFinder(plugin, pathpart).search()</pre></div>
+<div class="skip"><span class="num"><pre>212</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>213</pre></span><pre>    def package_dir(self, package):</pre></div>
+<div class="cov"><span class="num"><pre>214</pre></span><pre>        package_mod = hm.builtin_import(package, fromlist=[''])</pre></div>
+<div class="cov"><span class="num"><pre>215</pre></span><pre>        return ospath.dirname(package_mod.__file__)</pre></div>
+<div class="skip"><span class="num"><pre>216</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>217</pre></span><pre>    def search(self):</pre></div>
+<div class="cov"><span class="num"><pre>218</pre></span><pre>        fullpath = self.cached_path()</pre></div>
+<div class="cov"><span class="num"><pre>219</pre></span><pre>        if fullpath:</pre></div>
+<div class="cov"><span class="num"><pre>220</pre></span><pre>            return fullpath</pre></div>
+<div class="skip"><span class="num"><pre>221</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>222</pre></span><pre>        fullpath = self.search_apps()</pre></div>
+<div class="cov"><span class="num"><pre>223</pre></span><pre>        if fullpath:</pre></div>
+<div class="cov"><span class="num"><pre>224</pre></span><pre>            ag.hierarchy_file_cache[self.cachekey] = fullpath</pre></div>
+<div class="cov"><span class="num"><pre>225</pre></span><pre>            return fullpath</pre></div>
+<div class="skip"><span class="num"><pre>226</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>227</pre></span><pre>class AppFileFinder(FileFinderBase):</pre></div>
+<div class="skip"><span class="num"><pre>228</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>229</pre></span><pre>    def assign_cachekey(self):</pre></div>
+<div class="cov"><span class="num"><pre>230</pre></span><pre>        self.cachekey = self.pathpart</pre></div>
+<div class="skip"><span class="num"><pre>231</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>232</pre></span><pre>    def search_apps(self):</pre></div>
+<div class="cov"><span class="num"><pre>233</pre></span><pre>        for app in listapps():</pre></div>
+<div class="cov"><span class="num"><pre>234</pre></span><pre>            testpath = ospath.join(self.package_dir(app), self.pathpart)</pre></div>
+<div class="cov"><span class="num"><pre>235</pre></span><pre>            if ospath.exists(testpath):</pre></div>
+<div class="cov"><span class="num"><pre>236</pre></span><pre>                return testpath</pre></div>
+<div class="skip"><span class="num"><pre>237</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>238</pre></span><pre>class PluginFileFinder(FileFinderBase):</pre></div>
+<div class="skip"><span class="num"><pre>239</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>240</pre></span><pre>    def assign_cachekey(self):</pre></div>
+<div class="cov"><span class="num"><pre>241</pre></span><pre>        self.cachekey = '%s:%s' % (self.plugin, self.pathpart)</pre></div>
+<div class="skip"><span class="num"><pre>242</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>243</pre></span><pre>    def __init__(self, plugin, pathpart):</pre></div>
+<div class="cov"><span class="num"><pre>244</pre></span><pre>        self.plugin = plugin</pre></div>
+<div class="cov"><span class="num"><pre>245</pre></span><pre>        FileFinderBase.__init__(self, pathpart)</pre></div>
+<div class="skip"><span class="num"><pre>246</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>247</pre></span><pre>    def search_apps(self):</pre></div>
+<div class="cov"><span class="num"><pre>248</pre></span><pre>        for app, pname, package in list_plugin_mappings(self.plugin):</pre></div>
+<div class="cov"><span class="num"><pre>249</pre></span><pre>            if not package:</pre></div>
+<div class="cov"><span class="num"><pre>250</pre></span><pre>                testpath = ospath.join(self.package_dir(app), 'plugins', self.plugin, self.pathpart)</pre></div>
+<div class="cov"><span class="num"><pre>251</pre></span><pre>            else:</pre></div>
+<div class="cov"><span class="num"><pre>252</pre></span><pre>                testpath = ospath.join(self.package_dir(package), self.pathpart)</pre></div>
+<div class="cov"><span class="num"><pre>253</pre></span><pre>            if ospath.exists(testpath):</pre></div>
+<div class="cov"><span class="num"><pre>254</pre></span><pre>                return testpath</pre></div>
+<div class="skip"><span class="num"><pre>255</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>256</pre></span><pre>class FinderBase(object):</pre></div>
+<div class="skip"><span class="num"><pre>257</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>258</pre></span><pre>    def __init__(self, location, attr):</pre></div>
+<div class="cov"><span class="num"><pre>259</pre></span><pre>        self.cachekey = None</pre></div>
+<div class="cov"><span class="num"><pre>260</pre></span><pre>        self.location = location</pre></div>
+<div class="cov"><span class="num"><pre>261</pre></span><pre>        self.attr = attr</pre></div>
+<div class="cov"><span class="num"><pre>262</pre></span><pre>        self.assign_cachekey()</pre></div>
+<div class="skip"><span class="num"><pre>263</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>264</pre></span><pre>    @property</pre></div>
+<div class="cov"><span class="num"><pre>265</pre></span><pre>    def exclocation(self):</pre></div>
+<div class="cov"><span class="num"><pre>266</pre></span><pre>        return self.location</pre></div>
+<div class="skip"><span class="num"><pre>267</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>268</pre></span><pre>    def cached_module(self):</pre></div>
+<div class="cov"><span class="num"><pre>269</pre></span><pre>        module_location = ag.hierarchy_import_cache.get(self.cachekey)</pre></div>
+<div class="cov"><span class="num"><pre>270</pre></span><pre>        if module_location:</pre></div>
+<div class="cov"><span class="num"><pre>271</pre></span><pre>            module = hm.builtin_import(module_location, globals(), locals(), [''])</pre></div>
+<div class="cov"><span class="num"><pre>272</pre></span><pre>            log.debug('found %s in cache: %s', self.cachekey, module)</pre></div>
+<div class="cov"><span class="num"><pre>273</pre></span><pre>            return module</pre></div>
+<div class="skip"><span class="num"><pre>274</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>275</pre></span><pre>    def search(self):</pre></div>
+<div class="cov"><span class="num"><pre>276</pre></span><pre>        if not self.attr:</pre></div>
+<div class="nocov"><span class="num"><pre>277</pre></span><pre>            raise ValueError('search() should not be used with an empty attr')</pre></div>
+<div class="cov"><span class="num"><pre>278</pre></span><pre>        module = self._search()</pre></div>
+<div class="cov"><span class="num"><pre>279</pre></span><pre>        if module:</pre></div>
+<div class="cov"><span class="num"><pre>280</pre></span><pre>            if hasattr(module, self.attr):</pre></div>
+<div class="cov"><span class="num"><pre>281</pre></span><pre>                return getattr(module, self.attr)</pre></div>
+<div class="skip"><span class="num"><pre>282</pre></span><pre>            # this happens when the attribute has been requested previously</pre></div>
+<div class="skip"><span class="num"><pre>283</pre></span><pre>            # but wasn't found, and the module was cached</pre></div>
+<div class="cov"><span class="num"><pre>284</pre></span><pre>            raise HierarchyImportError('attribute &quot;%s&quot; not found; searched %s.%s' % (self.attr, self.type, self.exclocation))</pre></div>
+<div class="skip"><span class="num"><pre>285</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>286</pre></span><pre>        log.debug('search() failed; resubmitting with empty attr for better error message')</pre></div>
+<div class="skip"><span class="num"><pre>287</pre></span><pre>        # try again with the attribute set to none to see if this is a problem</pre></div>
+<div class="skip"><span class="num"><pre>288</pre></span><pre>        # finding the module or finding the attribute</pre></div>
+<div class="cov"><span class="num"><pre>289</pre></span><pre>        orig_attr = self.attr</pre></div>
+<div class="cov"><span class="num"><pre>290</pre></span><pre>        self.attr = None</pre></div>
+<div class="cov"><span class="num"><pre>291</pre></span><pre>        module = self._search()</pre></div>
+<div class="cov"><span class="num"><pre>292</pre></span><pre>        if not module:</pre></div>
+<div class="cov"><span class="num"><pre>293</pre></span><pre>            raise HierarchyImportError('module &quot;%s&quot; not found; searched %s' % (self.exclocation, self.type))</pre></div>
+<div class="cov"><span class="num"><pre>294</pre></span><pre>        raise HierarchyImportError('attribute &quot;%s&quot; not found; searched %s.%s' % (orig_attr, self.type, self.exclocation))</pre></div>
+<div class="skip"><span class="num"><pre>295</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>296</pre></span><pre>    def _search(self):</pre></div>
+<div class="cov"><span class="num"><pre>297</pre></span><pre>        module = self.cached_module()</pre></div>
+<div class="cov"><span class="num"><pre>298</pre></span><pre>        if not module:</pre></div>
+<div class="cov"><span class="num"><pre>299</pre></span><pre>            module = self.search_apps()</pre></div>
+<div class="cov"><span class="num"><pre>300</pre></span><pre>        return module</pre></div>
+<div class="skip"><span class="num"><pre>301</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>302</pre></span><pre>    def try_import(self, dlocation):</pre></div>
+<div class="cov"><span class="num"><pre>303</pre></span><pre>        try:</pre></div>
+<div class="cov"><span class="num"><pre>304</pre></span><pre>            foundmod = hm.builtin_import(dlocation, globals(), locals(), [''])</pre></div>
+<div class="cov"><span class="num"><pre>305</pre></span><pre>            if self.attr is None or hasattr(foundmod, self.attr):</pre></div>
+<div class="cov"><span class="num"><pre>306</pre></span><pre>                log.debug('found %s: %s', self.cachekey, dlocation)</pre></div>
+<div class="cov"><span class="num"><pre>307</pre></span><pre>                ag.hierarchy_import_cache[self.cachekey] = dlocation</pre></div>
+<div class="cov"><span class="num"><pre>308</pre></span><pre>                return foundmod</pre></div>
+<div class="cov"><span class="num"><pre>309</pre></span><pre>        except ImportError, e:</pre></div>
+<div class="cov"><span class="num"><pre>310</pre></span><pre>            msg = str(e)</pre></div>
+<div class="cov"><span class="num"><pre>311</pre></span><pre>            if 'No module named ' in msg:</pre></div>
+<div class="cov"><span class="num"><pre>312</pre></span><pre>                not_found_mod = msg.replace('No module named ', '')</pre></div>
+<div class="cov"><span class="num"><pre>313</pre></span><pre>                if dlocation.endswith(not_found_mod):</pre></div>
+<div class="cov"><span class="num"><pre>314</pre></span><pre>                    return</pre></div>
+<div class="cov"><span class="num"><pre>315</pre></span><pre>            if dlocation in str(e):</pre></div>
+<div class="nocov"><span class="num"><pre>316</pre></span><pre>                return</pre></div>
+<div class="cov"><span class="num"><pre>317</pre></span><pre>            raise</pre></div>
+<div class="skip"><span class="num"><pre>318</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>319</pre></span><pre>        log.debug('could not import: %s', self.cachekey)</pre></div>
+<div class="skip"><span class="num"><pre>320</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>321</pre></span><pre>class AppFinder(FinderBase):</pre></div>
+<div class="cov"><span class="num"><pre>322</pre></span><pre>    type = 'appstack'</pre></div>
+<div class="skip"><span class="num"><pre>323</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>324</pre></span><pre>    def assign_cachekey(self):</pre></div>
+<div class="cov"><span class="num"><pre>325</pre></span><pre>        self.cachekey = 'aopstack.%s:%s' % (self.location, self.attr)</pre></div>
+<div class="skip"><span class="num"><pre>326</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>327</pre></span><pre>    def search_apps(self):</pre></div>
+<div class="cov"><span class="num"><pre>328</pre></span><pre>        for app in listapps():</pre></div>
+<div class="cov"><span class="num"><pre>329</pre></span><pre>            dlocation = '%s.%s' % (app, self.location)</pre></div>
+<div class="cov"><span class="num"><pre>330</pre></span><pre>            module = self.try_import(dlocation)</pre></div>
+<div class="cov"><span class="num"><pre>331</pre></span><pre>            if module:</pre></div>
+<div class="cov"><span class="num"><pre>332</pre></span><pre>                return module</pre></div>
+<div class="skip"><span class="num"><pre>333</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>334</pre></span><pre>class PluginFinder(FinderBase):</pre></div>
+<div class="cov"><span class="num"><pre>335</pre></span><pre>    type = 'plugstack'</pre></div>
+<div class="skip"><span class="num"><pre>336</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>337</pre></span><pre>    def __init__(self, plugin, location, attr):</pre></div>
+<div class="cov"><span class="num"><pre>338</pre></span><pre>        self.plugin = plugin</pre></div>
+<div class="cov"><span class="num"><pre>339</pre></span><pre>        FinderBase.__init__(self, location, attr)</pre></div>
+<div class="skip"><span class="num"><pre>340</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>341</pre></span><pre>    @property</pre></div>
+<div class="cov"><span class="num"><pre>342</pre></span><pre>    def exclocation(self):</pre></div>
+<div class="cov"><span class="num"><pre>343</pre></span><pre>        return '%s.%s' % (self.plugin, self.location)</pre></div>
+<div class="skip"><span class="num"><pre>344</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>345</pre></span><pre>    def assign_cachekey(self):</pre></div>
+<div class="cov"><span class="num"><pre>346</pre></span><pre>        self.cachekey = 'plugstack.%s.%s:%s' % (self.plugin, self.location, self.attr)</pre></div>
+<div class="skip"><span class="num"><pre>347</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>348</pre></span><pre>    def search_apps(self):</pre></div>
+<div class="cov"><span class="num"><pre>349</pre></span><pre>        for app, pname, package in list_plugin_mappings(self.plugin):</pre></div>
+<div class="cov"><span class="num"><pre>350</pre></span><pre>            if not package:</pre></div>
+<div class="cov"><span class="num"><pre>351</pre></span><pre>                dlocation = '%s.plugins.%s.%s' % (app, self.plugin, self.location)</pre></div>
+<div class="cov"><span class="num"><pre>352</pre></span><pre>            else:</pre></div>
+<div class="cov"><span class="num"><pre>353</pre></span><pre>                dlocation = '%s.%s' % (package, self.location)</pre></div>
+<div class="cov"><span class="num"><pre>354</pre></span><pre>            module = self.try_import(dlocation)</pre></div>
+<div class="cov"><span class="num"><pre>355</pre></span><pre>            if module:</pre></div>
+<div class="cov"><span class="num"><pre>356</pre></span><pre>                return module</pre></div>
+<div class="skip"><span class="num"><pre>357</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>358</pre></span><pre>class ImportOverrideHelper(object):</pre></div>
+<div class="skip"><span class="num"><pre>359</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>360</pre></span><pre>    def __init__(self, name, fromlist):</pre></div>
+<div class="cov"><span class="num"><pre>361</pre></span><pre>        self.name = name</pre></div>
+<div class="cov"><span class="num"><pre>362</pre></span><pre>        self.fromlist = fromlist</pre></div>
+<div class="skip"><span class="num"><pre>363</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>364</pre></span><pre>    @classmethod</pre></div>
+<div class="cov"><span class="num"><pre>365</pre></span><pre>    def doimport(cls, name, fromlist):</pre></div>
+<div class="cov"><span class="num"><pre>366</pre></span><pre>        if name.startswith('plugstack.'):</pre></div>
+<div class="cov"><span class="num"><pre>367</pre></span><pre>            return PlugstackImport(name, fromlist).search()</pre></div>
+<div class="cov"><span class="num"><pre>368</pre></span><pre>        if name.startswith('appstack.'):</pre></div>
+<div class="cov"><span class="num"><pre>369</pre></span><pre>            return AppstackImport(name, fromlist).search()</pre></div>
+<div class="skip"><span class="num"><pre>370</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>371</pre></span><pre>    def search(self):</pre></div>
+<div class="cov"><span class="num"><pre>372</pre></span><pre>        if not self.fromlist:</pre></div>
+<div class="cov"><span class="num"><pre>373</pre></span><pre>            raise HierarchyImportError('non-attribute importing is not supported; '</pre></div>
+<div class="cov"><span class="num"><pre>374</pre></span><pre>                              'use &quot;from %s import foo, bar&quot; syntax instead' % self.name)</pre></div>
+<div class="cov"><span class="num"><pre>375</pre></span><pre>        collector = BlankObject()</pre></div>
+<div class="cov"><span class="num"><pre>376</pre></span><pre>        for attr in self.fromlist:</pre></div>
+<div class="cov"><span class="num"><pre>377</pre></span><pre>            attrobj = self.find_attrobj(attr)</pre></div>
+<div class="cov"><span class="num"><pre>378</pre></span><pre>            setattr(collector, attr, attrobj)</pre></div>
+<div class="cov"><span class="num"><pre>379</pre></span><pre>        return collector</pre></div>
+<div class="skip"><span class="num"><pre>380</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre>381</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>382</pre></span><pre>class PlugstackImport(ImportOverrideHelper):</pre></div>
+<div class="cov"><span class="num"><pre>383</pre></span><pre>    type = 'plugstack'</pre></div>
+<div class="skip"><span class="num"><pre>384</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>385</pre></span><pre>    def find_attrobj(self, attr):</pre></div>
+<div class="cov"><span class="num"><pre>386</pre></span><pre>        parts = self.name.split('.', 2)</pre></div>
+<div class="cov"><span class="num"><pre>387</pre></span><pre>        plugin = parts[1]</pre></div>
+<div class="cov"><span class="num"><pre>388</pre></span><pre>        try:</pre></div>
+<div class="cov"><span class="num"><pre>389</pre></span><pre>            name = parts[2]</pre></div>
+<div class="cov"><span class="num"><pre>390</pre></span><pre>        except IndexError:</pre></div>
+<div class="cov"><span class="num"><pre>391</pre></span><pre>            name = ''</pre></div>
+<div class="cov"><span class="num"><pre>392</pre></span><pre>        return PluginFinder(plugin, name, attr).search()</pre></div>
+<div class="skip"><span class="num"><pre>393</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre>394</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>395</pre></span><pre>class AppstackImport(ImportOverrideHelper):</pre></div>
+<div class="cov"><span class="num"><pre>396</pre></span><pre>    type = 'appstack'</pre></div>
+<div class="skip"><span class="num"><pre>397</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>398</pre></span><pre>    def find_attrobj(self, attr):</pre></div>
+<div class="cov"><span class="num"><pre>399</pre></span><pre>        _, name = self.name.split('.', 1)</pre></div>
+<div class="cov"><span class="num"><pre>400</pre></span><pre>        return AppFinder(name, attr).search()</pre></div>
+<div class="skip"><span class="num"><pre>401</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>402</pre></span><pre>def split_endpoint(endpoint):</pre></div>
+<div class="cov"><span class="num"><pre>403</pre></span><pre>    if ':' in endpoint:</pre></div>
+<div class="cov"><span class="num"><pre>404</pre></span><pre>        return endpoint.split(':')</pre></div>
+<div class="cov"><span class="num"><pre>405</pre></span><pre>    return None, endpoint</pre></div>
+<div class="skip"><span class="num"><pre>406</pre></span><pre></pre></div>
+</div>
+</body>
+</html>

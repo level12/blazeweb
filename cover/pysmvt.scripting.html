@@ -1,0 +1,182 @@
+<html>
+<head>
+<title>pysmvt.scripting</title>
+</head>
+<body>
+pysmvt.scripting
+<style>
+.coverage pre {float: left; margin: 0px 1em; border: none;
+               padding: 0px; }
+.num pre { margin: 0px }
+.nocov, .nocov pre {background-color: #faa}
+.cov, .cov pre {background-color: #cfc}
+div.coverage div { clear: both; height: 1.1em}
+</style>
+<div class="stats">
+Covered: 29 lines<br/>
+Missed: 102 lines<br/>
+Skipped 26 lines<br/>
+Percent: 22 %<br/>
+
+</div>
+<div class="coverage">
+<div class="cov"><span class="num"><pre>  1</pre></span><pre>import os</pre></div>
+<div class="cov"><span class="num"><pre>  2</pre></span><pre>from os import path</pre></div>
+<div class="cov"><span class="num"><pre>  3</pre></span><pre>import sys</pre></div>
+<div class="skip"><span class="num"><pre>  4</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>  5</pre></span><pre>import paste.script.command as pscmd</pre></div>
+<div class="cov"><span class="num"><pre>  6</pre></span><pre>import pkg_resources</pre></div>
+<div class="cov"><span class="num"><pre>  7</pre></span><pre>import optparse</pre></div>
+<div class="cov"><span class="num"><pre>  8</pre></span><pre>from pysutils import find_path_package_name</pre></div>
+<div class="skip"><span class="num"><pre>  9</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 10</pre></span><pre>class ScriptingHelperBase(object):</pre></div>
+<div class="cov"><span class="num"><pre> 11</pre></span><pre>    def __init__(self):</pre></div>
+<div class="nocov"><span class="num"><pre> 12</pre></span><pre>        self.setup_parser()</pre></div>
+<div class="nocov"><span class="num"><pre> 13</pre></span><pre>        self.monkey_patch()</pre></div>
+<div class="skip"><span class="num"><pre> 14</pre></span><pre>    </pre></div>
+<div class="cov"><span class="num"><pre> 15</pre></span><pre>    def setup_parser(self):</pre></div>
+<div class="nocov"><span class="num"><pre> 16</pre></span><pre>        if self.distribution_name:</pre></div>
+<div class="nocov"><span class="num"><pre> 17</pre></span><pre>            dist = pkg_resources.get_distribution(self.distribution_name)</pre></div>
+<div class="nocov"><span class="num"><pre> 18</pre></span><pre>            location = dist.location</pre></div>
+<div class="nocov"><span class="num"><pre> 19</pre></span><pre>        else:</pre></div>
+<div class="nocov"><span class="num"><pre> 20</pre></span><pre>            dist = '&lt;unknown&gt;'</pre></div>
+<div class="nocov"><span class="num"><pre> 21</pre></span><pre>            location = '&lt;unknown&gt;'</pre></div>
+<div class="skip"><span class="num"><pre> 22</pre></span><pre></pre></div>
+<div class="nocov"><span class="num"><pre> 23</pre></span><pre>        python_version = sys.version.splitlines()[0].strip()</pre></div>
+<div class="skip"><span class="num"><pre> 24</pre></span><pre>        </pre></div>
+<div class="nocov"><span class="num"><pre> 25</pre></span><pre>        parser = optparse.OptionParser(add_help_option=False,</pre></div>
+<div class="nocov"><span class="num"><pre> 26</pre></span><pre>                                       version='%s from %s (python %s)'</pre></div>
+<div class="nocov"><span class="num"><pre> 27</pre></span><pre>                                       % (dist, location, python_version),</pre></div>
+<div class="nocov"><span class="num"><pre> 28</pre></span><pre>                                       usage='%prog [global_options] COMMAND [command_options]')</pre></div>
+<div class="skip"><span class="num"><pre> 29</pre></span><pre>        </pre></div>
+<div class="nocov"><span class="num"><pre> 30</pre></span><pre>        parser.disable_interspersed_args()</pre></div>
+<div class="skip"><span class="num"><pre> 31</pre></span><pre>        </pre></div>
+<div class="nocov"><span class="num"><pre> 32</pre></span><pre>        parser.add_option(</pre></div>
+<div class="nocov"><span class="num"><pre> 33</pre></span><pre>            '-h', '--help',</pre></div>
+<div class="nocov"><span class="num"><pre> 34</pre></span><pre>            action='store_true',</pre></div>
+<div class="nocov"><span class="num"><pre> 35</pre></span><pre>            dest='do_help',</pre></div>
+<div class="nocov"><span class="num"><pre> 36</pre></span><pre>            help=&quot;Show this help message&quot;)</pre></div>
+<div class="skip"><span class="num"><pre> 37</pre></span><pre>        </pre></div>
+<div class="nocov"><span class="num"><pre> 38</pre></span><pre>        self.parser = parser</pre></div>
+<div class="skip"><span class="num"><pre> 39</pre></span><pre>    </pre></div>
+<div class="cov"><span class="num"><pre> 40</pre></span><pre>    def monkey_patch(self):</pre></div>
+<div class="nocov"><span class="num"><pre> 41</pre></span><pre>        pscmd.get_commands = lambda: self.get_commands()</pre></div>
+<div class="nocov"><span class="num"><pre> 42</pre></span><pre>        pscmd.parser = self.parser</pre></div>
+<div class="skip"><span class="num"><pre> 43</pre></span><pre>        </pre></div>
+<div class="cov"><span class="num"><pre> 44</pre></span><pre>    def run(self, args=None):</pre></div>
+<div class="skip"><span class="num"><pre> 45</pre></span><pre>        </pre></div>
+<div class="nocov"><span class="num"><pre> 46</pre></span><pre>        if (not args and</pre></div>
+<div class="nocov"><span class="num"><pre> 47</pre></span><pre>            len(sys.argv) &gt;= 2</pre></div>
+<div class="nocov"><span class="num"><pre> 48</pre></span><pre>            and os.environ.get('_') and sys.argv[0] != os.environ['_']</pre></div>
+<div class="nocov"><span class="num"><pre> 49</pre></span><pre>            and os.environ['_'] == sys.argv[1]):</pre></div>
+<div class="skip"><span class="num"><pre> 50</pre></span><pre>            # probably it's an exe execution</pre></div>
+<div class="nocov"><span class="num"><pre> 51</pre></span><pre>            args = ['exe', os.environ['_']] + sys.argv[2:]</pre></div>
+<div class="nocov"><span class="num"><pre> 52</pre></span><pre>        if args is None:</pre></div>
+<div class="nocov"><span class="num"><pre> 53</pre></span><pre>            args = sys.argv[1:]</pre></div>
+<div class="nocov"><span class="num"><pre> 54</pre></span><pre>        options, args = self.parser.parse_args(args)</pre></div>
+<div class="nocov"><span class="num"><pre> 55</pre></span><pre>        options.base_parser = self.parser</pre></div>
+<div class="nocov"><span class="num"><pre> 56</pre></span><pre>        commands = self.get_commands()</pre></div>
+<div class="nocov"><span class="num"><pre> 57</pre></span><pre>        if options.do_help:</pre></div>
+<div class="nocov"><span class="num"><pre> 58</pre></span><pre>            args = ['help'] + args</pre></div>
+<div class="nocov"><span class="num"><pre> 59</pre></span><pre>        if not args:</pre></div>
+<div class="nocov"><span class="num"><pre> 60</pre></span><pre>            args = ['help']</pre></div>
+<div class="nocov"><span class="num"><pre> 61</pre></span><pre>        command_name = args[0]</pre></div>
+<div class="nocov"><span class="num"><pre> 62</pre></span><pre>        if command_name not in commands:</pre></div>
+<div class="nocov"><span class="num"><pre> 63</pre></span><pre>            command = pscmd.NotFoundCommand</pre></div>
+<div class="nocov"><span class="num"><pre> 64</pre></span><pre>        else:</pre></div>
+<div class="nocov"><span class="num"><pre> 65</pre></span><pre>            command = commands[command_name].load()</pre></div>
+<div class="nocov"><span class="num"><pre> 66</pre></span><pre>        self.invoke(command, command_name, options, args[1:])</pre></div>
+<div class="skip"><span class="num"><pre> 67</pre></span><pre>    </pre></div>
+<div class="cov"><span class="num"><pre> 68</pre></span><pre>    def get_commands(self):</pre></div>
+<div class="nocov"><span class="num"><pre> 69</pre></span><pre>        commands = {}</pre></div>
+<div class="nocov"><span class="num"><pre> 70</pre></span><pre>        for p in pkg_resources.iter_entry_points(self.entry_point_name):</pre></div>
+<div class="nocov"><span class="num"><pre> 71</pre></span><pre>            commands[p.name] = p</pre></div>
+<div class="nocov"><span class="num"><pre> 72</pre></span><pre>        return commands</pre></div>
+<div class="skip"><span class="num"><pre> 73</pre></span><pre>    </pre></div>
+<div class="cov"><span class="num"><pre> 74</pre></span><pre>    def invoke(self, command, command_name, options, args):</pre></div>
+<div class="nocov"><span class="num"><pre> 75</pre></span><pre>        try:</pre></div>
+<div class="nocov"><span class="num"><pre> 76</pre></span><pre>            runner = command(command_name)</pre></div>
+<div class="nocov"><span class="num"><pre> 77</pre></span><pre>            self.modify_runner(runner, options)</pre></div>
+<div class="nocov"><span class="num"><pre> 78</pre></span><pre>            exit_code = runner.run(args)</pre></div>
+<div class="nocov"><span class="num"><pre> 79</pre></span><pre>        except pscmd.BadCommand, e:</pre></div>
+<div class="nocov"><span class="num"><pre> 80</pre></span><pre>            print e.message</pre></div>
+<div class="nocov"><span class="num"><pre> 81</pre></span><pre>            exit_code = e.exit_code</pre></div>
+<div class="nocov"><span class="num"><pre> 82</pre></span><pre>        sys.exit(exit_code)</pre></div>
+<div class="skip"><span class="num"><pre> 83</pre></span><pre>    </pre></div>
+<div class="cov"><span class="num"><pre> 84</pre></span><pre>    def modify_runner(self, runner, options):</pre></div>
+<div class="nocov"><span class="num"><pre> 85</pre></span><pre>        return runner</pre></div>
+<div class="skip"><span class="num"><pre> 86</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 87</pre></span><pre>class PysmvtScriptingHelper(ScriptingHelperBase):</pre></div>
+<div class="cov"><span class="num"><pre> 88</pre></span><pre>    def __init__(self):</pre></div>
+<div class="nocov"><span class="num"><pre> 89</pre></span><pre>        self.distribution_name = 'pysmvt'</pre></div>
+<div class="nocov"><span class="num"><pre> 90</pre></span><pre>        self.entry_point_name = 'pysmvt.no_app_command'</pre></div>
+<div class="nocov"><span class="num"><pre> 91</pre></span><pre>        ScriptingHelperBase.__init__(self)</pre></div>
+<div class="skip"><span class="num"><pre> 92</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 93</pre></span><pre>class AppScriptingHelper(ScriptingHelperBase):</pre></div>
+<div class="cov"><span class="num"><pre> 94</pre></span><pre>    def __init__(self, appfactory):</pre></div>
+<div class="nocov"><span class="num"><pre> 95</pre></span><pre>        self.distribution_name = None</pre></div>
+<div class="nocov"><span class="num"><pre> 96</pre></span><pre>        self.entry_point_name = 'pysmvt.app_command'</pre></div>
+<div class="nocov"><span class="num"><pre> 97</pre></span><pre>        ScriptingHelperBase.__init__(self)</pre></div>
+<div class="nocov"><span class="num"><pre> 98</pre></span><pre>        self.appfactory = appfactory</pre></div>
+<div class="skip"><span class="num"><pre> 99</pre></span><pre>    </pre></div>
+<div class="cov"><span class="num"><pre>100</pre></span><pre>    def setup_parser(self):</pre></div>
+<div class="nocov"><span class="num"><pre>101</pre></span><pre>        ScriptingHelperBase.setup_parser(self)</pre></div>
+<div class="nocov"><span class="num"><pre>102</pre></span><pre>        self.parser.add_option(</pre></div>
+<div class="nocov"><span class="num"><pre>103</pre></span><pre>        '-p', '--settings-profile',</pre></div>
+<div class="nocov"><span class="num"><pre>104</pre></span><pre>        dest='settings_profile',</pre></div>
+<div class="nocov"><span class="num"><pre>105</pre></span><pre>        help='Choose which settings profile to use with this command.'\</pre></div>
+<div class="nocov"><span class="num"><pre>106</pre></span><pre>            ' If not given, the default will be used.')</pre></div>
+<div class="skip"><span class="num"><pre>107</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>108</pre></span><pre>    def modify_runner(self, runner, options):</pre></div>
+<div class="skip"><span class="num"><pre>109</pre></span><pre>        # instantiate the app</pre></div>
+<div class="nocov"><span class="num"><pre>110</pre></span><pre>        profile = options.settings_profile</pre></div>
+<div class="nocov"><span class="num"><pre>111</pre></span><pre>        if profile:</pre></div>
+<div class="nocov"><span class="num"><pre>112</pre></span><pre>            try:</pre></div>
+<div class="nocov"><span class="num"><pre>113</pre></span><pre>                self.wsgiapp = self.appfactory(profile)</pre></div>
+<div class="nocov"><span class="num"><pre>114</pre></span><pre>            except AttributeError:</pre></div>
+<div class="nocov"><span class="num"><pre>115</pre></span><pre>                raise pscmd.BadCommand('Error: could not find settings profile: %s' % profile)</pre></div>
+<div class="nocov"><span class="num"><pre>116</pre></span><pre>        else:</pre></div>
+<div class="nocov"><span class="num"><pre>117</pre></span><pre>            self.wsgiapp = self.appfactory()</pre></div>
+<div class="nocov"><span class="num"><pre>118</pre></span><pre>        runner.wsgiapp = self.wsgiapp</pre></div>
+<div class="nocov"><span class="num"><pre>119</pre></span><pre>        return runner</pre></div>
+<div class="skip"><span class="num"><pre>120</pre></span><pre>    </pre></div>
+<div class="cov"><span class="num"><pre>121</pre></span><pre>def application_entry(appfactory):</pre></div>
+<div class="nocov"><span class="num"><pre>122</pre></span><pre>    AppScriptingHelper(appfactory).run()</pre></div>
+<div class="skip"><span class="num"><pre>123</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>124</pre></span><pre>def pysmvt_entry():</pre></div>
+<div class="nocov"><span class="num"><pre>125</pre></span><pre>    PysmvtScriptingHelper().run()</pre></div>
+<div class="skip"><span class="num"><pre>126</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>127</pre></span><pre>class UsageError(Exception):</pre></div>
+<div class="cov"><span class="num"><pre>128</pre></span><pre>    pass</pre></div>
+<div class="skip"><span class="num"><pre>129</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>130</pre></span><pre>def load_current_app(app_name=None, profile=None):</pre></div>
+<div class="cov"><span class="num"><pre>131</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>132</pre></span><pre>        Load the application</pre></div>
+<div class="cov"><span class="num"><pre>133</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="nocov"><span class="num"><pre>134</pre></span><pre>    if not app_name:</pre></div>
+<div class="nocov"><span class="num"><pre>135</pre></span><pre>        &quot;&quot;&quot; look for the app name in the environment &quot;&quot;&quot;</pre></div>
+<div class="nocov"><span class="num"><pre>136</pre></span><pre>        app_name = os.getenv('PYSMVT_APPNAME')</pre></div>
+<div class="nocov"><span class="num"><pre>137</pre></span><pre>    if not app_name:</pre></div>
+<div class="nocov"><span class="num"><pre>138</pre></span><pre>        &quot;&quot;&quot; find the appname based on the current working directory &quot;&quot;&quot;</pre></div>
+<div class="nocov"><span class="num"><pre>139</pre></span><pre>        app_name = find_path_package_name(os.getcwd())</pre></div>
+<div class="nocov"><span class="num"><pre>140</pre></span><pre>    if not app_name:</pre></div>
+<div class="nocov"><span class="num"><pre>141</pre></span><pre>        raise UsageError('Could not determine the current application name.  Is the CWD a pysmvt application?')</pre></div>
+<div class="nocov"><span class="num"><pre>142</pre></span><pre>    try:</pre></div>
+<div class="nocov"><span class="num"><pre>143</pre></span><pre>        pkg_pymod = __import__(app_name , globals(), locals(), [''])</pre></div>
+<div class="nocov"><span class="num"><pre>144</pre></span><pre>    except ImportError, e:</pre></div>
+<div class="nocov"><span class="num"><pre>145</pre></span><pre>        raise UsageError('Could not import name &quot;%s&quot;.  Is the CWD a pysmvt application?' % app_name)</pre></div>
+<div class="skip"><span class="num"><pre>146</pre></span><pre>    </pre></div>
+<div class="nocov"><span class="num"><pre>147</pre></span><pre>    try:</pre></div>
+<div class="nocov"><span class="num"><pre>148</pre></span><pre>        app_pymod = __import__('%s.application' % app_name , globals(), locals(), [''])</pre></div>
+<div class="nocov"><span class="num"><pre>149</pre></span><pre>    except ImportError, e:</pre></div>
+<div class="nocov"><span class="num"><pre>150</pre></span><pre>        raise UsageError('Could not import name &quot;%s.application&quot;.  Is the CWD a pysmvt application?' % app_name)</pre></div>
+<div class="skip"><span class="num"><pre>151</pre></span><pre>    </pre></div>
+<div class="nocov"><span class="num"><pre>152</pre></span><pre>    pkg_dir = path.dirname(pkg_pymod.__file__)</pre></div>
+<div class="nocov"><span class="num"><pre>153</pre></span><pre>    if profile:</pre></div>
+<div class="nocov"><span class="num"><pre>154</pre></span><pre>        wsgi_app = app_pymod.make_wsgi(profile)</pre></div>
+<div class="nocov"><span class="num"><pre>155</pre></span><pre>    else:</pre></div>
+<div class="nocov"><span class="num"><pre>156</pre></span><pre>        wsgi_app = app_pymod.make_wsgi()</pre></div>
+<div class="nocov"><span class="num"><pre>157</pre></span><pre>    return app_name, pkg_pymod, pkg_dir, wsgi_app</pre></div>
+</div>
+</body>
+</html>

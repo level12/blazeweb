@@ -1,0 +1,338 @@
+<html>
+<head>
+<title>pysmvt.application</title>
+</head>
+<body>
+pysmvt.application
+<style>
+.coverage pre {float: left; margin: 0px 1em; border: none;
+               padding: 0px; }
+.num pre { margin: 0px }
+.nocov, .nocov pre {background-color: #faa}
+.cov, .cov pre {background-color: #cfc}
+div.coverage div { clear: both; height: 1.1em}
+</style>
+<div class="stats">
+Covered: 215 lines<br/>
+Missed: 34 lines<br/>
+Skipped 64 lines<br/>
+Percent: 86 %<br/>
+
+</div>
+<div class="coverage">
+<div class="cov"><span class="num"><pre>  1</pre></span><pre>import logging</pre></div>
+<div class="skip"><span class="num"><pre>  2</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>  3</pre></span><pre>from pysutils.datastructures import BlankObject</pre></div>
+<div class="cov"><span class="num"><pre>  4</pre></span><pre>from pysutils.strings import randchars, randhash</pre></div>
+<div class="cov"><span class="num"><pre>  5</pre></span><pre>from werkzeug.exceptions import HTTPException, InternalServerError</pre></div>
+<div class="cov"><span class="num"><pre>  6</pre></span><pre>from werkzeug import create_environ</pre></div>
+<div class="cov"><span class="num"><pre>  7</pre></span><pre>from werkzeug.routing import Map, Submount</pre></div>
+<div class="skip"><span class="num"><pre>  8</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>  9</pre></span><pre>import pysmvt</pre></div>
+<div class="cov"><span class="num"><pre> 10</pre></span><pre>from pysmvt import session, rg, user</pre></div>
+<div class="cov"><span class="num"><pre> 11</pre></span><pre>from pysmvt.exceptions import Forward, ProgrammingError, Redirect</pre></div>
+<div class="cov"><span class="num"><pre> 12</pre></span><pre>from pysmvt.hierarchy import findobj, HierarchyImportError, \</pre></div>
+<div class="cov"><span class="num"><pre> 13</pre></span><pre>    listplugins, visitmods, findview, split_endpoint</pre></div>
+<div class="cov"><span class="num"><pre> 14</pre></span><pre>from pysmvt.logs import create_handlers_from_settings</pre></div>
+<div class="cov"><span class="num"><pre> 15</pre></span><pre>from pysmvt.mail import mail_programmers</pre></div>
+<div class="cov"><span class="num"><pre> 16</pre></span><pre>from pysmvt.templating import default_engine</pre></div>
+<div class="cov"><span class="num"><pre> 17</pre></span><pre>from pysmvt.views import FunctionViewHandler</pre></div>
+<div class="cov"><span class="num"><pre> 18</pre></span><pre>from pysmvt.users import User</pre></div>
+<div class="cov"><span class="num"><pre> 19</pre></span><pre>from pysmvt.utils import exception_with_context</pre></div>
+<div class="cov"><span class="num"><pre> 20</pre></span><pre>from pysmvt.utils.filesystem import mkdirs, copy_static_files</pre></div>
+<div class="cov"><span class="num"><pre> 21</pre></span><pre>from pysmvt.wrappers import Request</pre></div>
+<div class="skip"><span class="num"><pre> 22</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 23</pre></span><pre>log = logging.getLogger(__name__)</pre></div>
+<div class="skip"><span class="num"><pre> 24</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 25</pre></span><pre>class RequestManager(object):</pre></div>
+<div class="cov"><span class="num"><pre> 26</pre></span><pre>    def __init__(self, app, environ):</pre></div>
+<div class="cov"><span class="num"><pre> 27</pre></span><pre>        self.app = app</pre></div>
+<div class="cov"><span class="num"><pre> 28</pre></span><pre>        self.environ = environ</pre></div>
+<div class="skip"><span class="num"><pre> 29</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 30</pre></span><pre>    def registry_setup(self):</pre></div>
+<div class="cov"><span class="num"><pre> 31</pre></span><pre>        environ = self.environ</pre></div>
+<div class="cov"><span class="num"><pre> 32</pre></span><pre>        environ['paste.registry'].register(pysmvt.settings, self.app.settings)</pre></div>
+<div class="cov"><span class="num"><pre> 33</pre></span><pre>        environ['paste.registry'].register(pysmvt.ag, self.app.ag)</pre></div>
+<div class="cov"><span class="num"><pre> 34</pre></span><pre>        if environ.has_key('beaker.session'):</pre></div>
+<div class="cov"><span class="num"><pre> 35</pre></span><pre>            environ['paste.registry'].register(session, environ['beaker.session'])</pre></div>
+<div class="cov"><span class="num"><pre> 36</pre></span><pre>        else:</pre></div>
+<div class="cov"><span class="num"><pre> 37</pre></span><pre>            environ['paste.registry'].register(session, None)</pre></div>
+<div class="cov"><span class="num"><pre> 38</pre></span><pre>        environ['paste.registry'].register(user, self.user_setup())</pre></div>
+<div class="cov"><span class="num"><pre> 39</pre></span><pre>        environ['paste.registry'].register(rg, BlankObject())</pre></div>
+<div class="skip"><span class="num"><pre> 40</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 41</pre></span><pre>    def rg_setup(self):</pre></div>
+<div class="skip"><span class="num"><pre> 42</pre></span><pre>        # WSGI request setup</pre></div>
+<div class="cov"><span class="num"><pre> 43</pre></span><pre>        rg.ident = randchars()</pre></div>
+<div class="cov"><span class="num"><pre> 44</pre></span><pre>        rg.environ = self.environ</pre></div>
+<div class="skip"><span class="num"><pre> 45</pre></span><pre>        # the request object binds itself to rg.request</pre></div>
+<div class="cov"><span class="num"><pre> 46</pre></span><pre>        Request(self.environ)</pre></div>
+<div class="skip"><span class="num"><pre> 47</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 48</pre></span><pre>    def routing_setup(self):</pre></div>
+<div class="cov"><span class="num"><pre> 49</pre></span><pre>        rg.urladapter = pysmvt.ag.route_map.bind_to_environ(self.environ)</pre></div>
+<div class="skip"><span class="num"><pre> 50</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 51</pre></span><pre>    def user_setup(self):</pre></div>
+<div class="cov"><span class="num"><pre> 52</pre></span><pre>        environ = self.environ</pre></div>
+<div class="cov"><span class="num"><pre> 53</pre></span><pre>        if 'beaker.session' in environ:</pre></div>
+<div class="cov"><span class="num"><pre> 54</pre></span><pre>            if '__pysmvt_user' not in environ['beaker.session']:</pre></div>
+<div class="cov"><span class="num"><pre> 55</pre></span><pre>                environ['beaker.session']['__pysmvt_user'] = User()</pre></div>
+<div class="cov"><span class="num"><pre> 56</pre></span><pre>            return environ['beaker.session']['__pysmvt_user']</pre></div>
+<div class="skip"><span class="num"><pre> 57</pre></span><pre>        # having a user object that is not in a session makes sense for testing</pre></div>
+<div class="skip"><span class="num"><pre> 58</pre></span><pre>        # purposes, but probably not in production use</pre></div>
+<div class="cov"><span class="num"><pre> 59</pre></span><pre>        return User()</pre></div>
+<div class="skip"><span class="num"><pre> 60</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 61</pre></span><pre>    def __enter__(self):</pre></div>
+<div class="cov"><span class="num"><pre> 62</pre></span><pre>        self.registry_setup()</pre></div>
+<div class="cov"><span class="num"><pre> 63</pre></span><pre>        self.rg_setup()</pre></div>
+<div class="cov"><span class="num"><pre> 64</pre></span><pre>        self.routing_setup()</pre></div>
+<div class="skip"><span class="num"><pre> 65</pre></span><pre>        # allow middleware higher in the stack to help initilize the request</pre></div>
+<div class="skip"><span class="num"><pre> 66</pre></span><pre>        # after the registry variables have been setup</pre></div>
+<div class="cov"><span class="num"><pre> 67</pre></span><pre>        if 'pysmvt.request_setup' in self.environ:</pre></div>
+<div class="nocov"><span class="num"><pre> 68</pre></span><pre>            for callable in self.environ['pysmvt.request_setup']:</pre></div>
+<div class="nocov"><span class="num"><pre> 69</pre></span><pre>                callable()</pre></div>
+<div class="skip"><span class="num"><pre> 70</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 71</pre></span><pre>    def __exit__(self, exc_type, exc_value, tb):</pre></div>
+<div class="cov"><span class="num"><pre> 72</pre></span><pre>        if 'pysmvt.request_teardown' in self.environ:</pre></div>
+<div class="nocov"><span class="num"><pre> 73</pre></span><pre>            for callable in self.environ['pysmvt.request_teardown']:</pre></div>
+<div class="nocov"><span class="num"><pre> 74</pre></span><pre>                callable()</pre></div>
+<div class="skip"><span class="num"><pre> 75</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 76</pre></span><pre>class ResponseContext(object):</pre></div>
+<div class="cov"><span class="num"><pre> 77</pre></span><pre>    def __init__(self, error_doc_code):</pre></div>
+<div class="cov"><span class="num"><pre> 78</pre></span><pre>        self.environ = rg.environ</pre></div>
+<div class="cov"><span class="num"><pre> 79</pre></span><pre>        self.current_plugin = None</pre></div>
+<div class="cov"><span class="num"><pre> 80</pre></span><pre>        self.error_doc_code = error_doc_code</pre></div>
+<div class="cov"><span class="num"><pre> 81</pre></span><pre>        self.css = []</pre></div>
+<div class="cov"><span class="num"><pre> 82</pre></span><pre>        self.js = []</pre></div>
+<div class="skip"><span class="num"><pre> 83</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 84</pre></span><pre>    def assign_current_plugin(self, endpoint):</pre></div>
+<div class="cov"><span class="num"><pre> 85</pre></span><pre>        plugin, _ = split_endpoint(endpoint)</pre></div>
+<div class="cov"><span class="num"><pre> 86</pre></span><pre>        self.current_plugin = plugin</pre></div>
+<div class="skip"><span class="num"><pre> 87</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 88</pre></span><pre>    def __enter__(self):</pre></div>
+<div class="cov"><span class="num"><pre> 89</pre></span><pre>        rg.respctx = self</pre></div>
+<div class="skip"><span class="num"><pre> 90</pre></span><pre>        # allow middleware higher in the stack to help initilize the response</pre></div>
+<div class="cov"><span class="num"><pre> 91</pre></span><pre>        if 'pysmvt.response_setup' in self.environ:</pre></div>
+<div class="nocov"><span class="num"><pre> 92</pre></span><pre>            for callable in self.environ['pysmvt.response_setup']:</pre></div>
+<div class="nocov"><span class="num"><pre> 93</pre></span><pre>                callable()</pre></div>
+<div class="skip"><span class="num"><pre> 94</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 95</pre></span><pre>    def __exit__(self, exc_type, e, tb):</pre></div>
+<div class="cov"><span class="num"><pre> 96</pre></span><pre>        if 'pysmvt.response_teardown' in self.environ:</pre></div>
+<div class="nocov"><span class="num"><pre> 97</pre></span><pre>            for callable in self.environ['pysmvt.response_teardown']:</pre></div>
+<div class="nocov"><span class="num"><pre> 98</pre></span><pre>                callable()</pre></div>
+<div class="cov"><span class="num"><pre> 99</pre></span><pre>        if isinstance(e, Forward):</pre></div>
+<div class="cov"><span class="num"><pre>100</pre></span><pre>            log.debug('forwarding to %s (%s)', e.forward_endpoint, e.forward_args)</pre></div>
+<div class="cov"><span class="num"><pre>101</pre></span><pre>            rg.forward_queue.append((e.forward_endpoint, e.forward_args))</pre></div>
+<div class="cov"><span class="num"><pre>102</pre></span><pre>            if len(rg.forward_queue) == 10:</pre></div>
+<div class="cov"><span class="num"><pre>103</pre></span><pre>                raise ProgrammingError('forward loop detected: %s' % '-&gt;'.join([g[0] for g in rg.forward_queue]))</pre></div>
+<div class="cov"><span class="num"><pre>104</pre></span><pre>            return True</pre></div>
+<div class="cov"><span class="num"><pre>105</pre></span><pre>        if 'beaker.session' in self.environ:</pre></div>
+<div class="cov"><span class="num"><pre>106</pre></span><pre>            self.environ['beaker.session'].save()</pre></div>
+<div class="skip"><span class="num"><pre>107</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>108</pre></span><pre>class WSGIApp(object):</pre></div>
+<div class="skip"><span class="num"><pre>109</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>110</pre></span><pre>    def __init__(self, module_or_settings, profile=None):</pre></div>
+<div class="cov"><span class="num"><pre>111</pre></span><pre>        self._id = randhash()</pre></div>
+<div class="cov"><span class="num"><pre>112</pre></span><pre>        self.settings = module_or_settings</pre></div>
+<div class="cov"><span class="num"><pre>113</pre></span><pre>        if profile is not None:</pre></div>
+<div class="cov"><span class="num"><pre>114</pre></span><pre>            module = module_or_settings</pre></div>
+<div class="cov"><span class="num"><pre>115</pre></span><pre>            try:</pre></div>
+<div class="cov"><span class="num"><pre>116</pre></span><pre>                self.settings = getattr(module, profile)()</pre></div>
+<div class="nocov"><span class="num"><pre>117</pre></span><pre>            except AttributeError, e:</pre></div>
+<div class="nocov"><span class="num"><pre>118</pre></span><pre>                if &quot;has no attribute '%s'&quot; % profile not in str(e):</pre></div>
+<div class="nocov"><span class="num"><pre>119</pre></span><pre>                    raise</pre></div>
+<div class="nocov"><span class="num"><pre>120</pre></span><pre>                raise ValueError('settings profile &quot;%s&quot; not found in this application' % profile)</pre></div>
+<div class="cov"><span class="num"><pre>121</pre></span><pre>        self.ag_setup()</pre></div>
+<div class="cov"><span class="num"><pre>122</pre></span><pre>        self.registry_setup()</pre></div>
+<div class="cov"><span class="num"><pre>123</pre></span><pre>        self.settings_setup()</pre></div>
+<div class="cov"><span class="num"><pre>124</pre></span><pre>        self.filesystem_setup()</pre></div>
+<div class="cov"><span class="num"><pre>125</pre></span><pre>        self.logging_setup()</pre></div>
+<div class="cov"><span class="num"><pre>126</pre></span><pre>        self.routing_setup()</pre></div>
+<div class="cov"><span class="num"><pre>127</pre></span><pre>        self.init_templating()</pre></div>
+<div class="skip"><span class="num"><pre>128</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>129</pre></span><pre>    def registry_setup(self):</pre></div>
+<div class="cov"><span class="num"><pre>130</pre></span><pre>        pysmvt.settings._push_object(self.settings)</pre></div>
+<div class="cov"><span class="num"><pre>131</pre></span><pre>        pysmvt.ag._push_object(self.ag)</pre></div>
+<div class="skip"><span class="num"><pre>132</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>133</pre></span><pre>    def ag_setup(self):</pre></div>
+<div class="cov"><span class="num"><pre>134</pre></span><pre>        self.ag = BlankObject()</pre></div>
+<div class="cov"><span class="num"><pre>135</pre></span><pre>        self.ag.app = self</pre></div>
+<div class="cov"><span class="num"><pre>136</pre></span><pre>        self.ag.view_functions = {}</pre></div>
+<div class="cov"><span class="num"><pre>137</pre></span><pre>        self.ag.hierarchy_import_cache = {}</pre></div>
+<div class="cov"><span class="num"><pre>138</pre></span><pre>        self.ag.hierarchy_file_cache = {}</pre></div>
+<div class="skip"><span class="num"><pre>139</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>140</pre></span><pre>    def settings_setup(self):</pre></div>
+<div class="skip"><span class="num"><pre>141</pre></span><pre>        # now we need to assign plugin's settings to the main setting object</pre></div>
+<div class="cov"><span class="num"><pre>142</pre></span><pre>        for pname in listplugins():</pre></div>
+<div class="cov"><span class="num"><pre>143</pre></span><pre>            try:</pre></div>
+<div class="cov"><span class="num"><pre>144</pre></span><pre>                Settings = findobj('%s:config.settings' % pname, 'Settings')</pre></div>
+<div class="cov"><span class="num"><pre>145</pre></span><pre>                ms = Settings()</pre></div>
+<div class="skip"><span class="num"><pre>146</pre></span><pre>                # update the plugin's settings with any plugin level settings made</pre></div>
+<div class="skip"><span class="num"><pre>147</pre></span><pre>                # at the app level.  This allows us to override plugin settings</pre></div>
+<div class="skip"><span class="num"><pre>148</pre></span><pre>                # in our application's settings.py file.</pre></div>
+<div class="cov"><span class="num"><pre>149</pre></span><pre>                try:</pre></div>
+<div class="cov"><span class="num"><pre>150</pre></span><pre>                    ms.update(self.settings.plugins[pname])</pre></div>
+<div class="cov"><span class="num"><pre>151</pre></span><pre>                except KeyError, e:</pre></div>
+<div class="cov"><span class="num"><pre>152</pre></span><pre>                    if pname not in str(e):</pre></div>
+<div class="nocov"><span class="num"><pre>153</pre></span><pre>                        raise</pre></div>
+<div class="cov"><span class="num"><pre>154</pre></span><pre>                self.settings.plugins[pname] = ms</pre></div>
+<div class="cov"><span class="num"><pre>155</pre></span><pre>            except HierarchyImportError, e:</pre></div>
+<div class="cov"><span class="num"><pre>156</pre></span><pre>                if '%s.config.settings' % pname not in str(e) and 'Settings' not in str(e):</pre></div>
+<div class="nocov"><span class="num"><pre>157</pre></span><pre>                    raise</pre></div>
+<div class="skip"><span class="num"><pre>158</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre>159</pre></span><pre>        # lock the settings, this ensures that an attribute error is thrown if an</pre></div>
+<div class="skip"><span class="num"><pre>160</pre></span><pre>        # attribute is accessed that doesn't exist.  Without the lock, a new attr</pre></div>
+<div class="skip"><span class="num"><pre>161</pre></span><pre>        # would be created, which is undesirable since any &quot;new&quot; attribute at this</pre></div>
+<div class="skip"><span class="num"><pre>162</pre></span><pre>        # point would probably be an accident</pre></div>
+<div class="cov"><span class="num"><pre>163</pre></span><pre>        self.settings.lock()</pre></div>
+<div class="skip"><span class="num"><pre>164</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>165</pre></span><pre>    def filesystem_setup(self):</pre></div>
+<div class="skip"><span class="num"><pre>166</pre></span><pre>        # create the writeable directories if they don't exist already</pre></div>
+<div class="cov"><span class="num"><pre>167</pre></span><pre>        if self.settings.auto_create_writeable_dirs:</pre></div>
+<div class="cov"><span class="num"><pre>168</pre></span><pre>            mkdirs(self.settings.dirs.data)</pre></div>
+<div class="cov"><span class="num"><pre>169</pre></span><pre>            mkdirs(self.settings.dirs.logs)</pre></div>
+<div class="cov"><span class="num"><pre>170</pre></span><pre>            mkdirs(self.settings.dirs.tmp)</pre></div>
+<div class="skip"><span class="num"><pre>171</pre></span><pre>        # copy static files if requested</pre></div>
+<div class="cov"><span class="num"><pre>172</pre></span><pre>        if self.settings.auto_copy_static.enabled:</pre></div>
+<div class="cov"><span class="num"><pre>173</pre></span><pre>            copy_static_files(self.settings.auto_copy_static.delete_existing)</pre></div>
+<div class="skip"><span class="num"><pre>174</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>175</pre></span><pre>    def logging_setup(self):</pre></div>
+<div class="cov"><span class="num"><pre>176</pre></span><pre>        create_handlers_from_settings(self.settings)</pre></div>
+<div class="skip"><span class="num"><pre>177</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>178</pre></span><pre>    def routing_setup(self):</pre></div>
+<div class="skip"><span class="num"><pre>179</pre></span><pre>        # setup the Map object with the appropriate settings</pre></div>
+<div class="cov"><span class="num"><pre>180</pre></span><pre>        self.ag.route_map = Map(**self.settings.routing.map.todict())</pre></div>
+<div class="skip"><span class="num"><pre>181</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre>182</pre></span><pre>        # load view modules so routes from @asview() get setup correctly</pre></div>
+<div class="cov"><span class="num"><pre>183</pre></span><pre>        if self.settings.auto_load_views:</pre></div>
+<div class="cov"><span class="num"><pre>184</pre></span><pre>            visitmods('views')</pre></div>
+<div class="skip"><span class="num"><pre>185</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre>186</pre></span><pre>        # application routes first since they should take precedence</pre></div>
+<div class="cov"><span class="num"><pre>187</pre></span><pre>        self.add_routing_rules(self.settings.routing.routes)</pre></div>
+<div class="skip"><span class="num"><pre>188</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre>189</pre></span><pre>        # now the routes from plugin settings</pre></div>
+<div class="cov"><span class="num"><pre>190</pre></span><pre>        for pname in self.settings.plugins.keys():</pre></div>
+<div class="cov"><span class="num"><pre>191</pre></span><pre>            psettings = self.settings.plugins[pname]</pre></div>
+<div class="cov"><span class="num"><pre>192</pre></span><pre>            try:</pre></div>
+<div class="cov"><span class="num"><pre>193</pre></span><pre>                self.add_routing_rules(psettings.routes)</pre></div>
+<div class="cov"><span class="num"><pre>194</pre></span><pre>            except AttributeError, e:</pre></div>
+<div class="cov"><span class="num"><pre>195</pre></span><pre>                if &quot;no attribute 'routes'&quot; not in str(e):</pre></div>
+<div class="nocov"><span class="num"><pre>196</pre></span><pre>                    raise</pre></div>
+<div class="skip"><span class="num"><pre>197</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>198</pre></span><pre>    def init_templating(self):</pre></div>
+<div class="cov"><span class="num"><pre>199</pre></span><pre>        engine = default_engine()</pre></div>
+<div class="cov"><span class="num"><pre>200</pre></span><pre>        self.ag.tplengine = engine()</pre></div>
+<div class="skip"><span class="num"><pre>201</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>202</pre></span><pre>    def add_routing_rules(self, rules):</pre></div>
+<div class="cov"><span class="num"><pre>203</pre></span><pre>        if self.settings.routing.prefix:</pre></div>
+<div class="skip"><span class="num"><pre>204</pre></span><pre>            # prefix the routes with the prefix in the app settings class</pre></div>
+<div class="cov"><span class="num"><pre>205</pre></span><pre>            self.ag.route_map.add(Submount(self.settings.routing.prefix, rules ))</pre></div>
+<div class="cov"><span class="num"><pre>206</pre></span><pre>        else:</pre></div>
+<div class="cov"><span class="num"><pre>207</pre></span><pre>            for rule in rules or ():</pre></div>
+<div class="cov"><span class="num"><pre>208</pre></span><pre>                self.ag.route_map.add(rule)</pre></div>
+<div class="skip"><span class="num"><pre>209</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>210</pre></span><pre>    def request_manager(self, environ):</pre></div>
+<div class="cov"><span class="num"><pre>211</pre></span><pre>        return RequestManager(self, environ)</pre></div>
+<div class="skip"><span class="num"><pre>212</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>213</pre></span><pre>    def response_context(self, error_doc_code):</pre></div>
+<div class="cov"><span class="num"><pre>214</pre></span><pre>        return ResponseContext(error_doc_code)</pre></div>
+<div class="skip"><span class="num"><pre>215</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>216</pre></span><pre>    def response_cycle(self, endpoint, args, error_doc_code=None):</pre></div>
+<div class="cov"><span class="num"><pre>217</pre></span><pre>        rg.forward_queue = [(endpoint, args)]</pre></div>
+<div class="cov"><span class="num"><pre>218</pre></span><pre>        while True:</pre></div>
+<div class="cov"><span class="num"><pre>219</pre></span><pre>            with self.response_context(error_doc_code):</pre></div>
+<div class="cov"><span class="num"><pre>220</pre></span><pre>                endpoint, args = rg.forward_queue[-1]</pre></div>
+<div class="cov"><span class="num"><pre>221</pre></span><pre>                return self.dispatch_to_view(endpoint, args)</pre></div>
+<div class="skip"><span class="num"><pre>222</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>223</pre></span><pre>    def dispatch_to_view(self, endpoint, args):</pre></div>
+<div class="cov"><span class="num"><pre>224</pre></span><pre>        log.debug('dispatch to %s (%s)', endpoint, args)</pre></div>
+<div class="cov"><span class="num"><pre>225</pre></span><pre>        if endpoint.startswith('__viewfuncs__:'):</pre></div>
+<div class="cov"><span class="num"><pre>226</pre></span><pre>            v = FunctionViewHandler(endpoint, args)</pre></div>
+<div class="cov"><span class="num"><pre>227</pre></span><pre>        else:</pre></div>
+<div class="cov"><span class="num"><pre>228</pre></span><pre>            vklass = findview(endpoint)</pre></div>
+<div class="cov"><span class="num"><pre>229</pre></span><pre>            rg.respctx.assign_current_plugin(endpoint)</pre></div>
+<div class="cov"><span class="num"><pre>230</pre></span><pre>            v = vklass(args)</pre></div>
+<div class="cov"><span class="num"><pre>231</pre></span><pre>        return v.process()</pre></div>
+<div class="skip"><span class="num"><pre>232</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>233</pre></span><pre>    def wsgi_app(self, environ, start_response):</pre></div>
+<div class="cov"><span class="num"><pre>234</pre></span><pre>        with self.request_manager(environ):</pre></div>
+<div class="cov"><span class="num"><pre>235</pre></span><pre>            try:</pre></div>
+<div class="cov"><span class="num"><pre>236</pre></span><pre>                try:</pre></div>
+<div class="cov"><span class="num"><pre>237</pre></span><pre>                    endpoint, args = rg.urladapter.match()</pre></div>
+<div class="cov"><span class="num"><pre>238</pre></span><pre>                except HTTPException, e:</pre></div>
+<div class="cov"><span class="num"><pre>239</pre></span><pre>                    log.debug('routing HTTP exception %s from %s', e, rg.request.url)</pre></div>
+<div class="cov"><span class="num"><pre>240</pre></span><pre>                    raise</pre></div>
+<div class="cov"><span class="num"><pre>241</pre></span><pre>                log.debug('wsgi_app processing %s (%s)', endpoint, args)</pre></div>
+<div class="cov"><span class="num"><pre>242</pre></span><pre>                response = self.response_cycle(endpoint, args)</pre></div>
+<div class="cov"><span class="num"><pre>243</pre></span><pre>            except Redirect, e:</pre></div>
+<div class="cov"><span class="num"><pre>244</pre></span><pre>                response = e.response</pre></div>
+<div class="cov"><span class="num"><pre>245</pre></span><pre>            except HTTPException, e:</pre></div>
+<div class="cov"><span class="num"><pre>246</pre></span><pre>                response = self.handle_http_exception(e)</pre></div>
+<div class="cov"><span class="num"><pre>247</pre></span><pre>            except Exception, e:</pre></div>
+<div class="cov"><span class="num"><pre>248</pre></span><pre>                response = self.handle_exception(e)</pre></div>
+<div class="cov"><span class="num"><pre>249</pre></span><pre>            return response(environ, start_response)</pre></div>
+<div class="skip"><span class="num"><pre>250</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>251</pre></span><pre>    def handle_http_exception(self, e):</pre></div>
+<div class="cov"><span class="num"><pre>252</pre></span><pre>        &quot;&quot;&quot;Handles an HTTP exception.  By default this will invoke the</pre></div>
+<div class="cov"><span class="num"><pre>253</pre></span><pre>        registered error handlers and fall back to returning the</pre></div>
+<div class="cov"><span class="num"><pre>254</pre></span><pre>        exception as response.</pre></div>
+<div class="skip"><span class="num"><pre>255</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>256</pre></span><pre>        .. versionadded: 0.3</pre></div>
+<div class="cov"><span class="num"><pre>257</pre></span><pre>        &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>258</pre></span><pre>        endpoint = self.settings.error_docs.get(e.code)</pre></div>
+<div class="cov"><span class="num"><pre>259</pre></span><pre>        log.debug('handling http exception %s with %s', e, endpoint)</pre></div>
+<div class="cov"><span class="num"><pre>260</pre></span><pre>        if endpoint is None:</pre></div>
+<div class="cov"><span class="num"><pre>261</pre></span><pre>            return e</pre></div>
+<div class="cov"><span class="num"><pre>262</pre></span><pre>        try:</pre></div>
+<div class="cov"><span class="num"><pre>263</pre></span><pre>            return self.response_cycle(endpoint, {}, error_doc_code=e.code)</pre></div>
+<div class="cov"><span class="num"><pre>264</pre></span><pre>        except HTTPException, httpe:</pre></div>
+<div class="nocov"><span class="num"><pre>265</pre></span><pre>            log.debug('error doc endpoint %s raised HTTPException: %s', endpoint, httpe)</pre></div>
+<div class="skip"><span class="num"><pre>266</pre></span><pre>            # the document handler is bad, so send back the original exception</pre></div>
+<div class="nocov"><span class="num"><pre>267</pre></span><pre>            return e</pre></div>
+<div class="cov"><span class="num"><pre>268</pre></span><pre>        except Exception, exc:</pre></div>
+<div class="cov"><span class="num"><pre>269</pre></span><pre>            log.debug('error doc endpoint %s raised exception: %s', endpoint, exc)</pre></div>
+<div class="cov"><span class="num"><pre>270</pre></span><pre>            return self.handle_exception(exc)</pre></div>
+<div class="skip"><span class="num"><pre>271</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>272</pre></span><pre>    def handle_exception(self, e):</pre></div>
+<div class="cov"><span class="num"><pre>273</pre></span><pre>        &quot;&quot;&quot;Default exception handling that kicks in when an exception</pre></div>
+<div class="cov"><span class="num"><pre>274</pre></span><pre>        occours that is not catched.  In debug mode the exception will</pre></div>
+<div class="cov"><span class="num"><pre>275</pre></span><pre>        be re-raised immediately, otherwise it is logged an the handler</pre></div>
+<div class="cov"><span class="num"><pre>276</pre></span><pre>        for an 500 internal server error is used.  If no such handler</pre></div>
+<div class="cov"><span class="num"><pre>277</pre></span><pre>        exists, a default 500 internal server error message is displayed.</pre></div>
+<div class="skip"><span class="num"><pre>278</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>279</pre></span><pre>        .. versionadded: 0.3</pre></div>
+<div class="cov"><span class="num"><pre>280</pre></span><pre>        &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>281</pre></span><pre>        log.error('exception encountered: %s' % exception_with_context())</pre></div>
+<div class="cov"><span class="num"><pre>282</pre></span><pre>        if not self.settings.exception_handling:</pre></div>
+<div class="cov"><span class="num"><pre>283</pre></span><pre>            raise</pre></div>
+<div class="cov"><span class="num"><pre>284</pre></span><pre>        if 'email' in self.settings.exception_handling:</pre></div>
+<div class="nocov"><span class="num"><pre>285</pre></span><pre>            try:</pre></div>
+<div class="nocov"><span class="num"><pre>286</pre></span><pre>                mail_programmers('exception encountered', exception_with_context())</pre></div>
+<div class="nocov"><span class="num"><pre>287</pre></span><pre>            except Exception, e:</pre></div>
+<div class="nocov"><span class="num"><pre>288</pre></span><pre>                log.exception('exception when trying to email exception')</pre></div>
+<div class="cov"><span class="num"><pre>289</pre></span><pre>        if 'format' in self.settings.exception_handling:</pre></div>
+<div class="nocov"><span class="num"><pre>290</pre></span><pre>            response = InternalServerError()</pre></div>
+<div class="nocov"><span class="num"><pre>291</pre></span><pre>            response.description = '&lt;pre&gt;%s&lt;/pre&gt;' % escape(exception_with_context())</pre></div>
+<div class="nocov"><span class="num"><pre>292</pre></span><pre>            return response</pre></div>
+<div class="cov"><span class="num"><pre>293</pre></span><pre>        if 'handle' in self.settings.exception_handling:</pre></div>
+<div class="cov"><span class="num"><pre>294</pre></span><pre>            endpoint = self.settings.error_docs.get(500)</pre></div>
+<div class="cov"><span class="num"><pre>295</pre></span><pre>            if endpoint is None:</pre></div>
+<div class="skip"><span class="num"><pre>296</pre></span><pre>                # turn the exception into a 500 server response</pre></div>
+<div class="cov"><span class="num"><pre>297</pre></span><pre>                log.debug('handling exception with generic 500 response')</pre></div>
+<div class="cov"><span class="num"><pre>298</pre></span><pre>                return InternalServerError()</pre></div>
+<div class="nocov"><span class="num"><pre>299</pre></span><pre>            else:</pre></div>
+<div class="nocov"><span class="num"><pre>300</pre></span><pre>                log.debug('handling exception with error doc endpoint %s' % endpoint)</pre></div>
+<div class="nocov"><span class="num"><pre>301</pre></span><pre>                try:</pre></div>
+<div class="nocov"><span class="num"><pre>302</pre></span><pre>                    return self.response_cycle(endpoint, {}, error_doc_code=500)</pre></div>
+<div class="nocov"><span class="num"><pre>303</pre></span><pre>                except HTTPException, httpe:</pre></div>
+<div class="nocov"><span class="num"><pre>304</pre></span><pre>                    log.debug('error doc endpoint %s raised HTTPException: %s', endpoint, httpe)</pre></div>
+<div class="nocov"><span class="num"><pre>305</pre></span><pre>                except Exception, exc:</pre></div>
+<div class="nocov"><span class="num"><pre>306</pre></span><pre>                    log.exception('error doc endpoint %s raised exception:', endpoint)</pre></div>
+<div class="skip"><span class="num"><pre>307</pre></span><pre>                # the document handler is bad, so give a generic response</pre></div>
+<div class="nocov"><span class="num"><pre>308</pre></span><pre>                return InternalServerError()</pre></div>
+<div class="nocov"><span class="num"><pre>309</pre></span><pre>        raise</pre></div>
+<div class="skip"><span class="num"><pre>310</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>311</pre></span><pre>    def __call__(self, environ, start_response):</pre></div>
+<div class="cov"><span class="num"><pre>312</pre></span><pre>        return self.wsgi_app(environ, start_response)</pre></div>
+<div class="skip"><span class="num"><pre>313</pre></span><pre></pre></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,115 @@
+<html>
+<head>
+<title>pysmvt.logs</title>
+</head>
+<body>
+pysmvt.logs
+<style>
+.coverage pre {float: left; margin: 0px 1em; border: none;
+               padding: 0px; }
+.num pre { margin: 0px }
+.nocov, .nocov pre {background-color: #faa}
+.cov, .cov pre {background-color: #cfc}
+div.coverage div { clear: both; height: 1.1em}
+</style>
+<div class="stats">
+Covered: 68 lines<br/>
+Missed: 0 lines<br/>
+Skipped 22 lines<br/>
+Percent: 100 %<br/>
+
+</div>
+<div class="coverage">
+<div class="cov"><span class="num"><pre> 1</pre></span><pre>from os import path</pre></div>
+<div class="cov"><span class="num"><pre> 2</pre></span><pre>import logging</pre></div>
+<div class="cov"><span class="num"><pre> 3</pre></span><pre>from pysmvt import settings</pre></div>
+<div class="cov"><span class="num"><pre> 4</pre></span><pre>from logging.handlers import RotatingFileHandler</pre></div>
+<div class="cov"><span class="num"><pre> 5</pre></span><pre>APPLICATION = 25</pre></div>
+<div class="skip"><span class="num"><pre> 6</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 7</pre></span><pre>class Logger(logging.Logger):</pre></div>
+<div class="skip"><span class="num"><pre> 8</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 9</pre></span><pre>    def application(self, msg, *args, **kwargs):</pre></div>
+<div class="cov"><span class="num"><pre>10</pre></span><pre>        &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>11</pre></span><pre>            a convenience function for logging messages at level 25, which</pre></div>
+<div class="cov"><span class="num"><pre>12</pre></span><pre>            is the &quot;application&quot; level for the pysmvt framework.  This level is</pre></div>
+<div class="cov"><span class="num"><pre>13</pre></span><pre>            intended to be used for application level information and is</pre></div>
+<div class="cov"><span class="num"><pre>14</pre></span><pre>            not used by the pysmvt framework.  An example of its intended</pre></div>
+<div class="cov"><span class="num"><pre>15</pre></span><pre>            use would be to log the IP address of each user logging in.</pre></div>
+<div class="cov"><span class="num"><pre>16</pre></span><pre>        &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>17</pre></span><pre>        return self.log(APPLICATION, msg, *args, **kwargs)</pre></div>
+<div class="skip"><span class="num"><pre>18</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>19</pre></span><pre>logging.setLoggerClass(Logger)</pre></div>
+<div class="cov"><span class="num"><pre>20</pre></span><pre>logging.addLevelName(APPLICATION, 'APPLICATION')</pre></div>
+<div class="skip"><span class="num"><pre>21</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>22</pre></span><pre>def create_handlers_from_settings(settings):</pre></div>
+<div class="cov"><span class="num"><pre>23</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>24</pre></span><pre>        used internally to setup logging for the settings.logs</pre></div>
+<div class="cov"><span class="num"><pre>25</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="skip"><span class="num"><pre>26</pre></span><pre>    # clear any previously setup handlers</pre></div>
+<div class="cov"><span class="num"><pre>27</pre></span><pre>    clear_settings_handlers()</pre></div>
+<div class="skip"><span class="num"><pre>28</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>29</pre></span><pre>    if not settings.logs.enabled:</pre></div>
+<div class="cov"><span class="num"><pre>30</pre></span><pre>        return</pre></div>
+<div class="skip"><span class="num"><pre>31</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre>32</pre></span><pre>    # have to set the root logger lower than WARN (the default) or our</pre></div>
+<div class="skip"><span class="num"><pre>33</pre></span><pre>    # application logs will never be seen</pre></div>
+<div class="cov"><span class="num"><pre>34</pre></span><pre>    logging.root.setLevel(APPLICATION)</pre></div>
+<div class="skip"><span class="num"><pre>35</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>36</pre></span><pre>    if settings.logs.errors.enabled:</pre></div>
+<div class="cov"><span class="num"><pre>37</pre></span><pre>        format_str = &quot;%(asctime)s - %(levelname)s - %(name)s - %(message)s&quot;</pre></div>
+<div class="cov"><span class="num"><pre>38</pre></span><pre>        formatter = logging.Formatter(format_str)</pre></div>
+<div class="skip"><span class="num"><pre>39</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>40</pre></span><pre>        error_handler = RotatingFileHandler(</pre></div>
+<div class="cov"><span class="num"><pre>41</pre></span><pre>              path.join(settings.dirs.logs, 'errors.log'),</pre></div>
+<div class="cov"><span class="num"><pre>42</pre></span><pre>              maxBytes=settings.logs.max_bytes,</pre></div>
+<div class="cov"><span class="num"><pre>43</pre></span><pre>              backupCount=settings.logs.backup_count,</pre></div>
+<div class="cov"><span class="num"><pre>44</pre></span><pre>        )</pre></div>
+<div class="cov"><span class="num"><pre>45</pre></span><pre>        error_handler._from_pysmvt_settings = True</pre></div>
+<div class="cov"><span class="num"><pre>46</pre></span><pre>        error_handler.setLevel(logging.WARN)</pre></div>
+<div class="cov"><span class="num"><pre>47</pre></span><pre>        error_handler.setFormatter(formatter)</pre></div>
+<div class="cov"><span class="num"><pre>48</pre></span><pre>        logging.root.addHandler(error_handler)</pre></div>
+<div class="skip"><span class="num"><pre>49</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>50</pre></span><pre>    if settings.logs.application.enabled:</pre></div>
+<div class="cov"><span class="num"><pre>51</pre></span><pre>        class OnlyLevel25(logging.Filter):</pre></div>
+<div class="cov"><span class="num"><pre>52</pre></span><pre>            def filter(self, record):</pre></div>
+<div class="cov"><span class="num"><pre>53</pre></span><pre>                 return record.levelno == 25</pre></div>
+<div class="skip"><span class="num"><pre>54</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>55</pre></span><pre>        format_str = &quot;%(asctime)s - %(name)s - %(message)s&quot;</pre></div>
+<div class="cov"><span class="num"><pre>56</pre></span><pre>        formatter = logging.Formatter(format_str)</pre></div>
+<div class="skip"><span class="num"><pre>57</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>58</pre></span><pre>        app_handler = RotatingFileHandler(</pre></div>
+<div class="cov"><span class="num"><pre>59</pre></span><pre>              path.join(settings.dirs.logs, 'application.log'),</pre></div>
+<div class="cov"><span class="num"><pre>60</pre></span><pre>              maxBytes=settings.logs.max_bytes,</pre></div>
+<div class="cov"><span class="num"><pre>61</pre></span><pre>              backupCount=settings.logs.backup_count,</pre></div>
+<div class="cov"><span class="num"><pre>62</pre></span><pre>        )</pre></div>
+<div class="cov"><span class="num"><pre>63</pre></span><pre>        app_handler._from_pysmvt_settings = True</pre></div>
+<div class="cov"><span class="num"><pre>64</pre></span><pre>        app_handler.setLevel(APPLICATION)</pre></div>
+<div class="cov"><span class="num"><pre>65</pre></span><pre>        app_handler.setFormatter(formatter)</pre></div>
+<div class="cov"><span class="num"><pre>66</pre></span><pre>        app_handler.addFilter(OnlyLevel25())</pre></div>
+<div class="cov"><span class="num"><pre>67</pre></span><pre>        logging.root.addHandler(app_handler)</pre></div>
+<div class="skip"><span class="num"><pre>68</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre>69</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>70</pre></span><pre>def clear_settings_handlers():</pre></div>
+<div class="cov"><span class="num"><pre>71</pre></span><pre>    new_handlers = []</pre></div>
+<div class="cov"><span class="num"><pre>72</pre></span><pre>    for h in logging.root.handlers:</pre></div>
+<div class="cov"><span class="num"><pre>73</pre></span><pre>        if getattr(h, '_from_pysmvt_settings', False):</pre></div>
+<div class="cov"><span class="num"><pre>74</pre></span><pre>            h.flush()</pre></div>
+<div class="cov"><span class="num"><pre>75</pre></span><pre>            h.close()</pre></div>
+<div class="cov"><span class="num"><pre>76</pre></span><pre>        else:</pre></div>
+<div class="cov"><span class="num"><pre>77</pre></span><pre>            new_handlers.append(h)</pre></div>
+<div class="cov"><span class="num"><pre>78</pre></span><pre>    logging.root.handlers = new_handlers</pre></div>
+<div class="skip"><span class="num"><pre>79</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre>80</pre></span><pre>    # add a null handler so that we don't get the &quot;no handlers could be found&quot;</pre></div>
+<div class="skip"><span class="num"><pre>81</pre></span><pre>    # error message</pre></div>
+<div class="cov"><span class="num"><pre>82</pre></span><pre>    if settings.logs.null_handler.enabled:</pre></div>
+<div class="cov"><span class="num"><pre>83</pre></span><pre>        class NullHandler(logging.Handler):</pre></div>
+<div class="skip"><span class="num"><pre>84</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>85</pre></span><pre>            _from_pysmvt_settings = True</pre></div>
+<div class="skip"><span class="num"><pre>86</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>87</pre></span><pre>            def emit(self, record):</pre></div>
+<div class="cov"><span class="num"><pre>88</pre></span><pre>                pass</pre></div>
+<div class="cov"><span class="num"><pre>89</pre></span><pre>        logging.root.addHandler(NullHandler())</pre></div>
+<div class="skip"><span class="num"><pre>90</pre></span><pre></pre></div>
+</div>
+</body>
+</html>

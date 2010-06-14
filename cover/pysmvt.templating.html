@@ -1,0 +1,83 @@
+<html>
+<head>
+<title>pysmvt.templating</title>
+</head>
+<body>
+pysmvt.templating
+<style>
+.coverage pre {float: left; margin: 0px 1em; border: none;
+               padding: 0px; }
+.num pre { margin: 0px }
+.nocov, .nocov pre {background-color: #faa}
+.cov, .cov pre {background-color: #cfc}
+div.coverage div { clear: both; height: 1.1em}
+</style>
+<div class="stats">
+Covered: 40 lines<br/>
+Missed: 3 lines<br/>
+Skipped 15 lines<br/>
+Percent: 93 %<br/>
+
+</div>
+<div class="coverage">
+<div class="cov"><span class="num"><pre> 1</pre></span><pre>from markdown2 import markdown</pre></div>
+<div class="cov"><span class="num"><pre> 2</pre></span><pre>from pysutils.datetime import safe_strftime</pre></div>
+<div class="cov"><span class="num"><pre> 3</pre></span><pre>from pysutils.numbers import moneyfmt</pre></div>
+<div class="cov"><span class="num"><pre> 4</pre></span><pre>from pysutils.strings import simplify_string, reindent</pre></div>
+<div class="skip"><span class="num"><pre> 5</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 6</pre></span><pre>from pysmvt import ag, settings</pre></div>
+<div class="cov"><span class="num"><pre> 7</pre></span><pre>from pysmvt.routing import url_for, current_url</pre></div>
+<div class="cov"><span class="num"><pre> 8</pre></span><pre>from pysmvt.utils.html import strip_tags</pre></div>
+<div class="skip"><span class="num"><pre> 9</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>10</pre></span><pre>class EngineBase(object):</pre></div>
+<div class="cov"><span class="num"><pre>11</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>12</pre></span><pre>        This class acts as a bridge between pysmvt and templating engines.</pre></div>
+<div class="cov"><span class="num"><pre>13</pre></span><pre>        There are (deliberately) few places where pysmvt objects interact</pre></div>
+<div class="cov"><span class="num"><pre>14</pre></span><pre>        with the templating engine.  When that takes places, they do so</pre></div>
+<div class="cov"><span class="num"><pre>15</pre></span><pre>        through a translator object.  You are free to interact with your</pre></div>
+<div class="cov"><span class="num"><pre>16</pre></span><pre>        templating engine API directly, but when pysmvt objects do it,</pre></div>
+<div class="cov"><span class="num"><pre>17</pre></span><pre>        they go through the unified API of an instance of this class.</pre></div>
+<div class="cov"><span class="num"><pre>18</pre></span><pre>    &quot;&quot;&quot;</pre></div>
+<div class="skip"><span class="num"><pre>19</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>20</pre></span><pre>    def __init__(self):</pre></div>
+<div class="nocov"><span class="num"><pre>21</pre></span><pre>        raise NotImplementedError('Translor must be subclassed')</pre></div>
+<div class="skip"><span class="num"><pre>22</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>23</pre></span><pre>    def render_string(string, context):</pre></div>
+<div class="nocov"><span class="num"><pre>24</pre></span><pre>        raise NotImplementedError('Translor must be subclassed')</pre></div>
+<div class="skip"><span class="num"><pre>25</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>26</pre></span><pre>    def render_template(string, context):</pre></div>
+<div class="nocov"><span class="num"><pre>27</pre></span><pre>        raise NotImplementedError('Translor must be subclassed')</pre></div>
+<div class="skip"><span class="num"><pre>28</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>29</pre></span><pre>    def get_globals(self):</pre></div>
+<div class="skip"><span class="num"><pre>30</pre></span><pre>        # circular import fun!!</pre></div>
+<div class="cov"><span class="num"><pre>31</pre></span><pre>        from pysmvt.content import getcontent</pre></div>
+<div class="cov"><span class="num"><pre>32</pre></span><pre>        globals = {}</pre></div>
+<div class="cov"><span class="num"><pre>33</pre></span><pre>        globals['url_for'] = url_for</pre></div>
+<div class="cov"><span class="num"><pre>34</pre></span><pre>        globals['current_url'] = current_url</pre></div>
+<div class="skip"><span class="num"><pre>35</pre></span><pre>        #globals['inc_css'] = self.include_css</pre></div>
+<div class="skip"><span class="num"><pre>36</pre></span><pre>        #globals['inc_js'] = self.include_js</pre></div>
+<div class="cov"><span class="num"><pre>37</pre></span><pre>        globals['getcontent'] = getcontent</pre></div>
+<div class="skip"><span class="num"><pre>38</pre></span><pre>        #globals['response_css'] = self.page_css</pre></div>
+<div class="skip"><span class="num"><pre>39</pre></span><pre>        #globals['response_js'] = self.page_js</pre></div>
+<div class="cov"><span class="num"><pre>40</pre></span><pre>        return globals</pre></div>
+<div class="skip"><span class="num"><pre>41</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>42</pre></span><pre>    def get_filters(self):</pre></div>
+<div class="cov"><span class="num"><pre>43</pre></span><pre>        filters = {}</pre></div>
+<div class="cov"><span class="num"><pre>44</pre></span><pre>        filters['simplify'] = simplify_string</pre></div>
+<div class="cov"><span class="num"><pre>45</pre></span><pre>        filters['markdown'] = markdown</pre></div>
+<div class="cov"><span class="num"><pre>46</pre></span><pre>        filters['strip_tags'] = strip_tags</pre></div>
+<div class="cov"><span class="num"><pre>47</pre></span><pre>        filters['moneyfmt'] = moneyfmt</pre></div>
+<div class="cov"><span class="num"><pre>48</pre></span><pre>        filters['datefmt'] = safe_strftime</pre></div>
+<div class="cov"><span class="num"><pre>49</pre></span><pre>        return filters</pre></div>
+<div class="skip"><span class="num"><pre>50</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>51</pre></span><pre>def render_template(endpoint, **context):</pre></div>
+<div class="cov"><span class="num"><pre>52</pre></span><pre>    return ag.tplengine.render_template(endpoint, context)</pre></div>
+<div class="skip"><span class="num"><pre>53</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>54</pre></span><pre>def default_engine():</pre></div>
+<div class="cov"><span class="num"><pre>55</pre></span><pre>    tmod = __import__('pysmvt.templating.%s' % settings.templating.default_engine, fromlist=[''])</pre></div>
+<div class="cov"><span class="num"><pre>56</pre></span><pre>    tobj = getattr(tmod, 'Translator')</pre></div>
+<div class="cov"><span class="num"><pre>57</pre></span><pre>    return tobj</pre></div>
+<div class="skip"><span class="num"><pre>58</pre></span><pre></pre></div>
+</div>
+</body>
+</html>
