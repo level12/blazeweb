@@ -171,21 +171,21 @@ class TestMostStuff(object):
             view = findview('pdisabled:FakeView')
             assert False
         except HierarchyImportError, e:
-            assert 'module "pdisabled.views" not found; searched plugstack' in str(e)
+            assert 'An object for View endpoint "pdisabled:FakeView" was not found' in str(e), e
 
     def test_no_setting_plugin(self):
         try:
             view = findview('pnosetting:FakeView')
             assert False
         except HierarchyImportError, e:
-            assert 'module "pnosetting.views" not found' in str(e)
+            assert 'An object for View endpoint "pnosetting:FakeView" was not found' in str(e)
 
     def test_good_plugin_but_object_not_there(self):
         try:
             view = findview('news:nothere')
             assert False
         except HierarchyImportError, e:
-            assert 'attribute "nothere" not found; searched plugstack.news.views' in str(e)
+            assert 'An object for View endpoint "news:nothere" was not found' in str(e), e
 
     def test_import_error_in_target_gets_raised(self):
         try:
