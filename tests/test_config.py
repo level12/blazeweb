@@ -1,11 +1,13 @@
-import config
 import unittest
 
 import pysmvt
 from pysmvt import settings
+from pysmvt.config import QuickSettings, EnabledSettings
+from pysmvt.hierarchy import listapps
+
+import config
 from minimal2.application import make_wsgi as make_wsgi_min2
 from pysmvttestapp.applications import make_wsgi
-from pysmvt.config import appslist, QuickSettings, EnabledSettings
 
 class Base(QuickSettings):
 
@@ -316,8 +318,8 @@ class TestConfig(unittest.TestCase):
         #self.app = None
 
     def test_appslist(self):
-        self.assertEqual(['pysmvttestapp', 'pysmvttestapp2'], appslist())
-        self.assertEqual(['pysmvttestapp2', 'pysmvttestapp'], appslist(reverse=True))
+        self.assertEqual(['pysmvttestapp', 'pysmvttestapp2'], listapps())
+        self.assertEqual(['pysmvttestapp2', 'pysmvttestapp'], listapps(reverse=True))
 
     def test_settings(self):
         self.assertEqual(settings.foo, 'bar')
