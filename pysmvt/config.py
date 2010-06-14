@@ -298,6 +298,7 @@ class DefaultSettings(QuickSettings):
         self.pluginmap._data.setdefault(appname, EnabledSettings())
         self.set_dotted('pluginmap.%s.%s.enabled' % (appname, namespace), True)
         if package:
+            self.set_dotted('plugin_packages.%s' % package, namespace)
             cvalue = self.get_dotted('pluginmap.%s.%s.packages' % (appname, namespace))
             if not cvalue:
                 self.set_dotted('pluginmap.%s.%s.packages' % (appname, namespace), [package])

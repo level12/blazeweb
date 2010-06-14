@@ -25,6 +25,9 @@ class Dispatching(Default):
         self.apply_test_settings()
         self.static_files.enabled = False
 
+        self.add_plugin(self.appname, 'news')
+        self.add_plugin(self.appname, 'news', 'newsplug4')
+
 class Test(Default):
     def init(self):
         Default.init(self)

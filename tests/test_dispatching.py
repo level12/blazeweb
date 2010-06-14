@@ -2,7 +2,7 @@ import sys
 
 from webtest import TestApp
 
-from pysmvt import session, user, forward
+from pysmvt import session, user, forward, ag
 from pysmvt.views import asview
 
 import config
@@ -30,6 +30,15 @@ class TestAltStack(object):
     def test_forward(self):
         r = self.ta.get('/page1')
         r.mustcontain('page2!')
+
+    def test_asview_from_plugin(self):
+        # internal plugin
+        r = self.ta.get('/news')
+        r.mustcontain('min2 news index')
+
+        # external plugin
+        r = self.ta.get('/news/display')
+        r.mustcontain('np4 display')
 
 class TestAltStackWithSession(object):
 

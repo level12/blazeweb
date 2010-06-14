@@ -65,7 +65,6 @@ class RequestManager(object):
         # after the registry variables have been setup
         if 'pysmvt.request_setup' in self.environ:
             for callable in self.environ['pysmvt.request_setup']:
-                print callable
                 callable()
 
     def __exit__(self, exc_type, exc_value, tb):

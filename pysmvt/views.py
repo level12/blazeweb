@@ -10,14 +10,28 @@ from werkzeug import MultiDict, validate_arguments, ArgumentValidationError, \
 from werkzeug.exceptions import BadRequest
 from werkzeug.routing import Rule
 
-from pysmvt import ag, rg, user
+from pysmvt import ag, rg, user, settings
 from pysmvt import routing
 from pysmvt.content import getcontent, Content
+from pysmvt.hierarchy import listapps
 from pysmvt.exceptions import ProgrammingError
 from pysmvt.utils import registry_has_object, werkzeug_multi_dict_conv
 from pysmvt.wrappers import Response
 
 log = logging.getLogger(__name__)
+
+def _calc_plugin_name(module):
+    """ calculates the plugin a view is in """
+    parts = module.split('.')
+    if len(parts) == 2:
+        """ its in a package, that means the first part is the package name """
+        if parts[0] in listapps():
+            # its app level
+            return None
+        # it should be a plugin
+        return settings.plugin_packages[parts[0]]
+    # its an internal plug
+    return parts[2]
 
 class _ProcessorWrapper(formencode.validators.Wrapper):
     """
@@ -446,12 +460,17 @@ def asview(rule=None, **options):
         lrule = rule
         fname = f.__name__
         getargs = options.pop('getargs', [])
+        plugin_prefix = _calc_plugin_name(f.__module__)
+
+        # calculate the endpoint
+        endpoint = fname
+        if plugin_prefix is not None:
+            endpoint = '%s:%s' % (plugin_prefix, endpoint)
 
         # setup the routing
         if lrule is None:
             lrule = '/%s' % fname
         lrule = routing.add_prefix(lrule)
-        endpoint = fname
         log.debug('@asview adding route "%s" to endpoint "%s"', lrule, endpoint)
         ag.route_map.add(Rule(lrule, endpoint=endpoint), **options)
 
@@ -475,6 +494,4 @@ def asview(rule=None, **options):
 class AsViewHandler(View):
     def __init__(self, urlargs):
         View.__init__(self, urlargs)
-        print self._asview_getargs
         self.expect_getargs(*self._asview_getargs)
-        print self.expected_get_args
