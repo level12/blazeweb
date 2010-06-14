@@ -13,10 +13,10 @@ pysmvt.hierarchy
 div.coverage div { clear: both; height: 1.1em}
 </style>
 <div class="stats">
-Covered: 316 lines<br/>
-Missed: 13 lines<br/>
+Covered: 320 lines<br/>
+Missed: 9 lines<br/>
 Skipped 77 lines<br/>
-Percent: 96 %<br/>
+Percent: 97 %<br/>
 
 </div>
 <div class="coverage">
@@ -69,10 +69,10 @@ Percent: 96 %<br/>
 <div class="skip"><span class="num"><pre> 47</pre></span><pre></pre></div>
 <div class="cov"><span class="num"><pre> 48</pre></span><pre>def listapps(reverse=False):</pre></div>
 <div class="cov"><span class="num"><pre> 49</pre></span><pre>    if reverse:</pre></div>
-<div class="nocov"><span class="num"><pre> 50</pre></span><pre>        apps = list(settings.supporting_apps)</pre></div>
-<div class="nocov"><span class="num"><pre> 51</pre></span><pre>        apps.reverse()</pre></div>
-<div class="nocov"><span class="num"><pre> 52</pre></span><pre>        apps.append(settings.appname)</pre></div>
-<div class="nocov"><span class="num"><pre> 53</pre></span><pre>        return apps</pre></div>
+<div class="cov"><span class="num"><pre> 50</pre></span><pre>        apps = list(settings.supporting_apps)</pre></div>
+<div class="cov"><span class="num"><pre> 51</pre></span><pre>        apps.reverse()</pre></div>
+<div class="cov"><span class="num"><pre> 52</pre></span><pre>        apps.append(settings.appname)</pre></div>
+<div class="cov"><span class="num"><pre> 53</pre></span><pre>        return apps</pre></div>
 <div class="cov"><span class="num"><pre> 54</pre></span><pre>    return [settings.appname] + settings.supporting_apps</pre></div>
 <div class="skip"><span class="num"><pre> 55</pre></span><pre></pre></div>
 <div class="cov"><span class="num"><pre> 56</pre></span><pre>def listplugins(reverse=False):</pre></div>

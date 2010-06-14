@@ -13,10 +13,10 @@ pysmvt.content
 div.coverage div { clear: both; height: 1.1em}
 </style>
 <div class="stats">
-Covered: 90 lines<br/>
-Missed: 5 lines<br/>
+Covered: 91 lines<br/>
+Missed: 6 lines<br/>
 Skipped 33 lines<br/>
-Percent: 94 %<br/>
+Percent: 93 %<br/>
 
 </div>
 <div class="coverage">
@@ -86,68 +86,70 @@ Percent: 94 %<br/>
 <div class="cov"><span class="num"><pre> 64</pre></span><pre>    def __unicode__(self):</pre></div>
 <div class="cov"><span class="num"><pre> 65</pre></span><pre>        return self.primary</pre></div>
 <div class="skip"><span class="num"><pre> 66</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre> 67</pre></span><pre>class TemplateContent(Content):</pre></div>
-<div class="skip"><span class="num"><pre> 68</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre> 69</pre></span><pre>    def __init__(self, endpoint):</pre></div>
-<div class="cov"><span class="num"><pre> 70</pre></span><pre>        plugin, template = split_endpoint(endpoint)</pre></div>
-<div class="cov"><span class="num"><pre> 71</pre></span><pre>        self.plugin = plugin</pre></div>
-<div class="cov"><span class="num"><pre> 72</pre></span><pre>        self.template = template</pre></div>
-<div class="cov"><span class="num"><pre> 73</pre></span><pre>        self.endpoint = endpoint</pre></div>
-<div class="cov"><span class="num"><pre> 74</pre></span><pre>        Content.__init__(self)</pre></div>
-<div class="skip"><span class="num"><pre> 75</pre></span><pre></pre></div>
-<div class="skip"><span class="num"><pre> 76</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre> 77</pre></span><pre>    def settype(self):</pre></div>
-<div class="cov"><span class="num"><pre> 78</pre></span><pre>        basename, ext = path.splitext(self.template)</pre></div>
-<div class="cov"><span class="num"><pre> 79</pre></span><pre>        self.basename = basename</pre></div>
-<div class="cov"><span class="num"><pre> 80</pre></span><pre>        self.primary_type = ext_registry[ext.lstrip('.')]</pre></div>
-<div class="skip"><span class="num"><pre> 81</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre> 82</pre></span><pre>    def create(self, **kwargs):</pre></div>
-<div class="skip"><span class="num"><pre> 83</pre></span><pre>        # circular import fun!!</pre></div>
-<div class="cov"><span class="num"><pre> 84</pre></span><pre>        from pysmvt.templating import render_template</pre></div>
-<div class="cov"><span class="num"><pre> 85</pre></span><pre>        self.update_context(kwargs)</pre></div>
-<div class="cov"><span class="num"><pre> 86</pre></span><pre>        return render_template(self.endpoint, **kwargs)</pre></div>
-<div class="skip"><span class="num"><pre> 87</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre> 88</pre></span><pre>    def update_context(self, context):</pre></div>
-<div class="cov"><span class="num"><pre> 89</pre></span><pre>        context.update({</pre></div>
-<div class="cov"><span class="num"><pre> 90</pre></span><pre>            'include_css': self.include_css,</pre></div>
-<div class="cov"><span class="num"><pre> 91</pre></span><pre>            'include_js': self.include_js,</pre></div>
-<div class="cov"><span class="num"><pre> 92</pre></span><pre>            'page_css': self.page_css,</pre></div>
-<div class="cov"><span class="num"><pre> 93</pre></span><pre>            'page_js': self.page_js,</pre></div>
-<div class="cov"><span class="num"><pre> 94</pre></span><pre>        })</pre></div>
-<div class="skip"><span class="num"><pre> 95</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre> 96</pre></span><pre>    def _supporting_endpoint_from_ext(self, extension):</pre></div>
-<div class="cov"><span class="num"><pre> 97</pre></span><pre>        endpoint = '%s.%s' % (self.basename, extension)</pre></div>
-<div class="cov"><span class="num"><pre> 98</pre></span><pre>        if self.plugin:</pre></div>
-<div class="cov"><span class="num"><pre> 99</pre></span><pre>            endpoint = '%s:%s' % (self.plugin, endpoint)</pre></div>
-<div class="cov"><span class="num"><pre>100</pre></span><pre>        return endpoint</pre></div>
-<div class="skip"><span class="num"><pre>101</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>102</pre></span><pre>    def include_css(self, endpoint=None, **kwargs):</pre></div>
-<div class="cov"><span class="num"><pre>103</pre></span><pre>        if endpoint is None:</pre></div>
-<div class="cov"><span class="num"><pre>104</pre></span><pre>            endpoint = self._supporting_endpoint_from_ext('css')</pre></div>
-<div class="cov"><span class="num"><pre>105</pre></span><pre>        self.update_from_endpoint(endpoint)</pre></div>
-<div class="cov"><span class="num"><pre>106</pre></span><pre>        return u''</pre></div>
-<div class="skip"><span class="num"><pre>107</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>108</pre></span><pre>    def include_js(self, endpoint=None, **kwargs):</pre></div>
-<div class="cov"><span class="num"><pre>109</pre></span><pre>        if endpoint is None:</pre></div>
-<div class="cov"><span class="num"><pre>110</pre></span><pre>            endpoint = self._supporting_endpoint_from_ext('js')</pre></div>
-<div class="cov"><span class="num"><pre>111</pre></span><pre>        self.update_from_endpoint(endpoint)</pre></div>
-<div class="cov"><span class="num"><pre>112</pre></span><pre>        return u''</pre></div>
-<div class="skip"><span class="num"><pre>113</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>114</pre></span><pre>    def page_css(self):</pre></div>
-<div class="cov"><span class="num"><pre>115</pre></span><pre>        return self.get('text/css')</pre></div>
+<div class="cov"><span class="num"><pre> 67</pre></span><pre>    def __str__(self):</pre></div>
+<div class="nocov"><span class="num"><pre> 68</pre></span><pre>        return self.primary.encode(self.charset)</pre></div>
+<div class="skip"><span class="num"><pre> 69</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 70</pre></span><pre>class TemplateContent(Content):</pre></div>
+<div class="skip"><span class="num"><pre> 71</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 72</pre></span><pre>    def __init__(self, endpoint):</pre></div>
+<div class="cov"><span class="num"><pre> 73</pre></span><pre>        plugin, template = split_endpoint(endpoint)</pre></div>
+<div class="cov"><span class="num"><pre> 74</pre></span><pre>        self.plugin = plugin</pre></div>
+<div class="cov"><span class="num"><pre> 75</pre></span><pre>        self.template = template</pre></div>
+<div class="cov"><span class="num"><pre> 76</pre></span><pre>        self.endpoint = endpoint</pre></div>
+<div class="cov"><span class="num"><pre> 77</pre></span><pre>        Content.__init__(self)</pre></div>
+<div class="skip"><span class="num"><pre> 78</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre> 79</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 80</pre></span><pre>    def settype(self):</pre></div>
+<div class="cov"><span class="num"><pre> 81</pre></span><pre>        basename, ext = path.splitext(self.template)</pre></div>
+<div class="cov"><span class="num"><pre> 82</pre></span><pre>        self.basename = basename</pre></div>
+<div class="cov"><span class="num"><pre> 83</pre></span><pre>        self.primary_type = ext_registry[ext.lstrip('.')]</pre></div>
+<div class="skip"><span class="num"><pre> 84</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 85</pre></span><pre>    def create(self, **kwargs):</pre></div>
+<div class="skip"><span class="num"><pre> 86</pre></span><pre>        # circular import fun!!</pre></div>
+<div class="cov"><span class="num"><pre> 87</pre></span><pre>        from pysmvt.templating import render_template</pre></div>
+<div class="cov"><span class="num"><pre> 88</pre></span><pre>        self.update_context(kwargs)</pre></div>
+<div class="cov"><span class="num"><pre> 89</pre></span><pre>        return render_template(self.endpoint, **kwargs)</pre></div>
+<div class="skip"><span class="num"><pre> 90</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 91</pre></span><pre>    def update_context(self, context):</pre></div>
+<div class="cov"><span class="num"><pre> 92</pre></span><pre>        context.update({</pre></div>
+<div class="cov"><span class="num"><pre> 93</pre></span><pre>            'include_css': self.include_css,</pre></div>
+<div class="cov"><span class="num"><pre> 94</pre></span><pre>            'include_js': self.include_js,</pre></div>
+<div class="cov"><span class="num"><pre> 95</pre></span><pre>            'page_css': self.page_css,</pre></div>
+<div class="cov"><span class="num"><pre> 96</pre></span><pre>            'page_js': self.page_js,</pre></div>
+<div class="cov"><span class="num"><pre> 97</pre></span><pre>        })</pre></div>
+<div class="skip"><span class="num"><pre> 98</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre> 99</pre></span><pre>    def _supporting_endpoint_from_ext(self, extension):</pre></div>
+<div class="cov"><span class="num"><pre>100</pre></span><pre>        endpoint = '%s.%s' % (self.basename, extension)</pre></div>
+<div class="cov"><span class="num"><pre>101</pre></span><pre>        if self.plugin:</pre></div>
+<div class="cov"><span class="num"><pre>102</pre></span><pre>            endpoint = '%s:%s' % (self.plugin, endpoint)</pre></div>
+<div class="cov"><span class="num"><pre>103</pre></span><pre>        return endpoint</pre></div>
+<div class="skip"><span class="num"><pre>104</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>105</pre></span><pre>    def include_css(self, endpoint=None, **kwargs):</pre></div>
+<div class="cov"><span class="num"><pre>106</pre></span><pre>        if endpoint is None:</pre></div>
+<div class="cov"><span class="num"><pre>107</pre></span><pre>            endpoint = self._supporting_endpoint_from_ext('css')</pre></div>
+<div class="cov"><span class="num"><pre>108</pre></span><pre>        self.update_from_endpoint(endpoint)</pre></div>
+<div class="cov"><span class="num"><pre>109</pre></span><pre>        return u''</pre></div>
+<div class="skip"><span class="num"><pre>110</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>111</pre></span><pre>    def include_js(self, endpoint=None, **kwargs):</pre></div>
+<div class="cov"><span class="num"><pre>112</pre></span><pre>        if endpoint is None:</pre></div>
+<div class="cov"><span class="num"><pre>113</pre></span><pre>            endpoint = self._supporting_endpoint_from_ext('js')</pre></div>
+<div class="cov"><span class="num"><pre>114</pre></span><pre>        self.update_from_endpoint(endpoint)</pre></div>
+<div class="cov"><span class="num"><pre>115</pre></span><pre>        return u''</pre></div>
 <div class="skip"><span class="num"><pre>116</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>117</pre></span><pre>    def page_js(self):</pre></div>
-<div class="cov"><span class="num"><pre>118</pre></span><pre>        return self.get('text/javascript')</pre></div>
+<div class="cov"><span class="num"><pre>117</pre></span><pre>    def page_css(self):</pre></div>
+<div class="cov"><span class="num"><pre>118</pre></span><pre>        return self.get('text/css')</pre></div>
 <div class="skip"><span class="num"><pre>119</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>120</pre></span><pre>ext_registry = {</pre></div>
-<div class="cov"><span class="num"><pre>121</pre></span><pre>    'txt': 'text/plain',</pre></div>
-<div class="cov"><span class="num"><pre>122</pre></span><pre>    'htm': 'text/htm',</pre></div>
-<div class="cov"><span class="num"><pre>123</pre></span><pre>    'html': 'text/html',</pre></div>
-<div class="cov"><span class="num"><pre>124</pre></span><pre>    'css': 'text/css',</pre></div>
-<div class="cov"><span class="num"><pre>125</pre></span><pre>    'js': 'text/javascript'</pre></div>
-<div class="cov"><span class="num"><pre>126</pre></span><pre>}</pre></div>
-<div class="skip"><span class="num"><pre>127</pre></span><pre></pre></div>
-<div class="skip"><span class="num"><pre>128</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>120</pre></span><pre>    def page_js(self):</pre></div>
+<div class="cov"><span class="num"><pre>121</pre></span><pre>        return self.get('text/javascript')</pre></div>
+<div class="skip"><span class="num"><pre>122</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>123</pre></span><pre>ext_registry = {</pre></div>
+<div class="cov"><span class="num"><pre>124</pre></span><pre>    'txt': 'text/plain',</pre></div>
+<div class="cov"><span class="num"><pre>125</pre></span><pre>    'htm': 'text/htm',</pre></div>
+<div class="cov"><span class="num"><pre>126</pre></span><pre>    'html': 'text/html',</pre></div>
+<div class="cov"><span class="num"><pre>127</pre></span><pre>    'css': 'text/css',</pre></div>
+<div class="cov"><span class="num"><pre>128</pre></span><pre>    'js': 'text/javascript'</pre></div>
+<div class="cov"><span class="num"><pre>129</pre></span><pre>}</pre></div>
+<div class="skip"><span class="num"><pre>130</pre></span><pre></pre></div>
 </div>
 </body>
 </html>
