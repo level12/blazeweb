@@ -299,11 +299,11 @@ class DefaultSettings(QuickSettings):
         self.set_dotted('pluginmap.%s.%s.enabled' % (app_package, namespace), True)
         if package:
             self.set_dotted('plugin_packages.%s' % package, namespace)
-            cvalue = self.get_dotted('pluginmap.%s.%s.packages' % (app_package, namespace))
-            if not cvalue:
-                self.set_dotted('pluginmap.%s.%s.packages' % (app_package, namespace), [package])
-                return
-            cvalue.append(package)
+        cvalue = self.get_dotted('pluginmap.%s.%s.packages' % (app_package, namespace))
+        if not cvalue:
+            self.set_dotted('pluginmap.%s.%s.packages' % (app_package, namespace), [package])
+            return
+        cvalue.append(package)
 
     def get_storage_dir(self):
         ## files should be stored outside the source directory so that your
