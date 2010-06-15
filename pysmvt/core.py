@@ -14,7 +14,6 @@ __all__ = [
     'user',
     'redirect',
     'forward',
-    'db',
 ]
 
 # a "global" object for storing data and objects (like tcp connections or db
@@ -27,8 +26,6 @@ rg = StackedObjectProxy(name="rg")
 settings = StackedObjectProxy(name="settings")
 # the user object (request only)
 user = StackedObjectProxy(name="user")
-# the db object (application scope)
-db = StackedObjectProxy(name="db")
 
 from pysmvt.exceptions import Redirect, Forward
 
