@@ -113,6 +113,7 @@ setup(
     shell = pysmvt.commands:ShellCommand
     routes = pysmvt.commands:RoutesCommand
     static-copy = pysmvt.commands:StaticCopyCommand
+    plugin-map = pysmvt.commands:PluginMapCommand
 
     [pysmvt.pysmvt_project_template]
     pysmvt = pysmvt.paster_tpl:ProjectTemplate

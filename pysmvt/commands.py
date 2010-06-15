@@ -1,12 +1,15 @@
 import os
 from os import path
+
+from pysutils.helpers import pprint
 from werkzeug.serving import run_simple
 from werkzeug import Client, BaseResponse
 from werkzeug.script import make_shell
-from pysmvt.paster_tpl import run_template
+
 from pysmvt import ag, settings
+from pysmvt.hierarchy import list_plugin_mappings
+from pysmvt.paster_tpl import run_template
 from pysmvt.tasks import run_tasks
-from pysutils.helpers import pprint
 from pysmvt.utils.filesystem import copy_static_files
 
 import paste.script.command as pscmd
@@ -277,3 +280,16 @@ class JinjaConvertCommand(pscmd.Command):
                 with open(fname, 'w') as fh:
                     fh.write(contents.encode('utf-8'))
                 print '    %s' % fname
+
+class PluginMapCommand(pscmd.Command):
+    # Parser configuration
+    summary = "List the plugin map"
+    usage = ""
+
+    min_args = 0
+    max_args = 0
+
+    parser = pscmd.Command.standard_parser(verbose=False)
+
+    def command(self):
+        pprint(list_plugin_mappings(inc_apps=True))
