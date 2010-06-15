@@ -49,9 +49,9 @@ def listapps(reverse=False):
     if reverse:
         apps = list(settings.supporting_apps)
         apps.reverse()
-        apps.append(settings.appname)
+        apps.append(settings.app_package)
         return apps
-    return [settings.appname] + settings.supporting_apps
+    return [settings.app_package] + settings.supporting_apps
 
 def listplugins(reverse=False):
     """

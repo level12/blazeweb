@@ -21,8 +21,8 @@ def make_wsgi(profile='Default'):
     # middleware stack is run in bottom up order).  This works b/c if a
     # static file isn't found, the ShardDataMiddleware just forwards the request
     # to the next app.
-    for appname in config.appslist(reverse=True):
-        app_py_mod = __import__(appname)
+    for app_package in config.appslist(reverse=True):
+        app_py_mod = __import__(app_package)
         fs_static_path = path.join(path.dirname(app_py_mod.__file__), 'static')
         static_map = {routing.add_prefix('/') : fs_static_path}
         app = SharedDataMiddleware(app, static_map)

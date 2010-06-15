@@ -135,7 +135,7 @@ def load_current_app(app_name=None, profile=None):
         """ look for the app name in the environment """
         app_name = os.getenv('PYSMVT_APPNAME')
     if not app_name:
-        """ find the appname based on the current working directory """
+        """ find the app_package based on the current working directory """
         app_name = find_path_package_name(os.getcwd())
     if not app_name:
         raise UsageError('Could not determine the current application name.  Is the CWD a pysmvt application?')

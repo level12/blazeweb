@@ -3,18 +3,18 @@ from werkzeug.routing import Rule
 from pysmvt.config import DefaultSettings
 
 basedir = path.dirname(path.dirname(__file__))
-appname = path.basename(basedir)
+app_package = path.basename(basedir)
 
 class Default(DefaultSettings):
     def init(self):
         self.dirs.base = basedir
-        self.appname = appname
+        self.app_package = app_package
         DefaultSettings.init(self)
         
         self.auto_copy_static.enabled = True
 
     def get_storage_dir(self):
-        return path.join(basedir, '..', '..', 'test-output', appname)
+        return path.join(basedir, '..', '..', 'test-output', app_package)
 
 class Testruns(Default):
     def init(self):
@@ -37,13 +37,13 @@ class Testruns(Default):
         self.foo = 'bar'
 
     def setup_plugins(self):
-        self.add_plugin(appname, 'tests')
-        self.add_plugin(appname, 'nomodel')
-        self.add_plugin(appname, 'nosettings')
-        self.add_plugin(appname, 'sessiontests')
-        self.add_plugin(appname, 'routingtests')
-        self.add_plugin(appname, 'usertests')
-        self.add_plugin(appname, 'disabled')
+        self.add_plugin(app_package, 'tests')
+        self.add_plugin(app_package, 'nomodel')
+        self.add_plugin(app_package, 'nosettings')
+        self.add_plugin(app_package, 'sessiontests')
+        self.add_plugin(app_package, 'routingtests')
+        self.add_plugin(app_package, 'usertests')
+        self.add_plugin(app_package, 'disabled')
         self.plugins.pysmvttestapp.disabled.enabled = False
         # pysmvttestapp2 plugins
         self.add_plugin('pysmvttestapp2', 'tests')

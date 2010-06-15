@@ -26,7 +26,7 @@ class TestThis(object):
     def test_currenturl(self):
         assert current_url(host_only=True) == 'http://localhost/'
 
-def test_nose_plugin_appname_find_by_directory():
+def test_nose_plugin_app_package_find_by_directory():
     cwd = os.path.join(here, 'apps', 'minimal2')
     res = env.run('nosetests', expect_error=True, cwd=cwd)
     assert 'Ran 1 test in' in res.stderr
@@ -37,15 +37,15 @@ def test_nose_plugin_disable():
     res = env.run('nosetests', '--pysmvt-disable', expect_error=True, cwd=cwd)
     assert 'No object (name: ag) has been registered for this thread' in res.stderr, res.stderr
 
-def test_nose_plugin_appname_by_command_line():
+def test_nose_plugin_app_package_by_command_line():
     res = env.run('nosetests', 'minimal2', expect_error=True, cwd=apps_path)
     assert 'No object (name: ag) has been registered for this thread' in res.stderr, res.stderr
 
-    res = env.run('nosetests', '--pysmvt-appname=minimal2', 'minimal2', expect_error=True, cwd=apps_path)
+    res = env.run('nosetests', '--pysmvt-app_package=minimal2', 'minimal2', expect_error=True, cwd=apps_path)
     assert 'Ran 1 test in' in res.stderr
     assert 'OK' in res.stderr
 
-def test_nose_plugin_appname_by_environ():
+def test_nose_plugin_app_package_by_environ():
     base_environ['PYSMVT_APPNAME'] = 'minimal2'
     newenv = TestFileEnvironment(script_test_path, environ=base_environ)
     res = newenv.run('nosetests', 'minimal2', expect_error=True, cwd=apps_path)

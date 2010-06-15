@@ -4,12 +4,12 @@ from werkzeug.routing import Rule
 from pysmvt.config import DefaultSettings
 
 basedir = path.dirname(path.dirname(__file__))
-appname = path.basename(basedir)
+app_package = path.basename(basedir)
 
 class Default(DefaultSettings):
     def init(self):
         self.dirs.base = basedir
-        self.appname = appname
+        self.app_package = app_package
         DefaultSettings.init(self)
 
 class Testruns(Default):
@@ -20,7 +20,7 @@ class Testruns(Default):
             Rule('/', endpoint='tests:Index')
         ])
 
-        self.add_plugin(appname, 'tests')
+        self.add_plugin(app_package, 'tests')
 
         # don't use exception catching, debuggers, logging, etc.
         self.apply_test_settings()
@@ -29,4 +29,4 @@ class Testruns(Default):
         self.email.subject_prefix = '[pysvmt test app] '
 
     def get_storage_dir(self):
-        return path.join(basedir, '..', 'test-output', appname)
+        return path.join(basedir, '..', 'test-output', app_package)

@@ -3,12 +3,12 @@ from os import path
 from nlsupporting.config.settings import Default as nlDefault
 
 basedir = path.dirname(path.dirname(__file__))
-appname = path.basename(basedir)
+app_package = path.basename(basedir)
 
 class Default(nlDefault):
     def init(self):
         self.dirs.base = basedir
-        self.appname = appname
+        self.app_package = app_package
         nlDefault.init(self)
 
         self.add_route('/applevelview/<v1>', 'AppLevelView')
@@ -20,19 +20,19 @@ class Default(nlDefault):
         self.plugins.news.bar = 3
 
     def get_storage_dir(self):
-        return path.join(basedir, '..', '..', 'test-output', appname)
+        return path.join(basedir, '..', '..', 'test-output', app_package)
 
     def setup_plugins(self):
         """
             plugins need to be in order of importance, so supporting apps
             need to setup their plugins later
         """
-        self.add_plugin(appname, 'news', 'newsplug1')
-        self.add_plugin(appname, 'news', 'newsplug2')
-        self.add_plugin(appname, 'pdisabled')
-        self.add_plugin(appname, 'pnoroutes')
+        self.add_plugin(app_package, 'news', 'newsplug1')
+        self.add_plugin(app_package, 'news', 'newsplug2')
+        self.add_plugin(app_package, 'pdisabled')
+        self.add_plugin(app_package, 'pnoroutes')
         self.pluginmap.newlayout.pdisabled.enabled = False
-        self.add_plugin(appname, 'badimport')
+        self.add_plugin(app_package, 'badimport')
 
         nlDefault.setup_plugins(self)
 

@@ -9,12 +9,12 @@ from pysmvt.wrappers import Response
 class Settings(DefaultSettings):
     def init(self):
         self.dirs.base = path.dirname(__file__)
-        self.appname = path.basename(self.dirs.base)
+        self.app_package = path.basename(self.dirs.base)
         DefaultSettings.init(self)
         self.auto_load_views = True
 
     def get_storage_dir(self):
-        return path.join(self.dirs.base, '..', 'test-output', self.appname)
+        return path.join(self.dirs.base, '..', 'test-output', self.app_package)
 
 settings = Settings()
 

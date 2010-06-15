@@ -3,12 +3,12 @@ from os import path
 from pysmvt.config import DefaultSettings
 
 basedir = path.dirname(__file__)
-appname = path.basename(basedir)
+app_package = path.basename(basedir)
 
 class Default(DefaultSettings):
     def init(self):
         self.dirs.base = basedir
-        self.appname = appname
+        self.app_package = app_package
         DefaultSettings.init(self)
 
         # since this is a quick start app, we want our views.py file to get
@@ -16,7 +16,7 @@ class Default(DefaultSettings):
         self.auto_load_views = True
 
     def get_storage_dir(self):
-        return path.join(basedir, '..', 'test-output', appname)
+        return path.join(basedir, '..', 'test-output', app_package)
 
 class Dispatching(Default):
 
@@ -25,8 +25,8 @@ class Dispatching(Default):
         self.apply_test_settings()
         self.static_files.enabled = False
 
-        self.add_plugin(self.appname, 'news')
-        self.add_plugin(self.appname, 'news', 'newsplug4')
+        self.add_plugin(self.app_package, 'news')
+        self.add_plugin(self.app_package, 'news', 'newsplug4')
 
 class Test(Default):
     def init(self):

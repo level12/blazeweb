@@ -292,16 +292,16 @@ class DefaultSettings(QuickSettings):
         # tmp
         self.auto_create_writeable_dirs = True
 
-    def add_plugin(self, appname, namespace, package=None):
+    def add_plugin(self, app_package, namespace, package=None):
         # a little hack to get the default value to hang an application's
         # plugin's off of
-        self.pluginmap._data.setdefault(appname, EnabledSettings())
-        self.set_dotted('pluginmap.%s.%s.enabled' % (appname, namespace), True)
+        self.pluginmap._data.setdefault(app_package, EnabledSettings())
+        self.set_dotted('pluginmap.%s.%s.enabled' % (app_package, namespace), True)
         if package:
             self.set_dotted('plugin_packages.%s' % package, namespace)
-            cvalue = self.get_dotted('pluginmap.%s.%s.packages' % (appname, namespace))
+            cvalue = self.get_dotted('pluginmap.%s.%s.packages' % (app_package, namespace))
             if not cvalue:
-                self.set_dotted('pluginmap.%s.%s.packages' % (appname, namespace), [package])
+                self.set_dotted('pluginmap.%s.%s.packages' % (app_package, namespace), [package])
                 return
             cvalue.append(package)
 
@@ -312,8 +312,8 @@ class DefaultSettings(QuickSettings):
         ## the base directory
         venv_dir = os.getenv('VIRTUAL_ENV')
         if venv_dir:
-            return path.join(venv_dir, 'storage-%s' % self.appname)
-        return path.join(self.dirs.base, '..', 'storage-%s' % self.appname)
+            return path.join(venv_dir, 'storage-%s' % self.app_package)
+        return path.join(self.dirs.base, '..', 'storage-%s' % self.app_package)
 
     def apply_test_settings(self):
         """

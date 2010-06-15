@@ -10,7 +10,7 @@ prependsitedir(__file__, 'apps')
 class Testruns(DefaultSettings):
     def init(self):
         self.dirs.base = path.dirname(__file__)
-        self.appname = path.basename(self.dirs.base)
+        self.app_package = path.basename(self.dirs.base)
         DefaultSettings.init(self)
 
         #######################################################################
@@ -37,7 +37,7 @@ class Testruns(DefaultSettings):
         self.email.subject_prefix = '[pysvmt test app] '
 
     def get_storage_dir(self):
-        return path.join(self.dirs.base, 'test-output', self.appname)
+        return path.join(self.dirs.base, 'test-output', self.app_package)
 
 def make_wsgi(settings_cls=Testruns, **kwargs):
     return WSGIApp(settings_cls())

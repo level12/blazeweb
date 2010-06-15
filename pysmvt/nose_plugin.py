@@ -29,7 +29,7 @@ class InitAppPlugin(nose.plugins.Plugin):
                           help="The name of the test profile in settings.py"
                         )
 
-        parser.add_option("--pysmvt-appname",
+        parser.add_option("--pysmvt-app_package",
                           dest=self.opt_app_name, type="string",
                           help="The name of the application's package, defaults"
                           " to top package of current working directory"
