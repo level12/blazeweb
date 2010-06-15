@@ -25,8 +25,10 @@ class Dispatching(Default):
         self.apply_test_settings()
         self.static_files.enabled = False
 
+        self.add_plugin(self.app_package, 'internalonly')
         self.add_plugin(self.app_package, 'news')
         self.add_plugin(self.app_package, 'news', 'newsplug4')
+        self.add_plugin(self.app_package, 'foo', 'foobwp')
 
 class Test(Default):
     def init(self):

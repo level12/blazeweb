@@ -27,6 +27,7 @@ class Default(nlDefault):
             plugins need to be in order of importance, so supporting apps
             need to setup their plugins later
         """
+        self.add_plugin(app_package, 'news')
         self.add_plugin(app_package, 'news', 'newsplug1')
         self.add_plugin(app_package, 'news', 'newsplug2')
         self.add_plugin(app_package, 'pdisabled')

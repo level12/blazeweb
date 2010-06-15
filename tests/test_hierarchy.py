@@ -10,6 +10,7 @@ from pysutils.testing import logging_handler
 
 import config
 from newlayout.application import make_wsgi
+from minimal2.application import make_wsgi as m2_make_wsgi
 from pysmvttestapp.applications import make_wsgi as pta_make_wsgi
 
 class TestMostStuff(object):
@@ -297,3 +298,12 @@ class TestGatherObjs(object):
         eq_(result['appstack.tasks.init_db']['action_001'].__module__, 'pysmvttestapp.tasks.init_db')
         eq_(result['appstack.tasks.init_db']['action_002'].__module__, 'pysmvttestapp.tasks.init_db')
         eq_(result['appstack.tasks.init_db']['action_005'].__module__, 'pysmvttestapp2.tasks.init_db')
+
+class TestExternalPlugins(object):
+    @classmethod
+    def setup_class(cls):
+        m2_make_wsgi('Dispatching')
+
+    def test_plugin_listing(self):
+        expected = [('minimal2', 'internalonly', None), ('minimal2', 'news', None), ('minimal2', 'news', 'newsplug4'), ('minimal2', 'foo', 'foobwp')]
+        eq_(expected, list_plugin_mappings())

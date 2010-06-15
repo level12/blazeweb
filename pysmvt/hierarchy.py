@@ -64,9 +64,10 @@ def listplugins(reverse=False):
 
 def list_plugin_mappings(target_plugin=None, reverse=False, inc_apps=False):
     """
-        a list of tuples: (app name, plugin name, package name)
+        A list of tuples: (app name, plugin name, package name)
 
-        package name will be none of the location of the plugin is internal
+        The package name will be None if the location of the plugin is internal
+        to the app.
     """
     retval = []
     for app in listapps():
@@ -75,13 +76,8 @@ def list_plugin_mappings(target_plugin=None, reverse=False, inc_apps=False):
         aplugins = getattr(settings.pluginmap, app)
         for pname in aplugins.keys():
             if target_plugin is None or pname == target_plugin:
-                retval.append((app, pname, None))
-                try:
-                    for package in aplugins.get_dotted('%s.packages' % pname):
-                        retval.append((app, pname, package))
-                except AttributeError, e:
-                    if 'packages' not in str(e):
-                        raise
+                for package in aplugins.get_dotted('%s.packages' % pname):
+                    retval.append((app, pname, package))
     if reverse:
         retval.reverse()
     return retval
