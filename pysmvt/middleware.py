@@ -9,7 +9,7 @@ from werkzeug import EnvironHeaders, LimitedStream, \
     SharedDataMiddleware, DebuggedApplication
 
 from pysutils import randchars, pformat, tolist
-from pysmvt import settings
+from pysmvt import settings, ag
 from pysmvt import routing
 from pysmvt.utils.filesystem import mkdirs
 
@@ -80,7 +80,7 @@ def full_wsgi_stack(app):
         returns the WSGIApp wrapped in common middleware
     """
 
-    settings = app.settings
+    settings = ag.app.settings
 
     if settings.beaker.enabled:
         app = SessionMiddleware(app, **dict(settings.beaker))
