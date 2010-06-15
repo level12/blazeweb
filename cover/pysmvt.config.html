@@ -13,7 +13,7 @@ pysmvt.config
 div.coverage div { clear: both; height: 1.1em}
 </style>
 <div class="stats">
-Covered: 147 lines<br/>
+Covered: 148 lines<br/>
 Missed: 8 lines<br/>
 Skipped 197 lines<br/>
 Percent: 94 %<br/>
@@ -320,58 +320,59 @@ Percent: 94 %<br/>
 <div class="cov"><span class="num"><pre>298</pre></span><pre>        self.pluginmap._data.setdefault(appname, EnabledSettings())</pre></div>
 <div class="cov"><span class="num"><pre>299</pre></span><pre>        self.set_dotted('pluginmap.%s.%s.enabled' % (appname, namespace), True)</pre></div>
 <div class="cov"><span class="num"><pre>300</pre></span><pre>        if package:</pre></div>
-<div class="cov"><span class="num"><pre>301</pre></span><pre>            cvalue = self.get_dotted('pluginmap.%s.%s.packages' % (appname, namespace))</pre></div>
-<div class="cov"><span class="num"><pre>302</pre></span><pre>            if not cvalue:</pre></div>
-<div class="cov"><span class="num"><pre>303</pre></span><pre>                self.set_dotted('pluginmap.%s.%s.packages' % (appname, namespace), [package])</pre></div>
-<div class="cov"><span class="num"><pre>304</pre></span><pre>                return</pre></div>
-<div class="cov"><span class="num"><pre>305</pre></span><pre>            cvalue.append(package)</pre></div>
-<div class="skip"><span class="num"><pre>306</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>307</pre></span><pre>    def get_storage_dir(self):</pre></div>
-<div class="skip"><span class="num"><pre>308</pre></span><pre>        ## files should be stored outside the source directory so that your</pre></div>
-<div class="skip"><span class="num"><pre>309</pre></span><pre>        ## application can be packaged.  We are assuming that you are in</pre></div>
-<div class="skip"><span class="num"><pre>310</pre></span><pre>        ## a virtualenv.  If not, then we default to the directory above</pre></div>
-<div class="skip"><span class="num"><pre>311</pre></span><pre>        ## the base directory</pre></div>
-<div class="cov"><span class="num"><pre>312</pre></span><pre>        venv_dir = os.getenv('VIRTUAL_ENV')</pre></div>
-<div class="cov"><span class="num"><pre>313</pre></span><pre>        if venv_dir:</pre></div>
-<div class="cov"><span class="num"><pre>314</pre></span><pre>            return path.join(venv_dir, 'storage-%s' % self.appname)</pre></div>
-<div class="nocov"><span class="num"><pre>315</pre></span><pre>        return path.join(self.dirs.base, '..', 'storage-%s' % self.appname)</pre></div>
-<div class="skip"><span class="num"><pre>316</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>317</pre></span><pre>    def apply_test_settings(self):</pre></div>
-<div class="cov"><span class="num"><pre>318</pre></span><pre>        &quot;&quot;&quot;</pre></div>
-<div class="cov"><span class="num"><pre>319</pre></span><pre>            changes settings to the defaults for testing</pre></div>
-<div class="cov"><span class="num"><pre>320</pre></span><pre>        &quot;&quot;&quot;</pre></div>
-<div class="skip"><span class="num"><pre>321</pre></span><pre>        # nose has good log capturing facilities, so just let it ride</pre></div>
-<div class="cov"><span class="num"><pre>322</pre></span><pre>        self.logs.enabled=False</pre></div>
-<div class="skip"><span class="num"><pre>323</pre></span><pre>        # don't want pesky error messages</pre></div>
-<div class="cov"><span class="num"><pre>324</pre></span><pre>        self.logs.null_handler.enabled = True</pre></div>
-<div class="skip"><span class="num"><pre>325</pre></span><pre>        # we want exceptions to come all the way to nose</pre></div>
-<div class="cov"><span class="num"><pre>326</pre></span><pre>        self.exception_handling = False</pre></div>
-<div class="skip"><span class="num"><pre>327</pre></span><pre>        # ditto</pre></div>
-<div class="cov"><span class="num"><pre>328</pre></span><pre>        self.debugger.enabled = False</pre></div>
-<div class="skip"><span class="num"><pre>329</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>330</pre></span><pre>    def apply_dev_settings(self):</pre></div>
-<div class="skip"><span class="num"><pre>331</pre></span><pre></pre></div>
-<div class="nocov"><span class="num"><pre>332</pre></span><pre>        self.exception_handling = None</pre></div>
-<div class="nocov"><span class="num"><pre>333</pre></span><pre>        self.debugger.enabled = True</pre></div>
-<div class="nocov"><span class="num"><pre>334</pre></span><pre>        self.auto_copy_static.enabled = True</pre></div>
-<div class="skip"><span class="num"><pre>335</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>336</pre></span><pre>    def add_route(self, route, endpoint, *args, **kwargs):</pre></div>
-<div class="cov"><span class="num"><pre>337</pre></span><pre>        kwargs['endpoint'] = endpoint</pre></div>
-<div class="cov"><span class="num"><pre>338</pre></span><pre>        self.routing.routes.append(Rule(route, *args, **kwargs))</pre></div>
-<div class="skip"><span class="num"><pre>339</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>340</pre></span><pre>class PluginSettings(QuickSettings):</pre></div>
-<div class="cov"><span class="num"><pre>341</pre></span><pre>    def __init__(self):</pre></div>
-<div class="cov"><span class="num"><pre>342</pre></span><pre>        QuickSettings.__init__(self)</pre></div>
-<div class="cov"><span class="num"><pre>343</pre></span><pre>        self.routes = []</pre></div>
-<div class="cov"><span class="num"><pre>344</pre></span><pre>        self.init()</pre></div>
-<div class="skip"><span class="num"><pre>345</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>346</pre></span><pre>    def init(self):</pre></div>
-<div class="nocov"><span class="num"><pre>347</pre></span><pre>        pass</pre></div>
-<div class="skip"><span class="num"><pre>348</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>349</pre></span><pre>    def add_route(self, route, endpoint, *args, **kwargs):</pre></div>
-<div class="cov"><span class="num"><pre>350</pre></span><pre>        kwargs['endpoint'] = endpoint</pre></div>
-<div class="cov"><span class="num"><pre>351</pre></span><pre>        self.routes.append(Rule(route, *args, **kwargs))</pre></div>
-<div class="skip"><span class="num"><pre>352</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>301</pre></span><pre>            self.set_dotted('plugin_packages.%s' % package, namespace)</pre></div>
+<div class="cov"><span class="num"><pre>302</pre></span><pre>            cvalue = self.get_dotted('pluginmap.%s.%s.packages' % (appname, namespace))</pre></div>
+<div class="cov"><span class="num"><pre>303</pre></span><pre>            if not cvalue:</pre></div>
+<div class="cov"><span class="num"><pre>304</pre></span><pre>                self.set_dotted('pluginmap.%s.%s.packages' % (appname, namespace), [package])</pre></div>
+<div class="cov"><span class="num"><pre>305</pre></span><pre>                return</pre></div>
+<div class="cov"><span class="num"><pre>306</pre></span><pre>            cvalue.append(package)</pre></div>
+<div class="skip"><span class="num"><pre>307</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>308</pre></span><pre>    def get_storage_dir(self):</pre></div>
+<div class="skip"><span class="num"><pre>309</pre></span><pre>        ## files should be stored outside the source directory so that your</pre></div>
+<div class="skip"><span class="num"><pre>310</pre></span><pre>        ## application can be packaged.  We are assuming that you are in</pre></div>
+<div class="skip"><span class="num"><pre>311</pre></span><pre>        ## a virtualenv.  If not, then we default to the directory above</pre></div>
+<div class="skip"><span class="num"><pre>312</pre></span><pre>        ## the base directory</pre></div>
+<div class="cov"><span class="num"><pre>313</pre></span><pre>        venv_dir = os.getenv('VIRTUAL_ENV')</pre></div>
+<div class="cov"><span class="num"><pre>314</pre></span><pre>        if venv_dir:</pre></div>
+<div class="cov"><span class="num"><pre>315</pre></span><pre>            return path.join(venv_dir, 'storage-%s' % self.appname)</pre></div>
+<div class="nocov"><span class="num"><pre>316</pre></span><pre>        return path.join(self.dirs.base, '..', 'storage-%s' % self.appname)</pre></div>
+<div class="skip"><span class="num"><pre>317</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>318</pre></span><pre>    def apply_test_settings(self):</pre></div>
+<div class="cov"><span class="num"><pre>319</pre></span><pre>        &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>320</pre></span><pre>            changes settings to the defaults for testing</pre></div>
+<div class="cov"><span class="num"><pre>321</pre></span><pre>        &quot;&quot;&quot;</pre></div>
+<div class="skip"><span class="num"><pre>322</pre></span><pre>        # nose has good log capturing facilities, so just let it ride</pre></div>
+<div class="cov"><span class="num"><pre>323</pre></span><pre>        self.logs.enabled=False</pre></div>
+<div class="skip"><span class="num"><pre>324</pre></span><pre>        # don't want pesky error messages</pre></div>
+<div class="cov"><span class="num"><pre>325</pre></span><pre>        self.logs.null_handler.enabled = True</pre></div>
+<div class="skip"><span class="num"><pre>326</pre></span><pre>        # we want exceptions to come all the way to nose</pre></div>
+<div class="cov"><span class="num"><pre>327</pre></span><pre>        self.exception_handling = False</pre></div>
+<div class="skip"><span class="num"><pre>328</pre></span><pre>        # ditto</pre></div>
+<div class="cov"><span class="num"><pre>329</pre></span><pre>        self.debugger.enabled = False</pre></div>
+<div class="skip"><span class="num"><pre>330</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>331</pre></span><pre>    def apply_dev_settings(self):</pre></div>
+<div class="skip"><span class="num"><pre>332</pre></span><pre></pre></div>
+<div class="nocov"><span class="num"><pre>333</pre></span><pre>        self.exception_handling = None</pre></div>
+<div class="nocov"><span class="num"><pre>334</pre></span><pre>        self.debugger.enabled = True</pre></div>
+<div class="nocov"><span class="num"><pre>335</pre></span><pre>        self.auto_copy_static.enabled = True</pre></div>
+<div class="skip"><span class="num"><pre>336</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>337</pre></span><pre>    def add_route(self, route, endpoint, *args, **kwargs):</pre></div>
+<div class="cov"><span class="num"><pre>338</pre></span><pre>        kwargs['endpoint'] = endpoint</pre></div>
+<div class="cov"><span class="num"><pre>339</pre></span><pre>        self.routing.routes.append(Rule(route, *args, **kwargs))</pre></div>
+<div class="skip"><span class="num"><pre>340</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>341</pre></span><pre>class PluginSettings(QuickSettings):</pre></div>
+<div class="cov"><span class="num"><pre>342</pre></span><pre>    def __init__(self):</pre></div>
+<div class="cov"><span class="num"><pre>343</pre></span><pre>        QuickSettings.__init__(self)</pre></div>
+<div class="cov"><span class="num"><pre>344</pre></span><pre>        self.routes = []</pre></div>
+<div class="cov"><span class="num"><pre>345</pre></span><pre>        self.init()</pre></div>
+<div class="skip"><span class="num"><pre>346</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>347</pre></span><pre>    def init(self):</pre></div>
+<div class="nocov"><span class="num"><pre>348</pre></span><pre>        pass</pre></div>
+<div class="skip"><span class="num"><pre>349</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>350</pre></span><pre>    def add_route(self, route, endpoint, *args, **kwargs):</pre></div>
+<div class="cov"><span class="num"><pre>351</pre></span><pre>        kwargs['endpoint'] = endpoint</pre></div>
+<div class="cov"><span class="num"><pre>352</pre></span><pre>        self.routes.append(Rule(route, *args, **kwargs))</pre></div>
+<div class="skip"><span class="num"><pre>353</pre></span><pre></pre></div>
 </div>
 </body>
 </html>
