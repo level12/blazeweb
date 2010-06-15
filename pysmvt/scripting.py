@@ -11,7 +11,7 @@ class ScriptingHelperBase(object):
     def __init__(self):
         self.setup_parser()
         self.monkey_patch()
-    
+
     def setup_parser(self):
         if self.distribution_name:
             dist = pkg_resources.get_distribution(self.distribution_name)
@@ -21,28 +21,28 @@ class ScriptingHelperBase(object):
             location = '<unknown>'
 
         python_version = sys.version.splitlines()[0].strip()
-        
+
         parser = optparse.OptionParser(add_help_option=False,
                                        version='%s from %s (python %s)'
                                        % (dist, location, python_version),
                                        usage='%prog [global_options] COMMAND [command_options]')
-        
+
         parser.disable_interspersed_args()
-        
+
         parser.add_option(
             '-h', '--help',
             action='store_true',
             dest='do_help',
             help="Show this help message")
-        
+
         self.parser = parser
-    
+
     def monkey_patch(self):
         pscmd.get_commands = lambda: self.get_commands()
         pscmd.parser = self.parser
-        
+
     def run(self, args=None):
-        
+
         if (not args and
             len(sys.argv) >= 2
             and os.environ.get('_') and sys.argv[0] != os.environ['_']
@@ -64,13 +64,13 @@ class ScriptingHelperBase(object):
         else:
             command = commands[command_name].load()
         self.invoke(command, command_name, options, args[1:])
-    
+
     def get_commands(self):
         commands = {}
         for p in pkg_resources.iter_entry_points(self.entry_point_name):
             commands[p.name] = p
         return commands
-    
+
     def invoke(self, command, command_name, options, args):
         try:
             runner = command(command_name)
@@ -80,7 +80,7 @@ class ScriptingHelperBase(object):
             print e.message
             exit_code = e.exit_code
         sys.exit(exit_code)
-    
+
     def modify_runner(self, runner, options):
         return runner
 
@@ -96,7 +96,7 @@ class AppScriptingHelper(ScriptingHelperBase):
         self.entry_point_name = 'pysmvt.app_command'
         ScriptingHelperBase.__init__(self)
         self.appfactory = appfactory
-    
+
     def setup_parser(self):
         ScriptingHelperBase.setup_parser(self)
         self.parser.add_option(
@@ -117,7 +117,7 @@ class AppScriptingHelper(ScriptingHelperBase):
             self.wsgiapp = self.appfactory()
         runner.wsgiapp = self.wsgiapp
         return runner
-    
+
 def application_entry(appfactory):
     AppScriptingHelper(appfactory).run()
 
@@ -143,12 +143,14 @@ def load_current_app(app_name=None, profile=None):
         pkg_pymod = __import__(app_name , globals(), locals(), [''])
     except ImportError, e:
         raise UsageError('Could not import name "%s".  Is the CWD a pysmvt application?' % app_name)
-    
+
     try:
         app_pymod = __import__('%s.application' % app_name , globals(), locals(), [''])
     except ImportError, e:
-        raise UsageError('Could not import name "%s.application".  Is the CWD a pysmvt application?' % app_name)
-    
+        if '%s.application' % app_name in str(e):
+            raise UsageError('Could not import name "%s.application".  Is the CWD a pysmvt application?' % app_name)
+        raise
+
     pkg_dir = path.dirname(pkg_pymod.__file__)
     if profile:
         wsgi_app = app_pymod.make_wsgi(profile)
