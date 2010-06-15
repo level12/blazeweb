@@ -66,7 +66,7 @@ class InitAppPlugin(nose.plugins.Plugin):
             _, _, _, wsgiapp = load_current_app(self.val_app_name, self.val_app_profile)
 
             # make the app available to the tests
-            ag.wsgiapp = wsgiapp
+            ag.wsgi_test_app = wsgiapp
 
             # an application can define functions to be called after the app
             # is initialized but before any test inspection is done or tests
