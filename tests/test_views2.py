@@ -3,11 +3,12 @@ from nose.tools import eq_
 from pysutils.testing import logging_handler
 from webtest import TestApp
 from werkzeug import MultiDict, run_wsgi_app, Headers
-from werkzeug.exceptions import BadRequest
+from werkzeug.exceptions import BadRequest, HTTPException
 
 from pysmvt import rg, user
 from pysmvt.exceptions import ProgrammingError
 import pysmvt.views
+from pysmvt.views import SecureView
 from pysmvt.testing import inrequest
 from pysmvt.wrappers import Response
 
@@ -471,3 +472,120 @@ def test_templating_in_request():
             return 'foo'
     r = TestViews2A({}).process()
     eq_( r.data, 'foo')
+
+@inrequest('/foo?a=1&b=b&d=3')
+def test_secure_view():
+    # default deny
+    class TestView(SecureView):
+        pass
+    try:
+        r = TestView({}, 'test').process()
+        assert False
+    except HTTPException, e:
+        eq_(e.code, 401)
+
+    user.clear()
+    # anonymous
+    class TestView(SecureView):
+        def auth_pre(self):
+            self.allow_anonymous = True
+        def default(self):
+            return 'an'
+    r = TestView({}, 'test').process()
+    assert r.data == 'an', r.data
+
+    user.clear()
+    # authentication only
+    class TestView(SecureView):
+        def auth_pre(self):
+            user.is_authenticated = True
+            self.check_authorization = False
+        def default(self):
+            return 'an'
+    r = TestView({}, 'test').process()
+    assert r.data == 'an', r.data
+
+    user.clear()
+    # authentication, but no requires given
+    class TestView(SecureView):
+        def auth_pre(self):
+            user.is_authenticated = True
+    try:
+        r = TestView({}, 'test').process()
+    except HTTPException, e:
+        eq_(e.code, 403)
+
+    user.clear()
+    # authentication, require fails
+    class TestView(SecureView):
+        def auth_pre(self):
+            self.require_any = 'perm1'
+            user.is_authenticated = True
+    try:
+        r = TestView({}, 'test').process()
+        assert False
+    except HTTPException, e:
+        eq_(e.code, 403)
+
+    user.clear()
+    # authentication, require fails
+    class TestView(SecureView):
+        def auth_pre(self):
+            self.require_all = 'perm1'
+            user.is_authenticated = True
+    try:
+        r = TestView({}, 'test').process()
+        assert False
+    except HTTPException, e:
+        eq_(e.code, 403)
+
+    user.clear()
+    # authentication, require any passes
+    class TestView(SecureView):
+        def auth_pre(self):
+            self.require_any = 'perm1', 'perm2'
+            user.is_authenticated = True
+            user.add_token('perm2')
+        def default(self):
+            return 'ra'
+    r = TestView({}, 'test').process()
+    assert r.data == 'ra', r.data
+
+    user.clear()
+    # authentication, require all passes, no is_super_user attribute
+    class TestView(SecureView):
+        def auth_pre(self):
+            del user.is_super_user
+            self.require_all = 'perm1', 'perm2'
+            user.is_authenticated = True
+            user.add_token('perm2', 'perm1')
+        def default(self):
+            return 'ra'
+    r = TestView({}, 'test').process()
+    assert r.data == 'ra', r.data
+
+    user.clear()
+    # authentication, require all fails on one, require_any doesn't matter
+    class TestView(SecureView):
+        def auth_pre(self):
+            self.require_all = 'perm1', 'perm2'
+            self.require_any = 'perm2'
+            user.is_authenticated = True
+            user.add_token('perm2')
+    try:
+        r = TestView({}, 'test').process()
+        assert False
+    except HTTPException, e:
+        eq_(e.code, 403)
+
+    user.clear()
+    # super user succeeds
+    class TestView(SecureView):
+        def auth_pre(self):
+            self.require_all = 'perm1', 'perm2'
+            user.is_authenticated = True
+            user.is_super_user = True
+        def default(self):
+            return 'su'
+    r = TestView({}, 'test').process()
+    assert r.data == 'su', r.data

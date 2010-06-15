@@ -465,6 +465,73 @@ class View(object):
         """
         raise _ViewCallStackAbort
 
+class SecureView(View):
+    def __init__(self, urlargs, endpoint):
+        View.__init__(self, urlargs, endpoint)
+        # we can skip auth if needed
+        self.allow_anonymous = False
+        # if False, the user is required to be authenticated only
+        self.check_authorization = True
+        # do we know who the user is?
+        self.is_authenticated = False
+        # do they have permission to use the resource they are trying to use?
+        self.is_authorized = False
+        # if check_authorization is True, require the user to have at least
+        # one of these permission
+        self.require_any = []
+        # if check_authorization is True, require the user to have all of the
+        # following permissions
+        self.require_all = []
+        # setup the methods that will be called
+        self.add_call_method('auth_pre')
+        self.add_call_method('auth_calculate', required=True)
+        self.add_call_method('auth_verify', required=True, takes_args=False)
+        self.add_call_method('auth_post')
+
+    def auth_calculate(self, **kwargs):
+        if not user.is_authenticated:
+            return
+        self.is_authenticated = True
+
+        try:
+            if user.is_super_user:
+                self.is_authorized = True
+                return
+        except AttributeError, e:
+            if 'is_super_user' not in str(e):
+                raise # pragma: no cover
+
+        # if require_all is given and there are any failures, deny authorization
+        for perm in tolist(self.require_all):
+            if not user.has_token(perm):
+                return
+        # if there was at least one value for require_all and not values for
+        # require any, then the user is authorized
+        if self.require_all and not self.require_any:
+            self.is_authorized = True
+            return
+        # at this point, require_all passed or was empty and require_any has
+        # at least one value, so this is the final check to determine
+        # authorization
+        if user.has_any_token(self.require_any):
+            self.is_authorized = True
+
+    def auth_verify(self):
+        if self.allow_anonymous:
+            return
+        if not self.is_authenticated:
+            self.not_authenticated()
+        if not self.check_authorization:
+            return
+        if not self.is_authorized:
+            self.not_authorized()
+
+    def not_authenticated(self):
+        abort(401)
+
+    def not_authorized(self):
+        abort(403)
+
 ###
 ### functions and classes related to processing functions as views
 ###

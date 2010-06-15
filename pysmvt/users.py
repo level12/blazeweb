@@ -20,11 +20,13 @@ class User(LazyDict):
     def clear(self):
         log.debug('SessionUser object getting cleared() of auth info')
         self.is_authenticated = False
+        self.is_super_user = False
         self.tokens = {}
         LazyDict.clear(self)
 
-    def add_token(self, token):
-        self.tokens[token] = True
+    def add_token(self, *tokens):
+        for token in tokens:
+            self.tokens[token] = True
 
     def has_token(self, token):
         return self.tokens.has_key(token)
