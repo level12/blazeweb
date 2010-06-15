@@ -32,11 +32,7 @@ class EngineBase(object):
         globals = {}
         globals['url_for'] = url_for
         globals['current_url'] = current_url
-        #globals['inc_css'] = self.include_css
-        #globals['inc_js'] = self.include_js
         globals['getcontent'] = getcontent
-        #globals['response_css'] = self.page_css
-        #globals['response_js'] = self.page_js
         return globals
 
     def get_filters(self):

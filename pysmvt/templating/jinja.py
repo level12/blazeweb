@@ -41,6 +41,7 @@ class Translator(templating.EngineBase):
     def update_context(self, context):
         context.update({
             'user': user._current_obj(),
+            'settings': settings._current_obj(),
         })
 
 class HierarchyLoader(BaseLoader):
