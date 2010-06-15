@@ -105,7 +105,9 @@ class View(object):
     ### method stack helpers
     ###
     def init_call_methods(self):
-        pass
+        # use this method if you need to do view setup, but need getargs to do it
+        # and therefore can not do the setup in init()
+        self.add_call_method('setup_view')
 
     def add_call_method(self, name, required=False, takes_args=True):
         self._cm_stack.append((name, required, takes_args))
@@ -482,10 +484,32 @@ class SecureView(View):
         # if check_authorization is True, require the user to have all of the
         # following permissions
         self.require_all = []
-        # setup the methods that will be called
+
+    def init_call_methods(self):
+        """
+            note that we do not call the parent as we don't want setup_view()
+            in the callstack.  Use auth_pre instead.  Using this naming
+            convention can help remind the developer that auth_pre() is being
+            called before auth methods and hopefully avoid security issues
+            by forgetting that setup_view() comes before authorization
+        """
+
+        ###
+        ### setup the call stack methods
+        ###
+        # auth_pre is used to do pre_auth setup when argument values
+        # are needed (and can therefore not be done in init()
         self.add_call_method('auth_pre')
+        # auth calculate sets our security attributes (is_auth*) based on the
+        # require_* attributes and the current user.  You can override this
+        # if you have custom auth requirements.
         self.add_call_method('auth_calculate', required=True)
+        # auth_verify checks our security attributes and calls
+        # not_authenticated() or not_authorized() if necessary.  This should
+        # not be overriden, override auth_calculate instead and set the
+        # security attributes accordingly.
         self.add_call_method('auth_verify', required=True, takes_args=False)
+        # for view setup after the user has been authorized
         self.add_call_method('auth_post')
 
     def auth_calculate(self, **kwargs):

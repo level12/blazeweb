@@ -303,13 +303,14 @@ def test_processing_with_lists():
 
 def test_call_method_changes():
     v = View({})
+    assert v._cm_stack[0][0] == 'setup_view'
     v.add_call_method('foo')
-    assert v._cm_stack[0][0] == 'foo'
+    assert v._cm_stack[1][0] == 'foo'
     v.insert_call_method('bar', 'before', 'foo')
-    assert v._cm_stack[0][0] == 'bar', v._cm_stack
+    assert v._cm_stack[1][0] == 'bar', v._cm_stack
     v.insert_call_method('baz', 'after', 'bar')
-    assert v._cm_stack[1][0] == 'baz', v._cm_stack
-    assert v._cm_stack[2][0] == 'foo', v._cm_stack
+    assert v._cm_stack[2][0] == 'baz', v._cm_stack
+    assert v._cm_stack[3][0] == 'foo', v._cm_stack
 
     try:
         v.insert_call_method('foo', 'after', 'nothere')

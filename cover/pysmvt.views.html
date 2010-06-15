@@ -13,9 +13,9 @@ pysmvt.views
 div.coverage div { clear: both; height: 1.1em}
 </style>
 <div class="stats">
-Covered: 414 lines<br/>
+Covered: 422 lines<br/>
 Missed: 0 lines<br/>
-Skipped 169 lines<br/>
+Skipped 185 lines<br/>
 Percent: 100 %<br/>
 
 </div>
@@ -127,482 +127,506 @@ Percent: 100 %<br/>
 <div class="skip"><span class="num"><pre>105</pre></span><pre>    ### method stack helpers</pre></div>
 <div class="skip"><span class="num"><pre>106</pre></span><pre>    ###</pre></div>
 <div class="cov"><span class="num"><pre>107</pre></span><pre>    def init_call_methods(self):</pre></div>
-<div class="cov"><span class="num"><pre>108</pre></span><pre>        pass</pre></div>
-<div class="skip"><span class="num"><pre>109</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>110</pre></span><pre>    def add_call_method(self, name, required=False, takes_args=True):</pre></div>
-<div class="cov"><span class="num"><pre>111</pre></span><pre>        self._cm_stack.append((name, required, takes_args))</pre></div>
-<div class="skip"><span class="num"><pre>112</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>113</pre></span><pre>    def insert_call_method(self, name, position, target, required=False, takes_args=True):</pre></div>
-<div class="cov"><span class="num"><pre>114</pre></span><pre>        target_pos = None</pre></div>
-<div class="cov"><span class="num"><pre>115</pre></span><pre>        for index, stackvals in enumerate(self._cm_stack):</pre></div>
-<div class="cov"><span class="num"><pre>116</pre></span><pre>            if stackvals[0] == target:</pre></div>
-<div class="cov"><span class="num"><pre>117</pre></span><pre>                target_pos = index</pre></div>
-<div class="cov"><span class="num"><pre>118</pre></span><pre>        if target_pos is None:</pre></div>
-<div class="cov"><span class="num"><pre>119</pre></span><pre>            raise ValueError('target &quot;%s&quot; was not found in the callstack' % target)</pre></div>
-<div class="cov"><span class="num"><pre>120</pre></span><pre>        if position not in ('before', 'after'):</pre></div>
-<div class="cov"><span class="num"><pre>121</pre></span><pre>            raise ValueError('position &quot;%s&quot; not valid; should be &quot;before&quot; or &quot;after&quot;' % position)</pre></div>
-<div class="cov"><span class="num"><pre>122</pre></span><pre>        if position == 'before':</pre></div>
-<div class="cov"><span class="num"><pre>123</pre></span><pre>            before = self._cm_stack[:target_pos]</pre></div>
-<div class="cov"><span class="num"><pre>124</pre></span><pre>            after = self._cm_stack[target_pos:]</pre></div>
-<div class="cov"><span class="num"><pre>125</pre></span><pre>        else:</pre></div>
-<div class="cov"><span class="num"><pre>126</pre></span><pre>            before = self._cm_stack[:target_pos+1]</pre></div>
-<div class="cov"><span class="num"><pre>127</pre></span><pre>            after = self._cm_stack[target_pos+1:]</pre></div>
-<div class="cov"><span class="num"><pre>128</pre></span><pre>        before.append((name, required, takes_args))</pre></div>
-<div class="cov"><span class="num"><pre>129</pre></span><pre>        self._cm_stack = before + after</pre></div>
-<div class="skip"><span class="num"><pre>130</pre></span><pre></pre></div>
-<div class="skip"><span class="num"><pre>131</pre></span><pre>    ###</pre></div>
-<div class="skip"><span class="num"><pre>132</pre></span><pre>    ### arg helpers</pre></div>
+<div class="skip"><span class="num"><pre>108</pre></span><pre>        # use this method if you need to do view setup, but need getargs to do it</pre></div>
+<div class="skip"><span class="num"><pre>109</pre></span><pre>        # and therefore can not do the setup in init()</pre></div>
+<div class="cov"><span class="num"><pre>110</pre></span><pre>        self.add_call_method('setup_view')</pre></div>
+<div class="skip"><span class="num"><pre>111</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>112</pre></span><pre>    def add_call_method(self, name, required=False, takes_args=True):</pre></div>
+<div class="cov"><span class="num"><pre>113</pre></span><pre>        self._cm_stack.append((name, required, takes_args))</pre></div>
+<div class="skip"><span class="num"><pre>114</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>115</pre></span><pre>    def insert_call_method(self, name, position, target, required=False, takes_args=True):</pre></div>
+<div class="cov"><span class="num"><pre>116</pre></span><pre>        target_pos = None</pre></div>
+<div class="cov"><span class="num"><pre>117</pre></span><pre>        for index, stackvals in enumerate(self._cm_stack):</pre></div>
+<div class="cov"><span class="num"><pre>118</pre></span><pre>            if stackvals[0] == target:</pre></div>
+<div class="cov"><span class="num"><pre>119</pre></span><pre>                target_pos = index</pre></div>
+<div class="cov"><span class="num"><pre>120</pre></span><pre>        if target_pos is None:</pre></div>
+<div class="cov"><span class="num"><pre>121</pre></span><pre>            raise ValueError('target &quot;%s&quot; was not found in the callstack' % target)</pre></div>
+<div class="cov"><span class="num"><pre>122</pre></span><pre>        if position not in ('before', 'after'):</pre></div>
+<div class="cov"><span class="num"><pre>123</pre></span><pre>            raise ValueError('position &quot;%s&quot; not valid; should be &quot;before&quot; or &quot;after&quot;' % position)</pre></div>
+<div class="cov"><span class="num"><pre>124</pre></span><pre>        if position == 'before':</pre></div>
+<div class="cov"><span class="num"><pre>125</pre></span><pre>            before = self._cm_stack[:target_pos]</pre></div>
+<div class="cov"><span class="num"><pre>126</pre></span><pre>            after = self._cm_stack[target_pos:]</pre></div>
+<div class="cov"><span class="num"><pre>127</pre></span><pre>        else:</pre></div>
+<div class="cov"><span class="num"><pre>128</pre></span><pre>            before = self._cm_stack[:target_pos+1]</pre></div>
+<div class="cov"><span class="num"><pre>129</pre></span><pre>            after = self._cm_stack[target_pos+1:]</pre></div>
+<div class="cov"><span class="num"><pre>130</pre></span><pre>        before.append((name, required, takes_args))</pre></div>
+<div class="cov"><span class="num"><pre>131</pre></span><pre>        self._cm_stack = before + after</pre></div>
+<div class="skip"><span class="num"><pre>132</pre></span><pre></pre></div>
 <div class="skip"><span class="num"><pre>133</pre></span><pre>    ###</pre></div>
-<div class="cov"><span class="num"><pre>134</pre></span><pre>    def expect_getargs(self, *args):</pre></div>
-<div class="cov"><span class="num"><pre>135</pre></span><pre>        &quot;&quot;&quot;</pre></div>
-<div class="cov"><span class="num"><pre>136</pre></span><pre>            The arguments passed to this method should be strings that</pre></div>
-<div class="cov"><span class="num"><pre>137</pre></span><pre>            correspond to the keys of rg.request.args that you want included</pre></div>
-<div class="cov"><span class="num"><pre>138</pre></span><pre>            in your calling arguments.  Example:</pre></div>
-<div class="skip"><span class="num"><pre>139</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>140</pre></span><pre>            Example for route: /myview?bar=baz</pre></div>
+<div class="skip"><span class="num"><pre>134</pre></span><pre>    ### arg helpers</pre></div>
+<div class="skip"><span class="num"><pre>135</pre></span><pre>    ###</pre></div>
+<div class="cov"><span class="num"><pre>136</pre></span><pre>    def expect_getargs(self, *args):</pre></div>
+<div class="cov"><span class="num"><pre>137</pre></span><pre>        &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>138</pre></span><pre>            The arguments passed to this method should be strings that</pre></div>
+<div class="cov"><span class="num"><pre>139</pre></span><pre>            correspond to the keys of rg.request.args that you want included</pre></div>
+<div class="cov"><span class="num"><pre>140</pre></span><pre>            in your calling arguments.  Example:</pre></div>
 <div class="skip"><span class="num"><pre>141</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>142</pre></span><pre>            class MyView(View):</pre></div>
-<div class="cov"><span class="num"><pre>143</pre></span><pre>                def default(self, bar=None):</pre></div>
-<div class="cov"><span class="num"><pre>144</pre></span><pre>                    assert bar is None</pre></div>
-<div class="skip"><span class="num"><pre>145</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>146</pre></span><pre>            class MyView(View):</pre></div>
-<div class="cov"><span class="num"><pre>147</pre></span><pre>                def init(self):</pre></div>
-<div class="cov"><span class="num"><pre>148</pre></span><pre>                    self.expect_getargs('bar')</pre></div>
-<div class="skip"><span class="num"><pre>149</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>150</pre></span><pre>                def default(self, bar=None):</pre></div>
-<div class="cov"><span class="num"><pre>151</pre></span><pre>                    assert bar == u'baz'</pre></div>
-<div class="cov"><span class="num"><pre>152</pre></span><pre>        &quot;&quot;&quot;</pre></div>
-<div class="cov"><span class="num"><pre>153</pre></span><pre>        self.expected_get_args.extend(args)</pre></div>
-<div class="skip"><span class="num"><pre>154</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>155</pre></span><pre>    def add_processor(self, argname, processor=None, required=None,</pre></div>
-<div class="cov"><span class="num"><pre>156</pre></span><pre>            takes_list = None, list_item_invalidates=False, strict=False,</pre></div>
-<div class="cov"><span class="num"><pre>157</pre></span><pre>            show_msg=False, custom_msg=None ):</pre></div>
-<div class="cov"><span class="num"><pre>158</pre></span><pre>        &quot;&quot;&quot;</pre></div>
-<div class="cov"><span class="num"><pre>159</pre></span><pre>            Sets up filtering &amp; validation on the calling_args to be used before</pre></div>
-<div class="cov"><span class="num"><pre>160</pre></span><pre>            any methods in the call stack are called. The default arguments will</pre></div>
-<div class="cov"><span class="num"><pre>161</pre></span><pre>            cause an invalid argument to be ignored silently. However, you can</pre></div>
-<div class="cov"><span class="num"><pre>162</pre></span><pre>            also setup the validation process to show the user error messages</pre></div>
-<div class="cov"><span class="num"><pre>163</pre></span><pre>            and/or raise a 400 Bad Request.</pre></div>
-<div class="skip"><span class="num"><pre>164</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>165</pre></span><pre>            argname = the key that corresponds to the argument you want to</pre></div>
-<div class="cov"><span class="num"><pre>166</pre></span><pre>                validate.  If this key isn't found as a URL argument, it is</pre></div>
-<div class="cov"><span class="num"><pre>167</pre></span><pre>                assumed that it is a get argument and expect_getargs(argname)</pre></div>
-<div class="cov"><span class="num"><pre>168</pre></span><pre>                is called.</pre></div>
-<div class="cov"><span class="num"><pre>169</pre></span><pre>            processor = a callable which takes the arg value to validate as its</pre></div>
-<div class="cov"><span class="num"><pre>170</pre></span><pre>                single argument.  Should raise ValueError if the value is</pre></div>
-<div class="cov"><span class="num"><pre>171</pre></span><pre>                invalid.  It may also be a Formencode validator.  The processor</pre></div>
-<div class="cov"><span class="num"><pre>172</pre></span><pre>                should also return the value to use as the calling arg.  If</pre></div>
-<div class="cov"><span class="num"><pre>173</pre></span><pre>                validation fails and strict is not True, then the value is set</pre></div>
-<div class="cov"><span class="num"><pre>174</pre></span><pre>                to None.</pre></div>
-<div class="cov"><span class="num"><pre>175</pre></span><pre>            required = requires the argument to be present and to have a non-None</pre></div>
-<div class="cov"><span class="num"><pre>176</pre></span><pre>                value.  Does not alter the value.  Since the default</pre></div>
-<div class="cov"><span class="num"><pre>177</pre></span><pre>                behavior is to ignore a value when validation has failed, which</pre></div>
-<div class="cov"><span class="num"><pre>178</pre></span><pre>                results in a None value being set, it only makes sense to use</pre></div>
-<div class="cov"><span class="num"><pre>179</pre></span><pre>                required when strict should be True.  Therefore, strict is set</pre></div>
-<div class="cov"><span class="num"><pre>180</pre></span><pre>                to true implicitely when using require.</pre></div>
-<div class="cov"><span class="num"><pre>181</pre></span><pre>            takes_list = if True, validates multiple values and ensures that</pre></div>
-<div class="cov"><span class="num"><pre>182</pre></span><pre>                the calling arg associated with argname is a list even if only</pre></div>
-<div class="cov"><span class="num"><pre>183</pre></span><pre>                one item was sent.  If None or False, only the first value</pre></div>
-<div class="cov"><span class="num"><pre>184</pre></span><pre>                will be validated and the calling arg associated with argname</pre></div>
-<div class="cov"><span class="num"><pre>185</pre></span><pre>                will not be a list, even if multiple values are present in</pre></div>
-<div class="cov"><span class="num"><pre>186</pre></span><pre>                calling_args. If None, having more than one value for argname is</pre></div>
-<div class="cov"><span class="num"><pre>187</pre></span><pre>                not considered a validation error. If False, it is considered a</pre></div>
-<div class="cov"><span class="num"><pre>188</pre></span><pre>                validation error.</pre></div>
-<div class="cov"><span class="num"><pre>189</pre></span><pre>            strict = If validation fails, raise a 400 Bad Request exception.</pre></div>
-<div class="cov"><span class="num"><pre>190</pre></span><pre>                The exception is raised after all validation has taken place, so</pre></div>
-<div class="cov"><span class="num"><pre>191</pre></span><pre>                user messages will still be set for all errors if applicable.</pre></div>
-<div class="cov"><span class="num"><pre>192</pre></span><pre>                Therefore, if your error doc handler shows user messages, the</pre></div>
-<div class="cov"><span class="num"><pre>193</pre></span><pre>                user can still be informed of the reason why they received</pre></div>
-<div class="cov"><span class="num"><pre>194</pre></span><pre>                the error.</pre></div>
-<div class="cov"><span class="num"><pre>195</pre></span><pre>            list_item_invalidates = When set to False and a list item fails</pre></div>
-<div class="cov"><span class="num"><pre>196</pre></span><pre>                validation, it is simply ignored. If strict_list == True, then a</pre></div>
-<div class="cov"><span class="num"><pre>197</pre></span><pre>                single validation error is considered a validation error for the</pre></div>
-<div class="cov"><span class="num"><pre>198</pre></span><pre>                whole argument, causing the value to be set to [].</pre></div>
-<div class="cov"><span class="num"><pre>199</pre></span><pre>            show_msg = should the user be shown an error message if validation</pre></div>
-<div class="cov"><span class="num"><pre>200</pre></span><pre>                on this argument fails?  If custom_msg == True, show_msg also</pre></div>
-<div class="cov"><span class="num"><pre>201</pre></span><pre>                gets set to True.</pre></div>
-<div class="cov"><span class="num"><pre>202</pre></span><pre>            custom_msg = A custom error msg to show the user if validation</pre></div>
-<div class="cov"><span class="num"><pre>203</pre></span><pre>                fails.  If not given, and if validator is a Formencode</pre></div>
-<div class="cov"><span class="num"><pre>204</pre></span><pre>                validator, then the message will be take from the formencode</pre></div>
-<div class="cov"><span class="num"><pre>205</pre></span><pre>                validator.  If not given and the validator is a callable, then</pre></div>
-<div class="cov"><span class="num"><pre>206</pre></span><pre>                the message will be taken from the ValueError exception that</pre></div>
-<div class="cov"><span class="num"><pre>207</pre></span><pre>                is raised.  If given, show_msg is implicitly set to True.</pre></div>
-<div class="cov"><span class="num"><pre>208</pre></span><pre>        &quot;&quot;&quot;</pre></div>
-<div class="cov"><span class="num"><pre>209</pre></span><pre>        if not self.urlargs.has_key(argname):</pre></div>
-<div class="cov"><span class="num"><pre>210</pre></span><pre>            self.expect_getargs(argname)</pre></div>
-<div class="cov"><span class="num"><pre>211</pre></span><pre>        if custom_msg:</pre></div>
-<div class="cov"><span class="num"><pre>212</pre></span><pre>            show_msg = True</pre></div>
-<div class="cov"><span class="num"><pre>213</pre></span><pre>        if required:</pre></div>
-<div class="cov"><span class="num"><pre>214</pre></span><pre>            if not processor:</pre></div>
-<div class="cov"><span class="num"><pre>215</pre></span><pre>                processor = formencode.validators.NotEmpty()</pre></div>
-<div class="cov"><span class="num"><pre>216</pre></span><pre>            strict = True</pre></div>
-<div class="cov"><span class="num"><pre>217</pre></span><pre>        if processor:</pre></div>
-<div class="cov"><span class="num"><pre>218</pre></span><pre>            for proc in tolist(processor):</pre></div>
-<div class="cov"><span class="num"><pre>219</pre></span><pre>                if not formencode.is_validator(proc):</pre></div>
-<div class="cov"><span class="num"><pre>220</pre></span><pre>                    if not hasattr(proc, '__call__'):</pre></div>
-<div class="cov"><span class="num"><pre>221</pre></span><pre>                        raise TypeError('processor must be a Formencode validator or a callable')</pre></div>
-<div class="cov"><span class="num"><pre>222</pre></span><pre>                    proc = _ProcessorWrapper(to_python=proc)</pre></div>
-<div class="cov"><span class="num"><pre>223</pre></span><pre>                self._processors.append((argname, proc, required, takes_list,</pre></div>
-<div class="cov"><span class="num"><pre>224</pre></span><pre>                    list_item_invalidates, strict, show_msg, custom_msg))</pre></div>
-<div class="cov"><span class="num"><pre>225</pre></span><pre>        else:</pre></div>
-<div class="cov"><span class="num"><pre>226</pre></span><pre>            self._processors.append((argname, None, required, takes_list,</pre></div>
-<div class="cov"><span class="num"><pre>227</pre></span><pre>                list_item_invalidates, strict, show_msg, custom_msg))</pre></div>
-<div class="skip"><span class="num"><pre>228</pre></span><pre></pre></div>
-<div class="skip"><span class="num"><pre>229</pre></span><pre>    ###</pre></div>
-<div class="skip"><span class="num"><pre>230</pre></span><pre>    ### methods related to processing the view</pre></div>
+<div class="cov"><span class="num"><pre>142</pre></span><pre>            Example for route: /myview?bar=baz</pre></div>
+<div class="skip"><span class="num"><pre>143</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>144</pre></span><pre>            class MyView(View):</pre></div>
+<div class="cov"><span class="num"><pre>145</pre></span><pre>                def default(self, bar=None):</pre></div>
+<div class="cov"><span class="num"><pre>146</pre></span><pre>                    assert bar is None</pre></div>
+<div class="skip"><span class="num"><pre>147</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>148</pre></span><pre>            class MyView(View):</pre></div>
+<div class="cov"><span class="num"><pre>149</pre></span><pre>                def init(self):</pre></div>
+<div class="cov"><span class="num"><pre>150</pre></span><pre>                    self.expect_getargs('bar')</pre></div>
+<div class="skip"><span class="num"><pre>151</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>152</pre></span><pre>                def default(self, bar=None):</pre></div>
+<div class="cov"><span class="num"><pre>153</pre></span><pre>                    assert bar == u'baz'</pre></div>
+<div class="cov"><span class="num"><pre>154</pre></span><pre>        &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>155</pre></span><pre>        self.expected_get_args.extend(args)</pre></div>
+<div class="skip"><span class="num"><pre>156</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>157</pre></span><pre>    def add_processor(self, argname, processor=None, required=None,</pre></div>
+<div class="cov"><span class="num"><pre>158</pre></span><pre>            takes_list = None, list_item_invalidates=False, strict=False,</pre></div>
+<div class="cov"><span class="num"><pre>159</pre></span><pre>            show_msg=False, custom_msg=None ):</pre></div>
+<div class="cov"><span class="num"><pre>160</pre></span><pre>        &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>161</pre></span><pre>            Sets up filtering &amp; validation on the calling_args to be used before</pre></div>
+<div class="cov"><span class="num"><pre>162</pre></span><pre>            any methods in the call stack are called. The default arguments will</pre></div>
+<div class="cov"><span class="num"><pre>163</pre></span><pre>            cause an invalid argument to be ignored silently. However, you can</pre></div>
+<div class="cov"><span class="num"><pre>164</pre></span><pre>            also setup the validation process to show the user error messages</pre></div>
+<div class="cov"><span class="num"><pre>165</pre></span><pre>            and/or raise a 400 Bad Request.</pre></div>
+<div class="skip"><span class="num"><pre>166</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>167</pre></span><pre>            argname = the key that corresponds to the argument you want to</pre></div>
+<div class="cov"><span class="num"><pre>168</pre></span><pre>                validate.  If this key isn't found as a URL argument, it is</pre></div>
+<div class="cov"><span class="num"><pre>169</pre></span><pre>                assumed that it is a get argument and expect_getargs(argname)</pre></div>
+<div class="cov"><span class="num"><pre>170</pre></span><pre>                is called.</pre></div>
+<div class="cov"><span class="num"><pre>171</pre></span><pre>            processor = a callable which takes the arg value to validate as its</pre></div>
+<div class="cov"><span class="num"><pre>172</pre></span><pre>                single argument.  Should raise ValueError if the value is</pre></div>
+<div class="cov"><span class="num"><pre>173</pre></span><pre>                invalid.  It may also be a Formencode validator.  The processor</pre></div>
+<div class="cov"><span class="num"><pre>174</pre></span><pre>                should also return the value to use as the calling arg.  If</pre></div>
+<div class="cov"><span class="num"><pre>175</pre></span><pre>                validation fails and strict is not True, then the value is set</pre></div>
+<div class="cov"><span class="num"><pre>176</pre></span><pre>                to None.</pre></div>
+<div class="cov"><span class="num"><pre>177</pre></span><pre>            required = requires the argument to be present and to have a non-None</pre></div>
+<div class="cov"><span class="num"><pre>178</pre></span><pre>                value.  Does not alter the value.  Since the default</pre></div>
+<div class="cov"><span class="num"><pre>179</pre></span><pre>                behavior is to ignore a value when validation has failed, which</pre></div>
+<div class="cov"><span class="num"><pre>180</pre></span><pre>                results in a None value being set, it only makes sense to use</pre></div>
+<div class="cov"><span class="num"><pre>181</pre></span><pre>                required when strict should be True.  Therefore, strict is set</pre></div>
+<div class="cov"><span class="num"><pre>182</pre></span><pre>                to true implicitely when using require.</pre></div>
+<div class="cov"><span class="num"><pre>183</pre></span><pre>            takes_list = if True, validates multiple values and ensures that</pre></div>
+<div class="cov"><span class="num"><pre>184</pre></span><pre>                the calling arg associated with argname is a list even if only</pre></div>
+<div class="cov"><span class="num"><pre>185</pre></span><pre>                one item was sent.  If None or False, only the first value</pre></div>
+<div class="cov"><span class="num"><pre>186</pre></span><pre>                will be validated and the calling arg associated with argname</pre></div>
+<div class="cov"><span class="num"><pre>187</pre></span><pre>                will not be a list, even if multiple values are present in</pre></div>
+<div class="cov"><span class="num"><pre>188</pre></span><pre>                calling_args. If None, having more than one value for argname is</pre></div>
+<div class="cov"><span class="num"><pre>189</pre></span><pre>                not considered a validation error. If False, it is considered a</pre></div>
+<div class="cov"><span class="num"><pre>190</pre></span><pre>                validation error.</pre></div>
+<div class="cov"><span class="num"><pre>191</pre></span><pre>            strict = If validation fails, raise a 400 Bad Request exception.</pre></div>
+<div class="cov"><span class="num"><pre>192</pre></span><pre>                The exception is raised after all validation has taken place, so</pre></div>
+<div class="cov"><span class="num"><pre>193</pre></span><pre>                user messages will still be set for all errors if applicable.</pre></div>
+<div class="cov"><span class="num"><pre>194</pre></span><pre>                Therefore, if your error doc handler shows user messages, the</pre></div>
+<div class="cov"><span class="num"><pre>195</pre></span><pre>                user can still be informed of the reason why they received</pre></div>
+<div class="cov"><span class="num"><pre>196</pre></span><pre>                the error.</pre></div>
+<div class="cov"><span class="num"><pre>197</pre></span><pre>            list_item_invalidates = When set to False and a list item fails</pre></div>
+<div class="cov"><span class="num"><pre>198</pre></span><pre>                validation, it is simply ignored. If strict_list == True, then a</pre></div>
+<div class="cov"><span class="num"><pre>199</pre></span><pre>                single validation error is considered a validation error for the</pre></div>
+<div class="cov"><span class="num"><pre>200</pre></span><pre>                whole argument, causing the value to be set to [].</pre></div>
+<div class="cov"><span class="num"><pre>201</pre></span><pre>            show_msg = should the user be shown an error message if validation</pre></div>
+<div class="cov"><span class="num"><pre>202</pre></span><pre>                on this argument fails?  If custom_msg == True, show_msg also</pre></div>
+<div class="cov"><span class="num"><pre>203</pre></span><pre>                gets set to True.</pre></div>
+<div class="cov"><span class="num"><pre>204</pre></span><pre>            custom_msg = A custom error msg to show the user if validation</pre></div>
+<div class="cov"><span class="num"><pre>205</pre></span><pre>                fails.  If not given, and if validator is a Formencode</pre></div>
+<div class="cov"><span class="num"><pre>206</pre></span><pre>                validator, then the message will be take from the formencode</pre></div>
+<div class="cov"><span class="num"><pre>207</pre></span><pre>                validator.  If not given and the validator is a callable, then</pre></div>
+<div class="cov"><span class="num"><pre>208</pre></span><pre>                the message will be taken from the ValueError exception that</pre></div>
+<div class="cov"><span class="num"><pre>209</pre></span><pre>                is raised.  If given, show_msg is implicitly set to True.</pre></div>
+<div class="cov"><span class="num"><pre>210</pre></span><pre>        &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>211</pre></span><pre>        if not self.urlargs.has_key(argname):</pre></div>
+<div class="cov"><span class="num"><pre>212</pre></span><pre>            self.expect_getargs(argname)</pre></div>
+<div class="cov"><span class="num"><pre>213</pre></span><pre>        if custom_msg:</pre></div>
+<div class="cov"><span class="num"><pre>214</pre></span><pre>            show_msg = True</pre></div>
+<div class="cov"><span class="num"><pre>215</pre></span><pre>        if required:</pre></div>
+<div class="cov"><span class="num"><pre>216</pre></span><pre>            if not processor:</pre></div>
+<div class="cov"><span class="num"><pre>217</pre></span><pre>                processor = formencode.validators.NotEmpty()</pre></div>
+<div class="cov"><span class="num"><pre>218</pre></span><pre>            strict = True</pre></div>
+<div class="cov"><span class="num"><pre>219</pre></span><pre>        if processor:</pre></div>
+<div class="cov"><span class="num"><pre>220</pre></span><pre>            for proc in tolist(processor):</pre></div>
+<div class="cov"><span class="num"><pre>221</pre></span><pre>                if not formencode.is_validator(proc):</pre></div>
+<div class="cov"><span class="num"><pre>222</pre></span><pre>                    if not hasattr(proc, '__call__'):</pre></div>
+<div class="cov"><span class="num"><pre>223</pre></span><pre>                        raise TypeError('processor must be a Formencode validator or a callable')</pre></div>
+<div class="cov"><span class="num"><pre>224</pre></span><pre>                    proc = _ProcessorWrapper(to_python=proc)</pre></div>
+<div class="cov"><span class="num"><pre>225</pre></span><pre>                self._processors.append((argname, proc, required, takes_list,</pre></div>
+<div class="cov"><span class="num"><pre>226</pre></span><pre>                    list_item_invalidates, strict, show_msg, custom_msg))</pre></div>
+<div class="cov"><span class="num"><pre>227</pre></span><pre>        else:</pre></div>
+<div class="cov"><span class="num"><pre>228</pre></span><pre>            self._processors.append((argname, None, required, takes_list,</pre></div>
+<div class="cov"><span class="num"><pre>229</pre></span><pre>                list_item_invalidates, strict, show_msg, custom_msg))</pre></div>
+<div class="skip"><span class="num"><pre>230</pre></span><pre></pre></div>
 <div class="skip"><span class="num"><pre>231</pre></span><pre>    ###</pre></div>
-<div class="cov"><span class="num"><pre>232</pre></span><pre>    def process(self):</pre></div>
-<div class="cov"><span class="num"><pre>233</pre></span><pre>        &quot;&quot;&quot;</pre></div>
-<div class="cov"><span class="num"><pre>234</pre></span><pre>            called to get the view's response</pre></div>
+<div class="skip"><span class="num"><pre>232</pre></span><pre>    ### methods related to processing the view</pre></div>
+<div class="skip"><span class="num"><pre>233</pre></span><pre>    ###</pre></div>
+<div class="cov"><span class="num"><pre>234</pre></span><pre>    def process(self):</pre></div>
 <div class="cov"><span class="num"><pre>235</pre></span><pre>        &quot;&quot;&quot;</pre></div>
-<div class="cov"><span class="num"><pre>236</pre></span><pre>        try:</pre></div>
-<div class="skip"><span class="num"><pre>237</pre></span><pre>            # call prep method if it exists.  This is not part of the call stack</pre></div>
-<div class="skip"><span class="num"><pre>238</pre></span><pre>            # because it allows the view instance to customize the call stack</pre></div>
-<div class="skip"><span class="num"><pre>239</pre></span><pre>            # before it starts being used in the loop below</pre></div>
-<div class="cov"><span class="num"><pre>240</pre></span><pre>            if hasattr(self, 'init'):</pre></div>
-<div class="cov"><span class="num"><pre>241</pre></span><pre>                getattr(self, 'init')()</pre></div>
-<div class="skip"><span class="num"><pre>242</pre></span><pre></pre></div>
-<div class="skip"><span class="num"><pre>243</pre></span><pre>            # turn URL args and GET args into a single MultiDict and store</pre></div>
-<div class="skip"><span class="num"><pre>244</pre></span><pre>            # on self.calling_args</pre></div>
-<div class="cov"><span class="num"><pre>245</pre></span><pre>            self.process_calling_args()</pre></div>
-<div class="skip"><span class="num"><pre>246</pre></span><pre></pre></div>
-<div class="skip"><span class="num"><pre>247</pre></span><pre>            # validate/process self.calling_args</pre></div>
-<div class="cov"><span class="num"><pre>248</pre></span><pre>            self.process_args()</pre></div>
-<div class="skip"><span class="num"><pre>249</pre></span><pre></pre></div>
-<div class="skip"><span class="num"><pre>250</pre></span><pre>            # call each method in the call stack</pre></div>
-<div class="cov"><span class="num"><pre>251</pre></span><pre>            self.process_cm_stack()</pre></div>
-<div class="skip"><span class="num"><pre>252</pre></span><pre></pre></div>
-<div class="skip"><span class="num"><pre>253</pre></span><pre>            # call the action method</pre></div>
-<div class="cov"><span class="num"><pre>254</pre></span><pre>            self.process_action_method()</pre></div>
-<div class="cov"><span class="num"><pre>255</pre></span><pre>        except _ViewCallStackAbort:</pre></div>
-<div class="cov"><span class="num"><pre>256</pre></span><pre>            pass</pre></div>
-<div class="cov"><span class="num"><pre>257</pre></span><pre>        return self.handle_response()</pre></div>
-<div class="skip"><span class="num"><pre>258</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>259</pre></span><pre>    def process_calling_args(self):</pre></div>
-<div class="skip"><span class="num"><pre>260</pre></span><pre>        # start with GET arguments that are expected</pre></div>
-<div class="cov"><span class="num"><pre>261</pre></span><pre>        args = MultiDict()</pre></div>
-<div class="cov"><span class="num"><pre>262</pre></span><pre>        if self.expected_get_args:</pre></div>
-<div class="cov"><span class="num"><pre>263</pre></span><pre>            for k in rg.request.args.iterkeys():</pre></div>
-<div class="cov"><span class="num"><pre>264</pre></span><pre>                if k in self.expected_get_args:</pre></div>
-<div class="cov"><span class="num"><pre>265</pre></span><pre>                    args.setlist(k, rg.request.args.getlist(k))</pre></div>
-<div class="skip"><span class="num"><pre>266</pre></span><pre></pre></div>
-<div class="skip"><span class="num"><pre>267</pre></span><pre>        # add URL arguments, replacing GET arguments if they are there.  URL</pre></div>
-<div class="skip"><span class="num"><pre>268</pre></span><pre>        # arguments get precedence and we don't want to just .update()</pre></div>
-<div class="skip"><span class="num"><pre>269</pre></span><pre>        # because that would allow arbitrary get arguments to affect the</pre></div>
-<div class="skip"><span class="num"><pre>270</pre></span><pre>        # values of the URL arguments</pre></div>
-<div class="cov"><span class="num"><pre>271</pre></span><pre>        for k,v in self.urlargs.iteritems():</pre></div>
-<div class="cov"><span class="num"><pre>272</pre></span><pre>            args[k] = v</pre></div>
-<div class="skip"><span class="num"><pre>273</pre></span><pre></pre></div>
-<div class="skip"><span class="num"><pre>274</pre></span><pre>        # trim down to a real dictionary.</pre></div>
-<div class="cov"><span class="num"><pre>275</pre></span><pre>        self.calling_args = werkzeug_multi_dict_conv(args)</pre></div>
-<div class="skip"><span class="num"><pre>276</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>277</pre></span><pre>    def process_args(self):</pre></div>
-<div class="cov"><span class="num"><pre>278</pre></span><pre>        had_strict_arg_failure = False</pre></div>
-<div class="cov"><span class="num"><pre>279</pre></span><pre>        for argname, processor, required, takes_list, list_item_invalidates, \</pre></div>
-<div class="cov"><span class="num"><pre>280</pre></span><pre>                strict, show_msg, custom_msg in self._processors:</pre></div>
-<div class="cov"><span class="num"><pre>281</pre></span><pre>            is_invalid = False</pre></div>
-<div class="cov"><span class="num"><pre>282</pre></span><pre>            argval = self.calling_args.get(argname, None)</pre></div>
-<div class="cov"><span class="num"><pre>283</pre></span><pre>            try:</pre></div>
-<div class="cov"><span class="num"><pre>284</pre></span><pre>                if isinstance(argval, list):</pre></div>
-<div class="cov"><span class="num"><pre>285</pre></span><pre>                    if takes_list == False:</pre></div>
-<div class="cov"><span class="num"><pre>286</pre></span><pre>                        raise formencode.Invalid('multiple values not allowed', argval, None)</pre></div>
-<div class="cov"><span class="num"><pre>287</pre></span><pre>                    if takes_list is None:</pre></div>
-<div class="cov"><span class="num"><pre>288</pre></span><pre>                        self.calling_args[argname] = argval = argval[0]</pre></div>
-<div class="cov"><span class="num"><pre>289</pre></span><pre>                elif takes_list:</pre></div>
-<div class="cov"><span class="num"><pre>290</pre></span><pre>                    self.calling_args[argname] = argval = tolist(argval)</pre></div>
-<div class="cov"><span class="num"><pre>291</pre></span><pre>                if processor:</pre></div>
-<div class="cov"><span class="num"><pre>292</pre></span><pre>                    if takes_list:</pre></div>
-<div class="cov"><span class="num"><pre>293</pre></span><pre>                        processor = formencode.ForEach(processor)</pre></div>
-<div class="cov"><span class="num"><pre>294</pre></span><pre>                    try:</pre></div>
-<div class="cov"><span class="num"><pre>295</pre></span><pre>                        processor.not_empty = required</pre></div>
-<div class="cov"><span class="num"><pre>296</pre></span><pre>                        processed_val = processor.to_python(argval)</pre></div>
-<div class="cov"><span class="num"><pre>297</pre></span><pre>                    except formencode.Invalid, e:</pre></div>
-<div class="cov"><span class="num"><pre>298</pre></span><pre>                        &quot;&quot;&quot; do a second round of processing for list values &quot;&quot;&quot;</pre></div>
-<div class="cov"><span class="num"><pre>299</pre></span><pre>                        if not takes_list or not e.error_list or list_item_invalidates:</pre></div>
-<div class="cov"><span class="num"><pre>300</pre></span><pre>                            raise</pre></div>
-<div class="cov"><span class="num"><pre>301</pre></span><pre>                        &quot;&quot;&quot; only remove the bad values, keep the good ones &quot;&quot;&quot;</pre></div>
-<div class="cov"><span class="num"><pre>302</pre></span><pre>                        new_list = []</pre></div>
-<div class="cov"><span class="num"><pre>303</pre></span><pre>                        for index, error in enumerate(e.error_list):</pre></div>
-<div class="cov"><span class="num"><pre>304</pre></span><pre>                            if error is None:</pre></div>
-<div class="cov"><span class="num"><pre>305</pre></span><pre>                                new_list.append(argval[index])</pre></div>
-<div class="skip"><span class="num"><pre>306</pre></span><pre>                        # revalidate for conversion and required</pre></div>
-<div class="cov"><span class="num"><pre>307</pre></span><pre>                        processed_val = processor.to_python(new_list)</pre></div>
-<div class="cov"><span class="num"><pre>308</pre></span><pre>                    self.calling_args[argname] = processed_val</pre></div>
-<div class="cov"><span class="num"><pre>309</pre></span><pre>            except formencode.Invalid, e:</pre></div>
-<div class="cov"><span class="num"><pre>310</pre></span><pre>                is_invalid = True</pre></div>
-<div class="cov"><span class="num"><pre>311</pre></span><pre>                if self.strict_args or strict:</pre></div>
-<div class="cov"><span class="num"><pre>312</pre></span><pre>                    had_strict_arg_failure = True</pre></div>
-<div class="cov"><span class="num"><pre>313</pre></span><pre>                self.invalid_arg_keys.append(argname)</pre></div>
-<div class="cov"><span class="num"><pre>314</pre></span><pre>                if show_msg:</pre></div>
-<div class="cov"><span class="num"><pre>315</pre></span><pre>                    invalid_msg = '%s: %s' % (argname, custom_msg or str(e))</pre></div>
-<div class="cov"><span class="num"><pre>316</pre></span><pre>                    user.add_message('error', invalid_msg)</pre></div>
-<div class="cov"><span class="num"><pre>317</pre></span><pre>            try:</pre></div>
-<div class="cov"><span class="num"><pre>318</pre></span><pre>                if is_invalid or self.calling_args[argname] is None or self.calling_args[argname] == '':</pre></div>
-<div class="cov"><span class="num"><pre>319</pre></span><pre>                    del self.calling_args[argname]</pre></div>
-<div class="cov"><span class="num"><pre>320</pre></span><pre>            except KeyError:</pre></div>
-<div class="cov"><span class="num"><pre>321</pre></span><pre>                pass</pre></div>
-<div class="cov"><span class="num"><pre>322</pre></span><pre>        if len(self.invalid_arg_keys) &gt; 0:</pre></div>
-<div class="cov"><span class="num"><pre>323</pre></span><pre>            log.debug('%s had bad args: %s', self.__class__.__name__, self.invalid_arg_keys)</pre></div>
-<div class="cov"><span class="num"><pre>324</pre></span><pre>        if had_strict_arg_failure:</pre></div>
-<div class="cov"><span class="num"><pre>325</pre></span><pre>            raise BadRequest()</pre></div>
-<div class="skip"><span class="num"><pre>326</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>327</pre></span><pre>    def process_cm_stack(self):</pre></div>
-<div class="skip"><span class="num"><pre>328</pre></span><pre>        # loop through all the calls requested</pre></div>
-<div class="cov"><span class="num"><pre>329</pre></span><pre>        for method_name, required, takes_args in self._cm_stack:</pre></div>
-<div class="cov"><span class="num"><pre>330</pre></span><pre>            if not hasattr(self, method_name) and not required:</pre></div>
-<div class="cov"><span class="num"><pre>331</pre></span><pre>                continue</pre></div>
-<div class="cov"><span class="num"><pre>332</pre></span><pre>            methodobj = getattr(self, method_name)</pre></div>
-<div class="cov"><span class="num"><pre>333</pre></span><pre>            if not takes_args:</pre></div>
-<div class="cov"><span class="num"><pre>334</pre></span><pre>                methodobj()</pre></div>
-<div class="cov"><span class="num"><pre>335</pre></span><pre>            else:</pre></div>
-<div class="cov"><span class="num"><pre>336</pre></span><pre>                self._call_with_expected_args(methodobj)</pre></div>
-<div class="skip"><span class="num"><pre>337</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>338</pre></span><pre>    def process_action_method(self):</pre></div>
-<div class="skip"><span class="num"><pre>339</pre></span><pre>        # now call our &quot;action&quot; methods, only one of these methods will be</pre></div>
-<div class="skip"><span class="num"><pre>340</pre></span><pre>        # called depending on the type of request and the attributes</pre></div>
-<div class="skip"><span class="num"><pre>341</pre></span><pre>        # available on the view</pre></div>
-<div class="cov"><span class="num"><pre>342</pre></span><pre>        if rg.request.is_xhr and hasattr(self, 'xhr'):</pre></div>
-<div class="cov"><span class="num"><pre>343</pre></span><pre>            retval = self._call_with_expected_args(self.xhr)</pre></div>
-<div class="cov"><span class="num"><pre>344</pre></span><pre>        elif rg.request.method == 'GET' and hasattr(self, 'get'):</pre></div>
-<div class="cov"><span class="num"><pre>345</pre></span><pre>            retval = self._call_with_expected_args(self.get)</pre></div>
-<div class="cov"><span class="num"><pre>346</pre></span><pre>        elif rg.request.method == 'POST' and hasattr(self, 'post'):</pre></div>
-<div class="cov"><span class="num"><pre>347</pre></span><pre>            retval = self._call_with_expected_args(self.post)</pre></div>
-<div class="cov"><span class="num"><pre>348</pre></span><pre>        else:</pre></div>
-<div class="cov"><span class="num"><pre>349</pre></span><pre>            try:</pre></div>
-<div class="cov"><span class="num"><pre>350</pre></span><pre>                retval = self._call_with_expected_args(self.default)</pre></div>
-<div class="cov"><span class="num"><pre>351</pre></span><pre>            except AttributeError, e:</pre></div>
-<div class="cov"><span class="num"><pre>352</pre></span><pre>                if &quot;'%s' object has no attribute 'default'&quot; % self.__class__.__name__ in str(e):</pre></div>
-<div class="cov"><span class="num"><pre>353</pre></span><pre>                    raise ProgrammingError('there were no &quot;action&quot; methods on the view class &quot;%s&quot;.  Expecting get(), post(), or default()' % self.__class__.__name__)</pre></div>
-<div class="cov"><span class="num"><pre>354</pre></span><pre>                raise</pre></div>
-<div class="skip"><span class="num"><pre>355</pre></span><pre></pre></div>
-<div class="skip"><span class="num"><pre>356</pre></span><pre>        # we allow the views to work on self.retval directly, but if the</pre></div>
-<div class="skip"><span class="num"><pre>357</pre></span><pre>        # action method returns a non-None value, it takes precedence</pre></div>
-<div class="cov"><span class="num"><pre>358</pre></span><pre>        if retval is not None:</pre></div>
-<div class="cov"><span class="num"><pre>359</pre></span><pre>            self.retval = retval</pre></div>
-<div class="skip"><span class="num"><pre>360</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>361</pre></span><pre>    def _call_with_expected_args(self, method, method_is_bound=True):</pre></div>
-<div class="cov"><span class="num"><pre>362</pre></span><pre>        &quot;&quot;&quot; handle argument conversion to what the method accepts &quot;&quot;&quot;</pre></div>
-<div class="cov"><span class="num"><pre>363</pre></span><pre>        try:</pre></div>
-<div class="skip"><span class="num"><pre>364</pre></span><pre>            # validate_arguments is made for a function, not a class method</pre></div>
-<div class="skip"><span class="num"><pre>365</pre></span><pre>            # so we need to &quot;trick&quot; it by sending self here, but then</pre></div>
-<div class="skip"><span class="num"><pre>366</pre></span><pre>            # removing it before the bound method is called below</pre></div>
-<div class="cov"><span class="num"><pre>367</pre></span><pre>            pos_args = (self,) if method_is_bound else tuple()</pre></div>
-<div class="cov"><span class="num"><pre>368</pre></span><pre>            args, kwargs = validate_arguments(method, pos_args , self.calling_args)</pre></div>
-<div class="cov"><span class="num"><pre>369</pre></span><pre>        except ArgumentValidationError, e:</pre></div>
-<div class="cov"><span class="num"><pre>370</pre></span><pre>            log.error('arg validation failed: %s, %s, %s, %s', method, e.missing, e.extra, e.extra_positional)</pre></div>
-<div class="cov"><span class="num"><pre>371</pre></span><pre>            raise BadRequest('The browser failed to transmit all '</pre></div>
-<div class="cov"><span class="num"><pre>372</pre></span><pre>                             'the data expected.')</pre></div>
-<div class="cov"><span class="num"><pre>373</pre></span><pre>        if method_is_bound:</pre></div>
-<div class="skip"><span class="num"><pre>374</pre></span><pre>            # remove &quot;self&quot; from args since its a bound method</pre></div>
-<div class="cov"><span class="num"><pre>375</pre></span><pre>            args = args[1:]</pre></div>
-<div class="cov"><span class="num"><pre>376</pre></span><pre>        return method(*args, **kwargs)</pre></div>
-<div class="skip"><span class="num"><pre>377</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>378</pre></span><pre>    def handle_response(self):</pre></div>
-<div class="skip"><span class="num"><pre>379</pre></span><pre>        # nothing returned is fine, I guess</pre></div>
-<div class="cov"><span class="num"><pre>380</pre></span><pre>        if self.retval is None or self.retval is NotGiven:</pre></div>
-<div class="cov"><span class="num"><pre>381</pre></span><pre>            self.retval = u''</pre></div>
-<div class="skip"><span class="num"><pre>382</pre></span><pre>        # is the return value a Content instance?</pre></div>
-<div class="cov"><span class="num"><pre>383</pre></span><pre>        if isinstance(self.retval, Content):</pre></div>
-<div class="cov"><span class="num"><pre>384</pre></span><pre>            c = self.retval</pre></div>
-<div class="cov"><span class="num"><pre>385</pre></span><pre>            return self.create_response(c.primary, mimetype=c.primary_type)</pre></div>
-<div class="skip"><span class="num"><pre>386</pre></span><pre>        # if the retval is a string, add it as the response data</pre></div>
-<div class="cov"><span class="num"><pre>387</pre></span><pre>        if isinstance(self.retval, basestring):</pre></div>
-<div class="cov"><span class="num"><pre>388</pre></span><pre>            return self.create_response(self.retval)</pre></div>
-<div class="skip"><span class="num"><pre>389</pre></span><pre>        # if its callable, assume it is a WSGI application and return it</pre></div>
-<div class="skip"><span class="num"><pre>390</pre></span><pre>        # directly</pre></div>
-<div class="cov"><span class="num"><pre>391</pre></span><pre>        if hasattr(self.retval, '__call__'):</pre></div>
-<div class="cov"><span class="num"><pre>392</pre></span><pre>            return self.retval</pre></div>
-<div class="skip"><span class="num"><pre>393</pre></span><pre>        # convert it to a string and send as the response</pre></div>
-<div class="cov"><span class="num"><pre>394</pre></span><pre>        return self.create_response(str(self.retval))</pre></div>
-<div class="skip"><span class="num"><pre>395</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>396</pre></span><pre>    def render_template(self, filename=None, default_ext='html', send_response=True):</pre></div>
-<div class="cov"><span class="num"><pre>397</pre></span><pre>        &quot;&quot;&quot;</pre></div>
-<div class="cov"><span class="num"><pre>398</pre></span><pre>            Render a template:</pre></div>
-<div class="skip"><span class="num"><pre>399</pre></span><pre></pre></div>
-<div class="skip"><span class="num"><pre>400</pre></span><pre>                # use a template based on the view's name.  If the view is named</pre></div>
-<div class="skip"><span class="num"><pre>401</pre></span><pre>                # &quot;MyView&quot; then the template should be named 'my_view.html'.</pre></div>
-<div class="cov"><span class="num"><pre>402</pre></span><pre>                self.render_template()</pre></div>
-<div class="skip"><span class="num"><pre>403</pre></span><pre></pre></div>
-<div class="skip"><span class="num"><pre>404</pre></span><pre>                # you can also set a different extension if the template is</pre></div>
-<div class="skip"><span class="num"><pre>405</pre></span><pre>                # named like the view, but is not html:</pre></div>
-<div class="cov"><span class="num"><pre>406</pre></span><pre>                self.render_template(default_ext='txt')</pre></div>
-<div class="skip"><span class="num"><pre>407</pre></span><pre></pre></div>
-<div class="skip"><span class="num"><pre>408</pre></span><pre>                # look for a template file with the name given.  If the view</pre></div>
-<div class="skip"><span class="num"><pre>409</pre></span><pre>                # is app level, then the search is done in the appstack's</pre></div>
-<div class="skip"><span class="num"><pre>410</pre></span><pre>                # templates.  If the view is plugin level, then the search is</pre></div>
-<div class="skip"><span class="num"><pre>411</pre></span><pre>                # done in the plugstack for that plugin.</pre></div>
-<div class="cov"><span class="num"><pre>412</pre></span><pre>                self.render_template('some_file.html')</pre></div>
-<div class="skip"><span class="num"><pre>413</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>414</pre></span><pre>            Calling render_template() will setup the Response object based on</pre></div>
-<div class="cov"><span class="num"><pre>415</pre></span><pre>            the content and type of the template.  If send_response is True</pre></div>
-<div class="cov"><span class="num"><pre>416</pre></span><pre>            (default), then the response will be sent immediately.  If False,</pre></div>
-<div class="cov"><span class="num"><pre>417</pre></span><pre>            render_template() will return the Content object.  In either case,</pre></div>
-<div class="cov"><span class="num"><pre>418</pre></span><pre>            self.retval will be set to the Content object.</pre></div>
-<div class="cov"><span class="num"><pre>419</pre></span><pre>        &quot;&quot;&quot;</pre></div>
-<div class="cov"><span class="num"><pre>420</pre></span><pre>        if not filename:</pre></div>
-<div class="skip"><span class="num"><pre>421</pre></span><pre>            # the filename must have an extension, that is how</pre></div>
-<div class="skip"><span class="num"><pre>422</pre></span><pre>            # getcontent() knows we are looking for a file and not a Content</pre></div>
-<div class="skip"><span class="num"><pre>423</pre></span><pre>            # instance.</pre></div>
-<div class="cov"><span class="num"><pre>424</pre></span><pre>            filename = '%s.%s' % (case_cw2us(self.__class__.__name__), default_ext)</pre></div>
-<div class="cov"><span class="num"><pre>425</pre></span><pre>        endpoint = filename</pre></div>
-<div class="cov"><span class="num"><pre>426</pre></span><pre>        if self._plugin_name:</pre></div>
-<div class="cov"><span class="num"><pre>427</pre></span><pre>            endpoint = '%s:%s' % (self._plugin_name, endpoint)</pre></div>
-<div class="cov"><span class="num"><pre>428</pre></span><pre>        return self.render_endpoint(endpoint, send_response)</pre></div>
-<div class="skip"><span class="num"><pre>429</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>430</pre></span><pre>    def render_endpoint(self, endpoint, send_response=True):</pre></div>
-<div class="cov"><span class="num"><pre>431</pre></span><pre>        &quot;&quot;&quot;</pre></div>
-<div class="cov"><span class="num"><pre>432</pre></span><pre>            Render a template or Content object by endpoint:</pre></div>
-<div class="skip"><span class="num"><pre>433</pre></span><pre></pre></div>
-<div class="skip"><span class="num"><pre>434</pre></span><pre>            # look for a template file by endpoint, useful if you need a</pre></div>
-<div class="skip"><span class="num"><pre>435</pre></span><pre>            # template from another plugin:</pre></div>
-<div class="cov"><span class="num"><pre>436</pre></span><pre>            self.render_endpoint('otherplugin:some_template.html')</pre></div>
-<div class="skip"><span class="num"><pre>437</pre></span><pre></pre></div>
-<div class="skip"><span class="num"><pre>438</pre></span><pre>            # or if the view is plugin level and a template from the main</pre></div>
-<div class="skip"><span class="num"><pre>439</pre></span><pre>            # application is needed.</pre></div>
-<div class="cov"><span class="num"><pre>440</pre></span><pre>            self.render_endpoint('app_level.html')</pre></div>
-<div class="skip"><span class="num"><pre>441</pre></span><pre></pre></div>
-<div class="skip"><span class="num"><pre>442</pre></span><pre>            # a Content object can also be rendered by omitting an extension:</pre></div>
-<div class="cov"><span class="num"><pre>443</pre></span><pre>            self.render_endpoint('myplugin:SomeContent')</pre></div>
-<div class="cov"><span class="num"><pre>444</pre></span><pre>        &quot;&quot;&quot;</pre></div>
-<div class="cov"><span class="num"><pre>445</pre></span><pre>        c = getcontent(endpoint, **self.template_vars)</pre></div>
-<div class="cov"><span class="num"><pre>446</pre></span><pre>        self.retval = c</pre></div>
-<div class="cov"><span class="num"><pre>447</pre></span><pre>        if send_response:</pre></div>
-<div class="cov"><span class="num"><pre>448</pre></span><pre>            self.send_response()</pre></div>
-<div class="cov"><span class="num"><pre>449</pre></span><pre>        return c</pre></div>
-<div class="skip"><span class="num"><pre>450</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>451</pre></span><pre>    def create_response(self, response, status=None, mimetype=None):</pre></div>
-<div class="cov"><span class="num"><pre>452</pre></span><pre>        if status is None:</pre></div>
-<div class="cov"><span class="num"><pre>453</pre></span><pre>            status = self.status_code</pre></div>
-<div class="cov"><span class="num"><pre>454</pre></span><pre>        if mimetype is None:</pre></div>
-<div class="cov"><span class="num"><pre>455</pre></span><pre>            mimetype = self.mimetype</pre></div>
-<div class="cov"><span class="num"><pre>456</pre></span><pre>        return self.response_class(response, status=status, mimetype=mimetype)</pre></div>
-<div class="skip"><span class="num"><pre>457</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>458</pre></span><pre>    def assign(self, name, value):</pre></div>
-<div class="cov"><span class="num"><pre>459</pre></span><pre>        self.template_vars[name] = value</pre></div>
-<div class="skip"><span class="num"><pre>460</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>461</pre></span><pre>    def send_response(self):</pre></div>
-<div class="cov"><span class="num"><pre>462</pre></span><pre>        &quot;&quot;&quot;</pre></div>
-<div class="cov"><span class="num"><pre>463</pre></span><pre>            Can be used during &quot;processing&quot; to abort the call stack process</pre></div>
-<div class="cov"><span class="num"><pre>464</pre></span><pre>            and immediately return the response.</pre></div>
-<div class="cov"><span class="num"><pre>465</pre></span><pre>        &quot;&quot;&quot;</pre></div>
-<div class="cov"><span class="num"><pre>466</pre></span><pre>        raise _ViewCallStackAbort</pre></div>
-<div class="skip"><span class="num"><pre>467</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>468</pre></span><pre>class SecureView(View):</pre></div>
-<div class="cov"><span class="num"><pre>469</pre></span><pre>    def __init__(self, urlargs, endpoint):</pre></div>
-<div class="cov"><span class="num"><pre>470</pre></span><pre>        View.__init__(self, urlargs, endpoint)</pre></div>
-<div class="skip"><span class="num"><pre>471</pre></span><pre>        # we can skip auth if needed</pre></div>
-<div class="cov"><span class="num"><pre>472</pre></span><pre>        self.allow_anonymous = False</pre></div>
-<div class="skip"><span class="num"><pre>473</pre></span><pre>        # if False, the user is required to be authenticated only</pre></div>
-<div class="cov"><span class="num"><pre>474</pre></span><pre>        self.check_authorization = True</pre></div>
-<div class="skip"><span class="num"><pre>475</pre></span><pre>        # do we know who the user is?</pre></div>
-<div class="cov"><span class="num"><pre>476</pre></span><pre>        self.is_authenticated = False</pre></div>
-<div class="skip"><span class="num"><pre>477</pre></span><pre>        # do they have permission to use the resource they are trying to use?</pre></div>
-<div class="cov"><span class="num"><pre>478</pre></span><pre>        self.is_authorized = False</pre></div>
-<div class="skip"><span class="num"><pre>479</pre></span><pre>        # if check_authorization is True, require the user to have at least</pre></div>
-<div class="skip"><span class="num"><pre>480</pre></span><pre>        # one of these permission</pre></div>
-<div class="cov"><span class="num"><pre>481</pre></span><pre>        self.require_any = []</pre></div>
-<div class="skip"><span class="num"><pre>482</pre></span><pre>        # if check_authorization is True, require the user to have all of the</pre></div>
-<div class="skip"><span class="num"><pre>483</pre></span><pre>        # following permissions</pre></div>
-<div class="cov"><span class="num"><pre>484</pre></span><pre>        self.require_all = []</pre></div>
-<div class="skip"><span class="num"><pre>485</pre></span><pre>        # setup the methods that will be called</pre></div>
-<div class="cov"><span class="num"><pre>486</pre></span><pre>        self.add_call_method('auth_pre')</pre></div>
-<div class="cov"><span class="num"><pre>487</pre></span><pre>        self.add_call_method('auth_calculate', required=True)</pre></div>
-<div class="cov"><span class="num"><pre>488</pre></span><pre>        self.add_call_method('auth_verify', required=True, takes_args=False)</pre></div>
-<div class="cov"><span class="num"><pre>489</pre></span><pre>        self.add_call_method('auth_post')</pre></div>
-<div class="skip"><span class="num"><pre>490</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>491</pre></span><pre>    def auth_calculate(self, **kwargs):</pre></div>
-<div class="cov"><span class="num"><pre>492</pre></span><pre>        if not user.is_authenticated:</pre></div>
-<div class="cov"><span class="num"><pre>493</pre></span><pre>            return</pre></div>
-<div class="cov"><span class="num"><pre>494</pre></span><pre>        self.is_authenticated = True</pre></div>
-<div class="skip"><span class="num"><pre>495</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>496</pre></span><pre>        try:</pre></div>
-<div class="cov"><span class="num"><pre>497</pre></span><pre>            if user.is_super_user:</pre></div>
-<div class="cov"><span class="num"><pre>498</pre></span><pre>                self.is_authorized = True</pre></div>
-<div class="cov"><span class="num"><pre>499</pre></span><pre>                return</pre></div>
-<div class="cov"><span class="num"><pre>500</pre></span><pre>        except AttributeError, e:</pre></div>
-<div class="cov"><span class="num"><pre>501</pre></span><pre>            if 'is_super_user' not in str(e):</pre></div>
-<div class="skip"><span class="num"><pre>502</pre></span><pre>                raise # pragma: no cover</pre></div>
-<div class="skip"><span class="num"><pre>503</pre></span><pre></pre></div>
-<div class="skip"><span class="num"><pre>504</pre></span><pre>        # if require_all is given and there are any failures, deny authorization</pre></div>
-<div class="cov"><span class="num"><pre>505</pre></span><pre>        for perm in tolist(self.require_all):</pre></div>
-<div class="cov"><span class="num"><pre>506</pre></span><pre>            if not user.has_token(perm):</pre></div>
-<div class="cov"><span class="num"><pre>507</pre></span><pre>                return</pre></div>
-<div class="skip"><span class="num"><pre>508</pre></span><pre>        # if there was at least one value for require_all and not values for</pre></div>
-<div class="skip"><span class="num"><pre>509</pre></span><pre>        # require any, then the user is authorized</pre></div>
-<div class="cov"><span class="num"><pre>510</pre></span><pre>        if self.require_all and not self.require_any:</pre></div>
-<div class="cov"><span class="num"><pre>511</pre></span><pre>            self.is_authorized = True</pre></div>
-<div class="cov"><span class="num"><pre>512</pre></span><pre>            return</pre></div>
-<div class="skip"><span class="num"><pre>513</pre></span><pre>        # at this point, require_all passed or was empty and require_any has</pre></div>
-<div class="skip"><span class="num"><pre>514</pre></span><pre>        # at least one value, so this is the final check to determine</pre></div>
-<div class="skip"><span class="num"><pre>515</pre></span><pre>        # authorization</pre></div>
-<div class="cov"><span class="num"><pre>516</pre></span><pre>        if user.has_any_token(self.require_any):</pre></div>
-<div class="cov"><span class="num"><pre>517</pre></span><pre>            self.is_authorized = True</pre></div>
-<div class="skip"><span class="num"><pre>518</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>519</pre></span><pre>    def auth_verify(self):</pre></div>
-<div class="cov"><span class="num"><pre>520</pre></span><pre>        if self.allow_anonymous:</pre></div>
-<div class="cov"><span class="num"><pre>521</pre></span><pre>            return</pre></div>
-<div class="cov"><span class="num"><pre>522</pre></span><pre>        if not self.is_authenticated:</pre></div>
-<div class="cov"><span class="num"><pre>523</pre></span><pre>            self.not_authenticated()</pre></div>
-<div class="cov"><span class="num"><pre>524</pre></span><pre>        if not self.check_authorization:</pre></div>
-<div class="cov"><span class="num"><pre>525</pre></span><pre>            return</pre></div>
-<div class="cov"><span class="num"><pre>526</pre></span><pre>        if not self.is_authorized:</pre></div>
-<div class="cov"><span class="num"><pre>527</pre></span><pre>            self.not_authorized()</pre></div>
-<div class="skip"><span class="num"><pre>528</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>529</pre></span><pre>    def not_authenticated(self):</pre></div>
-<div class="cov"><span class="num"><pre>530</pre></span><pre>        abort(401)</pre></div>
-<div class="skip"><span class="num"><pre>531</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>532</pre></span><pre>    def not_authorized(self):</pre></div>
-<div class="cov"><span class="num"><pre>533</pre></span><pre>        abort(403)</pre></div>
-<div class="skip"><span class="num"><pre>534</pre></span><pre></pre></div>
-<div class="skip"><span class="num"><pre>535</pre></span><pre>###</pre></div>
-<div class="skip"><span class="num"><pre>536</pre></span><pre>### functions and classes related to processing functions as views</pre></div>
-<div class="skip"><span class="num"><pre>537</pre></span><pre>###</pre></div>
-<div class="cov"><span class="num"><pre>538</pre></span><pre>def asview(rule=None, **options):</pre></div>
-<div class="cov"><span class="num"><pre>539</pre></span><pre>    def decorate(f):</pre></div>
-<div class="cov"><span class="num"><pre>540</pre></span><pre>        lrule = rule</pre></div>
-<div class="cov"><span class="num"><pre>541</pre></span><pre>        fname = f.__name__</pre></div>
-<div class="cov"><span class="num"><pre>542</pre></span><pre>        getargs = options.pop('getargs', [])</pre></div>
-<div class="cov"><span class="num"><pre>543</pre></span><pre>        plugin_prefix = _calc_plugin_name(f.__module__)</pre></div>
-<div class="skip"><span class="num"><pre>544</pre></span><pre></pre></div>
-<div class="skip"><span class="num"><pre>545</pre></span><pre>        # calculate the endpoint</pre></div>
-<div class="cov"><span class="num"><pre>546</pre></span><pre>        endpoint = fname</pre></div>
-<div class="cov"><span class="num"><pre>547</pre></span><pre>        if plugin_prefix is not None:</pre></div>
-<div class="cov"><span class="num"><pre>548</pre></span><pre>            endpoint = '%s:%s' % (plugin_prefix, endpoint)</pre></div>
-<div class="skip"><span class="num"><pre>549</pre></span><pre></pre></div>
-<div class="skip"><span class="num"><pre>550</pre></span><pre>        # setup the routing</pre></div>
-<div class="cov"><span class="num"><pre>551</pre></span><pre>        if lrule is None:</pre></div>
-<div class="cov"><span class="num"><pre>552</pre></span><pre>            lrule = '/%s' % fname</pre></div>
-<div class="cov"><span class="num"><pre>553</pre></span><pre>        lrule = routing.add_prefix(lrule)</pre></div>
-<div class="cov"><span class="num"><pre>554</pre></span><pre>        log.debug('@asview adding route &quot;%s&quot; to endpoint &quot;%s&quot;', lrule, endpoint)</pre></div>
-<div class="cov"><span class="num"><pre>555</pre></span><pre>        ag.route_map.add(Rule(lrule, endpoint=endpoint), **options)</pre></div>
-<div class="skip"><span class="num"><pre>556</pre></span><pre></pre></div>
-<div class="skip"><span class="num"><pre>557</pre></span><pre></pre></div>
-<div class="skip"><span class="num"><pre>558</pre></span><pre>        # create the class that will handle this function</pre></div>
-<div class="cov"><span class="num"><pre>559</pre></span><pre>        fvh = classobj(fname, (_AsViewHandler, ), {})</pre></div>
-<div class="cov"><span class="num"><pre>560</pre></span><pre>        fvh.__module__ = f.__module__</pre></div>
-<div class="skip"><span class="num"><pre>561</pre></span><pre></pre></div>
-<div class="skip"><span class="num"><pre>562</pre></span><pre>        # assign the default method</pre></div>
-<div class="cov"><span class="num"><pre>563</pre></span><pre>        def defmethod(self):</pre></div>
-<div class="cov"><span class="num"><pre>564</pre></span><pre>            return self._call_with_expected_args(f, method_is_bound=False)</pre></div>
-<div class="cov"><span class="num"><pre>565</pre></span><pre>        fvh.default = defmethod</pre></div>
-<div class="skip"><span class="num"><pre>566</pre></span><pre></pre></div>
-<div class="skip"><span class="num"><pre>567</pre></span><pre>        # make the getargs available</pre></div>
-<div class="cov"><span class="num"><pre>568</pre></span><pre>        fvh._asview_getargs = tolist(getargs)</pre></div>
-<div class="skip"><span class="num"><pre>569</pre></span><pre></pre></div>
-<div class="skip"><span class="num"><pre>570</pre></span><pre>        # return the class instead of the function</pre></div>
-<div class="cov"><span class="num"><pre>571</pre></span><pre>        return fvh</pre></div>
-<div class="cov"><span class="num"><pre>572</pre></span><pre>    return decorate</pre></div>
+<div class="cov"><span class="num"><pre>236</pre></span><pre>            called to get the view's response</pre></div>
+<div class="cov"><span class="num"><pre>237</pre></span><pre>        &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>238</pre></span><pre>        try:</pre></div>
+<div class="skip"><span class="num"><pre>239</pre></span><pre>            # call prep method if it exists.  This is not part of the call stack</pre></div>
+<div class="skip"><span class="num"><pre>240</pre></span><pre>            # because it allows the view instance to customize the call stack</pre></div>
+<div class="skip"><span class="num"><pre>241</pre></span><pre>            # before it starts being used in the loop below</pre></div>
+<div class="cov"><span class="num"><pre>242</pre></span><pre>            if hasattr(self, 'init'):</pre></div>
+<div class="cov"><span class="num"><pre>243</pre></span><pre>                getattr(self, 'init')()</pre></div>
+<div class="skip"><span class="num"><pre>244</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre>245</pre></span><pre>            # turn URL args and GET args into a single MultiDict and store</pre></div>
+<div class="skip"><span class="num"><pre>246</pre></span><pre>            # on self.calling_args</pre></div>
+<div class="cov"><span class="num"><pre>247</pre></span><pre>            self.process_calling_args()</pre></div>
+<div class="skip"><span class="num"><pre>248</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre>249</pre></span><pre>            # validate/process self.calling_args</pre></div>
+<div class="cov"><span class="num"><pre>250</pre></span><pre>            self.process_args()</pre></div>
+<div class="skip"><span class="num"><pre>251</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre>252</pre></span><pre>            # call each method in the call stack</pre></div>
+<div class="cov"><span class="num"><pre>253</pre></span><pre>            self.process_cm_stack()</pre></div>
+<div class="skip"><span class="num"><pre>254</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre>255</pre></span><pre>            # call the action method</pre></div>
+<div class="cov"><span class="num"><pre>256</pre></span><pre>            self.process_action_method()</pre></div>
+<div class="cov"><span class="num"><pre>257</pre></span><pre>        except _ViewCallStackAbort:</pre></div>
+<div class="cov"><span class="num"><pre>258</pre></span><pre>            pass</pre></div>
+<div class="cov"><span class="num"><pre>259</pre></span><pre>        return self.handle_response()</pre></div>
+<div class="skip"><span class="num"><pre>260</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>261</pre></span><pre>    def process_calling_args(self):</pre></div>
+<div class="skip"><span class="num"><pre>262</pre></span><pre>        # start with GET arguments that are expected</pre></div>
+<div class="cov"><span class="num"><pre>263</pre></span><pre>        args = MultiDict()</pre></div>
+<div class="cov"><span class="num"><pre>264</pre></span><pre>        if self.expected_get_args:</pre></div>
+<div class="cov"><span class="num"><pre>265</pre></span><pre>            for k in rg.request.args.iterkeys():</pre></div>
+<div class="cov"><span class="num"><pre>266</pre></span><pre>                if k in self.expected_get_args:</pre></div>
+<div class="cov"><span class="num"><pre>267</pre></span><pre>                    args.setlist(k, rg.request.args.getlist(k))</pre></div>
+<div class="skip"><span class="num"><pre>268</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre>269</pre></span><pre>        # add URL arguments, replacing GET arguments if they are there.  URL</pre></div>
+<div class="skip"><span class="num"><pre>270</pre></span><pre>        # arguments get precedence and we don't want to just .update()</pre></div>
+<div class="skip"><span class="num"><pre>271</pre></span><pre>        # because that would allow arbitrary get arguments to affect the</pre></div>
+<div class="skip"><span class="num"><pre>272</pre></span><pre>        # values of the URL arguments</pre></div>
+<div class="cov"><span class="num"><pre>273</pre></span><pre>        for k,v in self.urlargs.iteritems():</pre></div>
+<div class="cov"><span class="num"><pre>274</pre></span><pre>            args[k] = v</pre></div>
+<div class="skip"><span class="num"><pre>275</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre>276</pre></span><pre>        # trim down to a real dictionary.</pre></div>
+<div class="cov"><span class="num"><pre>277</pre></span><pre>        self.calling_args = werkzeug_multi_dict_conv(args)</pre></div>
+<div class="skip"><span class="num"><pre>278</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>279</pre></span><pre>    def process_args(self):</pre></div>
+<div class="cov"><span class="num"><pre>280</pre></span><pre>        had_strict_arg_failure = False</pre></div>
+<div class="cov"><span class="num"><pre>281</pre></span><pre>        for argname, processor, required, takes_list, list_item_invalidates, \</pre></div>
+<div class="cov"><span class="num"><pre>282</pre></span><pre>                strict, show_msg, custom_msg in self._processors:</pre></div>
+<div class="cov"><span class="num"><pre>283</pre></span><pre>            is_invalid = False</pre></div>
+<div class="cov"><span class="num"><pre>284</pre></span><pre>            argval = self.calling_args.get(argname, None)</pre></div>
+<div class="cov"><span class="num"><pre>285</pre></span><pre>            try:</pre></div>
+<div class="cov"><span class="num"><pre>286</pre></span><pre>                if isinstance(argval, list):</pre></div>
+<div class="cov"><span class="num"><pre>287</pre></span><pre>                    if takes_list == False:</pre></div>
+<div class="cov"><span class="num"><pre>288</pre></span><pre>                        raise formencode.Invalid('multiple values not allowed', argval, None)</pre></div>
+<div class="cov"><span class="num"><pre>289</pre></span><pre>                    if takes_list is None:</pre></div>
+<div class="cov"><span class="num"><pre>290</pre></span><pre>                        self.calling_args[argname] = argval = argval[0]</pre></div>
+<div class="cov"><span class="num"><pre>291</pre></span><pre>                elif takes_list:</pre></div>
+<div class="cov"><span class="num"><pre>292</pre></span><pre>                    self.calling_args[argname] = argval = tolist(argval)</pre></div>
+<div class="cov"><span class="num"><pre>293</pre></span><pre>                if processor:</pre></div>
+<div class="cov"><span class="num"><pre>294</pre></span><pre>                    if takes_list:</pre></div>
+<div class="cov"><span class="num"><pre>295</pre></span><pre>                        processor = formencode.ForEach(processor)</pre></div>
+<div class="cov"><span class="num"><pre>296</pre></span><pre>                    try:</pre></div>
+<div class="cov"><span class="num"><pre>297</pre></span><pre>                        processor.not_empty = required</pre></div>
+<div class="cov"><span class="num"><pre>298</pre></span><pre>                        processed_val = processor.to_python(argval)</pre></div>
+<div class="cov"><span class="num"><pre>299</pre></span><pre>                    except formencode.Invalid, e:</pre></div>
+<div class="cov"><span class="num"><pre>300</pre></span><pre>                        &quot;&quot;&quot; do a second round of processing for list values &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>301</pre></span><pre>                        if not takes_list or not e.error_list or list_item_invalidates:</pre></div>
+<div class="cov"><span class="num"><pre>302</pre></span><pre>                            raise</pre></div>
+<div class="cov"><span class="num"><pre>303</pre></span><pre>                        &quot;&quot;&quot; only remove the bad values, keep the good ones &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>304</pre></span><pre>                        new_list = []</pre></div>
+<div class="cov"><span class="num"><pre>305</pre></span><pre>                        for index, error in enumerate(e.error_list):</pre></div>
+<div class="cov"><span class="num"><pre>306</pre></span><pre>                            if error is None:</pre></div>
+<div class="cov"><span class="num"><pre>307</pre></span><pre>                                new_list.append(argval[index])</pre></div>
+<div class="skip"><span class="num"><pre>308</pre></span><pre>                        # revalidate for conversion and required</pre></div>
+<div class="cov"><span class="num"><pre>309</pre></span><pre>                        processed_val = processor.to_python(new_list)</pre></div>
+<div class="cov"><span class="num"><pre>310</pre></span><pre>                    self.calling_args[argname] = processed_val</pre></div>
+<div class="cov"><span class="num"><pre>311</pre></span><pre>            except formencode.Invalid, e:</pre></div>
+<div class="cov"><span class="num"><pre>312</pre></span><pre>                is_invalid = True</pre></div>
+<div class="cov"><span class="num"><pre>313</pre></span><pre>                if self.strict_args or strict:</pre></div>
+<div class="cov"><span class="num"><pre>314</pre></span><pre>                    had_strict_arg_failure = True</pre></div>
+<div class="cov"><span class="num"><pre>315</pre></span><pre>                self.invalid_arg_keys.append(argname)</pre></div>
+<div class="cov"><span class="num"><pre>316</pre></span><pre>                if show_msg:</pre></div>
+<div class="cov"><span class="num"><pre>317</pre></span><pre>                    invalid_msg = '%s: %s' % (argname, custom_msg or str(e))</pre></div>
+<div class="cov"><span class="num"><pre>318</pre></span><pre>                    user.add_message('error', invalid_msg)</pre></div>
+<div class="cov"><span class="num"><pre>319</pre></span><pre>            try:</pre></div>
+<div class="cov"><span class="num"><pre>320</pre></span><pre>                if is_invalid or self.calling_args[argname] is None or self.calling_args[argname] == '':</pre></div>
+<div class="cov"><span class="num"><pre>321</pre></span><pre>                    del self.calling_args[argname]</pre></div>
+<div class="cov"><span class="num"><pre>322</pre></span><pre>            except KeyError:</pre></div>
+<div class="cov"><span class="num"><pre>323</pre></span><pre>                pass</pre></div>
+<div class="cov"><span class="num"><pre>324</pre></span><pre>        if len(self.invalid_arg_keys) &gt; 0:</pre></div>
+<div class="cov"><span class="num"><pre>325</pre></span><pre>            log.debug('%s had bad args: %s', self.__class__.__name__, self.invalid_arg_keys)</pre></div>
+<div class="cov"><span class="num"><pre>326</pre></span><pre>        if had_strict_arg_failure:</pre></div>
+<div class="cov"><span class="num"><pre>327</pre></span><pre>            raise BadRequest()</pre></div>
+<div class="skip"><span class="num"><pre>328</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>329</pre></span><pre>    def process_cm_stack(self):</pre></div>
+<div class="skip"><span class="num"><pre>330</pre></span><pre>        # loop through all the calls requested</pre></div>
+<div class="cov"><span class="num"><pre>331</pre></span><pre>        for method_name, required, takes_args in self._cm_stack:</pre></div>
+<div class="cov"><span class="num"><pre>332</pre></span><pre>            if not hasattr(self, method_name) and not required:</pre></div>
+<div class="cov"><span class="num"><pre>333</pre></span><pre>                continue</pre></div>
+<div class="cov"><span class="num"><pre>334</pre></span><pre>            methodobj = getattr(self, method_name)</pre></div>
+<div class="cov"><span class="num"><pre>335</pre></span><pre>            if not takes_args:</pre></div>
+<div class="cov"><span class="num"><pre>336</pre></span><pre>                methodobj()</pre></div>
+<div class="cov"><span class="num"><pre>337</pre></span><pre>            else:</pre></div>
+<div class="cov"><span class="num"><pre>338</pre></span><pre>                self._call_with_expected_args(methodobj)</pre></div>
+<div class="skip"><span class="num"><pre>339</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>340</pre></span><pre>    def process_action_method(self):</pre></div>
+<div class="skip"><span class="num"><pre>341</pre></span><pre>        # now call our &quot;action&quot; methods, only one of these methods will be</pre></div>
+<div class="skip"><span class="num"><pre>342</pre></span><pre>        # called depending on the type of request and the attributes</pre></div>
+<div class="skip"><span class="num"><pre>343</pre></span><pre>        # available on the view</pre></div>
+<div class="cov"><span class="num"><pre>344</pre></span><pre>        if rg.request.is_xhr and hasattr(self, 'xhr'):</pre></div>
+<div class="cov"><span class="num"><pre>345</pre></span><pre>            retval = self._call_with_expected_args(self.xhr)</pre></div>
+<div class="cov"><span class="num"><pre>346</pre></span><pre>        elif rg.request.method == 'GET' and hasattr(self, 'get'):</pre></div>
+<div class="cov"><span class="num"><pre>347</pre></span><pre>            retval = self._call_with_expected_args(self.get)</pre></div>
+<div class="cov"><span class="num"><pre>348</pre></span><pre>        elif rg.request.method == 'POST' and hasattr(self, 'post'):</pre></div>
+<div class="cov"><span class="num"><pre>349</pre></span><pre>            retval = self._call_with_expected_args(self.post)</pre></div>
+<div class="cov"><span class="num"><pre>350</pre></span><pre>        else:</pre></div>
+<div class="cov"><span class="num"><pre>351</pre></span><pre>            try:</pre></div>
+<div class="cov"><span class="num"><pre>352</pre></span><pre>                retval = self._call_with_expected_args(self.default)</pre></div>
+<div class="cov"><span class="num"><pre>353</pre></span><pre>            except AttributeError, e:</pre></div>
+<div class="cov"><span class="num"><pre>354</pre></span><pre>                if &quot;'%s' object has no attribute 'default'&quot; % self.__class__.__name__ in str(e):</pre></div>
+<div class="cov"><span class="num"><pre>355</pre></span><pre>                    raise ProgrammingError('there were no &quot;action&quot; methods on the view class &quot;%s&quot;.  Expecting get(), post(), or default()' % self.__class__.__name__)</pre></div>
+<div class="cov"><span class="num"><pre>356</pre></span><pre>                raise</pre></div>
+<div class="skip"><span class="num"><pre>357</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre>358</pre></span><pre>        # we allow the views to work on self.retval directly, but if the</pre></div>
+<div class="skip"><span class="num"><pre>359</pre></span><pre>        # action method returns a non-None value, it takes precedence</pre></div>
+<div class="cov"><span class="num"><pre>360</pre></span><pre>        if retval is not None:</pre></div>
+<div class="cov"><span class="num"><pre>361</pre></span><pre>            self.retval = retval</pre></div>
+<div class="skip"><span class="num"><pre>362</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>363</pre></span><pre>    def _call_with_expected_args(self, method, method_is_bound=True):</pre></div>
+<div class="cov"><span class="num"><pre>364</pre></span><pre>        &quot;&quot;&quot; handle argument conversion to what the method accepts &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>365</pre></span><pre>        try:</pre></div>
+<div class="skip"><span class="num"><pre>366</pre></span><pre>            # validate_arguments is made for a function, not a class method</pre></div>
+<div class="skip"><span class="num"><pre>367</pre></span><pre>            # so we need to &quot;trick&quot; it by sending self here, but then</pre></div>
+<div class="skip"><span class="num"><pre>368</pre></span><pre>            # removing it before the bound method is called below</pre></div>
+<div class="cov"><span class="num"><pre>369</pre></span><pre>            pos_args = (self,) if method_is_bound else tuple()</pre></div>
+<div class="cov"><span class="num"><pre>370</pre></span><pre>            args, kwargs = validate_arguments(method, pos_args , self.calling_args)</pre></div>
+<div class="cov"><span class="num"><pre>371</pre></span><pre>        except ArgumentValidationError, e:</pre></div>
+<div class="cov"><span class="num"><pre>372</pre></span><pre>            log.error('arg validation failed: %s, %s, %s, %s', method, e.missing, e.extra, e.extra_positional)</pre></div>
+<div class="cov"><span class="num"><pre>373</pre></span><pre>            raise BadRequest('The browser failed to transmit all '</pre></div>
+<div class="cov"><span class="num"><pre>374</pre></span><pre>                             'the data expected.')</pre></div>
+<div class="cov"><span class="num"><pre>375</pre></span><pre>        if method_is_bound:</pre></div>
+<div class="skip"><span class="num"><pre>376</pre></span><pre>            # remove &quot;self&quot; from args since its a bound method</pre></div>
+<div class="cov"><span class="num"><pre>377</pre></span><pre>            args = args[1:]</pre></div>
+<div class="cov"><span class="num"><pre>378</pre></span><pre>        return method(*args, **kwargs)</pre></div>
+<div class="skip"><span class="num"><pre>379</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>380</pre></span><pre>    def handle_response(self):</pre></div>
+<div class="skip"><span class="num"><pre>381</pre></span><pre>        # nothing returned is fine, I guess</pre></div>
+<div class="cov"><span class="num"><pre>382</pre></span><pre>        if self.retval is None or self.retval is NotGiven:</pre></div>
+<div class="cov"><span class="num"><pre>383</pre></span><pre>            self.retval = u''</pre></div>
+<div class="skip"><span class="num"><pre>384</pre></span><pre>        # is the return value a Content instance?</pre></div>
+<div class="cov"><span class="num"><pre>385</pre></span><pre>        if isinstance(self.retval, Content):</pre></div>
+<div class="cov"><span class="num"><pre>386</pre></span><pre>            c = self.retval</pre></div>
+<div class="cov"><span class="num"><pre>387</pre></span><pre>            return self.create_response(c.primary, mimetype=c.primary_type)</pre></div>
+<div class="skip"><span class="num"><pre>388</pre></span><pre>        # if the retval is a string, add it as the response data</pre></div>
+<div class="cov"><span class="num"><pre>389</pre></span><pre>        if isinstance(self.retval, basestring):</pre></div>
+<div class="cov"><span class="num"><pre>390</pre></span><pre>            return self.create_response(self.retval)</pre></div>
+<div class="skip"><span class="num"><pre>391</pre></span><pre>        # if its callable, assume it is a WSGI application and return it</pre></div>
+<div class="skip"><span class="num"><pre>392</pre></span><pre>        # directly</pre></div>
+<div class="cov"><span class="num"><pre>393</pre></span><pre>        if hasattr(self.retval, '__call__'):</pre></div>
+<div class="cov"><span class="num"><pre>394</pre></span><pre>            return self.retval</pre></div>
+<div class="skip"><span class="num"><pre>395</pre></span><pre>        # convert it to a string and send as the response</pre></div>
+<div class="cov"><span class="num"><pre>396</pre></span><pre>        return self.create_response(str(self.retval))</pre></div>
+<div class="skip"><span class="num"><pre>397</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>398</pre></span><pre>    def render_template(self, filename=None, default_ext='html', send_response=True):</pre></div>
+<div class="cov"><span class="num"><pre>399</pre></span><pre>        &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>400</pre></span><pre>            Render a template:</pre></div>
+<div class="skip"><span class="num"><pre>401</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre>402</pre></span><pre>                # use a template based on the view's name.  If the view is named</pre></div>
+<div class="skip"><span class="num"><pre>403</pre></span><pre>                # &quot;MyView&quot; then the template should be named 'my_view.html'.</pre></div>
+<div class="cov"><span class="num"><pre>404</pre></span><pre>                self.render_template()</pre></div>
+<div class="skip"><span class="num"><pre>405</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre>406</pre></span><pre>                # you can also set a different extension if the template is</pre></div>
+<div class="skip"><span class="num"><pre>407</pre></span><pre>                # named like the view, but is not html:</pre></div>
+<div class="cov"><span class="num"><pre>408</pre></span><pre>                self.render_template(default_ext='txt')</pre></div>
+<div class="skip"><span class="num"><pre>409</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre>410</pre></span><pre>                # look for a template file with the name given.  If the view</pre></div>
+<div class="skip"><span class="num"><pre>411</pre></span><pre>                # is app level, then the search is done in the appstack's</pre></div>
+<div class="skip"><span class="num"><pre>412</pre></span><pre>                # templates.  If the view is plugin level, then the search is</pre></div>
+<div class="skip"><span class="num"><pre>413</pre></span><pre>                # done in the plugstack for that plugin.</pre></div>
+<div class="cov"><span class="num"><pre>414</pre></span><pre>                self.render_template('some_file.html')</pre></div>
+<div class="skip"><span class="num"><pre>415</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>416</pre></span><pre>            Calling render_template() will setup the Response object based on</pre></div>
+<div class="cov"><span class="num"><pre>417</pre></span><pre>            the content and type of the template.  If send_response is True</pre></div>
+<div class="cov"><span class="num"><pre>418</pre></span><pre>            (default), then the response will be sent immediately.  If False,</pre></div>
+<div class="cov"><span class="num"><pre>419</pre></span><pre>            render_template() will return the Content object.  In either case,</pre></div>
+<div class="cov"><span class="num"><pre>420</pre></span><pre>            self.retval will be set to the Content object.</pre></div>
+<div class="cov"><span class="num"><pre>421</pre></span><pre>        &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>422</pre></span><pre>        if not filename:</pre></div>
+<div class="skip"><span class="num"><pre>423</pre></span><pre>            # the filename must have an extension, that is how</pre></div>
+<div class="skip"><span class="num"><pre>424</pre></span><pre>            # getcontent() knows we are looking for a file and not a Content</pre></div>
+<div class="skip"><span class="num"><pre>425</pre></span><pre>            # instance.</pre></div>
+<div class="cov"><span class="num"><pre>426</pre></span><pre>            filename = '%s.%s' % (case_cw2us(self.__class__.__name__), default_ext)</pre></div>
+<div class="cov"><span class="num"><pre>427</pre></span><pre>        endpoint = filename</pre></div>
+<div class="cov"><span class="num"><pre>428</pre></span><pre>        if self._plugin_name:</pre></div>
+<div class="cov"><span class="num"><pre>429</pre></span><pre>            endpoint = '%s:%s' % (self._plugin_name, endpoint)</pre></div>
+<div class="cov"><span class="num"><pre>430</pre></span><pre>        return self.render_endpoint(endpoint, send_response)</pre></div>
+<div class="skip"><span class="num"><pre>431</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>432</pre></span><pre>    def render_endpoint(self, endpoint, send_response=True):</pre></div>
+<div class="cov"><span class="num"><pre>433</pre></span><pre>        &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>434</pre></span><pre>            Render a template or Content object by endpoint:</pre></div>
+<div class="skip"><span class="num"><pre>435</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre>436</pre></span><pre>            # look for a template file by endpoint, useful if you need a</pre></div>
+<div class="skip"><span class="num"><pre>437</pre></span><pre>            # template from another plugin:</pre></div>
+<div class="cov"><span class="num"><pre>438</pre></span><pre>            self.render_endpoint('otherplugin:some_template.html')</pre></div>
+<div class="skip"><span class="num"><pre>439</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre>440</pre></span><pre>            # or if the view is plugin level and a template from the main</pre></div>
+<div class="skip"><span class="num"><pre>441</pre></span><pre>            # application is needed.</pre></div>
+<div class="cov"><span class="num"><pre>442</pre></span><pre>            self.render_endpoint('app_level.html')</pre></div>
+<div class="skip"><span class="num"><pre>443</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre>444</pre></span><pre>            # a Content object can also be rendered by omitting an extension:</pre></div>
+<div class="cov"><span class="num"><pre>445</pre></span><pre>            self.render_endpoint('myplugin:SomeContent')</pre></div>
+<div class="cov"><span class="num"><pre>446</pre></span><pre>        &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>447</pre></span><pre>        c = getcontent(endpoint, **self.template_vars)</pre></div>
+<div class="cov"><span class="num"><pre>448</pre></span><pre>        self.retval = c</pre></div>
+<div class="cov"><span class="num"><pre>449</pre></span><pre>        if send_response:</pre></div>
+<div class="cov"><span class="num"><pre>450</pre></span><pre>            self.send_response()</pre></div>
+<div class="cov"><span class="num"><pre>451</pre></span><pre>        return c</pre></div>
+<div class="skip"><span class="num"><pre>452</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>453</pre></span><pre>    def create_response(self, response, status=None, mimetype=None):</pre></div>
+<div class="cov"><span class="num"><pre>454</pre></span><pre>        if status is None:</pre></div>
+<div class="cov"><span class="num"><pre>455</pre></span><pre>            status = self.status_code</pre></div>
+<div class="cov"><span class="num"><pre>456</pre></span><pre>        if mimetype is None:</pre></div>
+<div class="cov"><span class="num"><pre>457</pre></span><pre>            mimetype = self.mimetype</pre></div>
+<div class="cov"><span class="num"><pre>458</pre></span><pre>        return self.response_class(response, status=status, mimetype=mimetype)</pre></div>
+<div class="skip"><span class="num"><pre>459</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>460</pre></span><pre>    def assign(self, name, value):</pre></div>
+<div class="cov"><span class="num"><pre>461</pre></span><pre>        self.template_vars[name] = value</pre></div>
+<div class="skip"><span class="num"><pre>462</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>463</pre></span><pre>    def send_response(self):</pre></div>
+<div class="cov"><span class="num"><pre>464</pre></span><pre>        &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>465</pre></span><pre>            Can be used during &quot;processing&quot; to abort the call stack process</pre></div>
+<div class="cov"><span class="num"><pre>466</pre></span><pre>            and immediately return the response.</pre></div>
+<div class="cov"><span class="num"><pre>467</pre></span><pre>        &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>468</pre></span><pre>        raise _ViewCallStackAbort</pre></div>
+<div class="skip"><span class="num"><pre>469</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>470</pre></span><pre>class SecureView(View):</pre></div>
+<div class="cov"><span class="num"><pre>471</pre></span><pre>    def __init__(self, urlargs, endpoint):</pre></div>
+<div class="cov"><span class="num"><pre>472</pre></span><pre>        View.__init__(self, urlargs, endpoint)</pre></div>
+<div class="skip"><span class="num"><pre>473</pre></span><pre>        # we can skip auth if needed</pre></div>
+<div class="cov"><span class="num"><pre>474</pre></span><pre>        self.allow_anonymous = False</pre></div>
+<div class="skip"><span class="num"><pre>475</pre></span><pre>        # if False, the user is required to be authenticated only</pre></div>
+<div class="cov"><span class="num"><pre>476</pre></span><pre>        self.check_authorization = True</pre></div>
+<div class="skip"><span class="num"><pre>477</pre></span><pre>        # do we know who the user is?</pre></div>
+<div class="cov"><span class="num"><pre>478</pre></span><pre>        self.is_authenticated = False</pre></div>
+<div class="skip"><span class="num"><pre>479</pre></span><pre>        # do they have permission to use the resource they are trying to use?</pre></div>
+<div class="cov"><span class="num"><pre>480</pre></span><pre>        self.is_authorized = False</pre></div>
+<div class="skip"><span class="num"><pre>481</pre></span><pre>        # if check_authorization is True, require the user to have at least</pre></div>
+<div class="skip"><span class="num"><pre>482</pre></span><pre>        # one of these permission</pre></div>
+<div class="cov"><span class="num"><pre>483</pre></span><pre>        self.require_any = []</pre></div>
+<div class="skip"><span class="num"><pre>484</pre></span><pre>        # if check_authorization is True, require the user to have all of the</pre></div>
+<div class="skip"><span class="num"><pre>485</pre></span><pre>        # following permissions</pre></div>
+<div class="cov"><span class="num"><pre>486</pre></span><pre>        self.require_all = []</pre></div>
+<div class="skip"><span class="num"><pre>487</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>488</pre></span><pre>    def init_call_methods(self):</pre></div>
+<div class="cov"><span class="num"><pre>489</pre></span><pre>        &quot;&quot;&quot;</pre></div>
+<div class="cov"><span class="num"><pre>490</pre></span><pre>            note that we do not call the parent as we don't want setup_view()</pre></div>
+<div class="cov"><span class="num"><pre>491</pre></span><pre>            in the callstack.  Use auth_pre instead.  Using this naming</pre></div>
+<div class="cov"><span class="num"><pre>492</pre></span><pre>            convention can help remind the developer that auth_pre() is being</pre></div>
+<div class="cov"><span class="num"><pre>493</pre></span><pre>            called before auth methods and hopefully avoid security issues</pre></div>
+<div class="cov"><span class="num"><pre>494</pre></span><pre>            by forgetting that setup_view() comes before authorization</pre></div>
+<div class="cov"><span class="num"><pre>495</pre></span><pre>        &quot;&quot;&quot;</pre></div>
+<div class="skip"><span class="num"><pre>496</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre>497</pre></span><pre>        ###</pre></div>
+<div class="skip"><span class="num"><pre>498</pre></span><pre>        ### setup the call stack methods</pre></div>
+<div class="skip"><span class="num"><pre>499</pre></span><pre>        ###</pre></div>
+<div class="skip"><span class="num"><pre>500</pre></span><pre>        # auth_pre is used to do pre_auth setup when argument values</pre></div>
+<div class="skip"><span class="num"><pre>501</pre></span><pre>        # are needed (and can therefore not be done in init()</pre></div>
+<div class="cov"><span class="num"><pre>502</pre></span><pre>        self.add_call_method('auth_pre')</pre></div>
+<div class="skip"><span class="num"><pre>503</pre></span><pre>        # auth calculate sets our security attributes (is_auth*) based on the</pre></div>
+<div class="skip"><span class="num"><pre>504</pre></span><pre>        # require_* attributes and the current user.  You can override this</pre></div>
+<div class="skip"><span class="num"><pre>505</pre></span><pre>        # if you have custom auth requirements.</pre></div>
+<div class="cov"><span class="num"><pre>506</pre></span><pre>        self.add_call_method('auth_calculate', required=True)</pre></div>
+<div class="skip"><span class="num"><pre>507</pre></span><pre>        # auth_verify checks our security attributes and calls</pre></div>
+<div class="skip"><span class="num"><pre>508</pre></span><pre>        # not_authenticated() or not_authorized() if necessary.  This should</pre></div>
+<div class="skip"><span class="num"><pre>509</pre></span><pre>        # not be overriden, override auth_calculate instead and set the</pre></div>
+<div class="skip"><span class="num"><pre>510</pre></span><pre>        # security attributes accordingly.</pre></div>
+<div class="cov"><span class="num"><pre>511</pre></span><pre>        self.add_call_method('auth_verify', required=True, takes_args=False)</pre></div>
+<div class="skip"><span class="num"><pre>512</pre></span><pre>        # for view setup after the user has been authorized</pre></div>
+<div class="cov"><span class="num"><pre>513</pre></span><pre>        self.add_call_method('auth_post')</pre></div>
+<div class="skip"><span class="num"><pre>514</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>515</pre></span><pre>    def auth_calculate(self, **kwargs):</pre></div>
+<div class="cov"><span class="num"><pre>516</pre></span><pre>        if not user.is_authenticated:</pre></div>
+<div class="cov"><span class="num"><pre>517</pre></span><pre>            return</pre></div>
+<div class="cov"><span class="num"><pre>518</pre></span><pre>        self.is_authenticated = True</pre></div>
+<div class="skip"><span class="num"><pre>519</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>520</pre></span><pre>        try:</pre></div>
+<div class="cov"><span class="num"><pre>521</pre></span><pre>            if user.is_super_user:</pre></div>
+<div class="cov"><span class="num"><pre>522</pre></span><pre>                self.is_authorized = True</pre></div>
+<div class="cov"><span class="num"><pre>523</pre></span><pre>                return</pre></div>
+<div class="cov"><span class="num"><pre>524</pre></span><pre>        except AttributeError, e:</pre></div>
+<div class="cov"><span class="num"><pre>525</pre></span><pre>            if 'is_super_user' not in str(e):</pre></div>
+<div class="skip"><span class="num"><pre>526</pre></span><pre>                raise # pragma: no cover</pre></div>
+<div class="skip"><span class="num"><pre>527</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre>528</pre></span><pre>        # if require_all is given and there are any failures, deny authorization</pre></div>
+<div class="cov"><span class="num"><pre>529</pre></span><pre>        for perm in tolist(self.require_all):</pre></div>
+<div class="cov"><span class="num"><pre>530</pre></span><pre>            if not user.has_token(perm):</pre></div>
+<div class="cov"><span class="num"><pre>531</pre></span><pre>                return</pre></div>
+<div class="skip"><span class="num"><pre>532</pre></span><pre>        # if there was at least one value for require_all and not values for</pre></div>
+<div class="skip"><span class="num"><pre>533</pre></span><pre>        # require any, then the user is authorized</pre></div>
+<div class="cov"><span class="num"><pre>534</pre></span><pre>        if self.require_all and not self.require_any:</pre></div>
+<div class="cov"><span class="num"><pre>535</pre></span><pre>            self.is_authorized = True</pre></div>
+<div class="cov"><span class="num"><pre>536</pre></span><pre>            return</pre></div>
+<div class="skip"><span class="num"><pre>537</pre></span><pre>        # at this point, require_all passed or was empty and require_any has</pre></div>
+<div class="skip"><span class="num"><pre>538</pre></span><pre>        # at least one value, so this is the final check to determine</pre></div>
+<div class="skip"><span class="num"><pre>539</pre></span><pre>        # authorization</pre></div>
+<div class="cov"><span class="num"><pre>540</pre></span><pre>        if user.has_any_token(self.require_any):</pre></div>
+<div class="cov"><span class="num"><pre>541</pre></span><pre>            self.is_authorized = True</pre></div>
+<div class="skip"><span class="num"><pre>542</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>543</pre></span><pre>    def auth_verify(self):</pre></div>
+<div class="cov"><span class="num"><pre>544</pre></span><pre>        if self.allow_anonymous:</pre></div>
+<div class="cov"><span class="num"><pre>545</pre></span><pre>            return</pre></div>
+<div class="cov"><span class="num"><pre>546</pre></span><pre>        if not self.is_authenticated:</pre></div>
+<div class="cov"><span class="num"><pre>547</pre></span><pre>            self.not_authenticated()</pre></div>
+<div class="cov"><span class="num"><pre>548</pre></span><pre>        if not self.check_authorization:</pre></div>
+<div class="cov"><span class="num"><pre>549</pre></span><pre>            return</pre></div>
+<div class="cov"><span class="num"><pre>550</pre></span><pre>        if not self.is_authorized:</pre></div>
+<div class="cov"><span class="num"><pre>551</pre></span><pre>            self.not_authorized()</pre></div>
+<div class="skip"><span class="num"><pre>552</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>553</pre></span><pre>    def not_authenticated(self):</pre></div>
+<div class="cov"><span class="num"><pre>554</pre></span><pre>        abort(401)</pre></div>
+<div class="skip"><span class="num"><pre>555</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>556</pre></span><pre>    def not_authorized(self):</pre></div>
+<div class="cov"><span class="num"><pre>557</pre></span><pre>        abort(403)</pre></div>
+<div class="skip"><span class="num"><pre>558</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre>559</pre></span><pre>###</pre></div>
+<div class="skip"><span class="num"><pre>560</pre></span><pre>### functions and classes related to processing functions as views</pre></div>
+<div class="skip"><span class="num"><pre>561</pre></span><pre>###</pre></div>
+<div class="cov"><span class="num"><pre>562</pre></span><pre>def asview(rule=None, **options):</pre></div>
+<div class="cov"><span class="num"><pre>563</pre></span><pre>    def decorate(f):</pre></div>
+<div class="cov"><span class="num"><pre>564</pre></span><pre>        lrule = rule</pre></div>
+<div class="cov"><span class="num"><pre>565</pre></span><pre>        fname = f.__name__</pre></div>
+<div class="cov"><span class="num"><pre>566</pre></span><pre>        getargs = options.pop('getargs', [])</pre></div>
+<div class="cov"><span class="num"><pre>567</pre></span><pre>        plugin_prefix = _calc_plugin_name(f.__module__)</pre></div>
+<div class="skip"><span class="num"><pre>568</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre>569</pre></span><pre>        # calculate the endpoint</pre></div>
+<div class="cov"><span class="num"><pre>570</pre></span><pre>        endpoint = fname</pre></div>
+<div class="cov"><span class="num"><pre>571</pre></span><pre>        if plugin_prefix is not None:</pre></div>
+<div class="cov"><span class="num"><pre>572</pre></span><pre>            endpoint = '%s:%s' % (plugin_prefix, endpoint)</pre></div>
 <div class="skip"><span class="num"><pre>573</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>574</pre></span><pre>class _AsViewHandler(View):</pre></div>
-<div class="cov"><span class="num"><pre>575</pre></span><pre>    def __init__(self, urlargs, endpoint):</pre></div>
-<div class="cov"><span class="num"><pre>576</pre></span><pre>        View.__init__(self, urlargs, endpoint)</pre></div>
-<div class="cov"><span class="num"><pre>577</pre></span><pre>        self.expect_getargs(*self._asview_getargs)</pre></div>
-<div class="skip"><span class="num"><pre>578</pre></span><pre></pre></div>
-<div class="cov"><span class="num"><pre>579</pre></span><pre>class _RouteToTemplate(View):</pre></div>
-<div class="cov"><span class="num"><pre>580</pre></span><pre>    def default(self, **kwargs):</pre></div>
-<div class="cov"><span class="num"><pre>581</pre></span><pre>        self.template_vars = kwargs</pre></div>
-<div class="cov"><span class="num"><pre>582</pre></span><pre>        self.render_endpoint(self.endpoint)</pre></div>
-<div class="skip"><span class="num"><pre>583</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre>574</pre></span><pre>        # setup the routing</pre></div>
+<div class="cov"><span class="num"><pre>575</pre></span><pre>        if lrule is None:</pre></div>
+<div class="cov"><span class="num"><pre>576</pre></span><pre>            lrule = '/%s' % fname</pre></div>
+<div class="cov"><span class="num"><pre>577</pre></span><pre>        lrule = routing.add_prefix(lrule)</pre></div>
+<div class="cov"><span class="num"><pre>578</pre></span><pre>        log.debug('@asview adding route &quot;%s&quot; to endpoint &quot;%s&quot;', lrule, endpoint)</pre></div>
+<div class="cov"><span class="num"><pre>579</pre></span><pre>        ag.route_map.add(Rule(lrule, endpoint=endpoint), **options)</pre></div>
+<div class="skip"><span class="num"><pre>580</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre>581</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre>582</pre></span><pre>        # create the class that will handle this function</pre></div>
+<div class="cov"><span class="num"><pre>583</pre></span><pre>        fvh = classobj(fname, (_AsViewHandler, ), {})</pre></div>
+<div class="cov"><span class="num"><pre>584</pre></span><pre>        fvh.__module__ = f.__module__</pre></div>
+<div class="skip"><span class="num"><pre>585</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre>586</pre></span><pre>        # assign the default method</pre></div>
+<div class="cov"><span class="num"><pre>587</pre></span><pre>        def defmethod(self):</pre></div>
+<div class="cov"><span class="num"><pre>588</pre></span><pre>            return self._call_with_expected_args(f, method_is_bound=False)</pre></div>
+<div class="cov"><span class="num"><pre>589</pre></span><pre>        fvh.default = defmethod</pre></div>
+<div class="skip"><span class="num"><pre>590</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre>591</pre></span><pre>        # make the getargs available</pre></div>
+<div class="cov"><span class="num"><pre>592</pre></span><pre>        fvh._asview_getargs = tolist(getargs)</pre></div>
+<div class="skip"><span class="num"><pre>593</pre></span><pre></pre></div>
+<div class="skip"><span class="num"><pre>594</pre></span><pre>        # return the class instead of the function</pre></div>
+<div class="cov"><span class="num"><pre>595</pre></span><pre>        return fvh</pre></div>
+<div class="cov"><span class="num"><pre>596</pre></span><pre>    return decorate</pre></div>
+<div class="skip"><span class="num"><pre>597</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>598</pre></span><pre>class _AsViewHandler(View):</pre></div>
+<div class="cov"><span class="num"><pre>599</pre></span><pre>    def __init__(self, urlargs, endpoint):</pre></div>
+<div class="cov"><span class="num"><pre>600</pre></span><pre>        View.__init__(self, urlargs, endpoint)</pre></div>
+<div class="cov"><span class="num"><pre>601</pre></span><pre>        self.expect_getargs(*self._asview_getargs)</pre></div>
+<div class="skip"><span class="num"><pre>602</pre></span><pre></pre></div>
+<div class="cov"><span class="num"><pre>603</pre></span><pre>class _RouteToTemplate(View):</pre></div>
+<div class="cov"><span class="num"><pre>604</pre></span><pre>    def default(self, **kwargs):</pre></div>
+<div class="cov"><span class="num"><pre>605</pre></span><pre>        self.template_vars = kwargs</pre></div>
+<div class="cov"><span class="num"><pre>606</pre></span><pre>        self.render_endpoint(self.endpoint)</pre></div>
+<div class="skip"><span class="num"><pre>607</pre></span><pre></pre></div>
 </div>
 </body>
 </html>
