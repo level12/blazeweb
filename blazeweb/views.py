@@ -2,21 +2,21 @@ import logging
 from new import classobj
 
 import formencode
-from pysutils.sentinels import NotGiven
-from pysutils.helpers import tolist
-from pysutils.strings import case_cw2us
+from blazeutils.sentinels import NotGiven
+from blazeutils.helpers import tolist
+from blazeutils.strings import case_cw2us
 from werkzeug import MultiDict, validate_arguments, ArgumentValidationError, \
     abort
 from werkzeug.exceptions import BadRequest
 from werkzeug.routing import Rule
 
-from pysmvt import ag, rg, user, settings
-from pysmvt import routing
-from pysmvt.content import getcontent, Content
-from pysmvt.hierarchy import listapps, split_endpoint
-from pysmvt.exceptions import ProgrammingError
-from pysmvt.utils import registry_has_object, werkzeug_multi_dict_conv
-from pysmvt.wrappers import Response
+from blazeweb import ag, rg, user, settings
+from blazeweb import routing
+from blazeweb.content import getcontent, Content
+from blazeweb.hierarchy import listapps, split_endpoint
+from blazeweb.exceptions import ProgrammingError
+from blazeweb.utils import registry_has_object, werkzeug_multi_dict_conv
+from blazeweb.wrappers import Response
 
 log = logging.getLogger(__name__)
 

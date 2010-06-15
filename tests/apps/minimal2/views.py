@@ -1,6 +1,6 @@
-from pysmvt import rg, user, forward
-from pysmvt.views import asview
-from pysmvt.wrappers import Response
+from blazeweb import rg, user, forward
+from blazeweb.views import asview
+from blazeweb.wrappers import Response
 
 @asview('/')
 def index():

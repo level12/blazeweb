@@ -1,15 +1,15 @@
 from os import path
 from nose.tools import eq_
-from pysmvt.tasks import run_tasks
-from pysmvt import settings
-from pysmvt.logs import clear_settings_handlers
+from blazeweb.tasks import run_tasks
+from blazeweb import settings
+from blazeweb.logs import clear_settings_handlers
 import logging
 
 
 # create the wsgi application that will be used for testing
 import config
-from pysmvttestapp.config.settings import Default
-from pysmvttestapp.applications import make_wsgi
+from blazewebtestapp.config.settings import Default
+from blazewebtestapp.applications import make_wsgi
 
 log_base_dir = Default().dirs.logs
 

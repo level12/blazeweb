@@ -2,13 +2,13 @@ import unittest
 
 from werkzeug import Client, BaseResponse
 
-from pysmvt import settings, user
-from pysmvt.exceptions import ProgrammingError
-from pysmvt.hierarchy import HierarchyImportError
+from blazeweb import settings, user
+from blazeweb.exceptions import ProgrammingError
+from blazeweb.hierarchy import HierarchyImportError
 
 import config
-from pysmvttestapp.applications import make_wsgi
-from pysmvttestapp2.applications import make_wsgi as make_wsgi2
+from blazewebtestapp.applications import make_wsgi
+from blazewebtestapp2.applications import make_wsgi as make_wsgi2
 
 
 class TestViews(unittest.TestCase):
@@ -309,7 +309,7 @@ class TestViews(unittest.TestCase):
 
         r = self.client.get('/static/app/helloworld2.html')
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(r.data, 'Hellow pysmvttestapp2!')
+        self.assertEqual(r.data.strip(), 'Hellow blazewebtestapp2!')
 
     def test_app2(self):
         # app2's test module won't have its settings imported

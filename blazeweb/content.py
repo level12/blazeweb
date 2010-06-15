@@ -1,7 +1,7 @@
 from os import path
 
-from pysmvt import ag, settings
-from pysmvt.hierarchy import findcontent, findfile, split_endpoint
+from blazeweb import ag, settings
+from blazeweb.hierarchy import findcontent, findfile, split_endpoint
 
 def getcontent(endpoint, *args, **kwargs):
     if '.' in endpoint:
@@ -84,7 +84,7 @@ class TemplateContent(Content):
 
     def create(self, **kwargs):
         # circular import fun!!
-        from pysmvt.templating import render_template
+        from blazeweb.templating import render_template
         self.update_context(kwargs)
         return render_template(self.endpoint, **kwargs)
 

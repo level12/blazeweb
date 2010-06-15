@@ -1,4 +1,4 @@
-from pysmvt.views import View
+from blazeweb.views import View
 
 class AppLevelView(View):
     def init(self):

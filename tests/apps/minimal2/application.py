@@ -1,9 +1,9 @@
 from os import path
-from pysutils import prependsitedir
-from pysmvt.application import WSGIApp
-from pysmvt.middleware import full_wsgi_stack
+from blazeutils import prependsitedir
+from blazeweb.application import WSGIApp
+from blazeweb.middleware import full_wsgi_stack
 import settings as settingsmod
-from pysmvt.scripting import application_entry
+from blazeweb.scripting import application_entry
 
 # make sure our base module gets put on the path
 try:

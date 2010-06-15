@@ -10,10 +10,10 @@ import os
 from os import path
 from shutil import copy2, copystat, rmtree
 
-from pysutils import NotGiven
+from blazeutils import NotGiven
 
-from pysmvt import settings
-from pysmvt.hierarchy import list_plugin_mappings, hm
+from blazeweb import settings
+from blazeweb.hierarchy import list_plugin_mappings, hm
 
 __all__ = [
     'mkdirs',

@@ -1,13 +1,13 @@
 import unittest
 
-import pysmvt
-from pysmvt import settings
-from pysmvt.config import QuickSettings, EnabledSettings
-from pysmvt.hierarchy import listapps
+import blazeweb
+from blazeweb import settings
+from blazeweb.config import QuickSettings, EnabledSettings
+from blazeweb.hierarchy import listapps
 
 import config
 from minimal2.application import make_wsgi as make_wsgi_min2
-from pysmvttestapp.applications import make_wsgi
+from blazewebtestapp.applications import make_wsgi
 
 class Base(QuickSettings):
 
@@ -318,8 +318,8 @@ class TestConfig(unittest.TestCase):
         #self.app = None
 
     def test_appslist(self):
-        self.assertEqual(['pysmvttestapp', 'pysmvttestapp2'], listapps())
-        self.assertEqual(['pysmvttestapp2', 'pysmvttestapp'], listapps(reverse=True))
+        self.assertEqual(['blazewebtestapp', 'blazewebtestapp2'], listapps())
+        self.assertEqual(['blazewebtestapp2', 'blazewebtestapp'], listapps(reverse=True))
 
     def test_settings(self):
         self.assertEqual(settings.foo, 'bar')

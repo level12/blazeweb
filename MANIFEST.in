@@ -1,5 +1,5 @@
 recursive-include docs *
-recursive-include pysmvt/paster_tpls *
+recursive-include blazeweb/paster_tpls *
 recursive-include tests *
 prune tests/writeable
 prune tests/apps/*/writeable

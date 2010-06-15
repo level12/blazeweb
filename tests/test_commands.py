@@ -1,6 +1,8 @@
 import os
-from pysutils.config import QuickSettings
-from pysutils.helpers import tolist
+from nose.plugins.skip import SkipTest
+
+from blazeutils.config import QuickSettings
+from blazeutils.helpers import tolist
 
 from scripting_helpers import env, script_test_path, here
 
@@ -13,8 +15,8 @@ def run_application(testapp, *args, **kw):
     result = env.run(*args, **kw)
     return result
 
-def run_pysmvt(*args, **kw):
-    args = ('pysmvt',) + args
+def run_blazeweb(*args, **kw):
+    args = ('bw',) + args
     env.clear()
     result = env.run(*args, **kw)
     return result
@@ -34,13 +36,15 @@ def test_bad_profile():
     result = run_application('minimal2', '-p', 'profilenotthere', expect_error = True)
     assert 'settings profile "profilenotthere" not found in this application' in result.stderr, result.stderr
 
-def test_pysmvt_usage():
-    result = run_pysmvt()
-    assert 'Usage: pysmvt [global_options] COMMAND [command_options]' in result.stdout
+def test_blazeweb_usage():
+    result = run_blazeweb()
+    assert 'Usage: bw [global_options] COMMAND [command_options]' in result.stdout, result.stdout
     assert 'SETTINGS_PROFILE' not in result.stdout
 
-def test_pysmvt_project():
-    result = run_pysmvt('project', 'foobar', '--no-interactive')
+def test_blazeweb_project():
+    # project doesn't exist any more; skip for now
+    raise SkipTest
+    result = run_blazeweb('project', 'foobar', '--no-interactive')
     assert len(result.files_created) > 5
 
 def test_app_testrun():
@@ -87,7 +91,7 @@ def test_minimal_project_checkout_and_functionality():
     projname = 'pysminimalprojtest_no_name_clash_hopefully'
     res = env.run('pip', 'uninstall', projname, '-y', expect_error=True)
     assert 'not installed' in res.stdout or 'Succesfully uninstalled' in res.stdout
-    result = run_pysmvt('project', '-t', 'minimal', '--no-interactive', projname)
+    result = run_blazeweb('project', '-t', 'minimal', '--no-interactive', projname)
     assert len(result.files_created) == 9
     env.run('python', 'setup.py', 'develop', cwd=os.path.join(script_test_path, projname + '-dist'))
     res = env.run(projname)

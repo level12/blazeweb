@@ -1,5 +1,5 @@
 from webtest import TestApp
-from pysmvt import ag
+from blazeweb import ag
 
 c = TestApp(ag.wsgiapp)
 

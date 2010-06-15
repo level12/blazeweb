@@ -1,8 +1,7 @@
-pysmvt is maintained primarily by:
+BlazeWeb is maintained primarily by:
 
     Randy Syring <rsyring@gmail.com>
 
 other regular contributors:
 
     Matt Lewellyn <guruofgentoo@gmail.com>
-

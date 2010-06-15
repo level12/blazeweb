@@ -1,23 +1,23 @@
 import logging
 
-from pysutils.datastructures import BlankObject
-from pysutils.strings import randchars, randhash
+from blazeutils.datastructures import BlankObject
+from blazeutils.strings import randchars, randhash
 from werkzeug.exceptions import HTTPException, InternalServerError
 from werkzeug import create_environ
 from werkzeug.routing import Map, Submount
 
-import pysmvt
-from pysmvt.exceptions import Forward, ProgrammingError, Redirect
-from pysmvt.hierarchy import findobj, HierarchyImportError, \
+import blazeweb
+from blazeweb.exceptions import Forward, ProgrammingError, Redirect
+from blazeweb.hierarchy import findobj, HierarchyImportError, \
     listplugins, visitmods, findview, split_endpoint
-from pysmvt.logs import create_handlers_from_settings
-from pysmvt.mail import mail_programmers
-from pysmvt.templating import default_engine
-from pysmvt.users import User
-from pysmvt.utils import exception_with_context
-from pysmvt.utils.filesystem import mkdirs, copy_static_files
-from pysmvt.views import _RouteToTemplate
-from pysmvt.wrappers import Request
+from blazeweb.logs import create_handlers_from_settings
+from blazeweb.mail import mail_programmers
+from blazeweb.templating import default_engine
+from blazeweb.users import User
+from blazeweb.utils import exception_with_context
+from blazeweb.utils.filesystem import mkdirs, copy_static_files
+from blazeweb.views import _RouteToTemplate
+from blazeweb.wrappers import Request
 
 log = logging.getLogger(__name__)
 
@@ -28,31 +28,31 @@ class RequestManager(object):
 
     def registry_setup(self):
         environ = self.environ
-        environ['paste.registry'].register(pysmvt.rg, BlankObject())
-        environ['paste.registry'].register(pysmvt.settings, self.app.settings)
-        environ['paste.registry'].register(pysmvt.ag, self.app.ag)
-        environ['paste.registry'].register(pysmvt.user, self.user_setup())
+        environ['paste.registry'].register(blazeweb.rg, BlankObject())
+        environ['paste.registry'].register(blazeweb.settings, self.app.settings)
+        environ['paste.registry'].register(blazeweb.ag, self.app.ag)
+        environ['paste.registry'].register(blazeweb.user, self.user_setup())
 
     def rg_setup(self):
-        pysmvt.rg.ident = randchars()
-        pysmvt.rg.environ = self.environ
+        blazeweb.rg.ident = randchars()
+        blazeweb.rg.environ = self.environ
         # the request object binds itself to rg.request
         Request(self.environ)
         if self.environ.has_key('beaker.session'):
-            pysmvt.rg.session = self.environ['beaker.session']
-            log.debug('beaker session found, id: %s', pysmvt.rg.session.id)
+            blazeweb.rg.session = self.environ['beaker.session']
+            log.debug('beaker session found, id: %s', blazeweb.rg.session.id)
         else:
-            pysmvt.rg.session = None
+            blazeweb.rg.session = None
 
     def routing_setup(self):
-        pysmvt.rg.urladapter = pysmvt.ag.route_map.bind_to_environ(self.environ)
+        blazeweb.rg.urladapter = blazeweb.ag.route_map.bind_to_environ(self.environ)
 
     def user_setup(self):
         environ = self.environ
         if 'beaker.session' in environ:
-            if '__pysmvt_user' not in environ['beaker.session']:
-                environ['beaker.session']['__pysmvt_user'] = User()
-            return environ['beaker.session']['__pysmvt_user']
+            if '__blazeweb_user' not in environ['beaker.session']:
+                environ['beaker.session']['__blazeweb_user'] = User()
+            return environ['beaker.session']['__blazeweb_user']
         # having a user object that is not in a session makes sense for testing
         # purposes, but probably not in production use
         return User()
@@ -63,18 +63,18 @@ class RequestManager(object):
         self.routing_setup()
         # allow middleware higher in the stack to help initilize the request
         # after the registry variables have been setup
-        if 'pysmvt.request_setup' in self.environ:
-            for callable in self.environ['pysmvt.request_setup']:
+        if 'blazeweb.request_setup' in self.environ:
+            for callable in self.environ['blazeweb.request_setup']:
                 callable()
 
     def __exit__(self, exc_type, exc_value, tb):
-        if 'pysmvt.request_teardown' in self.environ:
-            for callable in self.environ['pysmvt.request_teardown']:
+        if 'blazeweb.request_teardown' in self.environ:
+            for callable in self.environ['blazeweb.request_teardown']:
                 callable()
 
 class ResponseContext(object):
     def __init__(self, error_doc_code):
-        self.environ = pysmvt.rg.environ
+        self.environ = blazeweb.rg.environ
         # this gets set if this response context is initilized b/c
         # an error document handler is being called.  It allows the View
         # that handles the error code to know what code it is being called
@@ -83,22 +83,22 @@ class ResponseContext(object):
 
     def __enter__(self):
         log.debug('enter response context')
-        pysmvt.rg.respctx = self
+        blazeweb.rg.respctx = self
         # allow middleware higher in the stack to help initilize the response
-        if 'pysmvt.response_cycle_setup' in self.environ:
-            for callable in self.environ['pysmvt.response_cycle_setup']:
+        if 'blazeweb.response_cycle_setup' in self.environ:
+            for callable in self.environ['blazeweb.response_cycle_setup']:
                 callable()
 
     def __exit__(self, exc_type, e, tb):
         log.debug('exit response context started')
-        if 'pysmvt.response_cycle_teardown' in self.environ:
-            for callable in self.environ['pysmvt.response_cycle_teardown']:
+        if 'blazeweb.response_cycle_teardown' in self.environ:
+            for callable in self.environ['blazeweb.response_cycle_teardown']:
                 callable()
         if isinstance(e, Forward):
             log.debug('forwarding to %s (%s)', e.forward_endpoint, e.forward_args)
-            pysmvt.rg.forward_queue.append((e.forward_endpoint, e.forward_args))
-            if len(pysmvt.rg.forward_queue) == 10:
-                raise ProgrammingError('forward loop detected: %s' % '->'.join([g[0] for g in pysmvt.rg.forward_queue]))
+            blazeweb.rg.forward_queue.append((e.forward_endpoint, e.forward_args))
+            if len(blazeweb.rg.forward_queue) == 10:
+                raise ProgrammingError('forward loop detected: %s' % '->'.join([g[0] for g in blazeweb.rg.forward_queue]))
             return True
         if 'beaker.session' in self.environ:
             self.environ['beaker.session'].save()
@@ -126,8 +126,8 @@ class WSGIApp(object):
         self.init_templating()
 
     def registry_setup(self):
-        pysmvt.settings._push_object(self.settings)
-        pysmvt.ag._push_object(self.ag)
+        blazeweb.settings._push_object(self.settings)
+        blazeweb.ag._push_object(self.ag)
 
     def ag_setup(self):
         self.ag = BlankObject()
@@ -213,10 +213,10 @@ class WSGIApp(object):
         return ResponseContext(error_doc_code)
 
     def response_cycle(self, endpoint, args, error_doc_code=None):
-        pysmvt.rg.forward_queue = [(endpoint, args)]
+        blazeweb.rg.forward_queue = [(endpoint, args)]
         while True:
             with self.response_context(error_doc_code):
-                endpoint, args = pysmvt.rg.forward_queue[-1]
+                endpoint, args = blazeweb.rg.forward_queue[-1]
                 return self.dispatch_to_endpoint(endpoint, args)
 
     def dispatch_to_endpoint(self, endpoint, args):
@@ -232,9 +232,9 @@ class WSGIApp(object):
         with self.request_manager(environ):
             try:
                 try:
-                    endpoint, args = pysmvt.rg.urladapter.match()
+                    endpoint, args = blazeweb.rg.urladapter.match()
                 except HTTPException, e:
-                    log.debug('routing HTTP exception %s from %s', e, pysmvt.rg.request.url)
+                    log.debug('routing HTTP exception %s from %s', e, blazeweb.rg.request.url)
                     raise
                 log.debug('wsgi_app processing %s (%s)', endpoint, args)
                 response = self.response_cycle(endpoint, args)

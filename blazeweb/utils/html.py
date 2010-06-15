@@ -3,10 +3,10 @@
 import re
 import string
 
-from pysmvt.utils.safestring import SafeData, mark_safe
-from pysmvt.utils.encoding import force_unicode
-from pysmvt.utils.functional import allow_lazy
-from pysmvt.utils.http import urlquote
+from blazeweb.utils.safestring import SafeData, mark_safe
+from blazeweb.utils.encoding import force_unicode
+from blazeweb.utils.functional import allow_lazy
+from blazeweb.utils.http import urlquote
 
 # Configuration for urlize() function.
 LEADING_PUNCTUATION  = ['(', '<', '&lt;']

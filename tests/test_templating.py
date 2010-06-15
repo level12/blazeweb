@@ -1,4 +1,4 @@
-from pysmvt.content import getcontent, Content
+from blazeweb.content import getcontent, Content
 
 # create the wsgi application that will be used for testing
 import config

@@ -1,10 +1,10 @@
 from os import path
 
-from pysmvt.application import WSGIApp
-from pysmvt.config import DefaultSettings
-from pysmvt import settings
+from blazeweb.application import WSGIApp
+from blazeweb.config import DefaultSettings
+from blazeweb import settings
 
-from pysutils import prependsitedir
+from blazeutils import prependsitedir
 prependsitedir(__file__, 'apps')
 
 class Testruns(DefaultSettings):

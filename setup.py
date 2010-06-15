@@ -2,8 +2,9 @@
 Introduction
 ---------------
 
-pysmvt is a wsgi web framework library designed in the spirit of Pylons but with
-Django modularity (i.e. what they would call "apps").
+BlazeWeb (formerly pysmvt) is a WSGI web framework library designed to be relatively
+"light weight", but with a powerful plug-in and override architecture that
+facilitates modularized development.
 
 Steps for Installation
 ----------------------
@@ -11,23 +12,23 @@ Steps for Installation
 #. Install Python
 #. install setuptools (includes easy_install)
 #. install virtualenv `easy_install virtualenv`
-#. Create a new virtual environement `virtualenv pysmvttest-venv --no-site-packages`
+#. Create a new virtual environment `virtualenv testbwa-venv --no-site-packages`
 #. `Activate the virtual environment (os dependent) <http://pypi.python.org/pypi/virtualenv#activate-script>`_
-#. install pysmvt & dependencies `easy_install pysmvt` or `pip install pysmvt`
+#. install BlazeWeb & dependencies `easy_install blazeweb` or `pip install blazeweb`
 
 Steps for creating a working application
 -----------------------------------------
-#. `cd pysmvttest-venv`
+#. `cd testbwa-venv`
 #. `mkdir src`
 #. `cd src`
-#. `pysmvt project myapp`
+#. `bw project myapp`
 #. answer the questions that come up.  Note what you put for
     "Enter author (your name)" as <user>.  If you forget, look in myapp/settings.py.
 #. `cd myapp-dist`
 #. `python setup.py -q develop`
 #.  `nosetests` you should get three succesful tests
 #. `cd myapp`
-#. `pysmvt serve <user>` run a development http server with the user's settings
+#. `bw serve <user>` run a development http server with the user's settings
    profile
 #. point your browser at http://localhost:5000/
 
@@ -35,7 +36,7 @@ Creating a New Application Module
 ---------------------------------
 This step creates a Application Module directory structure in myapp/modules/<mymod>:
 
-`pysmvt module <mymod>`
+`bw plugin <mymod>`
 
 where <mymod> is the name of the module you want to create
 
@@ -49,8 +50,8 @@ Current Status
 
 The code stays pretty stable, but the API is likely to change in the future.
 
-The `pysmvt tip <http://bitbucket.org/rsyring/pysmvt/get/tip.zip#egg=pysmvt-dev>`_
-is installable via `easy_install` with ``easy_install pysmvt==dev``
+The `blazeweb tip <http://bitbucket.org/rsyring/blazeweb/get/tip.zip#egg=blazeweb-dev>`_
+is installable via `easy_install` with ``easy_install blazeweb==dev``
 """
 import sys
 try:
@@ -60,17 +61,17 @@ except ImportError:
     use_setuptools()
     from setuptools import setup, find_packages
 
-import pysmvt
-version = pysmvt.VERSION
+import blazeweb
+version = blazeweb.VERSION
 
 setup(
-    name = "pysmvt",
+    name = "BlazeWeb",
     version = version,
-    description = "A wsgi web framework with a pylons spirit and django modularity",
+    description = "A light weight WSGI framework with a pluggable architecture",
     long_description = __doc__,
     author = "Randy Syring",
     author_email = "rsyring@gmail.com",
-    url='http://pypi.python.org/pypi/pysmvt/',
+    url='http://pypi.python.org/pypi/BlazeWeb/',
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
@@ -81,7 +82,7 @@ setup(
     include_package_data=True,
     install_requires = [
         "Beaker>=1.5",
-        "decorator>=3.0.1", ## <-- is used?
+        "decorator>=3.0.1",
         "FormEncode>=1.2",
         "html2text>=2.35",
         "jinja2>=2.5",
@@ -90,7 +91,7 @@ setup(
         "nose>=0.11",
         "Paste>=1.7",
         "PasteScript>=1.7",
-        "pysutils>=0.2",
+        "blazeutils>=0.2",
         "simplejson>=2.0", #but only on 2.5, and only if using the json wrapper
         "WebHelpers>=1.0rc1",
         "Werkzeug>=0.6"
@@ -98,30 +99,26 @@ setup(
     tests_require=['webtest', 'scripttest'],
     entry_points="""
     [console_scripts]
-    pysmvt = pysmvt.scripting:pysmvt_entry
+    bw = blazeweb.scripting:blazeweb_entry
 
-    [pysmvt.no_app_command]
+    [blazeweb.no_app_command]
     help=paste.script.help:HelpCommand
-    project = pysmvt.commands:ProjectCommand
+    project = blazeweb.commands:ProjectCommand
 
-    [pysmvt.app_command]
-    serve = pysmvt.commands:ServeCommand
+    [blazeweb.app_command]
+    serve = blazeweb.commands:ServeCommand
     help = paste.script.help:HelpCommand
-    testrun = pysmvt.commands:TestRunCommand
-    tasks = pysmvt.commands:TasksCommand
-    shell = pysmvt.commands:ShellCommand
-    routes = pysmvt.commands:RoutesCommand
-    static-copy = pysmvt.commands:StaticCopyCommand
+    testrun = blazeweb.commands:TestRunCommand
+    tasks = blazeweb.commands:TasksCommand
+    shell = blazeweb.commands:ShellCommand
+    routes = blazeweb.commands:RoutesCommand
+    static-copy = blazeweb.commands:StaticCopyCommand
 
-    [pysmvt.pysmvt_project_template]
-    pysmvt = pysmvt.paster_tpl:ProjectTemplate
-    minimal = pysmvt.paster_tpl:MinimalProjectTemplate
-
-    [pysmvt.pysmvt_module_template]
-    pysmvt = pysmvt.paster_tpl:ModuleTemplate
+    [blazeweb.blazeweb_project_template]
+    minimal = blazeweb.paster_tpl:MinimalProjectTemplate
 
     [nose.plugins]
-    pysmvt_initapp = pysmvt.nose_plugin:InitAppPlugin
+    blazeweb_initapp = blazeweb.nose_plugin:InitAppPlugin
     """,
     zip_safe=False
 )

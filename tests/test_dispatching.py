@@ -2,8 +2,8 @@ import sys
 
 from webtest import TestApp
 
-from pysmvt import user, forward, ag
-from pysmvt.views import asview
+from blazeweb import user, forward, ag
+from blazeweb.views import asview
 
 import config
 from minimal2.application import make_wsgi

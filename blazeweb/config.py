@@ -2,10 +2,10 @@ from os import path
 import os
 
 from werkzeug.routing import Rule
-from pysutils.config import QuickSettings
-from pysutils.datastructures import OrderedDict
+from blazeutils.config import QuickSettings
+from blazeutils.datastructures import OrderedDict
 
-from pysmvt import settings
+from blazeweb import settings
 
 class EnabledSettings(QuickSettings):
     """

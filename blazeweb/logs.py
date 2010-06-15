@@ -1,6 +1,6 @@
 from os import path
 import logging
-from pysmvt import settings
+from blazeweb import settings
 from logging.handlers import RotatingFileHandler
 APPLICATION = 25
 
@@ -9,9 +9,9 @@ class Logger(logging.Logger):
     def application(self, msg, *args, **kwargs):
         """
             a convenience function for logging messages at level 25, which
-            is the "application" level for the pysmvt framework.  This level is
+            is the "application" level for the blazeweb framework.  This level is
             intended to be used for application level information and is
-            not used by the pysmvt framework.  An example of its intended
+            not used by the blazeweb framework.  An example of its intended
             use would be to log the IP address of each user logging in.
         """
         return self.log(APPLICATION, msg, *args, **kwargs)
@@ -42,7 +42,7 @@ def create_handlers_from_settings(settings):
               maxBytes=settings.logs.max_bytes,
               backupCount=settings.logs.backup_count,
         )
-        error_handler._from_pysmvt_settings = True
+        error_handler._from_blazeweb_settings = True
         error_handler.setLevel(logging.WARN)
         error_handler.setFormatter(formatter)
         logging.root.addHandler(error_handler)
@@ -60,7 +60,7 @@ def create_handlers_from_settings(settings):
               maxBytes=settings.logs.max_bytes,
               backupCount=settings.logs.backup_count,
         )
-        app_handler._from_pysmvt_settings = True
+        app_handler._from_blazeweb_settings = True
         app_handler.setLevel(APPLICATION)
         app_handler.setFormatter(formatter)
         app_handler.addFilter(OnlyLevel25())
@@ -70,7 +70,7 @@ def create_handlers_from_settings(settings):
 def clear_settings_handlers():
     new_handlers = []
     for h in logging.root.handlers:
-        if getattr(h, '_from_pysmvt_settings', False):
+        if getattr(h, '_from_blazeweb_settings', False):
             h.flush()
             h.close()
         else:
@@ -82,7 +82,7 @@ def clear_settings_handlers():
     if settings.logs.null_handler.enabled:
         class NullHandler(logging.Handler):
 
-            _from_pysmvt_settings = True
+            _from_blazeweb_settings = True
 
             def emit(self, record):
                 pass

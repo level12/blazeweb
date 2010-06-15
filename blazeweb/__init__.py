@@ -1,3 +1,3 @@
-from pysmvt.core import *
+from blazeweb.core import *
 
-VERSION = '0.2.3dev'
+VERSION = '0.3dev'

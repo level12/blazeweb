@@ -1,10 +1,10 @@
 from os import path
-from pysmvt import rg
-from pysmvt.application import WSGIApp
-from pysmvt.config import DefaultSettings
-from pysmvt.middleware import minimal_wsgi_stack
-from pysmvt.views import asview
-from pysmvt.wrappers import Response
+from blazeweb import rg
+from blazeweb.application import WSGIApp
+from blazeweb.config import DefaultSettings
+from blazeweb.middleware import minimal_wsgi_stack
+from blazeweb.views import asview
+from blazeweb.wrappers import Response
 
 class Settings(DefaultSettings):
     def init(self):

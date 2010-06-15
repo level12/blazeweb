@@ -3,11 +3,11 @@ import unittest
 
 from werkzeug import Client, BaseResponse, create_environ
 
-from pysmvt.routing import *
-from pysmvt.exceptions import SettingsError
-from pysmvt.testing import inrequest
+from blazeweb.routing import *
+from blazeweb.exceptions import SettingsError
+from blazeweb.testing import inrequest
 
-from pysmvttestapp.applications import make_wsgi
+from blazewebtestapp.applications import make_wsgi
 
 class RoutingSettings(config.Testruns):
     def init(self):

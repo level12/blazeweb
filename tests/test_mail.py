@@ -2,14 +2,14 @@ import unittest
 import config
 import logging
 
-from pysutils.testing import logging_handler
+from blazeutils.testing import logging_handler
 
-from pysmvt import settings
-import pysmvt.config
-from pysmvt.mail import EmailMessage, BadHeaderError, EmailMultiAlternatives, \
+from blazeweb import settings
+import blazeweb.config
+from blazeweb.mail import EmailMessage, BadHeaderError, EmailMultiAlternatives, \
     MarkdownMessage, HtmlMessage, send_mail, _mail_programmers, _mail_admins
-from pysmvt.exceptions import SettingsError
-from pysmvt.testing import mock_smtp
+from blazeweb.exceptions import SettingsError
+from blazeweb.testing import mock_smtp
 
 class TestEmail(unittest.TestCase):
     def setUp(self):
@@ -472,7 +472,7 @@ Called smtp_connection.quit()"""
     @mock_smtp()
     def test_not_live(self, mm_tracker=None):
         settings.email.is_live = False
-        lh = logging_handler('pysmvt.mail')
+        lh = logging_handler('blazeweb.mail')
         send_mail('test text email', 'email content', ['test@example.com'])
         look_for = 'Called smtp_connection.quit()...'
         assert mm_tracker.check(look_for), mm_tracker.diff(look_for)

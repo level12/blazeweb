@@ -3,8 +3,8 @@ from os import path
 from nose.tools import eq_
 from webtest import TestApp
 
-from pysmvt import settings
-from pysmvt.utils.filesystem import copy_static_files, mkdirs
+from blazeweb import settings
+from blazeweb.utils.filesystem import copy_static_files, mkdirs
 
 import config
 from scripting_helpers import script_test_path, env

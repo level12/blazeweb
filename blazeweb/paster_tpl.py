@@ -1,4 +1,5 @@
 import pkg_resources
+
 from paste.script.templates import Template, var
 from paste.util.template import paste_script_template_renderer
 from paste.script import command
@@ -18,26 +19,26 @@ def dummy_cmd(interactive, verbose, overwrite):
     cmd.options.overwrite = overwrite
     return cmd
 
-class ProjectTemplate(Template):
-
-    summary = 'Template for creating a basic pysmvt project'
-    _template_dir = ('pysmvt', 'paster_tpls/project')
-    template_renderer = staticmethod(paste_script_template_renderer)
-    vars = [
-        var('description', 'One-line description of the package'),
-        var('author', 'Your name'),
-        var('programmer_email', 'Your email'),
-        ]
-    
-    def pre(self, command, output_dir, vars):
-        # convert user's name into a username var
-        author = vars['author']
-        vars['username'] = author.split(' ')[0].capitalize()
+#class ProjectTemplate(Template):
+#
+#    summary = 'Template for creating a basic blazeweb project'
+#    _template_dir = ('blazeweb', 'paster_tpls/project')
+#    template_renderer = staticmethod(paste_script_template_renderer)
+#    vars = [
+#        var('description', 'One-line description of the package'),
+#        var('author', 'Your name'),
+#        var('programmer_email', 'Your email'),
+#        ]
+#
+#    def pre(self, command, output_dir, vars):
+#        # convert user's name into a username var
+#        author = vars['author']
+#        vars['username'] = author.split(' ')[0].capitalize()
 
 class MinimalProjectTemplate(Template):
 
-    summary = 'Template for creating a minimal pysmvt project'
-    _template_dir = ('pysmvt', 'paster_tpls/minimal-project')
+    summary = 'Template for creating a minimal blazeweb project'
+    _template_dir = ('blazeweb', 'paster_tpls/minimal-project')
     template_renderer = staticmethod(paste_script_template_renderer)
     vars = [
         var('description', 'One-line description of the package'),
@@ -45,32 +46,32 @@ class MinimalProjectTemplate(Template):
         var('programmer_email', 'Your email'),
         ]
 
-class ModuleTemplate(Template):
-
-    _template_dir = ('pysmvt', 'paster_tpls/module')
-    template_renderer = staticmethod(paste_script_template_renderer)
-    summary = "A pysmvt application module"
-    
-    def post(self, command, output_dir, vars):
-        print ''
-        print '-'*70
-        print 'Action Required: enabled module in settings.py'
-        print '-'*70
-        print 'self.modules.%s.enabled = True' % vars['modname']
+#class ModuleTemplate(Template):
+#
+#    _template_dir = ('blazeweb', 'paster_tpls/module')
+#    template_renderer = staticmethod(paste_script_template_renderer)
+#    summary = "A blazeweb application module"
+#
+#    def post(self, command, output_dir, vars):
+#        print ''
+#        print '-'*70
+#        print 'Action Required: enabled module in settings.py'
+#        print '-'*70
+#        print 'self.modules.%s.enabled = True' % vars['modname']
 
 def run_template(interactive, verbose, overwrite, vars,
                  output_dir, tname, type):
     cmd = dummy_cmd(interactive, verbose, overwrite)
     templates = []
     extend_templates(templates, tname, type)
-    
+
     # get rid of the name, object tuple
     templates = [tmpl for name, tmpl in templates]
-    
+
     # check vars on template and required templates
     for template in templates[::-1]:
         vars = template.check_vars(vars, cmd)
-    
+
     # run the template
     for template in templates:
         template.run(cmd, output_dir, vars)
@@ -92,7 +93,7 @@ def extend_templates(templates, tmpl_name, type):
     else:
         dist = pkg_resources.get_distribution(dist_name)
         entry = dist.get_entry_info(
-            'pysmvt.%s'%type, tmpl_name)
+            'blazeweb.%s'%type, tmpl_name)
         tmpl = entry.load()(entry.name)
     full_name = '%s#%s' % (dist_name, tmpl_name)
     for item_full_name, item_tmpl in templates:
@@ -102,6 +103,6 @@ def extend_templates(templates, tmpl_name, type):
     for req_name in tmpl.required_templates:
         extend_templates(templates, req_name, type)
     templates.append((full_name, tmpl))
-    
+
 def all_entry_points(type):
-    return list(pkg_resources.iter_entry_points('pysmvt.%s'%type))
+    return list(pkg_resources.iter_entry_points('blazeweb.%s'%type))

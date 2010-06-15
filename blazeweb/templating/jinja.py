@@ -3,9 +3,9 @@ from os import path
 
 from jinja2 import Environment, TemplateNotFound, BaseLoader
 
-from pysmvt import settings, user
-from pysmvt.hierarchy import FileNotFound, findfile, split_endpoint
-import pysmvt.templating as templating
+from blazeweb import settings, user
+from blazeweb.hierarchy import FileNotFound, findfile, split_endpoint
+import blazeweb.templating as templating
 
 log = logging.getLogger(__name__)
 

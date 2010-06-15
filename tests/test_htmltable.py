@@ -1,5 +1,5 @@
 import difflib
-from pysmvt.htmltable import Table, Col
+from blazeweb.htmltable import Table, Col
 from nose.tools import eq_
 
 def eq_or_diff(actual, expected):

@@ -1,10 +1,10 @@
 from urlparse import urlparse
-from pysmvt import settings, rg
+from blazeweb import settings, rg
 from werkzeug import Href, MultiDict
 from werkzeug.routing import Rule, RequestRedirect
 from werkzeug.exceptions import NotFound, MethodNotAllowed
 from werkzeug.wrappers import BaseRequest
-from pysmvt.exceptions import SettingsError, ProgrammingError
+from blazeweb.exceptions import SettingsError, ProgrammingError
 
 __all__ = [
     'Rule',
@@ -29,7 +29,7 @@ def url_for(endpoint, _external=False, _https=None, **values):
 def static_url(endpoint, file, app = None):
     """
         all this does is remove app right now, but we are anticipating:
-        https://apache.rcslocal.com:8443/projects/pysmvt/ticket/40
+        https://apache.rcslocal.com:8443/projects/blazeweb/ticket/40
     """
     return url_for(endpoint, file=file)
 

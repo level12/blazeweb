@@ -1,4 +1,4 @@
-from pysmvt.config import PluginSettings
+from blazeweb.config import PluginSettings
 
 class Settings(PluginSettings):
 

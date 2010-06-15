@@ -1,5 +1,5 @@
-from pysmvt import forward, redirect, rg
-from pysmvt.views import View, asview
+from blazeweb import forward, redirect, rg
+from blazeweb.views import View, asview
 
 class Index(View):
     def init(self):

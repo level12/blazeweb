@@ -1,6 +1,6 @@
 from os import path
 
-from pysmvt.config import DefaultSettings
+from blazeweb.config import DefaultSettings
 
 basedir = path.dirname(__file__)
 app_package = path.basename(basedir)

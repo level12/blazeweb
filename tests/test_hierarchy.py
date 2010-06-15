@@ -3,14 +3,14 @@ import sys
 
 from nose.tools import eq_
 
-from pysmvt.hierarchy import hm, findview, HierarchyImportError, findfile, \
+from blazeweb.hierarchy import hm, findview, HierarchyImportError, findfile, \
     FileNotFound, findobj, listplugins, list_plugin_mappings, visitmods, \
     gatherobjs
-from pysutils.testing import logging_handler
+from blazeutils.testing import logging_handler
 
 import config
 from newlayout.application import make_wsgi
-from pysmvttestapp.applications import make_wsgi as pta_make_wsgi
+from blazewebtestapp.applications import make_wsgi as pta_make_wsgi
 
 class TestMostStuff(object):
 
@@ -143,7 +143,7 @@ class TestMostStuff(object):
         assert 'newlayout.plugins.news.views.InAppHasPriority' in str(view)
 
     def test_import_cache(self):
-        eh = logging_handler('pysmvt.hierarchy')
+        eh = logging_handler('blazeweb.hierarchy')
         view1 = findview('news:OnlyForCache')
         dmesgs = ''.join(eh.messages['debug'])
         assert 'in cache' not in dmesgs , dmesgs
@@ -230,7 +230,7 @@ class TestMostStuff(object):
             pass
 
     def test_findfile_cache(self):
-        eh = logging_handler('pysmvt.hierarchy')
+        eh = logging_handler('blazeweb.hierarchy')
         fullpath = findfile('templates/forcache.txt')
         dmesgs = ''.join(eh.messages['debug'])
         assert 'in cache' not in dmesgs , dmesgs
@@ -290,10 +290,10 @@ class TestGatherObjs(object):
 
     def test_gatherobjs(self):
         result = gatherobjs('tasks.init_db', lambda name, obj: name.startswith('action_'))
-        eq_(result['appstack.tasks.init_db']['action_000'].__module__, 'pysmvttestapp.tasks.init_db')
-        eq_(result['plugstack.routingtests.tasks.init_db']['action_001'].__module__, 'pysmvttestapp.plugins.routingtests.tasks.init_db')
-        eq_(result['plugstack.routingtests.tasks.init_db']['action_003'].__module__, 'pysmvttestapp2.plugins.routingtests.tasks.init_db')
-        eq_(result['plugstack.tests.tasks.init_db']['action_001'].__module__, 'pysmvttestapp2.plugins.tests.tasks.init_db')
-        eq_(result['appstack.tasks.init_db']['action_001'].__module__, 'pysmvttestapp.tasks.init_db')
-        eq_(result['appstack.tasks.init_db']['action_002'].__module__, 'pysmvttestapp.tasks.init_db')
-        eq_(result['appstack.tasks.init_db']['action_005'].__module__, 'pysmvttestapp2.tasks.init_db')
+        eq_(result['appstack.tasks.init_db']['action_000'].__module__, 'blazewebtestapp.tasks.init_db')
+        eq_(result['plugstack.routingtests.tasks.init_db']['action_001'].__module__, 'blazewebtestapp.plugins.routingtests.tasks.init_db')
+        eq_(result['plugstack.routingtests.tasks.init_db']['action_003'].__module__, 'blazewebtestapp2.plugins.routingtests.tasks.init_db')
+        eq_(result['plugstack.tests.tasks.init_db']['action_001'].__module__, 'blazewebtestapp2.plugins.tests.tasks.init_db')
+        eq_(result['appstack.tasks.init_db']['action_001'].__module__, 'blazewebtestapp.tasks.init_db')
+        eq_(result['appstack.tasks.init_db']['action_002'].__module__, 'blazewebtestapp.tasks.init_db')
+        eq_(result['appstack.tasks.init_db']['action_005'].__module__, 'blazewebtestapp2.tasks.init_db')

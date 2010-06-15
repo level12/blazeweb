@@ -2,17 +2,17 @@ import os
 
 from decorator import decorator
 from nose.tools import make_decorator
-from pysutils.datastructures import BlankObject
+from blazeutils.datastructures import BlankObject
 from webhelpers.html import tools
 from werkzeug import Client as WClient, BaseRequest, BaseResponse, \
     cached_property, create_environ, run_wsgi_app
 
-from pysmvt import ag, settings, rg
-from pysmvt.application import ResponseContext, RequestManager
-from pysmvt.middleware import minimal_wsgi_stack
-from pysmvt.hierarchy import findobj
-from pysmvt.scripting import load_current_app, UsageError
-from pysmvt.wrappers import Request
+from blazeweb import ag, settings, rg
+from blazeweb.application import ResponseContext, RequestManager
+from blazeweb.middleware import minimal_wsgi_stack
+from blazeweb.hierarchy import findobj
+from blazeweb.scripting import load_current_app, UsageError
+from blazeweb.wrappers import Request
 
 try:
     from webtest import TestApp as WTTestApp

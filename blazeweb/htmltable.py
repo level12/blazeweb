@@ -9,13 +9,13 @@
     t.last_edited = DateTime('Last Updated')
     t.render(dic_or_list)
 """
-from pysutils.datastructures import OrderedProperties
+from blazeutils.datastructures import OrderedProperties
 from webhelpers.html import HTML, literal
 from webhelpers.html.tags import link_to
 from webhelpers.containers import NotGiven
 
-from pysmvt.utils import isurl
-from pysmvt.routing import url_for
+from blazeweb.utils import isurl
+from blazeweb.routing import url_for
 
 class StringIndentHelper(object):
 

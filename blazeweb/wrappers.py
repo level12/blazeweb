@@ -1,7 +1,7 @@
-from pysmvt import rg
+from blazeweb import rg
 from werkzeug import BaseRequest as WerkBaseRequest, BaseResponse, ResponseStreamMixin, MultiDict, \
     EnvironBuilder
-from pysmvt.utils import registry_has_object
+from blazeweb.utils import registry_has_object
 
 class BaseRequest(WerkBaseRequest):
     # we want mutable request objects

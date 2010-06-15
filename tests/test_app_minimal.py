@@ -1,6 +1,6 @@
 from webtest import TestApp
 
-from pysmvt import settings
+from blazeweb import settings
 
 # make sure the path gets appended so we can import by name
 import config

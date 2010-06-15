@@ -2,9 +2,9 @@ import __builtin__
 import logging
 from os import path as ospath
 
-from pysutils.datastructures import BlankObject, OrderedDict
-from pysutils.error_handling import raise_unexpected_import_error
-from pysmvt import ag, settings
+from blazeutils.datastructures import BlankObject, OrderedDict
+from blazeutils.error_handling import raise_unexpected_import_error
+from blazeweb import ag, settings
 
 log = logging.getLogger(__name__)
 
@@ -30,14 +30,14 @@ class HierarchyManager(object):
         self.replace_builtin()
 
     def replace_builtin(self):
-        __builtin__.__import__ = self.pysmvt_import
+        __builtin__.__import__ = self.blazeweb_import
         log.debug('HierarchyManager replaced __builtin__.__import__')
 
     def restore_builtin(self):
         __builtin__.__import__ = self.builtin_import
         log.debug('HierarchyManager restored __builtin__.__import__')
 
-    def pysmvt_import(self, name, globals={}, locals={}, fromlist=[], level=-1):
+    def blazeweb_import(self, name, globals={}, locals={}, fromlist=[], level=-1):
         instack_collection = ImportOverrideHelper.doimport(name, fromlist)
         if instack_collection:
             return instack_collection

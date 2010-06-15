@@ -1,4 +1,4 @@
-from pysmvt.views import asview
+from blazeweb.views import asview
 
 @asview('/news/display')
 def display():

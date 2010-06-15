@@ -1,7 +1,7 @@
-from pysmvt.application import WSGIApp
-from pysmvt.middleware import full_wsgi_stack
+from blazeweb.application import WSGIApp
+from blazeweb.middleware import full_wsgi_stack
 import config.settings as settingsmod
-from pysmvt.scripting import application_entry
+from blazeweb.scripting import application_entry
 
 def make_wsgi(profile='Default'):
     app = WSGIApp(settingsmod, profile)

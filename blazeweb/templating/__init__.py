@@ -1,19 +1,19 @@
 from markdown2 import markdown
-from pysutils.datetime import safe_strftime
-from pysutils.numbers import moneyfmt
-from pysutils.strings import simplify_string, reindent
+from blazeutils.datetime import safe_strftime
+from blazeutils.numbers import moneyfmt
+from blazeutils.strings import simplify_string, reindent
 
-from pysmvt import ag, settings
-from pysmvt.routing import url_for, current_url
-from pysmvt.utils.html import strip_tags
+from blazeweb import ag, settings
+from blazeweb.routing import url_for, current_url
+from blazeweb.utils.html import strip_tags
 
 class EngineBase(object):
     """
-        This class acts as a bridge between pysmvt and templating engines.
-        There are (deliberately) few places where pysmvt objects interact
+        This class acts as a bridge between blazeweb and templating engines.
+        There are (deliberately) few places where blazeweb objects interact
         with the templating engine.  When that takes places, they do so
         through a translator object.  You are free to interact with your
-        templating engine API directly, but when pysmvt objects do it,
+        templating engine API directly, but when blazeweb objects do it,
         they go through the unified API of an instance of this class.
     """
 
@@ -28,7 +28,7 @@ class EngineBase(object):
 
     def get_globals(self):
         # circular import fun!!
-        from pysmvt.content import getcontent
+        from blazeweb.content import getcontent
         globals = {}
         globals['url_for'] = url_for
         globals['current_url'] = current_url
@@ -52,6 +52,6 @@ def render_template(endpoint, **context):
     return ag.tplengine.render_template(endpoint, context)
 
 def default_engine():
-    tmod = __import__('pysmvt.templating.%s' % settings.templating.default_engine, fromlist=[''])
+    tmod = __import__('blazeweb.templating.%s' % settings.templating.default_engine, fromlist=[''])
     tobj = getattr(tmod, 'Translator')
     return tobj

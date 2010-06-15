@@ -1,7 +1,7 @@
 import unittest
 
 import config
-from pysmvttestapp.applications import make_wsgi
+from blazewebtestapp.applications import make_wsgi
 from werkzeug import Client, BaseResponse
 
 class TestUser(unittest.TestCase):

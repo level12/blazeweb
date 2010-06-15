@@ -15,11 +15,11 @@ from email.Utils import formatdate, parseaddr, formataddr
 
 from html2text import html2text
 from markdown2 import markdown
-from pysutils.helpers import tolist
+from blazeutils.helpers import tolist
 
-from pysmvt import settings
-from pysmvt.exceptions import SettingsError
-from pysmvt.utils.encoding import smart_str, force_unicode
+from blazeweb import settings
+from blazeweb.exceptions import SettingsError
+from blazeweb.utils.encoding import smart_str, force_unicode
 
 log = logging.getLogger(__name__)
 

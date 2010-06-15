@@ -1,9 +1,9 @@
 from nose.tools import eq_
-from pysmvt.tasks import run_tasks
+from blazeweb.tasks import run_tasks
 
 # create the wsgi application that will be used for testing
 import config
-from pysmvttestapp.applications import make_wsgi
+from blazewebtestapp.applications import make_wsgi
 
 class TestTasks(object):
 
@@ -14,13 +14,13 @@ class TestTasks(object):
     def test_task(self):
         eq_( run_tasks(('init-db', 'init-data'), print_call=False),
         {'init-db': [
-                ('action_000', 'appstack.tasks.init_db', 'pysmvttestapp.tasks.init_db'),
-                ('action_001', 'appstack.tasks.init_db', 'pysmvttestapp.tasks.init_db'),
-                ('action_001', 'plugstack.routingtests.tasks.init_db', 'pysmvttestapp.plugins.routingtests.tasks.init_db'),
-                ('action_001', 'plugstack.tests.tasks.init_db', 'pysmvttestapp2.plugins.tests.tasks.init_db'),
-                ('action_002', 'appstack.tasks.init_db', 'pysmvttestapp.tasks.init_db'),
-                ('action_003', 'plugstack.routingtests.tasks.init_db', 'pysmvttestapp2.plugins.routingtests.tasks.init_db'),
-                ('action_005', 'appstack.tasks.init_db', 'pysmvttestapp2.tasks.init_db'),
+                ('action_000', 'appstack.tasks.init_db', 'blazewebtestapp.tasks.init_db'),
+                ('action_001', 'appstack.tasks.init_db', 'blazewebtestapp.tasks.init_db'),
+                ('action_001', 'plugstack.routingtests.tasks.init_db', 'blazewebtestapp.plugins.routingtests.tasks.init_db'),
+                ('action_001', 'plugstack.tests.tasks.init_db', 'blazewebtestapp2.plugins.tests.tasks.init_db'),
+                ('action_002', 'appstack.tasks.init_db', 'blazewebtestapp.tasks.init_db'),
+                ('action_003', 'plugstack.routingtests.tasks.init_db', 'blazewebtestapp2.plugins.routingtests.tasks.init_db'),
+                ('action_005', 'appstack.tasks.init_db', 'blazewebtestapp2.tasks.init_db'),
             ],
         'init-data': [
                 ('action_010', 'appstack.tasks.init_data', 'lots of data'),
@@ -33,15 +33,15 @@ class TestTasks(object):
     def test_single_attribute(self):
         assert run_tasks('init-db:test', print_call=False) == \
         {'init-db': [
-                ('action_001', 'appstack.tasks.init_db', 'pysmvttestapp.tasks.init_db'),
+                ('action_001', 'appstack.tasks.init_db', 'blazewebtestapp.tasks.init_db'),
             ],
         }
 
     def test_multiple_attributes(self):
         assert run_tasks('init-db:prod', print_call=False) == \
         {'init-db': [
-                ('action_000', 'appstack.tasks.init_db', 'pysmvttestapp.tasks.init_db'),
-                ('action_002', 'appstack.tasks.init_db', 'pysmvttestapp.tasks.init_db'),
+                ('action_000', 'appstack.tasks.init_db', 'blazewebtestapp.tasks.init_db'),
+                ('action_002', 'appstack.tasks.init_db', 'blazewebtestapp.tasks.init_db'),
             ],
         }
 

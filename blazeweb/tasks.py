@@ -1,6 +1,6 @@
 from decorator import decorator
-from pysutils import tolist, OrderedDict
-from pysmvt.hierarchy import gatherobjs
+from blazeutils import tolist, OrderedDict
+from blazeweb.hierarchy import gatherobjs
 
 def _attributes(f, *args, **kwargs):
     """
@@ -33,7 +33,7 @@ def attributes(*args):
     """
     def decorate_func(f):
         if args:
-            f.__pysmvt_task_attrs = args
+            f.__blazeweb_task_attrs = args
         return decorator(_attributes, f)
     return decorate_func
 
@@ -65,7 +65,7 @@ def run_tasks(tasks, print_call=True, test_only=False, *args, **kwargs):
         for modkey, modattrs in collection.iteritems():
             for actname, actobj in modattrs.iteritems():
                 plus_exit = False
-                callable_attrs = getattr(actobj, '__pysmvt_task_attrs', tuple())
+                callable_attrs = getattr(actobj, '__blazeweb_task_attrs', tuple())
 
                 # if callable has a "+" attribute
                 for cattr in callable_attrs:

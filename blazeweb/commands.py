@@ -3,16 +3,16 @@ from os import path
 from werkzeug.serving import run_simple
 from werkzeug import Client, BaseResponse
 from werkzeug.script import make_shell
-from pysmvt.paster_tpl import run_template
-from pysmvt import ag, settings
-from pysmvt.tasks import run_tasks
-from pysutils.helpers import pprint
-from pysmvt.utils.filesystem import copy_static_files
+from blazeweb.paster_tpl import run_template
+from blazeweb import ag, settings
+from blazeweb.tasks import run_tasks
+from blazeutils.helpers import pprint
+from blazeweb.utils.filesystem import copy_static_files
 
 import paste.script.command as pscmd
 
 ###
-### PYSMVT COMMANDS FIRST
+### BLAZEWEB COMMANDS FIRST
 ###
 class ProjectCommand(pscmd.Command):
 
@@ -26,7 +26,7 @@ class ProjectCommand(pscmd.Command):
     parser = pscmd.Command.standard_parser(verbose=False)
     parser.add_option('-t', '--template',
                         dest='template',
-                        default='pysmvt',
+                        default='blazeweb',
                         help="The pre-defined template to use")
     parser.add_option('--no-interactive',
                       dest='interactive',
@@ -53,7 +53,7 @@ class ProjectCommand(pscmd.Command):
             vars,
             output_dir,
             self.options.template,
-            'pysmvt_project_template'
+            'blazeweb_project_template'
         )
 
 ###
@@ -199,7 +199,7 @@ class ShellCommand(pscmd.Command):
                 'ag': ag._current_obj(),
                 'settings': settings._current_obj()
             }
-            shell_act = make_shell(lambda: shell_namespace, 'pysmvt Interactive Shell')
+            shell_act = make_shell(lambda: shell_namespace, 'blazeweb Interactive Shell')
             shell_act(self.options.use_ipython)
 
 class RoutesCommand(pscmd.Command):

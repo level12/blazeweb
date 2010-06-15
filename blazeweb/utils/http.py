@@ -1,8 +1,8 @@
 import urllib
 from email.Utils import formatdate
 
-from pysmvt.utils.encoding import smart_str, force_unicode
-from pysmvt.utils.functional import allow_lazy
+from blazeweb.utils.encoding import smart_str, force_unicode
+from blazeweb.utils.functional import allow_lazy
 
 def urlquote(url, safe='/'):
     """

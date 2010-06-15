@@ -2,11 +2,11 @@ from os import path
 import logging
 
 from jinja2 import FileSystemLoader, Environment, TemplateNotFound
-from pysutils.datetime import safe_strftime
-from pysutils.strings import case_cw2us
+from blazeutils.datetime import safe_strftime
+from blazeutils.strings import case_cw2us
 
-from pysmvt import ag
-from pysmvt.hierarchy import findfile, FileNotFound
+from blazeweb import ag
+from blazeweb.hierarchy import findfile, FileNotFound
 
 log = logging.getLogger(__name__)
 
@@ -67,7 +67,7 @@ class JinjaHtmlBase(JinjaBase):
 class AppTemplateLoader(FileSystemLoader):
     """
         A modification of Jinja's FileSystemLoader to take into account how
-        pysmvt apps can inherit from other apps
+        blazeweb apps can inherit from other apps
     """
 
     def __init__(self, modname, encoding='utf-8'):

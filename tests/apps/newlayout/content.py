@@ -1,4 +1,4 @@
-from pysmvt.content import Content
+from blazeweb.content import Content
 
 class HelloWorld(Content):
 

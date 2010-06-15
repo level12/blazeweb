@@ -1,5 +1,5 @@
-from pysmvt.views import asview
-from pysmvt.wrappers import Response
+from blazeweb.views import asview
+from blazeweb.wrappers import Response
 
 @asview()
 def helloworld():

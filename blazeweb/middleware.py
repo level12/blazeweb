@@ -8,10 +8,10 @@ from paste.registry import RegistryManager
 from werkzeug import EnvironHeaders, LimitedStream, \
     SharedDataMiddleware, DebuggedApplication
 
-from pysutils import randchars, pformat, tolist
-from pysmvt import settings
-from pysmvt import routing
-from pysmvt.utils.filesystem import mkdirs
+from blazeutils import randchars, pformat, tolist
+from blazeweb import settings
+from blazeweb import routing
+from blazeweb.utils.filesystem import mkdirs
 
 class HttpRequestLogger(object):
     """

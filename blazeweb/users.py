@@ -1,11 +1,11 @@
 import logging
 import random
 
-from pysutils.datastructures import LazyDict, OrderedDict
-from pysutils.helpers import tolist
-from pysutils.strings import randchars
+from blazeutils.datastructures import LazyDict, OrderedDict
+from blazeutils.helpers import tolist
+from blazeutils.strings import randchars
 
-from pysmvt import rg
+from blazeweb import rg
 
 log = logging.getLogger(__name__)
 

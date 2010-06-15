@@ -8,7 +8,7 @@ setup(name={{repr(project)}},
       description="{{description or ''}}",
       long_description="""long description""",
       # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
-      classifiers=[], 
+      classifiers=[],
       keywords='',
       author={{repr(author or '')}},
       author_email={{repr(programmer_email or '')}},
@@ -18,7 +18,7 @@ setup(name={{repr(project)}},
       include_package_data=True,
       zip_safe=False,
       install_requires=[
-          'pysmvt>=dev'
+          'blazeweb>=0.3dev'
       ],
       entry_points="""
           [console_scripts]

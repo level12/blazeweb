@@ -1,16 +1,16 @@
 from formencode.validators import Int, String, Email, Number
 from nose.tools import eq_
-from pysutils.testing import logging_handler
+from blazeutils.testing import logging_handler
 from webtest import TestApp
 from werkzeug import MultiDict, run_wsgi_app, Headers
 from werkzeug.exceptions import BadRequest, HTTPException
 
-from pysmvt import rg, user
-from pysmvt.exceptions import ProgrammingError
-import pysmvt.views
-from pysmvt.views import SecureView
-from pysmvt.testing import inrequest
-from pysmvt.wrappers import Response
+from blazeweb import rg, user
+from blazeweb.exceptions import ProgrammingError
+import blazeweb.views
+from blazeweb.views import SecureView
+from blazeweb.testing import inrequest
+from blazeweb.wrappers import Response
 
 # create the wsgi application that will be used for testing
 import config
@@ -22,9 +22,9 @@ def setup_module():
     wsgiapp = make_wsgi('WithTestSettings')
     ta = TestApp(wsgiapp)
 
-class View(pysmvt.views.View):
+class View(blazeweb.views.View):
     def __init__(self, urlargs, endpoint='test'):
-        pysmvt.views.View.__init__(self, urlargs, endpoint)
+        blazeweb.views.View.__init__(self, urlargs, endpoint)
 
 @inrequest()
 def test_basic_view():
@@ -417,7 +417,7 @@ def test_view_forwarding():
     assert 'alv: a, b' in r
 
 def test_view_redirect():
-    eh = logging_handler('pysmvt.application')
+    eh = logging_handler('blazeweb.application')
     r = ta.get('/news?sendby=redirect')
     assert '/applevelview/foo' in r
     assert r.status_int == 302

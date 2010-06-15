@@ -1,8 +1,8 @@
 from StringIO import StringIO
 
-from pysmvt import rg
-from pysmvt.wrappers import Request
-from pysmvt.testing import inrequest
+from blazeweb import rg
+from blazeweb.wrappers import Request
+from blazeweb.testing import inrequest
 
 import config
 from newlayout.application import make_wsgi

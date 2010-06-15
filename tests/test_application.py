@@ -1,10 +1,10 @@
 from nose.tools import eq_
 
-from pysutils.datastructures import BlankObject
+from blazeutils.datastructures import BlankObject
 from webtest import TestApp
 from werkzeug import run_wsgi_app
 
-from pysmvt import settings, ag, rg
+from blazeweb import settings, ag, rg
 
 import config
 from newlayout.application import make_wsgi
@@ -47,14 +47,14 @@ def test_environ_hooks():
                 tracker.append('resps')
             def response_teardown():
                 tracker.append('respt')
-            environ.setdefault('pysmvt.request_setup', [])
-            environ.setdefault('pysmvt.request_teardown', [])
-            environ.setdefault('pysmvt.response_cycle_setup', [])
-            environ.setdefault('pysmvt.response_cycle_teardown', [])
-            environ['pysmvt.request_setup'].append(request_setup)
-            environ['pysmvt.request_teardown'].append(request_teardown)
-            environ['pysmvt.response_cycle_setup'].append(response_setup)
-            environ['pysmvt.response_cycle_teardown'].append(response_teardown)
+            environ.setdefault('blazeweb.request_setup', [])
+            environ.setdefault('blazeweb.request_teardown', [])
+            environ.setdefault('blazeweb.response_cycle_setup', [])
+            environ.setdefault('blazeweb.response_cycle_teardown', [])
+            environ['blazeweb.request_setup'].append(request_setup)
+            environ['blazeweb.request_teardown'].append(request_teardown)
+            environ['blazeweb.response_cycle_setup'].append(response_setup)
+            environ['blazeweb.response_cycle_teardown'].append(response_teardown)
             return self.app(environ, start_response)
     app = TestMiddleware(make_wsgi())
     ta = TestApp(app)
