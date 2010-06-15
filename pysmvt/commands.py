@@ -244,3 +244,36 @@ class StaticCopyCommand(pscmd.Command):
         def command(self):
             copy_static_files(delete_existing=self.options.delete_existing)
             print '\n - files/dirs copied succesfully\n'
+
+import re
+class JinjaConvertCommand(pscmd.Command):
+        # Parser configuration
+        summary = "convert jinja delimiters from old style to new style"
+        usage = ""
+
+        min_args = 0
+        max_args = 0
+
+        parser = pscmd.Command.standard_parser(verbose=False)
+
+        def change_tags(self, contents):
+            contents = re.sub('<{', '{{', contents)
+            contents = re.sub('<%', '{%', contents)
+            contents = re.sub('<#', '{#', contents)
+            contents = re.sub('}>', '}}', contents)
+            contents = re.sub('%>', '%}', contents)
+            contents = re.sub('#>', '#}', contents)
+            return contents
+
+        def command(self):
+            print 'converting:'
+            cwd = os.getcwd()
+            for fname in os.listdir(cwd):
+                if not fname.endswith('.html'):
+                    continue
+                with open(fname, 'r') as fh:
+                    contents = fh.read().decode('utf-8')
+                contents = self.change_tags(contents)
+                with open(fname, 'w') as fh:
+                    fh.write(contents.encode('utf-8'))
+                print '    %s' % fname

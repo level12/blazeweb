@@ -103,6 +103,7 @@ setup(
     [pysmvt.no_app_command]
     help=paste.script.help:HelpCommand
     project = pysmvt.commands:ProjectCommand
+    jinja-convert = pysmvt.commands:JinjaConvertCommand
 
     [pysmvt.app_command]
     serve = pysmvt.commands:ServeCommand
