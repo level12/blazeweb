@@ -5,9 +5,11 @@ from webtest import TestApp
 from werkzeug import run_wsgi_app
 
 from pysmvt import settings, ag, rg
+from pysmvt.hierarchy import findobj
 
 import config
 from newlayout.application import make_wsgi
+from minimal2.application import make_wsgi as m2_make_wsgi
 
 def test_plugin_settings():
     app = make_wsgi()
@@ -17,6 +19,14 @@ def test_plugin_settings():
     assert settings.plugins.pnoroutes.noroutes == True
 
     assert "<Rule '/fake/route' -> news:notthere>" in str(ag.route_map), ag.route_map
+
+def test_external_plugin_settings():
+    app = m2_make_wsgi('Dispatching')
+    
+    # an internal-only plugin
+    assert settings.plugins.news.min2news == 'internal'
+    # an external-only plugin
+    assert settings.plugins.foo.fooattr == True
 
 def test_bad_settings_profile():
     try:
@@ -66,4 +76,3 @@ def test_environ_hooks():
 
     r = ta.get('/news/reqsetupattr')
     r.mustcontain('foo')
-

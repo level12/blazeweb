@@ -2,7 +2,7 @@ from os import path
 from pysutils import prependsitedir
 from pysmvt.application import WSGIApp
 from pysmvt.middleware import full_wsgi_stack
-import settings as settingsmod
+import config.settings as settingsmod
 from pysmvt.scripting import application_entry
 
 # make sure our base module gets put on the path
