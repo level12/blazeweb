@@ -1,11 +1,12 @@
+import pkg_resources
+import optparse
 import os
 from os import path
 import sys
 
 import paste.script.command as pscmd
-import pkg_resources
-import optparse
 from pysutils import find_path_package_name
+from pysutils.error_handling import raise_unexpected_import_error
 
 class ScriptingHelperBase(object):
     def __init__(self):
@@ -147,9 +148,8 @@ def load_current_app(app_name=None, profile=None):
     try:
         app_pymod = __import__('%s.application' % app_name , globals(), locals(), [''])
     except ImportError, e:
-        if '%s.application' % app_name in str(e):
-            raise UsageError('Could not import name "%s.application".  Is the CWD a pysmvt application?' % app_name)
-        raise
+        raise_unexpected_import_error('%s.application' % app_name, e)
+        raise UsageError('Could not import name "%s.application".  Is the CWD a pysmvt application?' % app_name)
 
     pkg_dir = path.dirname(pkg_pymod.__file__)
     if profile:

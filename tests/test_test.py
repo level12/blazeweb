@@ -30,7 +30,7 @@ def test_nose_plugin_app_package_find_by_directory():
     cwd = os.path.join(here, 'apps', 'minimal2')
     res = env.run('nosetests', expect_error=True, cwd=cwd)
     assert 'Ran 1 test in' in res.stderr
-    assert 'OK' in res.stderr
+    assert 'OK' in res.stderr, res.stderr
 
 def test_nose_plugin_disable():
     cwd = os.path.join(here, 'apps', 'minimal2')
