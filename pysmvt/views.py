@@ -275,6 +275,7 @@ class View(object):
 
         # trim down to a real dictionary.
         self.calling_args = werkzeug_multi_dict_conv(args)
+        log.debug('calling args: %s' % self.calling_args)
 
     def process_args(self):
         had_strict_arg_failure = False
@@ -361,13 +362,14 @@ class View(object):
             self.retval = retval
 
     def _call_with_expected_args(self, method, method_is_bound=True):
+        log.debug('calling w/ expected: %s %s' % (method, self.calling_args))
         """ handle argument conversion to what the method accepts """
         try:
             # validate_arguments is made for a function, not a class method
             # so we need to "trick" it by sending self here, but then
             # removing it before the bound method is called below
             pos_args = (self,) if method_is_bound else tuple()
-            args, kwargs = validate_arguments(method, pos_args , self.calling_args)
+            args, kwargs = validate_arguments(method, pos_args , self.calling_args.copy())
         except ArgumentValidationError, e:
             log.error('arg validation failed: %s, %s, %s, %s', method, e.missing, e.extra, e.extra_positional)
             raise BadRequest('The browser failed to transmit all '

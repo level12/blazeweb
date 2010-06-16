@@ -330,12 +330,17 @@ def test_view_callstack():
         def init(self):
             self.add_call_method('test1', takes_args=False)
             self.add_call_method('test2', required=False, takes_args=False)
+            self.add_call_method('test3')
         def test1(self):
             methods_called.append('test1')
-        def default(self):
+        def test3(self, arg1):
+            assert arg1 == '1'
+            methods_called.append('test3')
+        def default(self, arg1):
             methods_called.append('default')
-    r = TestView({}).process()
-    eq_(methods_called, ['test1', 'default'])
+            assert arg1 == '1'
+    r = TestView({'arg1':'1'}).process()
+    eq_(methods_called, ['test1', 'test3', 'default'])
 
     methods_called = []
     class TestView(View):
