@@ -3,7 +3,7 @@ from os import path
 
 from jinja2 import Environment, TemplateNotFound, BaseLoader
 
-from pysmvt import settings, user
+from pysmvt import settings
 from pysmvt.hierarchy import FileNotFound, findfile, split_endpoint
 import pysmvt.templating as templating
 
@@ -37,12 +37,6 @@ class Translator(templating.EngineBase):
     def render_template(self, endpoint, context):
         self.update_context(context)
         return self.env.get_template(endpoint).render(context)
-
-    def update_context(self, context):
-        context.update({
-            'user': user._current_obj(),
-            'settings': settings._current_obj(),
-        })
 
 class HierarchyLoader(BaseLoader):
     """

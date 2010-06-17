@@ -13,3 +13,6 @@ class TestContent(object):
       c = getcontent('HelloWorld')
       assert c.primary == 'hello world', c.primary
 
+   def test_template_usage(self):
+      c = getcontent('index.html', a='foo')
+      assert c.primary == 'app index: foo', c.primary

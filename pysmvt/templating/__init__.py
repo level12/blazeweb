@@ -3,8 +3,9 @@ from pysutils.datetime import safe_strftime
 from pysutils.numbers import moneyfmt
 from pysutils.strings import simplify_string, reindent
 
-from pysmvt import ag, settings
+from pysmvt import ag, settings, user
 from pysmvt.routing import url_for, current_url
+from pysmvt.utils import registry_has_object
 from pysmvt.utils.html import strip_tags
 
 class EngineBase(object):
@@ -43,6 +44,16 @@ class EngineBase(object):
         filters['moneyfmt'] = moneyfmt
         filters['datefmt'] = safe_strftime
         return filters
+
+    def update_context(self, context):
+        toadd = {
+            'settings': settings._current_obj(),
+        }
+        if registry_has_object(user):
+            toadd['user'] = user._current_obj()
+        else:
+            toadd['user'] = None
+        context.update(toadd)
 
 def render_template(endpoint, **context):
     return ag.tplengine.render_template(endpoint, context)
