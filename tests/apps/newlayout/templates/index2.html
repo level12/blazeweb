@@ -5,3 +5,6 @@ content: {{getcontent('HelloWorld')}}
 customized content: {{getcontent('HelloWorld', name='fred')}}
 simplify: {{"some & string"|simplify(replace_with='&')}}
 autoescape: {{ "&" }}
+{% autoescape false %}
+ae ext: {{ "a&b" }}
+{% endautoescape %}

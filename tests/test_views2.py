@@ -457,10 +457,14 @@ def test_templating():
     assert 'simplify: some&string' in r.body, r
     # autoescape
     assert 'autoescape: &amp;' in r.body, r
+    # autoescape extensions
+    assert 'ae ext: a&b' in r.body, r
 
     # autoescape in a text file should be off
     r = ta.get('/index/testing.txt')
     assert 'autoescape: a&b' in r.body, r
+    # but can be turned on with the extension
+    assert 'ae ext: a&amp;b' in r.body, r
 
     # test plugin template default name
     r = ta.get('/news/template')
