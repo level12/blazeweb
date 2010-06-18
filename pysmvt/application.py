@@ -26,14 +26,14 @@ class RequestManager(object):
         self.app = app
         self.environ = environ
 
-    def registry_setup(self):
+    def init_registry(self):
         environ = self.environ
         environ['paste.registry'].register(pysmvt.rg, BlankObject())
         environ['paste.registry'].register(pysmvt.settings, self.app.settings)
         environ['paste.registry'].register(pysmvt.ag, self.app.ag)
-        environ['paste.registry'].register(pysmvt.user, self.user_setup())
+        environ['paste.registry'].register(pysmvt.user, self.init_user())
 
-    def rg_setup(self):
+    def init_rg(self):
         pysmvt.rg.ident = randchars()
         pysmvt.rg.environ = self.environ
         # the request object binds itself to rg.request
@@ -44,10 +44,10 @@ class RequestManager(object):
         else:
             pysmvt.rg.session = None
 
-    def routing_setup(self):
+    def init_routing(self):
         pysmvt.rg.urladapter = pysmvt.ag.route_map.bind_to_environ(self.environ)
 
-    def user_setup(self):
+    def init_user(self):
         environ = self.environ
         if 'beaker.session' in environ:
             if '__pysmvt_user' not in environ['beaker.session']:
@@ -58,9 +58,9 @@ class RequestManager(object):
         return User()
 
     def __enter__(self):
-        self.registry_setup()
-        self.rg_setup()
-        self.routing_setup()
+        self.init_registry()
+        self.init_rg()
+        self.init_routing()
         # allow middleware higher in the stack to help initilize the request
         # after the registry variables have been setup
         if 'pysmvt.request_setup' in self.environ:
@@ -117,26 +117,26 @@ class WSGIApp(object):
                 if "has no attribute '%s'" % profile not in str(e):
                     raise
                 raise ValueError('settings profile "%s" not found in this application' % profile)
-        self.ag_setup()
-        self.registry_setup()
-        self.settings_setup()
-        self.filesystem_setup()
-        self.logging_setup()
-        self.routing_setup()
+        self.init_ag()
+        self.init_registry()
+        self.init_settings()
+        self.init_filesystem()
+        self.init_logging()
+        self.init_routing()
         self.init_templating()
 
-    def registry_setup(self):
-        pysmvt.settings._push_object(self.settings)
-        pysmvt.ag._push_object(self.ag)
-
-    def ag_setup(self):
+    def init_ag(self):
         self.ag = BlankObject()
         self.ag.app = self
         self.ag.view_functions = {}
         self.ag.hierarchy_import_cache = {}
         self.ag.hierarchy_file_cache = {}
 
-    def settings_setup(self):
+    def init_registry(self):
+        pysmvt.settings._push_object(self.settings)
+        pysmvt.ag._push_object(self.ag)
+
+    def init_settings(self):
         # now we need to assign plugin's settings to the main setting object
         for pname in listplugins():
             try:
@@ -161,7 +161,7 @@ class WSGIApp(object):
         # point would probably be an accident
         self.settings.lock()
 
-    def filesystem_setup(self):
+    def init_filesystem(self):
         # create the writeable directories if they don't exist already
         if self.settings.auto_create_writeable_dirs:
             mkdirs(self.settings.dirs.data)
@@ -171,10 +171,10 @@ class WSGIApp(object):
         if self.settings.auto_copy_static.enabled:
             copy_static_files(self.settings.auto_copy_static.delete_existing)
 
-    def logging_setup(self):
+    def init_logging(self):
         create_handlers_from_settings(self.settings)
 
-    def routing_setup(self):
+    def init_routing(self):
         # setup the Map object with the appropriate settings
         self.ag.route_map = Map(**self.settings.routing.map.todict())
 
