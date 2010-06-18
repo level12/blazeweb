@@ -29,4 +29,4 @@ class Testruns(Default):
         self.email.subject_prefix = '[pysvmt test app] '
 
     def get_storage_dir(self):
-        return path.join(basedir, '..', 'test-output', app_package)
+        return path.join(basedir, '..', '..', 'test-output', app_package)

@@ -16,7 +16,7 @@ class Default(DefaultSettings):
         self.auto_load_views = True
 
     def get_storage_dir(self):
-        return path.join(basedir, '..', 'test-output', app_package)
+        return path.join(basedir, '..', '..', 'test-output', app_package)
 
 class Dev(Default):
     def init(self):
