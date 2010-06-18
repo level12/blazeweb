@@ -283,11 +283,15 @@ class TestMostStuff(object):
             if str(e) != 'No module named foo':
                 raise
 
-class TestGatherObjs(object):
+class TestPTA(object):
 
     @classmethod
     def setup_class(cls):
         pta_make_wsgi('Testruns')
+
+    def test_list_plugins(self):
+        expected = ['tests', 'nomodel', 'nosettings', 'sessiontests', 'routingtests', 'usertests', 'disabled']
+        eq_(expected, listplugins())
 
     def test_gatherobjs(self):
         result = gatherobjs('tasks.init_db', lambda name, obj: name.startswith('action_'))
@@ -304,6 +308,6 @@ class TestExternalPlugins(object):
     def setup_class(cls):
         m2_make_wsgi('Dispatching')
 
-    def test_plugin_listing(self):
+    def test_plugin_mappings(self):
         expected = [('minimal2', 'internalonly', None), ('minimal2', 'news', None), ('minimal2', 'news', 'newsplug4'), ('minimal2', 'foo', 'foobwp')]
         eq_(expected, list_plugin_mappings())

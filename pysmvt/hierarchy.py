@@ -2,7 +2,7 @@ import __builtin__
 import logging
 from os import path as ospath
 
-from pysutils.datastructures import BlankObject, OrderedDict
+from pysutils.datastructures import BlankObject, OrderedDict, OrderedSet
 from pysutils.error_handling import raise_unexpected_import_error
 from pysmvt import ag, settings
 
@@ -57,7 +57,7 @@ def listplugins(reverse=False):
     """
         a flat list of the namespace of each enabled plugin
     """
-    retval = list(set([pname for _, pname, _ in list_plugin_mappings()]))
+    retval = list(OrderedSet([pname for _, pname, _ in list_plugin_mappings()]))
     if reverse:
         retval.reverse()
     return retval
@@ -137,11 +137,8 @@ def findobj(endpoint):
     """
         Allows hieararchy importing based on strings:
 
-        findobject('news:views', 'Index') => from plugstack.news.views import Index
-        findobject('views', 'Index') => from appstack.views import Index
-
-        findobject('news:views.Index') => from plugstack.news.views import Index
         findobject('views.Index') => from appstack.views import Index
+        findobject('news:views.Index') => from plugstack.news.views import Index
     """
     if '.' not in endpoint:
         raise ValueError('endpoint should have a "."; see docstring for usage')
