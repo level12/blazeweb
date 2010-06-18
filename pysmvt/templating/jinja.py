@@ -2,6 +2,7 @@ import logging
 from os import path
 
 from jinja2 import Environment, TemplateNotFound, BaseLoader
+from jinja2.utils import Markup
 
 from pysmvt import settings
 from pysmvt.hierarchy import FileNotFound, findfile, split_endpoint
@@ -23,7 +24,15 @@ class Translator(templating.EngineBase):
         return HierarchyLoader()
 
     def get_settings(self):
-        return settings.jinja.todict()
+        def guess_autoescape(template_name):
+            if template_name is None or '.' not in template_name:
+                return False
+            ext = template_name.rsplit('.', 1)[1]
+            return ext in ('html', 'htm', 'xml')
+        jsettings = settings.jinja
+        if isinstance(jsettings.autoescape, (list, tuple)):
+            jsettings.autoescape = guess_autoescape
+        return jsettings.todict()
 
     def init_globals(self):
         self.env.globals.update(self.get_globals())
@@ -31,12 +40,13 @@ class Translator(templating.EngineBase):
     def init_filters(self):
         self.env.filters.update(self.get_filters())
 
-    def render_string(self, string, context):
-        raise NotImplementedError('Translor must be subclassed')
-
     def render_template(self, endpoint, context):
         self.update_context(context)
         return self.env.get_template(endpoint).render(context)
+
+    def mark_safe(self, value):
+        """ when a template has auto-escaping enabled, mark a value as safe """
+        return Markup(value)
 
 class HierarchyLoader(BaseLoader):
     """

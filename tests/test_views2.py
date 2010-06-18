@@ -453,6 +453,14 @@ def test_templating():
     # test embedded content
     assert 'content: hello world' in r.body, r
     assert 'customized content: hello fred' in r.body, r
+    # test that safe strings work for this filter and that func args work
+    assert 'simplify: some&string' in r.body, r
+    # autoescape
+    assert 'autoescape: &amp;' in r.body, r
+
+    # autoescape in a text file should be off
+    r = ta.get('/index/testing.txt')
+    assert 'autoescape: a&b' in r.body, r
 
     # test plugin template default name
     r = ta.get('/news/template')

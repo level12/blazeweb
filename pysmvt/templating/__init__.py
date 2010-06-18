@@ -36,12 +36,16 @@ class EngineBase(object):
         globals['getcontent'] = getcontent
         return globals
 
+    def mark_safe(self):
+        """ when a template has auto-escaping enabled, mark a value as safe """
+        raise NotImplementedError('Translor must be subclassed')
+
     def get_filters(self):
         filters = {}
-        filters['simplify'] = simplify_string
-        filters['markdown'] = markdown
-        filters['strip_tags'] = strip_tags
-        filters['moneyfmt'] = moneyfmt
+        filters['simplify'] = lambda x, *args, **kwargs: self.mark_safe(simplify_string(x, *args, **kwargs))
+        filters['markdown'] = lambda x, *args, **kwargs: self.mark_safe(markdown(x, *args, **kwargs))
+        filters['strip_tags'] = lambda x: self.mark_safe(striptags(x))
+        filters['moneyfmt'] = lambda x, *args, **kwargs: self.mark_safe(moneyfmt(x, *args, **kwargs))
         filters['datefmt'] = safe_strftime
         return filters
 

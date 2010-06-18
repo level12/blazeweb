@@ -114,7 +114,10 @@ class DefaultSettings(QuickSettings):
         #######################################################################
         self.templating.default_engine = 'jinja'
         self.template.default = 'default.html'
-        self.jinja.autoescape=False
+        # a list of template extensions to escape; set to False to disable
+        # autoescape
+        self.jinja.autoescape = ('html', 'htm', 'xml')
+        self.jinja.extensions = ['jinja2.ext.autoescape', 'jinja2.ext.with_']
 
         #######################################################################
         # SYSTEM VIEW ENDPOINTS
