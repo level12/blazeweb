@@ -36,3 +36,8 @@ class Default(DefaultSettings):
 
         # used by mail_admins() and mail_programmers()
         self.email.subject_prefix = '[%s] ' % app_package
+
+class Dev(Default):
+    def init(self):
+        Default.init(self)
+        self.apply_dev_settings()

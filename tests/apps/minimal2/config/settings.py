@@ -18,6 +18,11 @@ class Default(DefaultSettings):
     def get_storage_dir(self):
         return path.join(basedir, '..', 'test-output', app_package)
 
+class Dev(Default):
+    def init(self):
+        Default.init(self)
+        self.apply_dev_settings()
+
 class Dispatching(Default):
 
     def init(self):

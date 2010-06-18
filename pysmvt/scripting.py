@@ -103,19 +103,14 @@ class AppScriptingHelper(ScriptingHelperBase):
         self.parser.add_option(
         '-p', '--settings-profile',
         dest='settings_profile',
+        default='Dev',
         help='Choose which settings profile to use with this command.'\
             ' If not given, the default will be used.')
 
     def modify_runner(self, runner, options):
         # instantiate the app
         profile = options.settings_profile
-        if profile:
-            try:
-                self.wsgiapp = self.appfactory(profile)
-            except AttributeError:
-                raise pscmd.BadCommand('Error: could not find settings profile: %s' % profile)
-        else:
-            self.wsgiapp = self.appfactory()
+        self.wsgiapp = self.appfactory(profile)
         runner.wsgiapp = self.wsgiapp
         return runner
 
