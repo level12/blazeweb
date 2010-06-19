@@ -247,7 +247,12 @@ class Links(Col):
         return literal(''.join([a.process(key, self.extract) for a in self.aobjs]))
 
 class A(object):
-    """ a container class used by Links """
+    """ a container class used by Links
+
+        Examples:
+            A('plugin:View', 'someurlarg', 'someotherurlarg', label='(view)', title='view something')
+            A('plugin:View', 'someurlarg:dbfield', 'someotherurlarg')
+    """
     def __init__(self, endpoint, *args, **kwargs):
         self.endpoint = endpoint
         if kwargs.has_key('label'):
@@ -259,7 +264,12 @@ class A(object):
         self.attrs = kwargs
 
     def process(self, name, extract):
-        url_args = dict([(key, extract(key)) for key in self.url_arg_keys])
+        url_args = {}
+        for key in self.url_arg_keys:
+            key_set = key.split(':')
+            if len(key_set) == 1:
+                key_set = [key, key]
+            url_args[key_set[0]] = extract(key_set[1])
         url = url_for(self.endpoint, **url_args)
         if self.label is NotGiven:
             label = extract(name)

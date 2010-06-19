@@ -1,13 +1,17 @@
+import config
 import difflib
-from pysmvt.htmltable import Table, Col
+import unittest
 from nose.tools import eq_
+from pysmvt.htmltable import Table, Col, A
+from pysmvt.routing import Rule
+from pysmvt.testing import inrequest
 
 def eq_or_diff(actual, expected):
     assert actual == expected, \
     '\n'.join(list(
         difflib.unified_diff(actual.split('\n'), expected.split('\n'))
     ))
-    
+
 def test_basic():
     data = (
         {'color': 'red', 'number': 1},
@@ -79,3 +83,29 @@ def test_row_dec():
     </tbody>
 </table>"""
     eq_or_diff(result, t.render(data))
+
+class ATestSettings(config.Testruns):
+    def init(self):
+        config.Testruns.init(self)
+
+        self.routing.routes.extend([
+            Rule('/index/<arg1>/<arg2>', endpoint='mod:Index'),
+        ])
+
+class TestA(unittest.TestCase):
+
+    @classmethod
+    def setup_class(cls):
+        cls.app = config.make_wsgi(ATestSettings)
+
+    @inrequest()
+    def test_links(self):
+        dbobj_fake = {'arg1': 1, 'arg2': 2, 'db1': 10, 'db2': 20, 'title': 'fake_object'}
+        dummy_col = Col('test')
+        dummy_col.crow = dbobj_fake
+
+        a1 = A('mod:Index', 'arg1:db1', 'arg2', label='split', class_='name_split', title='Different names for arg and field')
+        a2 = A('mod:Index', 'arg1', 'arg2:db2', class_='name_single', title='Same names for arg and field')
+
+        self.assertEqual(a1.process('title',dummy_col.extract), '<a class="name_split" href="/index/10/2" title="Different names for arg and field">split</a>')
+        self.assertEqual(a2.process('title',dummy_col.extract), '<a class="name_single" href="/index/1/20" title="Same names for arg and field">fake_object</a>')
