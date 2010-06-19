@@ -10,7 +10,6 @@ from webhelpers.html import escape
 import werkzeug
 
 from pysmvt import rg
-#from pysmvt.wrappers import Response (IMPORTED AT BOTTOM)
 
 log = logging.getLogger(__name__)
 
@@ -39,6 +38,9 @@ def abort(send):
         anything else: pformat, escape, wrap in <pre> tags, and treat like
             string/unicode above.
     """
+    # this is a circular import if done at the module level
+    from pysmvt.wrappers import Response
+
     response_body = reindent("""
     <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
     <title>abort() Response</title>
@@ -90,6 +92,3 @@ def exception_with_context():
     retval += '\n\n== ENVIRON ==\n\n%s' % pformat(rg.environ, 4)
     retval += '\n\n== POST ==\n\n%s\n\n' % pformat(werkzeug_multi_dict_conv(rg.request.form), 4)
     return retval
-
-# circular import
-from pysmvt.wrappers import Response

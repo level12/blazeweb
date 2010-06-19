@@ -1,6 +1,7 @@
 import logging
 from new import classobj
 
+from decorator import decorator
 import formencode
 from pysutils.sentinels import NotGiven
 from pysutils.helpers import tolist
@@ -12,6 +13,7 @@ from werkzeug.routing import Rule
 
 from pysmvt import ag, rg, user, settings
 from pysmvt import routing
+from pysmvt._internal import json, _assert_have_json
 from pysmvt.content import getcontent, Content
 from pysmvt.hierarchy import listapps, split_endpoint
 from pysmvt.exceptions import ProgrammingError
@@ -19,6 +21,16 @@ from pysmvt.utils import registry_has_object, werkzeug_multi_dict_conv
 from pysmvt.wrappers import Response
 
 log = logging.getLogger(__name__)
+
+__all__ = (
+    'View',
+    'SecureView',
+    'asview',
+    'jsonify'
+)
+###
+### internal stuff
+###
 
 def _calc_plugin_name(module):
     """ calculates the plugin a view is in """
@@ -54,7 +66,9 @@ class _ViewCallStackAbort(Exception):
         call stack. Don't use directly, use the send_response() method on the
         view instead.
     """
-
+###
+### primary View objects
+###
 
 class View(object):
     """
@@ -452,6 +466,30 @@ class View(object):
             self.send_response()
         return c
 
+    def render_json(self, data, has_error=0, add_user_messages=True, indent=2, send_response=True):
+        """
+            Will send data as a json string with the appopriate mime-type
+            as the response.  Status indicators as well as user messages are
+            also sent.  The resulting json string looks like:
+
+        """
+        user_messages = []
+        if add_user_messages:
+            for msg in user.get_messages():
+                user_messages.append({'severity':msg.severity, 'text': msg.text})
+
+        data_with_context = {
+            'error': has_error,
+            'data': data,
+            'messages': user_messages
+            }
+        jsonstr = json.dumps(data_with_context, indent=indent)
+        self.mimetype = 'application/json'
+        self.retval = jsonstr
+        if send_response:
+            self.send_response()
+        return jsonstr
+
     def create_response(self, response, status=None, mimetype=None):
         if status is None:
             status = self.status_code
@@ -561,10 +599,15 @@ class SecureView(View):
 ###
 ### functions and classes related to processing functions as views
 ###
+
 # views modules will get reloaded by hierarchy.visitmods and there is no sense
 # recreating the class definition each time
 CLASS_CACHE = {}
+
 def asview(rule=None, **options):
+    """
+        A decorator to use a function as a View
+    """
     def decorate(f):
         lrule = rule
         fname = f.__name__
@@ -616,8 +659,35 @@ class _AsViewHandler(View):
     def __init__(self, urlargs, endpoint):
         View.__init__(self, urlargs, endpoint)
         self.expect_getargs(*self._asview_getargs)
+###
+### other internal views
+###
 
 class _RouteToTemplate(View):
+    """
+        used by the Application when the route contains a template endpoint
+        instead of a View endpoint.
+    """
     def default(self, **kwargs):
         self.template_vars = kwargs
         self.render_endpoint(self.endpoint)
+
+###
+### json related
+###
+
+@decorator
+def jsonify(f, self, *args, **kwargs):
+    """
+        use on a function in the view callback; it will take the returned data
+        and call render_json() with the data.  Will also handle exceptions.
+    """
+    has_error = 0
+    data = None
+    try:
+        data = f(self, *args, **kwargs)
+    except Exception, e:
+        has_error = 1
+        log.exception('error calling jsonified function %s', f)
+        user.add_message('error', 'internal error encountered, exception logged')
+    self.render_json(data, has_error)

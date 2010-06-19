@@ -6,9 +6,10 @@ from werkzeug import MultiDict, run_wsgi_app, Headers
 from werkzeug.exceptions import BadRequest, HTTPException
 
 from pysmvt import rg, user
+from pysmvt._internal import json
 from pysmvt.exceptions import ProgrammingError
 import pysmvt.views
-from pysmvt.views import SecureView
+from pysmvt.views import SecureView, jsonify
 from pysmvt.testing import inrequest
 from pysmvt.wrappers import Response
 
@@ -609,3 +610,60 @@ def test_secure_view():
             return 'su'
     r = TestView({}, 'test').process()
     assert r.data == 'su', r.data
+
+@inrequest('/json')
+def test_json_handlers():
+
+    # testnormal usage
+    class Jsonify(View):
+        def default(self):
+            self.render_json({'foo1': 'bar'})
+
+    r = Jsonify({}, 'jsonify').process()
+    eq_(r.headers['Content-Type'], 'application/json')
+    data = json.loads(r.data)
+    assert data['error'] == 0, data
+
+    # test user messages
+    class Jsonify(View):
+        def default(self):
+            user.add_message('notice', 'hi')
+            self.render_json({'foo1': 'bar'})
+
+    r = Jsonify({}, 'jsonify').process()
+    data = json.loads(r.data)
+    assert data['messages'][0]['severity'] == 'notice', data
+    assert data['messages'][0]['text'] == 'hi', data
+
+    # test no user messages
+    class Jsonify(View):
+        def default(self):
+            user.add_message('notice', 'hi')
+            self.render_json({'foo1': 'bar'}, add_user_messages=False)
+
+    r = Jsonify({}, 'jsonify').process()
+    data = json.loads(r.data)
+    assert len(data['messages']) == 0, data
+
+    # test jsonify decorator
+    class Jsonify(View):
+        @jsonify
+        def default(self):
+            return {'foo1': 'bar'}
+
+    r = Jsonify({}, 'jsonify').process()
+    eq_(r.headers['Content-Type'], 'application/json')
+    data = json.loads(r.data)
+    assert data['error'] == 0, data
+    assert data['data']['foo1'] == 'bar', data
+
+    # test jsonify decorator with exception
+    class Jsonify(View):
+        @jsonify
+        def default(self):
+            foo
+    r = Jsonify({}, 'jsonify').process()
+    eq_(r.headers['Content-Type'], 'application/json')
+    data = json.loads(r.data)
+    assert data['error'] == 1, data
+    assert data['data'] is None, data
