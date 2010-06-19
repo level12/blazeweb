@@ -3,6 +3,7 @@ import sys
 
 from nose.tools import eq_
 
+from pysmvt import ag
 from pysmvt.hierarchy import hm, findview, HierarchyImportError, findfile, \
     FileNotFound, findobj, listplugins, list_plugin_mappings, visitmods, \
     gatherobjs
@@ -303,7 +304,7 @@ class TestPTA(object):
         eq_(result['appstack.tasks.init_db']['action_002'].__module__, 'pysmvttestapp.tasks.init_db')
         eq_(result['appstack.tasks.init_db']['action_005'].__module__, 'pysmvttestapp2.tasks.init_db')
 
-class TestExternalPlugins(object):
+class TestMin2(object):
     @classmethod
     def setup_class(cls):
         m2_make_wsgi('Dispatching')
@@ -311,3 +312,25 @@ class TestExternalPlugins(object):
     def test_plugin_mappings(self):
         expected = [('minimal2', 'internalonly', None), ('minimal2', 'news', None), ('minimal2', 'news', 'newsplug4'), ('minimal2', 'foo', 'foobwp')]
         eq_(expected, list_plugin_mappings())
+
+def test_visitmods_reloading():
+    m2_make_wsgi()
+    rulenum = len(list(ag.route_map.iter_rules()))
+    assert rulenum >= 9, ag.route_map
+
+    from minimal2.views import page1
+    firstid = id(page1)
+
+    m2_make_wsgi()
+    rulenum = len(list(ag.route_map.iter_rules()))
+    assert rulenum >= 9, ag.route_map
+
+
+    from minimal2.views import page1
+    secondid = id(page1)
+
+    # we want to make sure that @asview is not creating a new class object
+    # each time, but using the cache object that already exists if possible
+    eq_(firstid, secondid)
+
+

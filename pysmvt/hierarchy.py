@@ -1,6 +1,7 @@
 import __builtin__
 import logging
 from os import path as ospath
+import sys
 
 from pysutils.datastructures import BlankObject, OrderedDict, OrderedSet
 from pysutils.error_handling import raise_unexpected_import_error
@@ -155,9 +156,22 @@ def findobj(endpoint):
     collector = ImportOverrideHelper.doimport(impstring + impname, [attr])
     return getattr(collector, attr)
 
-def visitmods(dotpath, reverse=False, call_with_mod=None):
+def visitmods(dotpath, reverse=False, call_with_mod=None, reloadmod=True):
     """
-        Visit python modules installed in the appstack or module stack.
+        Import python modules installed in the appstack or plugtack.  Modules
+        are visited from the top down.
+
+        reverse: visit modules in the reverse order, from the bottom up
+        call_with_mod: a callable that will be called after the module is loaded
+            with the loaded module as the only argument to the callable.
+        reloadmod: uses reload() on the module if it has already been imported;
+            this is useful when loading a module has a side-affect and that
+            side-affect needs to be repeated for each app.  An example of this
+            is when a "views" modules are loaded because they use @asview.  That
+            decorator, when fired, adds a route in the current app to the view.
+            If the views module is shared among more than one application
+            running in the same process, an external plugin for example, then
+            that side-affect needs to be repeated for each application.
     """
     visitlist = list_plugin_mappings(inc_apps=True, reverse=reverse)
     for app, pname, package in visitlist:
@@ -168,13 +182,19 @@ def visitmods(dotpath, reverse=False, call_with_mod=None):
                 impstr = '%s.%s' % (package, dotpath)
             else:
                 impstr = '%s.plugins.%s.%s' % (app, pname, dotpath)
-            module = hm.builtin_import(impstr, fromlist=[''])
+            if sys.modules.has_key(impstr):
+                if reloadmod:
+                    module = reload(sys.modules[impstr])
+                else:
+                    module = sys.modules[impstr]
+            else:
+                module = hm.builtin_import(impstr, fromlist=[''])
             if call_with_mod:
                 call_with_mod(module, app=app, pname=pname, package=package)
         except ImportError, e:
             raise_unexpected_import_error(impstr, e)
 
-def gatherobjs(dotpath, filter):
+def gatherobjs(dotpath, filter, reloadmod=False):
     """
         like visitmods(), but instead of just importing the module it gathers
         objects out of the module, passing them to filter to determine if they
@@ -191,7 +211,7 @@ def gatherobjs(dotpath, filter):
             if filter(k, v):
                 modattrs = collected.setdefault(modkey, OrderedDict())
                 modattrs.setdefault(k, v)
-    visitmods(dotpath, call_with_mod=process_module)
+    visitmods(dotpath, call_with_mod=process_module, reloadmod=reloadmod)
     return collected
 
 class FileFinderBase(object):

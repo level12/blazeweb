@@ -561,6 +561,9 @@ class SecureView(View):
 ###
 ### functions and classes related to processing functions as views
 ###
+# views modules will get reloaded by hierarchy.visitmods and there is no sense
+# recreating the class definition each time
+CLASS_CACHE = {}
 def asview(rule=None, **options):
     def decorate(f):
         lrule = rule
@@ -580,18 +583,31 @@ def asview(rule=None, **options):
         log.debug('@asview adding route "%s" to endpoint "%s"', lrule, endpoint)
         ag.route_map.add(Rule(lrule, endpoint=endpoint), **options)
 
+        # cache key for this object
+        cachekey = '%s:%s' % (f.__module__, fname)
 
-        # create the class that will handle this function
-        fvh = classobj(fname, (_AsViewHandler, ), {})
-        fvh.__module__ = f.__module__
+        # create the class that will handle this function if it doesn't already
+        # exist in the cache
+        if cachekey not in CLASS_CACHE:
+            fvh = classobj(fname, (_AsViewHandler, ), {})
+            fvh.__module__ = f.__module__
 
-        # assign the default method
+            # make the getargs available
+            fvh._asview_getargs = tolist(getargs)
+
+            # store this class object in the cache so we don't have to
+            # recreate next time
+            CLASS_CACHE[cachekey] = fvh
+        else:
+             fvh = CLASS_CACHE[cachekey]
+
+        # assign the default method.  This can't be cached because on a reload
+        # of the views module, the first decorated function will become
+        # None.  So we have to recreate the defmethod wrapper with the
+        # function object that is being created/recreated and decorated.
         def defmethod(self):
             return self._call_with_expected_args(f, method_is_bound=False)
         fvh.default = defmethod
-
-        # make the getargs available
-        fvh._asview_getargs = tolist(getargs)
 
         # return the class instead of the function
         return fvh
