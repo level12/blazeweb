@@ -293,6 +293,11 @@ class DefaultSettings(QuickSettings):
         # tmp
         self.auto_create_writeable_dirs = True
 
+        # should we load utils.abort as a builtin?  Intended for development
+        # enviornments only.  If true, will add abort to Python's builtin
+        # namespace as 'dabort'.  The 'd' is for development.
+        self.auto_abort_as_builtin = False
+
     def add_plugin(self, app_package, namespace, package=None):
         # a little hack to get the default value to hang an application's
         # plugin's off of
@@ -334,6 +339,7 @@ class DefaultSettings(QuickSettings):
         self.exception_handling = None
         self.debugger.enabled = True
         self.auto_copy_static.enabled = True
+        self.auto_abort_as_builtin = True
 
     def add_route(self, route, endpoint, *args, **kwargs):
         kwargs['endpoint'] = endpoint

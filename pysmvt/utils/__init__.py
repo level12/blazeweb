@@ -1,12 +1,16 @@
 import re
 import logging
 from traceback import format_exc
+
 from formencode.validators import URL
 from formencode import Invalid
+from pysutils.helpers import pformat
+from pysutils.strings import reindent
+from webhelpers.html import escape
+import werkzeug
 
 from pysmvt import rg
-from pysmvt.exceptions import Abort
-from pysutils.helpers import pformat
+#from pysmvt.wrappers import Response (IMPORTED AT BOTTOM)
 
 log = logging.getLogger(__name__)
 
@@ -21,8 +25,34 @@ def isurl(s, require_tld=True):
             return True
         return False
 
-def abort(outputobj=None, code=200):
-    raise Abort(outputobj, code)
+def abort(send):
+    """
+        An enhanced version of Werkzeug's abort.  `send` is handled differently
+        based on what it is:
+
+        int: assumed to be a HTTP status code; not all codes supported by
+            default, see the Werkzeug documentation for an explanation.
+        string/unicode: will put the string as the body of a response and send
+            it.
+        callable: assume its a Response object or other WSGI application; wrap
+            in proxy HTTPException and raise it;
+        anything else: pformat, escape, wrap in <pre> tags, and treat like
+            string/unicode above.
+    """
+    response_body = reindent("""
+    <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+    <title>abort() Response</title>
+    <h1 style="margin-bottom: 25px">abort() Response</h1>
+
+    %s""".strip(), 0)
+
+    if isinstance(send, int) or hasattr(send, '__call__'):
+        response = send
+    elif isinstance(send, basestring):
+        response = Response(response_body % escape(send))
+    else:
+        response = Response(response_body % ('<pre>%s</pre>' % escape(pformat(send))))
+    werkzeug.abort(response)
 
 def werkzeug_multi_dict_conv(md):
     '''
@@ -60,3 +90,6 @@ def exception_with_context():
     retval += '\n\n== ENVIRON ==\n\n%s' % pformat(rg.environ, 4)
     retval += '\n\n== POST ==\n\n%s\n\n' % pformat(werkzeug_multi_dict_conv(rg.request.form), 4)
     return retval
+
+# circular import
+from pysmvt.wrappers import Response

@@ -1,3 +1,4 @@
+import __builtin__
 import logging
 
 from pysutils.datastructures import BlankObject
@@ -14,7 +15,7 @@ from pysmvt.logs import create_handlers_from_settings
 from pysmvt.mail import mail_programmers
 from pysmvt.templating import default_engine
 from pysmvt.users import User
-from pysmvt.utils import exception_with_context
+from pysmvt.utils import exception_with_context, abort
 from pysmvt.utils.filesystem import mkdirs, copy_static_files
 from pysmvt.views import _RouteToTemplate
 from pysmvt.wrappers import Request
@@ -108,7 +109,19 @@ class WSGIApp(object):
 
     def __init__(self, module_or_settings, profile=None):
         self._id = randhash()
+
+        self.init_settings(module_or_settings, profile)
+        self.init_ag()
+        self.init_registry()
+        self.init_plugin_settings()
+        self.init_auto_actions()
+        self.init_logging()
+        self.init_routing()
+        self.init_templating()
+
+    def init_settings(self, module_or_settings, profile):
         self.settings = module_or_settings
+        # get the settings class and instantiate it
         if profile is not None:
             module = module_or_settings
             try:
@@ -117,13 +130,6 @@ class WSGIApp(object):
                 if "has no attribute '%s'" % profile not in str(e):
                     raise
                 raise ValueError('settings profile "%s" not found in this application' % profile)
-        self.init_ag()
-        self.init_registry()
-        self.init_settings()
-        self.init_filesystem()
-        self.init_logging()
-        self.init_routing()
-        self.init_templating()
 
     def init_ag(self):
         self.ag = BlankObject()
@@ -136,7 +142,7 @@ class WSGIApp(object):
         pysmvt.settings._push_object(self.settings)
         pysmvt.ag._push_object(self.ag)
 
-    def init_settings(self):
+    def init_plugin_settings(self):
         # now we need to assign plugin's settings to the main setting object
         for pname in listplugins():
             try:
@@ -161,7 +167,7 @@ class WSGIApp(object):
         # point would probably be an accident
         self.settings.lock()
 
-    def init_filesystem(self):
+    def init_auto_actions(self):
         # create the writeable directories if they don't exist already
         if self.settings.auto_create_writeable_dirs:
             mkdirs(self.settings.dirs.data)
@@ -170,6 +176,8 @@ class WSGIApp(object):
         # copy static files if requested
         if self.settings.auto_copy_static.enabled:
             copy_static_files(self.settings.auto_copy_static.delete_existing)
+        if self.settings.auto_abort_as_builtin == True:
+            __builtin__.dabort = abort
 
     def init_logging(self):
         create_handlers_from_settings(self.settings)

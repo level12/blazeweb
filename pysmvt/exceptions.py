@@ -12,16 +12,6 @@ class Forward(Exception):
         self.forward_endpoint = endpoint
         self.forward_args = args
 
-class Abort(HTTPException):
-    def __init__(self, outputobj=None, code=200):
-        from pysmvt.utils import werkzeug_multi_dict_conv
-        from pysmvt.utils.html import escape
-        self.code = code
-        if isinstance(outputobj, MultiDict):
-            outputobj = werkzeug_multi_dict_conv(outputobj)
-        self.description = "<pre>%s</pre>" % escape(pformat(outputobj)) if outputobj else ''
-        HTTPException.__init__(self)
-
 class ProgrammingError(Exception):
     """
         Raised when an API is not used correctly and the exception does

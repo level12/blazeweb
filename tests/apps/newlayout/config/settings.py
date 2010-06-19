@@ -13,6 +13,7 @@ class Default(nlDefault):
 
         self.add_route('/applevelview/<v1>', 'AppLevelView')
         self.add_route('/index/<tname>', 'Index')
+        self.add_route('/abort/<tname>', 'Abort')
 
         self.supporting_apps.append('nlsupporting')
         self.setup_plugins()
@@ -40,13 +41,13 @@ class Default(nlDefault):
 class AutoCopyStatic(Default):
     def init(self):
         Default.init(self)
-
         self.auto_copy_static.enabled = True
 
 class WithTestSettings(Default):
     def init(self):
         Default.init(self)
         self.apply_test_settings()
+        self.auto_abort_as_builtin = True
 
 class AttributeErrorInSettings(Default):
     def init(self):

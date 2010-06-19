@@ -1,4 +1,7 @@
+from pysmvt import settings
+from pysmvt.utils import abort
 from pysmvt.views import View
+from pysmvt.wrappers import Response
 
 class AppLevelView(View):
     def init(self):
@@ -13,3 +16,17 @@ class Index(View):
         if tname != 'index':
             self.render_template(tname)
         self.render_template()
+
+class Abort(View):
+    def default(self, tname):
+        if tname == 'int':
+            abort(400)
+        if tname == 'callable':
+            abort(Response('test Response'))
+        if tname == 'str':
+            abort('test & str')
+        if tname == 'other':
+            abort({'foo':'bar', 'b&z': 1})
+        if tname == 'dabort':
+            dabort([])
+        assert False
