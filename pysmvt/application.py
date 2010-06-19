@@ -8,6 +8,7 @@ from werkzeug import create_environ
 from werkzeug.routing import Map, Submount
 
 import pysmvt
+from pysmvt.events import Namespace, signal
 from pysmvt.exceptions import Forward, ProgrammingError, Redirect
 from pysmvt.hierarchy import findobj, HierarchyImportError, \
     listplugins, visitmods, findview, split_endpoint
@@ -67,11 +68,13 @@ class RequestManager(object):
         if 'pysmvt.request_setup' in self.environ:
             for callable in self.environ['pysmvt.request_setup']:
                 callable()
+        signal('pysmvt.request.initialized').send()
 
     def __exit__(self, exc_type, exc_value, tb):
         if 'pysmvt.request_teardown' in self.environ:
             for callable in self.environ['pysmvt.request_teardown']:
                 callable()
+        signal('pysmvt.request.finished').send()
 
 class ResponseContext(object):
     def __init__(self, error_doc_code):
@@ -89,6 +92,7 @@ class ResponseContext(object):
         if 'pysmvt.response_cycle_setup' in self.environ:
             for callable in self.environ['pysmvt.response_cycle_setup']:
                 callable()
+        signal('pysmvt.response_context.initialized').send()
 
     def __exit__(self, exc_type, e, tb):
         log.debug('exit response context started')
@@ -104,6 +108,7 @@ class ResponseContext(object):
         if 'beaker.session' in self.environ:
             self.environ['beaker.session'].save()
         log.debug('exit response context finished')
+        signal('pysmvt.response_context.finished').send()
 
 class WSGIApp(object):
 
@@ -112,7 +117,8 @@ class WSGIApp(object):
 
         self.init_settings(module_or_settings, profile)
         self.init_ag()
-        self.init_registry()
+        self.init_signals()
+        self.init_events()
         self.init_plugin_settings()
         self.init_auto_actions()
         self.init_logging()
@@ -130,6 +136,7 @@ class WSGIApp(object):
                 if "has no attribute '%s'" % profile not in str(e):
                     raise
                 raise ValueError('settings profile "%s" not found in this application' % profile)
+        pysmvt.settings._push_object(self.settings)
 
     def init_ag(self):
         self.ag = BlankObject()
@@ -137,10 +144,24 @@ class WSGIApp(object):
         self.ag.view_functions = {}
         self.ag.hierarchy_import_cache = {}
         self.ag.hierarchy_file_cache = {}
-
-    def init_registry(self):
-        pysmvt.settings._push_object(self.settings)
+        self.ag.events_namespace = Namespace()
         pysmvt.ag._push_object(self.ag)
+
+    def init_signals(self):
+        # signals are weakly referenced, so we need to keep a reference as long
+        # as this application is instantiated
+        self.signals = (
+            signal('pysmvt.events.initialized'),
+            signal('pysmvt.request.initialized'),
+            signal('pysmvt.response_context.initialized'),
+            signal('pysmvt.view_returned'),
+            signal('pysmvt.response_context.finished'),
+            signal('pysmvt.request.finished'),
+        )
+
+    def init_events(self):
+        visitmods('events')
+        signal('pysmvt.events.initialized').send(self.init_events)
 
     def init_plugin_settings(self):
         # now we need to assign plugin's settings to the main setting object
@@ -230,7 +251,9 @@ class WSGIApp(object):
         else:
             vklass = _RouteToTemplate
         v = vklass(args, endpoint)
-        return v.process()
+        response = v.process()
+        signal('pysmvt.view_returned').send(None, response=response)
+        return response
 
     def wsgi_app(self, environ, start_response):
         with self.request_manager(environ):

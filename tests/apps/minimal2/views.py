@@ -46,3 +46,7 @@ def session2():
 def session3():
     assert 'session1' not in rg.session
     return ''
+
+@asview()
+def eventtest():
+    return 'foo'

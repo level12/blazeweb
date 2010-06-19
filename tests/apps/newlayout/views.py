@@ -1,6 +1,6 @@
 from pysmvt import settings
 from pysmvt.utils import abort
-from pysmvt.views import View
+from pysmvt.views import View, asview
 from pysmvt.wrappers import Response
 
 class AppLevelView(View):
@@ -30,3 +30,8 @@ class Abort(View):
         if tname == 'dabort':
             dabort([])
         assert False
+
+class EventTest(View):
+    def default(self):
+        return 'foo'
+
