@@ -579,7 +579,6 @@ def asview(rule=None, **options):
         # setup the routing
         if lrule is None:
             lrule = '/%s' % fname
-        lrule = routing.add_prefix(lrule)
         log.debug('@asview adding route "%s" to endpoint "%s"', lrule, endpoint)
         ag.route_map.add(Rule(lrule, endpoint=endpoint), **options)
 

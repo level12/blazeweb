@@ -76,11 +76,9 @@ class DefaultSettings(QuickSettings):
         #######################################################################
         self.routing.routes = []
 
-        # note that you shouldn't really need to use the routing prefix if
-        # SCRIPT_NAME and PATH_INFO are set correctly as the Werkzeug
-        # routing tools (both parsing rules and generating URLs) will
-        # take these environment variables into account.
-        self.routing.prefix = ''
+        # where will static files be found?  This is prepended to most static
+        # URLs.
+        self.routing.static_prefix = 'static/'
 
         # the settings for the Werkzeug routing Map object:
         self.routing.map.default_subdomain=''

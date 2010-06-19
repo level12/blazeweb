@@ -4,7 +4,7 @@ from pysutils.numbers import moneyfmt
 from pysutils.strings import simplify_string, reindent
 
 from pysmvt import ag, settings, user
-from pysmvt.routing import url_for, current_url
+from pysmvt.routing import url_for, current_url, static_url
 from pysmvt.utils import registry_has_object
 from pysmvt.utils.html import strip_tags
 
@@ -47,6 +47,7 @@ class EngineBase(object):
         filters['strip_tags'] = lambda x: self.mark_safe(striptags(x))
         filters['moneyfmt'] = lambda x, *args, **kwargs: self.mark_safe(moneyfmt(x, *args, **kwargs))
         filters['datefmt'] = safe_strftime
+        filters['static'] = static_url
         return filters
 
     def update_context(self, context):

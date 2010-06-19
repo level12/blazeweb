@@ -459,6 +459,8 @@ def test_templating():
     assert 'autoescape: &amp;' in r.body, r
     # autoescape extensions
     assert 'ae ext: a&b' in r.body, r
+    # url prefix
+    assert 'static url: static/app/statictest.txt' in r.body, r
 
     # autoescape in a text file should be off
     r = ta.get('/index/testing.txt')

@@ -89,7 +89,7 @@ def full_wsgi_stack(app):
 
     # serve static files from static directory
     if settings.static_files.enabled:
-        app = SharedDataMiddleware(app, {routing.add_prefix('/static/') : settings.dirs.static})
+        app = SharedDataMiddleware(app, {'/' + routing.static_url('/') : settings.dirs.static})
 
     # show nice stack traces and debug output if enabled
     if settings.debugger.enabled:

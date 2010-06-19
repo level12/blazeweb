@@ -199,12 +199,8 @@ class WSGIApp(object):
         self.ag.tplengine = engine()
 
     def add_routing_rules(self, rules):
-        if self.settings.routing.prefix:
-            # prefix the routes with the prefix in the app settings class
-            self.ag.route_map.add(Submount(self.settings.routing.prefix, rules ))
-        else:
-            for rule in rules or ():
-                self.ag.route_map.add(rule)
+        for rule in rules or ():
+            self.ag.route_map.add(rule)
 
     def request_manager(self, environ):
         return RequestManager(self, environ)

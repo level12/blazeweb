@@ -1,8 +1,10 @@
 import config
 import unittest
 
+from nose.tools import eq_
 from werkzeug import Client, BaseResponse, create_environ
 
+from pysmvt import settings
 from pysmvt.routing import *
 from pysmvt.exceptions import SettingsError
 from pysmvt.testing import inrequest
@@ -14,9 +16,6 @@ class RoutingSettings(config.Testruns):
         config.Testruns.init(self)
 
         self.routing.routes.extend([
-            Rule('/<file>', endpoint='static', build_only=True),
-            Rule('/c/<file>', endpoint='styles', build_only=True),
-            Rule('/js/<file>', endpoint='javascript', build_only=True),
             Rule('/', endpoint='mod:Index'),
             Rule('/url1', endpoint='mod:Url1'),
         ])
@@ -25,7 +24,7 @@ class Prefixsettings(RoutingSettings):
     def init(self):
         RoutingSettings.init(self)
 
-        self.routing.prefix = '/prefix'
+        self.routing.static_prefix = 'http://static.example.com/'
 
 class TestRouting(unittest.TestCase):
 
@@ -38,10 +37,6 @@ class TestRouting(unittest.TestCase):
         self.assertEqual( '/url1', url_for('mod:Url1'))
         self.assertEqual('/url1?foo=bar', url_for('mod:Url1', foo='bar'))
         self.assertEqual('http://localhost/url1', url_for('mod:Url1', True))
-        self.assertEqual('/c/test.css', style_url('test.css'))
-        self.assertEqual('/c/test.css', style_url('test.css', app='foo'))
-        self.assertEqual('/js/test.js', js_url('test.js'))
-        self.assertEqual('/js/test.js', js_url('test.js', app='foo'))
         self.assertEqual('https://localhost/url1', url_for('mod:Url1', _https=True))
         self.assertEqual('http://localhost/url1', url_for('mod:Url1', _https=False))
 
@@ -56,10 +51,6 @@ class TestRoutingSSL(unittest.TestCase):
         self.assertEqual( '/script/url1', url_for('mod:Url1'))
         self.assertEqual('/script/url1?foo=bar', url_for('mod:Url1', foo='bar'))
         self.assertEqual('https://localhost:8080/script/url1', url_for('mod:Url1', True))
-        self.assertEqual('/script/c/test.css', style_url('test.css'))
-        self.assertEqual('/script/c/test.css', style_url('test.css', app='foo'))
-        self.assertEqual('/script/js/test.js', js_url('test.js'))
-        self.assertEqual('/script/js/test.js', js_url('test.js', app='foo'))
         self.assertEqual('https://localhost:8080/script/url1', url_for('mod:Url1', _https=True))
         self.assertEqual('http://localhost:8080/script/url1', url_for('mod:Url1', _https=False))
 
@@ -83,15 +74,10 @@ class TestPrefix(unittest.TestCase):
 
     @inrequest()
     def test_routes(self):
-        self.assertEqual('/prefix/url1', url_for('mod:Url1'))
-        self.assertEqual('/prefix/url1?foo=bar', url_for('mod:Url1', foo='bar'))
-        self.assertEqual('http://localhost/prefix/url1', url_for('mod:Url1', True))
-        self.assertEqual('/prefix/c/test.css', style_url('test.css'))
-        self.assertEqual('/prefix/c/test.css', style_url('test.css', app='foo'))
-        self.assertEqual('/prefix/js/test.js', js_url('test.js'))
-        self.assertEqual('/prefix/js/test.js', js_url('test.js', app='foo'))
-        self.assertEqual('https://localhost/prefix/url1', url_for('mod:Url1', _https=True))
-        self.assertEqual('http://localhost/prefix/url1', url_for('mod:Url1', _https=False))
+        eq_('http://static.example.com/app/c/styles.css', static_url('app/c/styles.css'))
+        eq_('http://static.example.com/app/c/styles.css', static_url('/app/c/styles.css'))
+        settings.routing.static_prefix = '/static'
+        eq_('/static/app/c/styles.css', static_url('/app/c/styles.css'))
 
 class TestCurrentUrl(unittest.TestCase):
 
