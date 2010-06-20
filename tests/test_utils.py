@@ -1,3 +1,4 @@
+from __future__ import with_statement
 from os import path
 
 from nose.tools import eq_

@@ -63,7 +63,7 @@ except ImportError:
 import pysmvt
 version = pysmvt.VERSION
 
-requried_packages = [
+required_packages = [
     "Beaker>=1.5",
     "Blinker>=1.0",
     "decorator>=3.0.1",
@@ -75,7 +75,7 @@ requried_packages = [
     "nose>=0.11",
     "Paste>=1.7",
     "PasteScript>=1.7",
-    "pysutils==dev",
+    "pysutils>=0.2.1dev",
     "WebHelpers>=1.0rc1",
     "Werkzeug>=0.6",
 ]
@@ -102,7 +102,7 @@ setup(
     license='BSD',
     packages=find_packages(exclude=['ez_setup']),
     include_package_data=True,
-    install_requires = requried_packages,
+    install_requires = required_packages,
     tests_require=['webtest', 'scripttest'],
     entry_points="""
     [console_scripts]
