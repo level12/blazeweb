@@ -3,7 +3,7 @@ import logging
 from os import path as ospath
 import sys
 
-from pysutils.datastructures import BlankObject, OrderedDict, OrderedSet
+from pysutils.datastructures import BlankObject, OrderedDict, UniqueList
 from pysutils.error_handling import raise_unexpected_import_error
 from pysmvt import ag, settings
 
@@ -58,7 +58,10 @@ def listplugins(reverse=False):
     """
         a flat list of the namespace of each enabled plugin
     """
-    retval = list(OrderedSet([pname for _, pname, _ in list_plugin_mappings()]))
+    ul = UniqueList()
+    for _, pname, _ in list_plugin_mappings():
+        ul.append(pname)
+    retval = list(ul)
     if reverse:
         retval.reverse()
     return retval
