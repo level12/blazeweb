@@ -2,6 +2,7 @@ from __future__ import with_statement
 from os import path
 
 from nose.tools import eq_
+from pysutils.strings import normalizews
 from webtest import TestApp
 
 from pysmvt import settings
@@ -93,7 +94,7 @@ class TestAborting(object):
 
     def test_other(self):
         r = self.ta.get('/abort/other')
-        r.mustcontain("<pre>{   'b&amp;z': 1, 'foo': 'bar'}</pre>")
+        assert "'b&amp;z': 1, 'foo': 'bar'}</pre>" in r
 
     def test_dabort(self):
         r = self.ta.get('/abort/dabort')
