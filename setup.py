@@ -75,7 +75,7 @@ requried_packages = [
     "nose>=0.11",
     "Paste>=1.7",
     "PasteScript>=1.7",
-    "pysutils>=0.2",
+    "pysutils==dev",
     "WebHelpers>=1.0rc1",
     "Werkzeug>=0.6",
 ]
