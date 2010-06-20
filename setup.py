@@ -63,6 +63,29 @@ except ImportError:
 import pysmvt
 version = pysmvt.VERSION
 
+requried_packages = [
+    "Beaker>=1.5",
+    "Blinker>=1.0",
+    "decorator>=3.0.1",
+    "FormEncode>=1.2",
+    "html2text>=2.35",
+    "jinja2>=2.5",
+    "markdown2>=1.0.1",
+    "minimock>=1.2",
+    "nose>=0.11",
+    "Paste>=1.7",
+    "PasteScript>=1.7",
+    "pysutils>=0.2",
+    "WebHelpers>=1.0rc1",
+    "Werkzeug>=0.6",
+]
+
+try:
+    import json
+    del json
+except ImportError:
+    required_packages.append('simplejson>=2.1.1')
+
 setup(
     name = "pysmvt",
     version = version,
@@ -79,22 +102,7 @@ setup(
     license='BSD',
     packages=find_packages(exclude=['ez_setup']),
     include_package_data=True,
-    install_requires = [
-        "Beaker>=1.5",
-        "decorator>=3.0.1", ## <-- is used?
-        "FormEncode>=1.2",
-        "html2text>=2.35",
-        "jinja2>=2.5",
-        "markdown2>=1.0.1",
-        "minimock>=1.2",
-        "nose>=0.11",
-        "Paste>=1.7",
-        "PasteScript>=1.7",
-        "pysutils>=0.2",
-        "simplejson>=2.0", #but only on 2.5, and only if using the json wrapper
-        "WebHelpers>=1.0rc1",
-        "Werkzeug>=0.6"
-    ],
+    install_requires = requried_packages,
     tests_require=['webtest', 'scripttest'],
     entry_points="""
     [console_scripts]
