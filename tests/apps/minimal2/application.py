@@ -2,7 +2,7 @@ from os import path
 from blazeutils import prependsitedir
 from blazeweb.application import WSGIApp
 from blazeweb.middleware import full_wsgi_stack
-import settings as settingsmod
+import config.settings as settingsmod
 from blazeweb.scripting import application_entry
 
 # make sure our base module gets put on the path
