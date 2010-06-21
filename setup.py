@@ -66,7 +66,7 @@ version = blazeweb.VERSION
 
 required_packages = [
     "Beaker>=1.5",
-    "BlazeUtils>=0.3dev",
+    "BlazeUtils>=dev",
     "Blinker>=1.0",
     "decorator>=3.0.1",
     "FormEncode>=1.2",
