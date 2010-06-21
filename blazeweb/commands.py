@@ -4,7 +4,7 @@ from werkzeug.serving import run_simple
 from werkzeug import Client, BaseResponse
 from werkzeug.script import make_shell
 from blazeweb.paster_tpl import run_template
-from blazeweb import ag, settings
+from blazeweb.globals import ag, settings
 from blazeweb.tasks import run_tasks
 from blazeutils.helpers import pprint
 from blazeweb.utils.filesystem import copy_static_files

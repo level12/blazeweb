@@ -1,5 +1,5 @@
 from os import path
-from blazeweb import rg
+from blazeweb.globals import rg
 from blazeweb.application import WSGIApp
 from blazeweb.config import DefaultSettings
 from blazeweb.middleware import minimal_wsgi_stack

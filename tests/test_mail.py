@@ -4,8 +4,7 @@ import logging
 
 from blazeutils.testing import logging_handler
 
-from blazeweb import settings
-import blazeweb.config
+from blazeweb.globals import settings
 from blazeweb.mail import EmailMessage, BadHeaderError, EmailMultiAlternatives, \
     MarkdownMessage, HtmlMessage, send_mail, _mail_programmers, _mail_admins
 from blazeweb.exceptions import SettingsError

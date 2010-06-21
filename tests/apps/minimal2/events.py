@@ -1,4 +1,4 @@
-from blazeweb import rg
+from blazeweb.globals import rg
 from blazeweb.events import signal
 
 def fire_after_event_init(sender):

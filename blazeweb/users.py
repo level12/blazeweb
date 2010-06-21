@@ -5,7 +5,7 @@ from blazeutils.datastructures import LazyDict, OrderedDict
 from blazeutils.helpers import tolist
 from blazeutils.strings import randchars
 
-from blazeweb import rg
+from blazeweb.globals import rg
 
 log = logging.getLogger(__name__)
 

@@ -5,7 +5,7 @@ import sys
 
 from blazeutils.datastructures import BlankObject, OrderedDict, UniqueList
 from blazeutils.error_handling import raise_unexpected_import_error
-from blazeweb import ag, settings
+from blazeweb.globals import ag, settings
 
 log = logging.getLogger(__name__)
 

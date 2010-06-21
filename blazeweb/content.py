@@ -1,6 +1,6 @@
 from os import path
 
-from blazeweb import ag, settings
+from blazeweb.globals import ag, settings
 from blazeweb.hierarchy import findcontent, findfile, split_endpoint
 
 def getcontent(endpoint, *args, **kwargs):

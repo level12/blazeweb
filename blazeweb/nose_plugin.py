@@ -54,7 +54,7 @@ class InitAppPlugin(nose.plugins.Plugin):
             return
 
         # import here so we can avoid test coverage issues
-        from blazeweb import ag, settings
+        from blazeweb.globals import ag, settings
         from blazeweb.hierarchy import findobj
         from blazeweb.scripting import load_current_app, UsageError
 

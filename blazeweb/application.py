@@ -8,7 +8,7 @@ from werkzeug.exceptions import HTTPException, InternalServerError
 from werkzeug import create_environ
 from werkzeug.routing import Map, Submount
 
-import blazeweb
+from blazeweb.globals import ag, rg, settings, user
 from blazeweb.events import Namespace, signal
 from blazeweb.exceptions import ProgrammingError
 from blazeweb.hierarchy import findobj, HierarchyImportError, \
@@ -31,24 +31,24 @@ class RequestManager(object):
 
     def init_registry(self):
         environ = self.environ
-        environ['paste.registry'].register(blazeweb.rg, BlankObject())
-        environ['paste.registry'].register(blazeweb.settings, self.app.settings)
-        environ['paste.registry'].register(blazeweb.ag, self.app.ag)
-        environ['paste.registry'].register(blazeweb.user, self.init_user())
+        environ['paste.registry'].register(rg, BlankObject())
+        environ['paste.registry'].register(settings, self.app.settings)
+        environ['paste.registry'].register(ag, self.app.ag)
+        environ['paste.registry'].register(user, self.init_user())
 
     def init_rg(self):
-        blazeweb.rg.ident = randchars()
-        blazeweb.rg.environ = self.environ
+        rg.ident = randchars()
+        rg.environ = self.environ
         # the request object binds itself to rg.request
         Request(self.environ)
         if self.environ.has_key('beaker.session'):
-            blazeweb.rg.session = self.environ['beaker.session']
-            log.debug('beaker session found, id: %s', blazeweb.rg.session.id)
+            rg.session = self.environ['beaker.session']
+            log.debug('beaker session found, id: %s', rg.session.id)
         else:
-            blazeweb.rg.session = None
+            rg.session = None
 
     def init_routing(self):
-        blazeweb.rg.urladapter = blazeweb.ag.route_map.bind_to_environ(self.environ)
+        rg.urladapter = ag.route_map.bind_to_environ(self.environ)
 
     def init_user(self):
         environ = self.environ
@@ -77,7 +77,7 @@ class RequestManager(object):
 
 class ResponseContext(object):
     def __init__(self, error_doc_code):
-        self.environ = blazeweb.rg.environ
+        self.environ = rg.environ
         # this gets set if this response context is initilized b/c
         # an error document handler is being called.  It allows the View
         # that handles the error code to know what code it is being called
@@ -86,7 +86,7 @@ class ResponseContext(object):
 
     def __enter__(self):
         log.debug('enter response context')
-        blazeweb.rg.respctx = self
+        rg.respctx = self
         # allow middleware higher in the stack to help initilize the response
         if 'blazeweb.response_cycle_setup' in self.environ:
             for callable in self.environ['blazeweb.response_cycle_setup']:
@@ -99,9 +99,9 @@ class ResponseContext(object):
                 callable()
         if isinstance(e, _Forward):
             log.debug('forwarding to %s (%s)', e.forward_endpoint, e.forward_args)
-            blazeweb.rg.forward_queue.append((e.forward_endpoint, e.forward_args))
-            if len(blazeweb.rg.forward_queue) == 10:
-                raise ProgrammingError('forward loop detected: %s' % '->'.join([g[0] for g in blazeweb.rg.forward_queue]))
+            rg.forward_queue.append((e.forward_endpoint, e.forward_args))
+            if len(rg.forward_queue) == 10:
+                raise ProgrammingError('forward loop detected: %s' % '->'.join([g[0] for g in rg.forward_queue]))
             return True
         if 'beaker.session' in self.environ:
             self.environ['beaker.session'].save()
@@ -133,7 +133,7 @@ class WSGIApp(object):
                 if "has no attribute '%s'" % profile not in str(e):
                     raise
                 raise ValueError('settings profile "%s" not found in this application' % profile)
-        blazeweb.settings._push_object(self.settings)
+        settings._push_object(self.settings)
 
     def init_ag(self):
         self.ag = BlankObject()
@@ -142,7 +142,7 @@ class WSGIApp(object):
         self.ag.hierarchy_import_cache = {}
         self.ag.hierarchy_file_cache = {}
         self.ag.events_namespace = Namespace()
-        blazeweb.ag._push_object(self.ag)
+        ag._push_object(self.ag)
 
     def init_signals(self):
         # signals are weakly referenced, so we need to keep a reference as long
@@ -239,10 +239,10 @@ class WSGIApp(object):
         return ResponseContext(error_doc_code)
 
     def response_cycle(self, endpoint, args, error_doc_code=None):
-        blazeweb.rg.forward_queue = [(endpoint, args)]
+        rg.forward_queue = [(endpoint, args)]
         while True:
             with self.response_context(error_doc_code):
-                endpoint, args = blazeweb.rg.forward_queue[-1]
+                endpoint, args = rg.forward_queue[-1]
                 signal('blazeweb.response_cycle.started').send(endpoint=endpoint, urlargs=args)
                 response = self.dispatch_to_endpoint(endpoint, args)
                 signal('blazeweb.response_cycle.ended').send(response=response)
@@ -263,9 +263,9 @@ class WSGIApp(object):
             signal('blazeweb.request.started').send()
             try:
                 try:
-                    endpoint, args = blazeweb.rg.urladapter.match()
+                    endpoint, args = rg.urladapter.match()
                 except HTTPException, e:
-                    log.debug('routing HTTP exception %s from %s', e, blazeweb.rg.request.url)
+                    log.debug('routing HTTP exception %s from %s', e, rg.request.url)
                     raise
                 log.debug('wsgi_app processing %s (%s)', endpoint, args)
                 response = self.response_cycle(endpoint, args)

@@ -1,5 +1,5 @@
 from urlparse import urlparse
-from blazeweb import settings, rg
+from blazeweb.globals import settings, rg
 from werkzeug import Href, MultiDict
 from werkzeug.routing import Rule, RequestRedirect
 from werkzeug.exceptions import NotFound, MethodNotAllowed

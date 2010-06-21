@@ -1,4 +1,4 @@
-from blazeweb import rg, user
+from blazeweb.globals import rg, user
 from blazeweb.views import asview, forward
 from blazeweb.wrappers import Response
 

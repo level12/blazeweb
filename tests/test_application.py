@@ -4,7 +4,7 @@ from blazeutils.datastructures import BlankObject
 from webtest import TestApp
 from werkzeug import run_wsgi_app
 
-from blazeweb import settings, ag, rg
+from blazeweb.globals import settings, ag, rg
 
 import config
 from newlayout.application import make_wsgi

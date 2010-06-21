@@ -1,4 +1,4 @@
-from blazeweb import rg
+from blazeweb.globals import rg
 from blazeweb.events import signal
 from blazeweb.utils import redirect
 from blazeweb.views import forward

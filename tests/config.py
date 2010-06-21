@@ -2,7 +2,7 @@ from os import path
 
 from blazeweb.application import WSGIApp
 from blazeweb.config import DefaultSettings
-from blazeweb import settings
+from blazeweb.globals import settings
 
 from blazeutils import prependsitedir
 prependsitedir(__file__, 'apps')

@@ -2,7 +2,7 @@ import unittest
 
 from werkzeug import Client, BaseResponse
 
-from blazeweb import settings, user
+from blazeweb.globals import settings, user
 from blazeweb.exceptions import ProgrammingError
 from blazeweb.hierarchy import HierarchyImportError
 

@@ -1,6 +1,6 @@
 from os import path
 import logging
-from blazeweb import settings
+from blazeweb.globals import settings
 from logging.handlers import RotatingFileHandler
 APPLICATION = 25
 

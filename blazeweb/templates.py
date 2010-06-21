@@ -5,7 +5,7 @@ from jinja2 import FileSystemLoader, Environment, TemplateNotFound
 from blazeutils.datetime import safe_strftime
 from blazeutils.strings import case_cw2us
 
-from blazeweb import ag
+from blazeweb.globals import ag
 from blazeweb.hierarchy import findfile, FileNotFound
 
 log = logging.getLogger(__name__)

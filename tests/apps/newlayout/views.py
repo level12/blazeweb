@@ -1,4 +1,4 @@
-from blazeweb import settings
+from blazeweb.globals import settings
 from blazeweb.utils import abort
 from blazeweb.views import View, asview
 from blazeweb.wrappers import Response

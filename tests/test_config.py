@@ -1,7 +1,6 @@
 import unittest
 
-import blazeweb
-from blazeweb import settings
+from blazeweb.globals import settings
 from blazeweb.config import QuickSettings, EnabledSettings
 from blazeweb.hierarchy import listapps
 

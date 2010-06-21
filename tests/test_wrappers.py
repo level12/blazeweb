@@ -1,6 +1,6 @@
 from StringIO import StringIO
 
-from blazeweb import rg
+from blazeweb.globals import rg
 from blazeweb.wrappers import Request
 from blazeweb.testing import inrequest
 

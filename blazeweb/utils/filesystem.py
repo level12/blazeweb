@@ -12,7 +12,7 @@ from shutil import copy2, copystat, rmtree
 
 from blazeutils import NotGiven
 
-from blazeweb import settings
+from blazeweb.globals import settings
 from blazeweb.hierarchy import list_plugin_mappings, hm
 
 __all__ = [

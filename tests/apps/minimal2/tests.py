@@ -1,5 +1,5 @@
 from webtest import TestApp
-from blazeweb import ag
+from blazeweb.globals import ag
 
 c = TestApp(ag.wsgi_test_app)
 

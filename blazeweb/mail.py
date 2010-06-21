@@ -17,7 +17,7 @@ from html2text import html2text
 from markdown2 import markdown
 from blazeutils.helpers import tolist
 
-from blazeweb import settings
+from blazeweb.globals import settings
 from blazeweb.exceptions import SettingsError
 from blazeweb.utils.encoding import smart_str, force_unicode
 

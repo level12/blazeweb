@@ -3,7 +3,7 @@ from blazeutils.datetime import safe_strftime
 from blazeutils.numbers import moneyfmt
 from blazeutils.strings import simplify_string, reindent
 
-from blazeweb import ag, settings, user
+from blazeweb.globals import ag, settings, user
 from blazeweb.routing import url_for, current_url, static_url
 from blazeweb.utils import registry_has_object
 from blazeweb.utils.html import strip_tags

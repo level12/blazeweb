@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from blazeweb import user, rg
+from blazeweb.globals import user, rg
 from blazeweb.views import View
 
 class SetFoo(View):

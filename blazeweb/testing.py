@@ -7,7 +7,7 @@ from webhelpers.html import tools
 from werkzeug import Client as WClient, BaseRequest, BaseResponse, \
     cached_property, create_environ, run_wsgi_app
 
-from blazeweb import ag, settings, rg
+from blazeweb.globals import ag, settings, rg
 from blazeweb.application import ResponseContext, RequestManager
 from blazeweb.middleware import minimal_wsgi_stack
 from blazeweb.hierarchy import findobj

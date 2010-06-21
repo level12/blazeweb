@@ -5,7 +5,7 @@ from werkzeug.routing import Rule
 from blazeutils.config import QuickSettings
 from blazeutils.datastructures import OrderedDict
 
-from blazeweb import settings
+from blazeweb.globals import settings
 
 class EnabledSettings(QuickSettings):
     """

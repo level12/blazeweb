@@ -2,7 +2,7 @@ import sys
 
 from webtest import TestApp
 
-from blazeweb import user, ag
+from blazeweb.globals import user, ag
 from blazeweb.views import asview, forward
 
 import config

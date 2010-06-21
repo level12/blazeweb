@@ -1,7 +1,7 @@
 from nose.tools import eq_
 from webtest import TestApp
 
-from blazeweb import settings
+from blazeweb.globals import settings
 from blazeweb.events import signal
 from blazeweb.hierarchy import visitmods
 from blazeweb.middleware import minimal_wsgi_stack

@@ -1,4 +1,4 @@
-from blazeweb import user
+from blazeweb.globals import user
 from blazeweb.views import View
 
 class SetFoo(View):

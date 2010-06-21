@@ -1,4 +1,4 @@
-from blazeweb import rg
+from blazeweb.globals import rg
 from werkzeug import BaseRequest as WerkBaseRequest, BaseResponse, ResponseStreamMixin, MultiDict, \
     EnvironBuilder
 from blazeweb.utils import registry_has_object

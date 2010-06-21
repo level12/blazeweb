@@ -5,7 +5,7 @@ from os import path
 from jinja2 import Environment, TemplateNotFound, BaseLoader
 from jinja2.utils import Markup
 
-from blazeweb import settings
+from blazeweb.globals import settings
 from blazeweb.hierarchy import FileNotFound, findfile, split_endpoint
 import blazeweb.templating as templating
 

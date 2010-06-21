@@ -11,7 +11,7 @@ from werkzeug import MultiDict, validate_arguments, ArgumentValidationError, \
 from werkzeug.exceptions import BadRequest
 from werkzeug.routing import Rule
 
-from blazeweb import ag, rg, user, settings
+from blazeweb.globals import ag, rg, user, settings
 from blazeweb import routing
 from blazeweb._internal import json, _assert_have_json
 from blazeweb.content import getcontent, Content

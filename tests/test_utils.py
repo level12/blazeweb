@@ -5,7 +5,7 @@ from nose.tools import eq_
 from blazeutils.strings import normalizews
 from webtest import TestApp
 
-from blazeweb import settings
+from blazeweb.globals import settings
 from blazeweb.utils.filesystem import copy_static_files, mkdirs
 
 import config

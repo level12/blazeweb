@@ -4,12 +4,12 @@ from tempfile import TemporaryFile
 from StringIO import StringIO
 
 from beaker.middleware import SessionMiddleware
+from blazeutils import randchars, pformat, tolist
 from paste.registry import RegistryManager
 from werkzeug import EnvironHeaders, LimitedStream, \
     SharedDataMiddleware, DebuggedApplication
 
-from blazeutils import randchars, pformat, tolist
-from blazeweb import settings, ag
+from blazeweb.globals import settings, ag
 from blazeweb import routing
 from blazeweb.utils.filesystem import mkdirs
 

@@ -9,7 +9,7 @@ from blazeutils.strings import reindent
 from webhelpers.html import escape
 import werkzeug
 
-from blazeweb import rg
+from blazeweb.globals import rg
 
 log = logging.getLogger(__name__)
 

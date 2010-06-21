@@ -1,7 +1,7 @@
 from os import path
 from nose.tools import eq_
 from blazeweb.tasks import run_tasks
-from blazeweb import settings
+from blazeweb.globals import settings
 from blazeweb.logs import clear_settings_handlers
 import logging
 

@@ -4,7 +4,7 @@ import unittest
 from nose.tools import eq_
 from werkzeug import Client, BaseResponse, create_environ
 
-from blazeweb import settings
+from blazeweb.globals import settings
 from blazeweb.routing import *
 from blazeweb.exceptions import SettingsError
 from blazeweb.testing import inrequest
