@@ -14,6 +14,8 @@ class TestAltStack(object):
     def setup_class(cls):
         try:
             del sys.modules['minimal2.views']
+            del sys.modules['minimal2.plugins.news.views']
+            del sys.modules['newsplug4.views']
         except KeyError:
             pass
         cls.wsgiapp = make_wsgi('Dispatching', use_session=False)

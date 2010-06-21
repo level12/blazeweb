@@ -1,6 +1,7 @@
 import logging
 from new import classobj
 
+from decorator import decorator
 import formencode
 from blazeutils.sentinels import NotGiven
 from blazeutils.helpers import tolist
@@ -12,6 +13,7 @@ from werkzeug.routing import Rule
 
 from blazeweb import ag, rg, user, settings
 from blazeweb import routing
+from blazeweb._internal import json, _assert_have_json
 from blazeweb.content import getcontent, Content
 from blazeweb.hierarchy import listapps, split_endpoint
 from blazeweb.exceptions import ProgrammingError
@@ -19,6 +21,16 @@ from blazeweb.utils import registry_has_object, werkzeug_multi_dict_conv
 from blazeweb.wrappers import Response
 
 log = logging.getLogger(__name__)
+
+__all__ = (
+    'View',
+    'SecureView',
+    'asview',
+    'jsonify'
+)
+###
+### internal stuff
+###
 
 def _calc_plugin_name(module):
     """ calculates the plugin a view is in """
@@ -54,7 +66,9 @@ class _ViewCallStackAbort(Exception):
         call stack. Don't use directly, use the send_response() method on the
         view instead.
     """
-
+###
+### primary View objects
+###
 
 class View(object):
     """
@@ -275,6 +289,7 @@ class View(object):
 
         # trim down to a real dictionary.
         self.calling_args = werkzeug_multi_dict_conv(args)
+        log.debug('calling args: %s' % self.calling_args)
 
     def process_args(self):
         had_strict_arg_failure = False
@@ -361,13 +376,14 @@ class View(object):
             self.retval = retval
 
     def _call_with_expected_args(self, method, method_is_bound=True):
+        log.debug('calling w/ expected: %s %s' % (method, self.calling_args))
         """ handle argument conversion to what the method accepts """
         try:
             # validate_arguments is made for a function, not a class method
             # so we need to "trick" it by sending self here, but then
             # removing it before the bound method is called below
             pos_args = (self,) if method_is_bound else tuple()
-            args, kwargs = validate_arguments(method, pos_args , self.calling_args)
+            args, kwargs = validate_arguments(method, pos_args , self.calling_args.copy())
         except ArgumentValidationError, e:
             log.error('arg validation failed: %s, %s, %s, %s', method, e.missing, e.extra, e.extra_positional)
             raise BadRequest('The browser failed to transmit all '
@@ -449,6 +465,30 @@ class View(object):
         if send_response:
             self.send_response()
         return c
+
+    def render_json(self, data, has_error=0, add_user_messages=True, indent=2, send_response=True):
+        """
+            Will send data as a json string with the appopriate mime-type
+            as the response.  Status indicators as well as user messages are
+            also sent.  The resulting json string looks like:
+
+        """
+        user_messages = []
+        if add_user_messages:
+            for msg in user.get_messages():
+                user_messages.append({'severity':msg.severity, 'text': msg.text})
+
+        data_with_context = {
+            'error': has_error,
+            'data': data,
+            'messages': user_messages
+            }
+        jsonstr = json.dumps(data_with_context, indent=indent)
+        self.mimetype = 'application/json'
+        self.retval = jsonstr
+        if send_response:
+            self.send_response()
+        return jsonstr
 
     def create_response(self, response, status=None, mimetype=None):
         if status is None:
@@ -559,7 +599,15 @@ class SecureView(View):
 ###
 ### functions and classes related to processing functions as views
 ###
+
+# views modules will get reloaded by hierarchy.visitmods and there is no sense
+# recreating the class definition each time
+CLASS_CACHE = {}
+
 def asview(rule=None, **options):
+    """
+        A decorator to use a function as a View
+    """
     def decorate(f):
         lrule = rule
         fname = f.__name__
@@ -574,22 +622,34 @@ def asview(rule=None, **options):
         # setup the routing
         if lrule is None:
             lrule = '/%s' % fname
-        lrule = routing.add_prefix(lrule)
         log.debug('@asview adding route "%s" to endpoint "%s"', lrule, endpoint)
         ag.route_map.add(Rule(lrule, endpoint=endpoint), **options)
 
+        # cache key for this object
+        cachekey = '%s:%s' % (f.__module__, fname)
 
-        # create the class that will handle this function
-        fvh = classobj(fname, (_AsViewHandler, ), {})
-        fvh.__module__ = f.__module__
+        # create the class that will handle this function if it doesn't already
+        # exist in the cache
+        if cachekey not in CLASS_CACHE:
+            fvh = classobj(fname, (_AsViewHandler, ), {})
+            fvh.__module__ = f.__module__
 
-        # assign the default method
+            # make the getargs available
+            fvh._asview_getargs = tolist(getargs)
+
+            # store this class object in the cache so we don't have to
+            # recreate next time
+            CLASS_CACHE[cachekey] = fvh
+        else:
+             fvh = CLASS_CACHE[cachekey]
+
+        # assign the default method.  This can't be cached because on a reload
+        # of the views module, the first decorated function will become
+        # None.  So we have to recreate the defmethod wrapper with the
+        # function object that is being created/recreated and decorated.
         def defmethod(self):
             return self._call_with_expected_args(f, method_is_bound=False)
         fvh.default = defmethod
-
-        # make the getargs available
-        fvh._asview_getargs = tolist(getargs)
 
         # return the class instead of the function
         return fvh
@@ -599,8 +659,35 @@ class _AsViewHandler(View):
     def __init__(self, urlargs, endpoint):
         View.__init__(self, urlargs, endpoint)
         self.expect_getargs(*self._asview_getargs)
+###
+### other internal views
+###
 
 class _RouteToTemplate(View):
+    """
+        used by the Application when the route contains a template endpoint
+        instead of a View endpoint.
+    """
     def default(self, **kwargs):
         self.template_vars = kwargs
         self.render_endpoint(self.endpoint)
+
+###
+### json related
+###
+
+@decorator
+def jsonify(f, self, *args, **kwargs):
+    """
+        use on a function in the view callback; it will take the returned data
+        and call render_json() with the data.  Will also handle exceptions.
+    """
+    has_error = 0
+    data = None
+    try:
+        data = f(self, *args, **kwargs)
+    except Exception, e:
+        has_error = 1
+        log.exception('error calling jsonified function %s', f)
+        user.add_message('error', 'internal error encountered, exception logged')
+    self.render_json(data, has_error)

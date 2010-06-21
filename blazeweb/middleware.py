@@ -9,7 +9,7 @@ from werkzeug import EnvironHeaders, LimitedStream, \
     SharedDataMiddleware, DebuggedApplication
 
 from blazeutils import randchars, pformat, tolist
-from blazeweb import settings
+from blazeweb import settings, ag
 from blazeweb import routing
 from blazeweb.utils.filesystem import mkdirs
 
@@ -80,7 +80,7 @@ def full_wsgi_stack(app):
         returns the WSGIApp wrapped in common middleware
     """
 
-    settings = app.settings
+    settings = ag.app.settings
 
     if settings.beaker.enabled:
         app = SessionMiddleware(app, **dict(settings.beaker))
@@ -89,7 +89,7 @@ def full_wsgi_stack(app):
 
     # serve static files from static directory
     if settings.static_files.enabled:
-        app = SharedDataMiddleware(app, {routing.add_prefix('/static/') : settings.dirs.static})
+        app = SharedDataMiddleware(app, {'/' + routing.static_url('/') : settings.dirs.static})
 
     # show nice stack traces and debug output if enabled
     if settings.debugger.enabled:

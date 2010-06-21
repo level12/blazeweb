@@ -1,6 +1,8 @@
+from __future__ import with_statement
 from os import path
 
 from nose.tools import eq_
+from blazeutils.strings import normalizews
 from webtest import TestApp
 
 from blazeweb import settings
@@ -20,6 +22,7 @@ class TestFirstApp(object):
     @classmethod
     def setup_class(cls):
         cls.app = make_wsgi()
+        cls.ta = TestApp(cls.app)
         env.clear()
 
     def tearDown(self):
@@ -66,9 +69,36 @@ class TestFirstApp(object):
 
     def test_static_server(self):
         copy_static_files(delete_existing=True)
-        ta = TestApp(self.app)
-        r = ta.get('/static/app/statictest.txt')
+        r = self.ta.get('/static/app/statictest.txt')
         assert 'newlayout' in r
+
+class TestAborting(object):
+
+    @classmethod
+    def setup_class(cls):
+        cls.app = make_wsgi('WithTestSettings')
+        cls.ta = TestApp(cls.app)
+        env.clear()
+
+    def test_integer(self):
+        r = self.ta.get('/abort/int', status=400)
+        r.mustcontain('400 Bad Request')
+
+    def test_callable(self):
+        r = self.ta.get('/abort/callable')
+        assert 'test Response' in r, r
+
+    def test_str(self):
+        r = self.ta.get('/abort/str')
+        r.mustcontain('test &amp; str')
+
+    def test_other(self):
+        r = self.ta.get('/abort/other')
+        assert "'b&amp;z': 1, 'foo': 'bar'}</pre>" in r
+
+    def test_dabort(self):
+        r = self.ta.get('/abort/dabort')
+        r.mustcontain("<pre>[]</pre>")
 
 def test_auto_copy():
     env.clear()

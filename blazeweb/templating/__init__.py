@@ -3,8 +3,9 @@ from blazeutils.datetime import safe_strftime
 from blazeutils.numbers import moneyfmt
 from blazeutils.strings import simplify_string, reindent
 
-from blazeweb import ag, settings
-from blazeweb.routing import url_for, current_url
+from blazeweb import ag, settings, user
+from blazeweb.routing import url_for, current_url, static_url
+from blazeweb.utils import registry_has_object
 from blazeweb.utils.html import strip_tags
 
 class EngineBase(object):
@@ -32,21 +33,32 @@ class EngineBase(object):
         globals = {}
         globals['url_for'] = url_for
         globals['current_url'] = current_url
-        #globals['inc_css'] = self.include_css
-        #globals['inc_js'] = self.include_js
         globals['getcontent'] = getcontent
-        #globals['response_css'] = self.page_css
-        #globals['response_js'] = self.page_js
         return globals
+
+    def mark_safe(self):
+        """ when a template has auto-escaping enabled, mark a value as safe """
+        raise NotImplementedError('Translor must be subclassed')
 
     def get_filters(self):
         filters = {}
-        filters['simplify'] = simplify_string
-        filters['markdown'] = markdown
-        filters['strip_tags'] = strip_tags
-        filters['moneyfmt'] = moneyfmt
+        filters['simplify'] = lambda x, *args, **kwargs: self.mark_safe(simplify_string(x, *args, **kwargs))
+        filters['markdown'] = lambda x, *args, **kwargs: self.mark_safe(markdown(x, *args, **kwargs))
+        filters['strip_tags'] = lambda x: self.mark_safe(striptags(x))
+        filters['moneyfmt'] = lambda x, *args, **kwargs: self.mark_safe(moneyfmt(x, *args, **kwargs))
         filters['datefmt'] = safe_strftime
+        filters['static'] = static_url
         return filters
+
+    def update_context(self, context):
+        toadd = {
+            'settings': settings._current_obj(),
+        }
+        if registry_has_object(user):
+            toadd['user'] = user._current_obj()
+        else:
+            toadd['user'] = None
+        context.update(toadd)
 
 def render_template(endpoint, **context):
     return ag.tplengine.render_template(endpoint, context)

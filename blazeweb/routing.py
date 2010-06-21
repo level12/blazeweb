@@ -9,9 +9,7 @@ from blazeweb.exceptions import SettingsError, ProgrammingError
 __all__ = [
     'Rule',
     'url_for',
-    'style_url',
-    'js_url',
-    'add_prefix',
+    'static_url',
     'current_url'
 ]
 
@@ -26,25 +24,11 @@ def url_for(endpoint, _external=False, _https=None, **values):
         url = url.replace('https:', 'http:', 1)
     return url
 
-def static_url(endpoint, file, app = None):
+def static_url(path):
     """
-        all this does is remove app right now, but we are anticipating:
-        https://apache.rcslocal.com:8443/projects/blazeweb/ticket/40
+        Adds the conifgured "static" files prefix to the relative URL passed in.
     """
-    return url_for(endpoint, file=file)
-
-def style_url(file, app = None):
-    endpoint = 'styles'
-    return static_url(endpoint, file=file, app=app)
-
-def js_url(file, app = None):
-    endpoint = 'javascript'
-    return static_url(endpoint, file=file, app=app)
-
-def add_prefix(path):
-    if settings.routing.prefix:
-        return '/%s/%s' % (settings.routing.prefix.strip('/'), path.lstrip('/'))
-    return path
+    return '%s/%s' % (settings.routing.static_prefix.rstrip('/'), path.lstrip('/'))
 
 def current_url(root_only=False, host_only=False, strip_querystring=False,
     strip_host=False, https=None, environ=None, qs_replace=None,

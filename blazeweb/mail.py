@@ -271,7 +271,7 @@ class EmailMessage(object):
             msg['To'] = ', '.join(self.to)
         if self.cc:
             msg['Cc'] = ', '.join(self.cc)
-        
+
         # Email header names are case-insensitive (RFC 2045), so we have to
         # accommodate that when doing comparisons.
         header_names = [key.lower() for key in self.extra_headers]
@@ -281,7 +281,7 @@ class EmailMessage(object):
             msg['Message-ID'] = make_msgid()
         if self.reply_to:
             msg['Reply-To'] = self.reply_to
-        
+
         for name, value in self.extra_headers.items():
             msg[name] = value
         return msg
@@ -320,7 +320,7 @@ class EmailMessage(object):
         filename = os.path.basename(path)
         content = open(path, 'rb').read()
         self.attach(filename, content, mimetype)
-    
+
     def _perform_override(self):
         if not self._override_added and settings.emails.override:
             self._override_added = True
@@ -339,7 +339,7 @@ class EmailMessage(object):
                 self.body = self._insert_after_html_body(body_prepend, self.body)
             else:
                 self.body = body_prepend + self.body
-            
+
             # take care of any text/html alternative types
             for attachment in self.attachments:
                 filename, content, mimetype = attachment
@@ -362,7 +362,7 @@ class EmailMessage(object):
                 if isinstance(cc_always, str):
                     cc_always = [cc_always]
                 self.cc.extend(cc_always)
-            self._always_recipients_added = True    
+            self._always_recipients_added = True
 
     def _create_attachment(self, filename, content, mimetype=None):
         """
@@ -396,7 +396,7 @@ class EmailMessage(object):
         if len(retval) == len(html):
             return content + html
         return retval
-    
+
 class EmailMultiAlternatives(EmailMessage):
     """
     A version of EmailMessage that makes it easy to send multipart/alternative
@@ -419,7 +419,7 @@ class MarkdownMessage(EmailMultiAlternatives):
             connection=None, attachments=None, headers=None, reply_to=None, cc=None):
         EmailMultiAlternatives.__init__(self, subject, body, from_email, to, bcc,
             connection, attachments, headers, reply_to, cc)
-        
+
         html_content = markdown(body)
         self.attach_alternative(html_content, "text/html")
 
@@ -436,7 +436,7 @@ class HtmlMessage(EmailMultiAlternatives):
         body = html2text(body)
         EmailMultiAlternatives.__init__(self, subject, body, from_email, to, bcc,
             connection, attachments, headers, reply_to, cc)
-        
+
         self.attach_alternative(html_content, "text/html")
 
 def get_email_class(format=None):
@@ -493,7 +493,7 @@ def _mail_admins(subject, message, format='text'):
 def mail_admins(subject, message, format='text', fail_silently=False):
     """Sends a message to the programmers, as defined by the emails.programmers setting."""
     return _mail_admins(subject, message, format).send(fail_silently=fail_silently)
-    
+
 
 def _mail_programmers(subject, message, format='text'):
     """used for testing"""
@@ -506,4 +506,3 @@ def _mail_programmers(subject, message, format='text'):
 def mail_programmers(subject, message, format='text', fail_silently=False):
     """Sends a message to the programmers, as defined by the emails.programmers setting."""
     return _mail_programmers(subject, message, format).send(fail_silently=fail_silently)
-    

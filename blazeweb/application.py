@@ -1,3 +1,5 @@
+from __future__ import with_statement
+import __builtin__
 import logging
 
 from blazeutils.datastructures import BlankObject
@@ -7,6 +9,7 @@ from werkzeug import create_environ
 from werkzeug.routing import Map, Submount
 
 import blazeweb
+from blazeweb.events import Namespace, signal
 from blazeweb.exceptions import Forward, ProgrammingError, Redirect
 from blazeweb.hierarchy import findobj, HierarchyImportError, \
     listplugins, visitmods, findview, split_endpoint
@@ -14,7 +17,7 @@ from blazeweb.logs import create_handlers_from_settings
 from blazeweb.mail import mail_programmers
 from blazeweb.templating import default_engine
 from blazeweb.users import User
-from blazeweb.utils import exception_with_context
+from blazeweb.utils import exception_with_context, abort
 from blazeweb.utils.filesystem import mkdirs, copy_static_files
 from blazeweb.views import _RouteToTemplate
 from blazeweb.wrappers import Request
@@ -26,14 +29,14 @@ class RequestManager(object):
         self.app = app
         self.environ = environ
 
-    def registry_setup(self):
+    def init_registry(self):
         environ = self.environ
         environ['paste.registry'].register(blazeweb.rg, BlankObject())
         environ['paste.registry'].register(blazeweb.settings, self.app.settings)
         environ['paste.registry'].register(blazeweb.ag, self.app.ag)
-        environ['paste.registry'].register(blazeweb.user, self.user_setup())
+        environ['paste.registry'].register(blazeweb.user, self.init_user())
 
-    def rg_setup(self):
+    def init_rg(self):
         blazeweb.rg.ident = randchars()
         blazeweb.rg.environ = self.environ
         # the request object binds itself to rg.request
@@ -44,10 +47,10 @@ class RequestManager(object):
         else:
             blazeweb.rg.session = None
 
-    def routing_setup(self):
+    def init_routing(self):
         blazeweb.rg.urladapter = blazeweb.ag.route_map.bind_to_environ(self.environ)
 
-    def user_setup(self):
+    def init_user(self):
         environ = self.environ
         if 'beaker.session' in environ:
             if '__blazeweb_user' not in environ['beaker.session']:
@@ -58,9 +61,9 @@ class RequestManager(object):
         return User()
 
     def __enter__(self):
-        self.registry_setup()
-        self.rg_setup()
-        self.routing_setup()
+        self.init_registry()
+        self.init_rg()
+        self.init_routing()
         # allow middleware higher in the stack to help initilize the request
         # after the registry variables have been setup
         if 'blazeweb.request_setup' in self.environ:
@@ -108,7 +111,20 @@ class WSGIApp(object):
 
     def __init__(self, module_or_settings, profile=None):
         self._id = randhash()
+
+        self.init_settings(module_or_settings, profile)
+        self.init_ag()
+        self.init_signals()
+        self.init_events()
+        self.init_plugin_settings()
+        self.init_auto_actions()
+        self.init_logging()
+        self.init_routing()
+        self.init_templating()
+
+    def init_settings(self, module_or_settings, profile):
         self.settings = module_or_settings
+        # get the settings class and instantiate it
         if profile is not None:
             module = module_or_settings
             try:
@@ -117,26 +133,38 @@ class WSGIApp(object):
                 if "has no attribute '%s'" % profile not in str(e):
                     raise
                 raise ValueError('settings profile "%s" not found in this application' % profile)
-        self.ag_setup()
-        self.registry_setup()
-        self.settings_setup()
-        self.filesystem_setup()
-        self.logging_setup()
-        self.routing_setup()
-        self.init_templating()
-
-    def registry_setup(self):
         blazeweb.settings._push_object(self.settings)
-        blazeweb.ag._push_object(self.ag)
 
-    def ag_setup(self):
+    def init_ag(self):
         self.ag = BlankObject()
         self.ag.app = self
         self.ag.view_functions = {}
         self.ag.hierarchy_import_cache = {}
         self.ag.hierarchy_file_cache = {}
+        self.ag.events_namespace = Namespace()
+        blazeweb.ag._push_object(self.ag)
 
-    def settings_setup(self):
+    def init_signals(self):
+        # signals are weakly referenced, so we need to keep a reference as long
+        # as this application is instantiated
+        self.signals = (
+            signal('blazeweb.events.initialized'),
+            signal('blazeweb.settings.initialized'),
+            signal('blazeweb.auto_actions.initialized'),
+            signal('blazeweb.logging.initialized'),
+            signal('blazeweb.routing.initialized'),
+            signal('blazeweb.templating.initialized'),
+            signal('blazeweb.request.started'),
+            signal('blazeweb.response_cycle.started'),
+            signal('blazeweb.response_cycle.ended'),
+            signal('blazeweb.request.ended'),
+        )
+
+    def init_events(self):
+        visitmods('events')
+        signal('blazeweb.events.initialized').send(self.init_events)
+
+    def init_plugin_settings(self):
         # now we need to assign plugin's settings to the main setting object
         for pname in listplugins():
             try:
@@ -161,7 +189,7 @@ class WSGIApp(object):
         # point would probably be an accident
         self.settings.lock()
 
-    def filesystem_setup(self):
+    def init_auto_actions(self):
         # create the writeable directories if they don't exist already
         if self.settings.auto_create_writeable_dirs:
             mkdirs(self.settings.dirs.data)
@@ -170,11 +198,13 @@ class WSGIApp(object):
         # copy static files if requested
         if self.settings.auto_copy_static.enabled:
             copy_static_files(self.settings.auto_copy_static.delete_existing)
+        if self.settings.auto_abort_as_builtin == True:
+            __builtin__.dabort = abort
 
-    def logging_setup(self):
+    def init_logging(self):
         create_handlers_from_settings(self.settings)
 
-    def routing_setup(self):
+    def init_routing(self):
         # setup the Map object with the appropriate settings
         self.ag.route_map = Map(**self.settings.routing.map.todict())
 
@@ -199,12 +229,8 @@ class WSGIApp(object):
         self.ag.tplengine = engine()
 
     def add_routing_rules(self, rules):
-        if self.settings.routing.prefix:
-            # prefix the routes with the prefix in the app settings class
-            self.ag.route_map.add(Submount(self.settings.routing.prefix, rules ))
-        else:
-            for rule in rules or ():
-                self.ag.route_map.add(rule)
+        for rule in rules or ():
+            self.ag.route_map.add(rule)
 
     def request_manager(self, environ):
         return RequestManager(self, environ)
@@ -217,7 +243,10 @@ class WSGIApp(object):
         while True:
             with self.response_context(error_doc_code):
                 endpoint, args = blazeweb.rg.forward_queue[-1]
-                return self.dispatch_to_endpoint(endpoint, args)
+                signal('blazeweb.response_cycle.started').send(endpoint=endpoint, urlargs=args)
+                response = self.dispatch_to_endpoint(endpoint, args)
+                signal('blazeweb.response_cycle.ended').send(response=response)
+                return response
 
     def dispatch_to_endpoint(self, endpoint, args):
         log.debug('dispatch to %s (%s)', endpoint, args)
@@ -226,10 +255,12 @@ class WSGIApp(object):
         else:
             vklass = _RouteToTemplate
         v = vklass(args, endpoint)
-        return v.process()
+        response = v.process()
+        return response
 
     def wsgi_app(self, environ, start_response):
         with self.request_manager(environ):
+            signal('blazeweb.request.started').send()
             try:
                 try:
                     endpoint, args = blazeweb.rg.urladapter.match()
@@ -244,6 +275,7 @@ class WSGIApp(object):
                 response = self.handle_http_exception(e)
             except Exception, e:
                 response = self.handle_exception(e)
+            signal('blazeweb.request.ended').send(response=response)
             return response(environ, start_response)
 
     def handle_http_exception(self, e):
@@ -269,7 +301,7 @@ class WSGIApp(object):
 
     def handle_exception(self, e):
         """Default exception handling that kicks in when an exception
-        occours that is not catched.  In debug mode the exception will
+        occours that is not caught.  In debug mode the exception will
         be re-raised immediately, otherwise it is logged an the handler
         for an 500 internal server error is used.  If no such handler
         exists, a default 500 internal server error message is displayed.

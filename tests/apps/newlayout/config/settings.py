@@ -13,6 +13,9 @@ class Default(nlDefault):
 
         self.add_route('/applevelview/<v1>', 'AppLevelView')
         self.add_route('/index/<tname>', 'Index')
+        self.add_route('/abort/<tname>', 'Abort')
+        self.add_route('/eventtest', 'EventTest')
+        self.add_route('/request-hijack/<sendtype>', 'None')
 
         self.supporting_apps.append('nlsupporting')
         self.setup_plugins()
@@ -27,6 +30,7 @@ class Default(nlDefault):
             plugins need to be in order of importance, so supporting apps
             need to setup their plugins later
         """
+        self.add_plugin(app_package, 'news')
         self.add_plugin(app_package, 'news', 'newsplug1')
         self.add_plugin(app_package, 'news', 'newsplug2')
         self.add_plugin(app_package, 'pdisabled')
@@ -39,13 +43,13 @@ class Default(nlDefault):
 class AutoCopyStatic(Default):
     def init(self):
         Default.init(self)
-
         self.auto_copy_static.enabled = True
 
 class WithTestSettings(Default):
     def init(self):
         Default.init(self)
         self.apply_test_settings()
+        self.auto_abort_as_builtin = True
 
 class AttributeErrorInSettings(Default):
     def init(self):

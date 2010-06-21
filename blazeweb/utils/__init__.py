@@ -1,12 +1,15 @@
 import re
 import logging
 from traceback import format_exc
+
 from formencode.validators import URL
 from formencode import Invalid
+from blazeutils.helpers import pformat
+from blazeutils.strings import reindent
+from webhelpers.html import escape
+import werkzeug
 
 from blazeweb import rg
-from blazeweb.exceptions import Abort
-from blazeutils.helpers import pformat
 
 log = logging.getLogger(__name__)
 
@@ -21,8 +24,37 @@ def isurl(s, require_tld=True):
             return True
         return False
 
-def abort(outputobj=None, code=200):
-    raise Abort(outputobj, code)
+def abort(send):
+    """
+        An enhanced version of Werkzeug's abort.  `send` is handled differently
+        based on what it is:
+
+        int: assumed to be a HTTP status code; not all codes supported by
+            default, see the Werkzeug documentation for an explanation.
+        string/unicode: will put the string as the body of a response and send
+            it.
+        callable: assume its a Response object or other WSGI application; wrap
+            in proxy HTTPException and raise it;
+        anything else: pformat, escape, wrap in <pre> tags, and treat like
+            string/unicode above.
+    """
+    # this is a circular import if done at the module level
+    from blazeweb.wrappers import Response
+
+    response_body = reindent("""
+    <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+    <title>abort() Response</title>
+    <h1 style="margin-bottom: 25px">abort() Response</h1>
+
+    %s""".strip(), 0)
+
+    if isinstance(send, int) or hasattr(send, '__call__'):
+        response = send
+    elif isinstance(send, basestring):
+        response = Response(response_body % escape(send))
+    else:
+        response = Response(response_body % ('<pre>%s</pre>' % escape(pformat(send))))
+    werkzeug.abort(response)
 
 def werkzeug_multi_dict_conv(md):
     '''

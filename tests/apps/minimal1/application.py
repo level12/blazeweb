@@ -14,7 +14,7 @@ class Settings(DefaultSettings):
         self.auto_load_views = True
 
     def get_storage_dir(self):
-        return path.join(self.dirs.base, '..', 'test-output', self.app_package)
+        return path.join(self.dirs.base, '..', '..', 'test-output', self.app_package)
 
 settings = Settings()
 

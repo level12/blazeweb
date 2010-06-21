@@ -1,0 +1,4 @@
+autoescape: {{"a&b"}}
+{% autoescape true %}
+ae ext: {{ "a&b" }}
+{% endautoescape %}

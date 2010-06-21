@@ -76,11 +76,9 @@ class DefaultSettings(QuickSettings):
         #######################################################################
         self.routing.routes = []
 
-        # note that you shouldn't really need to use the routing prefix if
-        # SCRIPT_NAME and PATH_INFO are set correctly as the Werkzeug
-        # routing tools (both parsing rules and generating URLs) will
-        # take these environment variables into account.
-        self.routing.prefix = ''
+        # where will static files be found?  This is prepended to most static
+        # URLs.
+        self.routing.static_prefix = 'static/'
 
         # the settings for the Werkzeug routing Map object:
         self.routing.map.default_subdomain=''
@@ -114,7 +112,10 @@ class DefaultSettings(QuickSettings):
         #######################################################################
         self.templating.default_engine = 'jinja'
         self.template.default = 'default.html'
-        self.jinja.autoescape=False
+        # a list of template extensions to escape; set to False to disable
+        # autoescape
+        self.jinja.autoescape = ('html', 'htm', 'xml')
+        self.jinja.extensions = ['jinja2.ext.autoescape', 'jinja2.ext.with_']
 
         #######################################################################
         # SYSTEM VIEW ENDPOINTS
@@ -292,6 +293,11 @@ class DefaultSettings(QuickSettings):
         # tmp
         self.auto_create_writeable_dirs = True
 
+        # should we load utils.abort as a builtin?  Intended for development
+        # enviornments only.  If true, will add abort to Python's builtin
+        # namespace as 'dabort'.  The 'd' is for development.
+        self.auto_abort_as_builtin = False
+
     def add_plugin(self, app_package, namespace, package=None):
         # a little hack to get the default value to hang an application's
         # plugin's off of
@@ -299,11 +305,11 @@ class DefaultSettings(QuickSettings):
         self.set_dotted('pluginmap.%s.%s.enabled' % (app_package, namespace), True)
         if package:
             self.set_dotted('plugin_packages.%s' % package, namespace)
-            cvalue = self.get_dotted('pluginmap.%s.%s.packages' % (app_package, namespace))
-            if not cvalue:
-                self.set_dotted('pluginmap.%s.%s.packages' % (app_package, namespace), [package])
-                return
-            cvalue.append(package)
+        cvalue = self.get_dotted('pluginmap.%s.%s.packages' % (app_package, namespace))
+        if not cvalue:
+            self.set_dotted('pluginmap.%s.%s.packages' % (app_package, namespace), [package])
+            return
+        cvalue.append(package)
 
     def get_storage_dir(self):
         ## files should be stored outside the source directory so that your
@@ -333,6 +339,7 @@ class DefaultSettings(QuickSettings):
         self.exception_handling = None
         self.debugger.enabled = True
         self.auto_copy_static.enabled = True
+        self.auto_abort_as_builtin = True
 
     def add_route(self, route, endpoint, *args, **kwargs):
         kwargs['endpoint'] = endpoint
