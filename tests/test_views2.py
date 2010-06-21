@@ -667,3 +667,11 @@ def test_json_handlers():
     data = json.loads(r.data)
     assert data['error'] == 1, data
     assert data['data'] is None, data
+
+def test_request_hijacking():
+    r = ta.get('/request-hijack/forward')
+    assert 'app index: 1' in r
+
+    r = ta.get('/request-hijack/redirect')
+    r = r.follow()
+    assert '/index/index' in r.request.url

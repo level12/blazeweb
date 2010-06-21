@@ -8,4 +8,4 @@ signal('pysmvt.events.initialized').connect(fire_after_event_init)
 def modify_response(sender, response=None):
     if 'eventtest' in rg.request.url:
         response.data = response.data + 'minimal2'
-signal('pysmvt.view_returned').connect(modify_response)
+signal('pysmvt.response_cycle.ended').connect(modify_response)

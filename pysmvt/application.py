@@ -69,13 +69,11 @@ class RequestManager(object):
         if 'pysmvt.request_setup' in self.environ:
             for callable in self.environ['pysmvt.request_setup']:
                 callable()
-        signal('pysmvt.request.initialized').send()
 
     def __exit__(self, exc_type, exc_value, tb):
         if 'pysmvt.request_teardown' in self.environ:
             for callable in self.environ['pysmvt.request_teardown']:
                 callable()
-        signal('pysmvt.request.finished').send()
 
 class ResponseContext(object):
     def __init__(self, error_doc_code):
@@ -93,7 +91,6 @@ class ResponseContext(object):
         if 'pysmvt.response_cycle_setup' in self.environ:
             for callable in self.environ['pysmvt.response_cycle_setup']:
                 callable()
-        signal('pysmvt.response_context.initialized').send()
 
     def __exit__(self, exc_type, e, tb):
         log.debug('exit response context started')
@@ -109,7 +106,6 @@ class ResponseContext(object):
         if 'beaker.session' in self.environ:
             self.environ['beaker.session'].save()
         log.debug('exit response context finished')
-        signal('pysmvt.response_context.finished').send()
 
 class WSGIApp(object):
 
@@ -153,11 +149,15 @@ class WSGIApp(object):
         # as this application is instantiated
         self.signals = (
             signal('pysmvt.events.initialized'),
-            signal('pysmvt.request.initialized'),
-            signal('pysmvt.response_context.initialized'),
-            signal('pysmvt.view_returned'),
-            signal('pysmvt.response_context.finished'),
-            signal('pysmvt.request.finished'),
+            signal('pysmvt.settings.initialized'),
+            signal('pysmvt.auto_actions.initialized'),
+            signal('pysmvt.logging.initialized'),
+            signal('pysmvt.routing.initialized'),
+            signal('pysmvt.templating.initialized'),
+            signal('pysmvt.request.started'),
+            signal('pysmvt.response_cycle.started'),
+            signal('pysmvt.response_cycle.ended'),
+            signal('pysmvt.request.ended'),
         )
 
     def init_events(self):
@@ -243,7 +243,10 @@ class WSGIApp(object):
         while True:
             with self.response_context(error_doc_code):
                 endpoint, args = pysmvt.rg.forward_queue[-1]
-                return self.dispatch_to_endpoint(endpoint, args)
+                signal('pysmvt.response_cycle.started').send(endpoint=endpoint, urlargs=args)
+                response = self.dispatch_to_endpoint(endpoint, args)
+                signal('pysmvt.response_cycle.ended').send(response=response)
+                return response
 
     def dispatch_to_endpoint(self, endpoint, args):
         log.debug('dispatch to %s (%s)', endpoint, args)
@@ -253,11 +256,11 @@ class WSGIApp(object):
             vklass = _RouteToTemplate
         v = vklass(args, endpoint)
         response = v.process()
-        signal('pysmvt.view_returned').send(None, response=response)
         return response
 
     def wsgi_app(self, environ, start_response):
         with self.request_manager(environ):
+            signal('pysmvt.request.started').send()
             try:
                 try:
                     endpoint, args = pysmvt.rg.urladapter.match()
@@ -272,6 +275,7 @@ class WSGIApp(object):
                 response = self.handle_http_exception(e)
             except Exception, e:
                 response = self.handle_exception(e)
+            signal('pysmvt.request.ended').send(response=response)
             return response(environ, start_response)
 
     def handle_http_exception(self, e):
@@ -297,7 +301,7 @@ class WSGIApp(object):
 
     def handle_exception(self, e):
         """Default exception handling that kicks in when an exception
-        occours that is not catched.  In debug mode the exception will
+        occours that is not caught.  In debug mode the exception will
         be re-raised immediately, otherwise it is logged an the handler
         for an 500 internal server error is used.  If no such handler
         exists, a default 500 internal server error message is displayed.

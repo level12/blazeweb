@@ -15,6 +15,7 @@ class Default(nlDefault):
         self.add_route('/index/<tname>', 'Index')
         self.add_route('/abort/<tname>', 'Abort')
         self.add_route('/eventtest', 'EventTest')
+        self.add_route('/request-hijack/<sendtype>', 'None')
 
         self.supporting_apps.append('nlsupporting')
         self.setup_plugins()
@@ -54,4 +55,3 @@ class AttributeErrorInSettings(Default):
     def init(self):
         Default.init(self)
         print path.notthere
-
