@@ -92,3 +92,23 @@ def exception_with_context():
     retval += '\n\n== ENVIRON ==\n\n%s' % pformat(rg.environ, 4)
     retval += '\n\n== POST ==\n\n%s\n\n' % pformat(werkzeug_multi_dict_conv(rg.request.form), 4)
     return retval
+
+class _Redirect(Exception):
+    """
+        don't use directly, use redirect() instead
+    """
+    def __init__(self, response):
+        self.response = response
+
+def redirect(location, permanent=False, code=302 ):
+    """
+        location: URI to redirect to
+        permanent: if True, sets code to 301 HTTP status code
+        code: allows 303 or 307 redirects to be sent if needed, see
+            http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
+    """
+    log = logging.getLogger('blazeweb.core:redirect')
+    if permanent:
+        code = 301
+    log.debug('%d redirct to %s' % (code, location))
+    raise _Redirect(werkzeug.redirect(location, code))

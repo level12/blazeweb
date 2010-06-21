@@ -10,16 +10,16 @@ from werkzeug.routing import Map, Submount
 
 import blazeweb
 from blazeweb.events import Namespace, signal
-from blazeweb.exceptions import Forward, ProgrammingError, Redirect
+from blazeweb.exceptions import ProgrammingError
 from blazeweb.hierarchy import findobj, HierarchyImportError, \
     listplugins, visitmods, findview, split_endpoint
 from blazeweb.logs import create_handlers_from_settings
 from blazeweb.mail import mail_programmers
 from blazeweb.templating import default_engine
 from blazeweb.users import User
-from blazeweb.utils import exception_with_context, abort
+from blazeweb.utils import exception_with_context, abort, _Redirect
 from blazeweb.utils.filesystem import mkdirs, copy_static_files
-from blazeweb.views import _RouteToTemplate
+from blazeweb.views import _RouteToTemplate, _Forward
 from blazeweb.wrappers import Request
 
 log = logging.getLogger(__name__)
@@ -97,7 +97,7 @@ class ResponseContext(object):
         if 'blazeweb.response_cycle_teardown' in self.environ:
             for callable in self.environ['blazeweb.response_cycle_teardown']:
                 callable()
-        if isinstance(e, Forward):
+        if isinstance(e, _Forward):
             log.debug('forwarding to %s (%s)', e.forward_endpoint, e.forward_args)
             blazeweb.rg.forward_queue.append((e.forward_endpoint, e.forward_args))
             if len(blazeweb.rg.forward_queue) == 10:
@@ -269,7 +269,7 @@ class WSGIApp(object):
                     raise
                 log.debug('wsgi_app processing %s (%s)', endpoint, args)
                 response = self.response_cycle(endpoint, args)
-            except Redirect, e:
+            except _Redirect, e:
                 response = e.response
             except HTTPException, e:
                 response = self.handle_http_exception(e)

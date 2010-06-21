@@ -691,3 +691,16 @@ def jsonify(f, self, *args, **kwargs):
         log.exception('error calling jsonified function %s', f)
         user.add_message('error', 'internal error encountered, exception logged')
     self.render_json(data, has_error)
+
+###
+### view forwarding
+###
+
+class _Forward(Exception):
+    def __init__(self, endpoint, args):
+        Exception.__init__(self)
+        self.forward_endpoint = endpoint
+        self.forward_args = args
+
+def forward(endpoint, **kwargs):
+    raise _Forward(endpoint, kwargs)

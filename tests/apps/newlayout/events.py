@@ -1,5 +1,7 @@
-from blazeweb import rg, redirect, forward
+from blazeweb import rg
 from blazeweb.events import signal
+from blazeweb.utils import redirect
+from blazeweb.views import forward
 
 def fire_after_event_init(sender):
     return 'newlayout'

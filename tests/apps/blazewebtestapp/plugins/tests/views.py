@@ -1,6 +1,7 @@
-from blazeweb import redirect, forward, rg
+from blazeweb import rg
 from blazeweb.content import getcontent
-from blazeweb.views import View
+from blazeweb.utils import redirect
+from blazeweb.views import View, forward
 from werkzeug.exceptions import ServiceUnavailable
 from formencode.validators import UnicodeString, Int
 

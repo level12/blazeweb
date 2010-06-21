@@ -1,5 +1,6 @@
-from blazeweb import forward, redirect, rg
-from blazeweb.views import View, asview
+from blazeweb import rg
+from blazeweb.utils import redirect
+from blazeweb.views import View, asview, forward
 
 class Index(View):
     def init(self):
