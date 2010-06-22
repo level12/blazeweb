@@ -3,7 +3,7 @@ import unittest
 from blazeweb.globals import settings
 from blazeweb.config import QuickSettings, EnabledSettings
 from blazeweb.hierarchy import listapps
-
+from nose.tools import eq_
 import config
 from minimal2.application import make_wsgi as make_wsgi_min2
 from blazewebtestapp.applications import make_wsgi
@@ -353,3 +353,21 @@ class TestDefaultSettings(object):
     def test_storage_dir(self):
         # assume we are in a virtualenv
         assert settings.dirs.storage.endswith('storage-minimal2')
+
+class TestPluginSettings(object):
+
+    @classmethod
+    def setup_class(cls):
+        make_wsgi_min2('Dispatching')
+
+    def test_plugins(self):
+        pm = settings.pluginmap.minimal2
+        assert pm.internalonly.enabled == True
+        assert pm.internalonly.packages == [None]
+        assert pm.news.enabled == True
+        assert pm.news.packages == [None, 'newsplug4']
+        assert pm.foo.enabled == True
+        assert pm.foo.packages == ['foobwp']
+        assert settings.plugin_packages.newsplug4 == 'news'
+        assert settings.plugin_packages.foobwp == 'foo'
+        eq_( settings.plugin_packages.todict().keys(), ['newsplug4', 'foobwp'])

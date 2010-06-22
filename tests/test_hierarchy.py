@@ -1,17 +1,18 @@
 import __builtin__
 import sys
 
+from blazeutils.testing import logging_handler
 from nose.tools import eq_
 
+from blazeweb.globals import ag
 from blazeweb.hierarchy import hm, findview, HierarchyImportError, findfile, \
     FileNotFound, findobj, listplugins, list_plugin_mappings, visitmods, \
     gatherobjs
-from blazeutils.testing import logging_handler
 
 import config
 from newlayout.application import make_wsgi
 from blazewebtestapp.applications import make_wsgi as pta_make_wsgi
-
+from minimal2.application import make_wsgi as m2_make_wsgi
 class TestMostStuff(object):
 
     @classmethod
@@ -282,11 +283,15 @@ class TestMostStuff(object):
             if str(e) != 'No module named foo':
                 raise
 
-class TestGatherObjs(object):
+class TestPTA(object):
 
     @classmethod
     def setup_class(cls):
         pta_make_wsgi('Testruns')
+
+    def test_list_plugins(self):
+        expected = ['tests', 'nomodel', 'nosettings', 'sessiontests', 'routingtests', 'usertests', 'disabled']
+        eq_(expected, listplugins())
 
     def test_gatherobjs(self):
         result = gatherobjs('tasks.init_db', lambda name, obj: name.startswith('action_'))
@@ -297,3 +302,31 @@ class TestGatherObjs(object):
         eq_(result['appstack.tasks.init_db']['action_001'].__module__, 'blazewebtestapp.tasks.init_db')
         eq_(result['appstack.tasks.init_db']['action_002'].__module__, 'blazewebtestapp.tasks.init_db')
         eq_(result['appstack.tasks.init_db']['action_005'].__module__, 'blazewebtestapp2.tasks.init_db')
+class TestMin2(object):
+    @classmethod
+    def setup_class(cls):
+        m2_make_wsgi('Dispatching')
+
+    def test_plugin_mappings(self):
+        expected = [('minimal2', 'internalonly', None), ('minimal2', 'news', None), ('minimal2', 'news', 'newsplug4'), ('minimal2', 'foo', 'foobwp')]
+        eq_(expected, list_plugin_mappings())
+
+def test_visitmods_reloading():
+    m2_make_wsgi()
+    rulenum = len(list(ag.route_map.iter_rules()))
+    assert rulenum >= 9, ag.route_map
+
+    from minimal2.views import page1
+    firstid = id(page1)
+
+    m2_make_wsgi()
+    rulenum = len(list(ag.route_map.iter_rules()))
+    assert rulenum >= 9, ag.route_map
+
+
+    from minimal2.views import page1
+    secondid = id(page1)
+
+    # we want to make sure that @asview is not creating a new class object
+    # each time, but using the cache object that already exists if possible
+    eq_(firstid, secondid)

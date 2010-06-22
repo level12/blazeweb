@@ -1,12 +1,16 @@
+from __future__ import with_statement
 import os
 from os import path
+
+from blazeutils.helpers import pprint
 from werkzeug.serving import run_simple
 from werkzeug import Client, BaseResponse
 from werkzeug.script import make_shell
-from blazeweb.paster_tpl import run_template
+
 from blazeweb.globals import ag, settings
+from blazeweb.hierarchy import list_plugin_mappings
+from blazeweb.paster_tpl import run_template
 from blazeweb.tasks import run_tasks
-from blazeutils.helpers import pprint
 from blazeweb.utils.filesystem import copy_static_files
 
 import paste.script.command as pscmd
@@ -244,3 +248,49 @@ class StaticCopyCommand(pscmd.Command):
         def command(self):
             copy_static_files(delete_existing=self.options.delete_existing)
             print '\n - files/dirs copied succesfully\n'
+
+import re
+class JinjaConvertCommand(pscmd.Command):
+        # Parser configuration
+        summary = "convert jinja delimiters from old style to new style"
+        usage = ""
+
+        min_args = 0
+        max_args = 0
+
+        parser = pscmd.Command.standard_parser(verbose=False)
+
+        def change_tags(self, contents):
+            contents = re.sub('<{', '{{', contents)
+            contents = re.sub('<%', '{%', contents)
+            contents = re.sub('<#', '{#', contents)
+            contents = re.sub('}>', '}}', contents)
+            contents = re.sub('%>', '%}', contents)
+            contents = re.sub('#>', '#}', contents)
+            return contents
+
+        def command(self):
+            print 'converting:'
+            cwd = os.getcwd()
+            for fname in os.listdir(cwd):
+                if not fname.endswith('.html'):
+                    continue
+                with open(fname, 'r') as fh:
+                    contents = fh.read().decode('utf-8')
+                contents = self.change_tags(contents)
+                with open(fname, 'w') as fh:
+                    fh.write(contents.encode('utf-8'))
+                print '    %s' % fname
+
+class PluginMapCommand(pscmd.Command):
+    # Parser configuration
+    summary = "List the plugin map"
+    usage = ""
+
+    min_args = 0
+    max_args = 0
+
+    parser = pscmd.Command.standard_parser(verbose=False)
+
+    def command(self):
+        pprint(list_plugin_mappings(inc_apps=True))

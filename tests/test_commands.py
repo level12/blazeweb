@@ -31,6 +31,7 @@ def test_app_usage():
     assert 'tasks' in result.stdout
     assert 'shell' in result.stdout
     assert 'static-copy' in result.stdout
+    assert 'plugin-map' in result.stdout
 
 def test_bad_profile():
     result = run_application('minimal2', '-p', 'profilenotthere', expect_error = True)
@@ -40,6 +41,7 @@ def test_blazeweb_usage():
     result = run_blazeweb()
     assert 'Usage: bw [global_options] COMMAND [command_options]' in result.stdout, result.stdout
     assert 'SETTINGS_PROFILE' not in result.stdout
+    assert 'jinja-convert' in result.stdout
 
 def test_blazeweb_project():
     # project doesn't exist any more; skip for now

@@ -5,10 +5,11 @@ from webtest import TestApp
 from werkzeug import MultiDict, run_wsgi_app, Headers
 from werkzeug.exceptions import BadRequest, HTTPException
 
-from blazeweb.globals import rg, user
+from blazeweb._internal import json
 from blazeweb.exceptions import ProgrammingError
+from blazeweb.globals import rg, user
 import blazeweb.views
-from blazeweb.views import SecureView
+from blazeweb.views import SecureView, jsonify
 from blazeweb.testing import inrequest
 from blazeweb.wrappers import Response
 
@@ -330,12 +331,17 @@ def test_view_callstack():
         def init(self):
             self.add_call_method('test1', takes_args=False)
             self.add_call_method('test2', required=False, takes_args=False)
+            self.add_call_method('test3')
         def test1(self):
             methods_called.append('test1')
-        def default(self):
+        def test3(self, arg1):
+            assert arg1 == '1'
+            methods_called.append('test3')
+        def default(self, arg1):
             methods_called.append('default')
-    r = TestView({}).process()
-    eq_(methods_called, ['test1', 'default'])
+            assert arg1 == '1'
+    r = TestView({'arg1':'1'}).process()
+    eq_(methods_called, ['test1', 'test3', 'default'])
 
     methods_called = []
     class TestView(View):
@@ -448,6 +454,20 @@ def test_templating():
     # test embedded content
     assert 'content: hello world' in r.body, r
     assert 'customized content: hello fred' in r.body, r
+    # test that safe strings work for this filter and that func args work
+    assert 'simplify: some&string' in r.body, r
+    # autoescape
+    assert 'autoescape: &amp;' in r.body, r
+    # autoescape extensions
+    assert 'ae ext: a&b' in r.body, r
+    # url prefix
+    assert 'static url: static/app/statictest.txt' in r.body, r
+
+    # autoescape in a text file should be off
+    r = ta.get('/index/testing.txt')
+    assert 'autoescape: a&b' in r.body, r
+    # but can be turned on with the extension
+    assert 'ae ext: a&amp;b' in r.body, r
 
     # test plugin template default name
     r = ta.get('/news/template')
@@ -590,3 +610,68 @@ def test_secure_view():
             return 'su'
     r = TestView({}, 'test').process()
     assert r.data == 'su', r.data
+
+@inrequest('/json')
+def test_json_handlers():
+
+    # testnormal usage
+    class Jsonify(View):
+        def default(self):
+            self.render_json({'foo1': 'bar'})
+
+    r = Jsonify({}, 'jsonify').process()
+    eq_(r.headers['Content-Type'], 'application/json')
+    data = json.loads(r.data)
+    assert data['error'] == 0, data
+
+    # test user messages
+    class Jsonify(View):
+        def default(self):
+            user.add_message('notice', 'hi')
+            self.render_json({'foo1': 'bar'})
+
+    r = Jsonify({}, 'jsonify').process()
+    data = json.loads(r.data)
+    assert data['messages'][0]['severity'] == 'notice', data
+    assert data['messages'][0]['text'] == 'hi', data
+
+    # test no user messages
+    class Jsonify(View):
+        def default(self):
+            user.add_message('notice', 'hi')
+            self.render_json({'foo1': 'bar'}, add_user_messages=False)
+
+    r = Jsonify({}, 'jsonify').process()
+    data = json.loads(r.data)
+    assert len(data['messages']) == 0, data
+
+    # test jsonify decorator
+    class Jsonify(View):
+        @jsonify
+        def default(self):
+            return {'foo1': 'bar'}
+
+    r = Jsonify({}, 'jsonify').process()
+    eq_(r.headers['Content-Type'], 'application/json')
+    data = json.loads(r.data)
+    assert data['error'] == 0, data
+    assert data['data']['foo1'] == 'bar', data
+
+    # test jsonify decorator with exception
+    class Jsonify(View):
+        @jsonify
+        def default(self):
+            foo
+    r = Jsonify({}, 'jsonify').process()
+    eq_(r.headers['Content-Type'], 'application/json')
+    data = json.loads(r.data)
+    assert data['error'] == 1, data
+    assert data['data'] is None, data
+
+def test_request_hijacking():
+    r = ta.get('/request-hijack/forward')
+    assert 'app index: 1' in r
+
+    r = ta.get('/request-hijack/redirect')
+    r = r.follow()
+    assert '/index/index' in r.request.url

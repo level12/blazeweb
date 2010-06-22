@@ -112,6 +112,7 @@ setup(
     [blazeweb.no_app_command]
     help=paste.script.help:HelpCommand
     project = blazeweb.commands:ProjectCommand
+    jinja-convert = blazeweb.commands:JinjaConvertCommand
 
     [blazeweb.app_command]
     serve = blazeweb.commands:ServeCommand
@@ -121,6 +122,8 @@ setup(
     shell = blazeweb.commands:ShellCommand
     routes = blazeweb.commands:RoutesCommand
     static-copy = blazeweb.commands:StaticCopyCommand
+    plugin-map = blazeweb.commands:PluginMapCommand
+
 
     [blazeweb.blazeweb_project_template]
     minimal = blazeweb.paster_tpl:MinimalProjectTemplate

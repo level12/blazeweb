@@ -1,11 +1,14 @@
+import optparse
 import os
 from os import path
 import sys
 
-import paste.script.command as pscmd
-import pkg_resources
-import optparse
 from blazeutils import find_path_package_name
+from blazeutils.error_handling import raise_unexpected_import_error
+import pkg_resources
+import paste.script.command as pscmd
+
+
 
 class ScriptingHelperBase(object):
     def __init__(self):
@@ -102,19 +105,14 @@ class AppPackageHelper(ScriptingHelperBase):
         self.parser.add_option(
         '-p', '--settings-profile',
         dest='settings_profile',
+        default='Dev',
         help='Choose which settings profile to use with this command.'\
             ' If not given, the default will be used.')
 
     def modify_runner(self, runner, options):
         # instantiate the app
         profile = options.settings_profile
-        if profile:
-            try:
-                self.wsgiapp = self.appfactory(profile)
-            except AttributeError:
-                raise pscmd.BadCommand('Error: could not find settings profile: %s' % profile)
-        else:
-            self.wsgiapp = self.appfactory()
+        self.wsgiapp = self.appfactory(profile)
         runner.wsgiapp = self.wsgiapp
         return runner
 
@@ -147,7 +145,8 @@ def load_current_app(app_name=None, profile=None):
     try:
         app_pymod = __import__('%s.application' % app_name , globals(), locals(), [''])
     except ImportError, e:
-        raise UsageError('Could not import name "%s.application".  Is the CWD a blazeweb application?' % app_name)
+        raise_unexpected_import_error('%s.application' % app_name, e)
+        raise UsageError('Could not import name "%s.application".  Is the CWD a pysmvt application?' % app_name)
 
     pkg_dir = path.dirname(pkg_pymod.__file__)
     if profile:
