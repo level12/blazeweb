@@ -1,7 +1,13 @@
+import platform
 from shutil import rmtree
 from os import environ, path
 
 from scripttest import TestFileEnvironment
+
+if 'Windows' == platform.system():
+    is_win = True
+else:
+    is_win = False
 
 here = path.dirname(path.abspath(__file__))
 script_test_path = path.join(here, 'test-output')

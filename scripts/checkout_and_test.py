@@ -1,3 +1,4 @@
+import platform
 import os
 from os import environ
 from os import path
@@ -7,21 +8,30 @@ from subprocess import check_call
 import sys
 import tempfile
 
+if 'Windows' == platform.system():
+    is_win = True
+else:
+    is_win = False
+
 venv_name = 'bwcandt-venv'
 bpath = path.join(tempfile.gettempdir(), venv_name)
-binpath = path.join(bpath, 'bin')
+if is_win:
+    binpath = path.join(bpath, 'Scripts')
+    path_sep = ';'
+else:
+    binpath = path.join(bpath, 'bin')
+    path_sep = ':'
 distpath = path.join(bpath, 'src', 'default')
 testspath = path.join(distpath, 'tests')
 
 venv = os.environ.copy()
 venv['VIRTUAL_ENV'] = bpath
-venv['PATH'] = "%s:%s" % (binpath, venv['PATH'])
+venv['PATH'] = binpath + path_sep + venv['PATH']
 
 def syscmd(cmd, **kwargs):
     check_call(cmd, shell=True, **kwargs)
 
 def venvcmd(cmd, **kwargs):
-    cmd = path.join(binpath, cmd)
     check_call(cmd, shell=True, env=venv, **kwargs)
 
 try:

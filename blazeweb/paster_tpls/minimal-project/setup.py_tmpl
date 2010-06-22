@@ -18,7 +18,7 @@ setup(name={{repr(project)}},
       include_package_data=True,
       zip_safe=False,
       install_requires=[
-          'blazeweb>=0.3dev'
+          'BlazeWeb>=0.3dev'
       ],
       entry_points="""
           [console_scripts]
