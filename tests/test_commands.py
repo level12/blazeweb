@@ -98,20 +98,23 @@ def test_minimal_project_checkout_and_functionality():
     assert 'not installed' in res.stdout or 'Succesfully uninstalled' in res.stdout
     result = run_blazeweb('project', '-t', 'minimal', '--no-interactive', projname)
     assert len(result.files_created) == 9
+    setup_args = ['python', 'setup.py', 'develop']
     if is_win:
         # running setup.py on the new project causes the .exe scripts to be
         # recreated.  This includes the nosetests.exe file.  But in windows
         # we are using that file to run the tests that are running this code
-        # and that causes a permission denied error.  We need to redirect that
-        # somehow, but not sure the best way to approach it at this point.
-        raise SkipTest
-    env.run('python', 'setup.py', 'develop', cwd=os.path.join(script_test_path, projname + '-dist'))
+        # and that causes a permission denied error.  Therefore, we need to
+        # prevent the setup.py develop command from checking dependencies.
+        setup_args.append('-N')
+    env.run(cwd=os.path.join(script_test_path, projname + '-dist'), *setup_args)
     res = env.run(projname)
-    assert 'Usage: %s [global_options]' % projname in res.stdout
+    script_name = '%s-script.py' % projname if is_win else projname
+    assert 'Usage: %s [global_options]' % script_name in res.stdout, res.stdout
     res = env.run(projname, 'testrun')
     assert '200 OK' in res.stdout
     assert 'Content-Type: text/html' in res.stdout
-    assert '\nindex\n' in res.stdout
+    indexstr = '\r\nindex\r\n' if is_win else '\nindex\n'
+    assert indexstr in res.stdout
     res = env.run('pip', 'uninstall', projname, '-y')
     assert 'Successfully uninstalled' in res.stdout, res.stdout
     env.clear()
