@@ -20,6 +20,9 @@ class Default(nlDefault):
         self.supporting_apps.append('nlsupporting')
         self.setup_plugins()
 
+        # don't use exception catching, debuggers, logging, etc.
+        self.apply_test_settings()
+
         self.plugins.news.bar = 3
 
     def get_storage_dir(self):
@@ -48,7 +51,6 @@ class AutoCopyStatic(Default):
 class WithTestSettings(Default):
     def init(self):
         Default.init(self)
-        self.apply_test_settings()
         self.auto_abort_as_builtin = True
 
 class AttributeErrorInSettings(Default):

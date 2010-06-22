@@ -12,6 +12,9 @@ class Default(DefaultSettings):
         self.app_package = app_package
         DefaultSettings.init(self)
 
+        # don't use exception catching, debuggers, logging, etc.
+        self.apply_test_settings()
+
 class Testruns(Default):
     def init(self):
         Default.init(self)
@@ -21,9 +24,6 @@ class Testruns(Default):
         ])
 
         self.add_plugin(app_package, 'tests')
-
-        # don't use exception catching, debuggers, logging, etc.
-        self.apply_test_settings()
 
         self.emails.programmers = ['you@example.com']
         self.email.subject_prefix = '[pysvmt test app] '

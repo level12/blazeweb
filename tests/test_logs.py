@@ -5,13 +5,15 @@ from blazeweb.globals import settings
 from blazeweb.logs import clear_settings_handlers
 import logging
 
-
 # create the wsgi application that will be used for testing
 import config
 from blazewebtestapp.config.settings import Default
 from blazewebtestapp.applications import make_wsgi
 
 log_base_dir = Default().dirs.logs
+
+def teardown_module():
+    clear_settings_handlers()
 
 class LogsBase(object):
 

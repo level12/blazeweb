@@ -10,8 +10,11 @@ class Default(DefaultSettings):
         self.dirs.base = basedir
         self.app_package = app_package
         DefaultSettings.init(self)
-        
+
         self.auto_copy_static.enabled = True
+
+        # don't use exception catching, debuggers, logging, etc.
+        self.apply_test_settings()
 
     def get_storage_dir(self):
         return path.join(basedir, '..', '..', 'test-output', app_package)
@@ -26,9 +29,6 @@ class Testruns(Default):
         self.routing.routes.extend([
             Rule('/', endpoint='tests:Index')
         ])
-
-        # don't use exception catching, debuggers, logging, etc.
-        self.apply_test_settings()
 
         self.emails.programmers = ['you@example.com']
         self.email.subject_prefix = '[pysvmt test app] '

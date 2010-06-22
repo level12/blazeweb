@@ -12,6 +12,9 @@ class Settings(DefaultSettings):
         self.app_package = path.basename(self.dirs.base)
         DefaultSettings.init(self)
         self.auto_load_views = True
+        
+        # don't use exception catching, debuggers, logging, etc.
+        self.apply_test_settings()
 
     def get_storage_dir(self):
         return path.join(self.dirs.base, '..', '..', 'test-output', self.app_package)

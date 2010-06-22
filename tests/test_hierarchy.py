@@ -1,4 +1,5 @@
 import __builtin__
+from os import path
 import sys
 
 from blazeutils.testing import logging_handler
@@ -197,10 +198,12 @@ class TestMostStuff(object):
 
     def test_app_findfile(self):
         fullpath = findfile('templates/blank.txt')
-        assert fullpath.endswith('nlsupporting/templates/blank.txt'), fullpath
+        expected = path.join('nlsupporting', 'templates', 'blank.txt')
+        assert fullpath.endswith(expected), fullpath
 
         fullpath = findfile('templates/innl.txt')
-        assert fullpath.endswith('newlayout/templates/innl.txt'), fullpath
+        expected = path.join('newlayout', 'templates', 'innl.txt')
+        assert fullpath.endswith(expected), fullpath
 
         try:
             findfile('templates/notthere.txt')
@@ -210,19 +213,24 @@ class TestMostStuff(object):
 
     def test_plugin_findfile(self):
         fullpath = findfile('news:templates/srcnews.txt')
-        assert fullpath.endswith('newlayout/plugins/news/templates/srcnews.txt'), fullpath
+        expected = path.join('newlayout', 'plugins', 'news', 'templates', 'srcnews.txt')
+        assert fullpath.endswith(expected), fullpath
 
         fullpath = findfile('news:templates/nplug1.txt')
-        assert fullpath.endswith('newsplug1/templates/nplug1.txt'), fullpath
+        expected = path.join('newsplug1', 'templates', 'nplug1.txt')
+        assert fullpath.endswith(expected), fullpath
 
         fullpath = findfile('news:templates/nplug2.txt')
-        assert fullpath.endswith('newsplug2/templates/nplug2.txt'), fullpath
+        expected = path.join('newsplug2', 'templates', 'nplug2.txt')
+        assert fullpath.endswith(expected), fullpath
 
         fullpath = findfile('news:templates/supporting_news_src.txt')
-        assert fullpath.endswith('nlsupporting/plugins/news/templates/supporting_news_src.txt'), fullpath
+        expected = path.join('nlsupporting', 'plugins', 'news', 'templates', 'supporting_news_src.txt')
+        assert fullpath.endswith(expected), fullpath
 
         fullpath = findfile('news:templates/nplug3.txt')
-        assert fullpath.endswith('newsplug3/templates/nplug3.txt'), fullpath
+        expected = path.join('newsplug3', 'templates', 'nplug3.txt')
+        assert fullpath.endswith(expected), fullpath
 
         try:
             findfile('news:templates/notthere.txt')

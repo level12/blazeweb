@@ -15,6 +15,9 @@ class Default(DefaultSettings):
         # loaded
         self.auto_load_views = True
 
+        # don't use exception catching, debuggers, logging, etc.
+        self.apply_test_settings()
+
     def get_storage_dir(self):
         return path.join(basedir, '..', '..', 'test-output', app_package)
 
@@ -44,21 +47,18 @@ class Test(Default):
     def init(self):
         Default.init(self)
 
-        self.apply_test_settings()
         print 'Test settings'
 
 class Test2(Default):
     def init(self):
         Default.init(self)
 
-        self.apply_test_settings()
         print 'Test2 settings'
 
 class TestStorageDir(Default):
     def init(self):
         Default.init(self)
 
-        self.apply_test_settings()
         self.auto_create_writeable_dirs = False
 
     def get_storage_dir(self):
@@ -67,8 +67,6 @@ class TestStorageDir(Default):
 class NoAutoImportView(Default):
     def init(self):
         Default.init(self)
-
-        self.apply_test_settings()
 
         # we just want to make sure turning the setting off works too
         self.auto_load_views = False
