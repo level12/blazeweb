@@ -104,6 +104,7 @@ class ResponseContext(object):
                 raise ProgrammingError('forward loop detected: %s' % '->'.join([g[0] for g in rg.forward_queue]))
             return True
         if 'beaker.session' in self.environ:
+            log.debug('saving beaker session, id: %s', self.environ['beaker.session'].id)
             self.environ['beaker.session'].save()
         log.debug('exit response context finished')
 
@@ -259,6 +260,7 @@ class WSGIApp(object):
         return response
 
     def wsgi_app(self, environ, start_response):
+        log.debug('request received for URL: %s', environ['PATH_INFO'])
         with self.request_manager(environ):
             signal('blazeweb.request.started').send()
             try:
