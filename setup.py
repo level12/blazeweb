@@ -6,52 +6,18 @@ BlazeWeb (formerly pysmvt) is a WSGI web framework library designed to be relati
 "light weight", but with a powerful plug-in and override architecture that
 facilitates modularized development.
 
-Steps for Installation
-----------------------
-
-#. Install Python
-#. install setuptools (includes easy_install)
-#. install virtualenv `easy_install virtualenv`
-#. Create a new virtual environment `virtualenv testbwa-venv --no-site-packages`
-#. `Activate the virtual environment (os dependent) <http://pypi.python.org/pypi/virtualenv#activate-script>`_
-#. install BlazeWeb & dependencies `easy_install blazeweb` or `pip install blazeweb`
-
-Steps for creating a working application
------------------------------------------
-#. `cd testbwa-venv`
-#. `mkdir src`
-#. `cd src`
-#. `bw project myapp`
-#. answer the questions that come up.  Note what you put for
-    "Enter author (your name)" as <user>.  If you forget, look in myapp/settings.py.
-#. `cd myapp-dist`
-#. `python setup.py -q develop`
-#.  `nosetests` you should get three succesful tests
-#. `cd myapp`
-#. `bw serve <user>` run a development http server with the user's settings
-   profile
-#. point your browser at http://localhost:5000/
-
-Creating a New Application Module
----------------------------------
-This step creates a Application Module directory structure in myapp/modules/<mymod>:
-
-`bw plugin <mymod>`
-
-where <mymod> is the name of the module you want to create
-
 Questions & Comments
 ---------------------
 
-Please visit: http://groups.google.com/group/pyslibs
+Please visit: http://groups.google.com/group/blazelibs
 
 Current Status
 ---------------
 
 The code stays pretty stable, but the API is likely to change in the future.
 
-The `blazeweb tip <http://bitbucket.org/rsyring/blazeweb/get/tip.zip#egg=blazeweb-dev>`_
-is installable via `easy_install` with ``easy_install blazeweb==dev``
+The `BlazeWeb tip <http://bitbucket.org/rsyring/blazeweb/get/tip.zip#egg=blazeweb-dev>`_
+is installable via `easy_install` with ``easy_install BlazeWeb==dev``
 """
 import sys
 try:
