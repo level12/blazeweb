@@ -334,12 +334,15 @@ class DefaultSettings(QuickSettings):
         # ditto
         self.debugger.enabled = False
 
-    def apply_dev_settings(self):
+    def apply_dev_settings(self, override_email=None):
 
         self.exception_handling = None
         self.debugger.enabled = True
         self.auto_copy_static.enabled = True
         self.auto_abort_as_builtin = True
+
+        if override_email:
+            self.emails.override = override_email
 
     def add_route(self, route, endpoint, *args, **kwargs):
         kwargs['endpoint'] = endpoint
