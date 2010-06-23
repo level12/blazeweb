@@ -149,6 +149,7 @@ class WSGIApp(object):
         # signals are weakly referenced, so we need to keep a reference as long
         # as this application is instantiated
         self.signals = (
+            signal('blazeweb.pre_test_init'),
             signal('blazeweb.events.initialized'),
             signal('blazeweb.settings.initialized'),
             signal('blazeweb.auto_actions.initialized'),

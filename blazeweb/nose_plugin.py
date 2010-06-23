@@ -54,6 +54,7 @@ class InitAppPlugin(nose.plugins.Plugin):
             return
 
         # import here so we can avoid test coverage issues
+        from blazeweb.events import signal
         from blazeweb.globals import ag, settings
         from blazeweb.hierarchy import findobj
         from blazeweb.scripting import load_current_app, UsageError
@@ -74,6 +75,9 @@ class InitAppPlugin(nose.plugins.Plugin):
             for callstring in tolist(settings.testing.init_callables):
                 tocall = findobj(callstring)
                 tocall()
+
+            # we also support events for pre-test setup
+            signal('blazeweb.pre_test_init').send()
         except UsageError, e:
             if options.blazeweb_debug:
                 raise
