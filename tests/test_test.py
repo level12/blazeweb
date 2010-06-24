@@ -41,8 +41,8 @@ def test_nose_plugin_app_package_by_command_line():
     res = env.run('nosetests', 'minimal2', expect_error=True, cwd=apps_path)
     assert 'No object (name: ag) has been registered for this thread' in res.stderr, res.stderr
 
-    res = env.run('nosetests', '--blazeweb-app_package=minimal2', 'minimal2', expect_error=True, cwd=apps_path)
-    assert 'Ran 1 test in' in res.stderr
+    res = env.run('nosetests', '--blazeweb-package=minimal2', 'minimal2', expect_error=True, cwd=apps_path)
+    assert 'Ran 1 test in' in res.stderr, res.stderr
     assert 'OK' in res.stderr
 
 def test_nose_plugin_app_package_by_environ():
