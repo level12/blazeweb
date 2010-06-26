@@ -134,7 +134,7 @@ class TestViews(unittest.TestCase):
         r = self.client.get('tests/htmlcssjs')
 
         self.assertEqual(r.status, '200 OK')
-        self.assertEqual(r.data, 'css\njs')
+        self.assertEqual(r.data, '        css\n        js')
         self.assertEqual( r.headers['Content-Type'], 'text/html; charset=utf-8' )
 
     def test_redirect(self):
@@ -358,7 +358,7 @@ class TestViews(unittest.TestCase):
     def test_htmltemplatefileargcss(self):
         r = self.client.get('tests/htmltemplatefileargcss')
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(r.data, 'css\nHello File Arg!')
+        self.assertEqual(r.data, '        css\nHello File Arg!')
 
     def test_disabled_module(self):
         """ a disabled module should not be processed and therefore we should
