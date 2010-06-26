@@ -31,6 +31,19 @@ class TestContent(object):
       c = getcontent('getcontent.html', endpoint='foo')
       assert c.primary == 'the endpoint: foo', c.primary
 
+   def test_nested_content(self):
+      c = getcontent('nesting_content.html', endpoint='foo')
+      body = c.primary
+      assert '/* nesting_content.css */' in body
+      assert '// nesting_content.js' in body
+      assert 'nesting_content.htmlnesting_content2.html' in body, body
+      assert 'nesting_content2.html' in body, body
+      assert 'nc2 arg1: foo' in body, body
+      assert '/* nesting_content2.css */' in body, body
+      assert body.count('nesting_content2.html') == 1, body
+      assert 'nesting_content3.html' in body, body
+      assert '/* nesting_content3.css */' in body, body
+
    @inrequest()
    def test_in_request_usage(self):
       user.name = 'foo'

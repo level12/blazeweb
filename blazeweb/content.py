@@ -38,14 +38,16 @@ class Content(object):
         self.content.setdefault(type, [])
         self.content[type] = content
 
-    def update_from_endpoint(self, endpoint):
-        c = getcontent(endpoint)
-        self.update_from_content(c)
+    def update_nonprimary_from_endpoint(self, __endpoint, *args, **kwargs):
+        c = getcontent(__endpoint, *args, **kwargs)
+        self.update_nonprimary_from_content(c)
+        return c
 
-    def update_from_content(self, c):
+    def update_nonprimary_from_content(self, c):
         for type, clist in c.data.iteritems():
-            self.data.setdefault(type, [])
-            self.data[type].extend(clist)
+            if type != self.primary_type:
+                self.data.setdefault(type, [])
+                self.data[type].extend(clist)
 
     def add_content(self, type, content):
         self.data.setdefault(type, [])
@@ -90,6 +92,7 @@ class TemplateContent(Content):
         context.update({
             'include_css': self.include_css,
             'include_js': self.include_js,
+            'getcontent': self.include_content,
             'page_css': self.page_css,
             'page_js': self.page_js,
         })
@@ -100,16 +103,20 @@ class TemplateContent(Content):
             endpoint = '%s:%s' % (self.plugin, endpoint)
         return endpoint
 
-    def include_css(self, endpoint=None, **kwargs):
-        if endpoint is None:
-            endpoint = self._supporting_endpoint_from_ext('css')
-        self.update_from_endpoint(endpoint)
+    def include_content(self, __endpoint, *args, **kwargs):
+        c = self.update_nonprimary_from_endpoint(__endpoint, *args, **kwargs)
+        return c.primary
+
+    def include_css(self, __endpoint=None, **kwargs):
+        if __endpoint is None:
+            __endpoint = self._supporting_endpoint_from_ext('css')
+        self.update_nonprimary_from_endpoint(__endpoint)
         return u''
 
-    def include_js(self, endpoint=None, **kwargs):
-        if endpoint is None:
-            endpoint = self._supporting_endpoint_from_ext('js')
-        self.update_from_endpoint(endpoint)
+    def include_js(self, __endpoint=None, **kwargs):
+        if __endpoint is None:
+            __endpoint = self._supporting_endpoint_from_ext('js')
+        self.update_nonprimary_from_endpoint(__endpoint)
         return u''
 
     def page_css(self):

@@ -3,7 +3,6 @@ from blazeutils.datetime import safe_strftime
 from blazeutils.numbers import moneyfmt
 from blazeutils.strings import simplify_string, reindent
 
-from blazeweb.content import getcontent
 from blazeweb.globals import ag, settings, user
 from blazeweb.routing import url_for, current_url, static_url
 from blazeweb.utils import registry_has_object
@@ -32,7 +31,6 @@ class EngineBase(object):
         globals = {}
         globals['url_for'] = url_for
         globals['current_url'] = current_url
-        globals['getcontent'] = getcontent
         return globals
 
     def mark_safe(self):
