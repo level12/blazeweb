@@ -121,17 +121,18 @@ if WTTestApp:
         Only works with HTML and XML responses; other content-types raise
         AttributeError.
         """
-        if 'html' not in self.content_type and 'xml' not in self.content_type:
-            raise AttributeError(
-                "Not an HTML or XML response body (content-type: %s)"
-                % self.content_type)
-        try:
-            from pyquery import PyQuery
-        except ImportError:
-            raise ImportError(
-                "You must have PyQuery installed to use response.pyquery")
-        d = PyQuery(self.body)
-        return d
+        if not hasattr(self, '__pyquery_d'):
+            if 'html' not in self.content_type and 'xml' not in self.content_type:
+                raise AttributeError(
+                    "Not an HTML or XML response body (content-type: %s)"
+                    % self.content_type)
+            try:
+                from pyquery import PyQuery
+            except ImportError:
+                raise ImportError(
+                    "You must have PyQuery installed to use response.pyquery")
+            self.__pyquery_d = PyQuery(self.body)
+        return self.__pyquery_d
 
     WTTestResponse.pyq = property(pyquery, doc=pyquery.__doc__)
 else:
