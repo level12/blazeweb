@@ -3,6 +3,7 @@ from blazeutils.datetime import safe_strftime
 from blazeutils.numbers import moneyfmt
 from blazeutils.strings import simplify_string, reindent
 
+from blazeweb.content import getcontent
 from blazeweb.globals import ag, settings, user
 from blazeweb.routing import url_for, current_url, static_url
 from blazeweb.utils import registry_has_object
@@ -28,8 +29,6 @@ class EngineBase(object):
         raise NotImplementedError('Translor must be subclassed')
 
     def get_globals(self):
-        # circular import fun!!
-        from blazeweb.content import getcontent
         globals = {}
         globals['url_for'] = url_for
         globals['current_url'] = current_url
@@ -59,9 +58,6 @@ class EngineBase(object):
         else:
             toadd['user'] = None
         context.update(toadd)
-
-def render_template(endpoint, **context):
-    return ag.tplengine.render_template(endpoint, context)
 
 def default_engine():
     tmod = __import__('blazeweb.templating.%s' % settings.templating.default_engine, fromlist=[''])
