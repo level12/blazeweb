@@ -3,11 +3,11 @@ from os import path
 from blazeweb.globals import ag, settings
 from blazeweb.hierarchy import findcontent, findfile, split_endpoint
 
-def getcontent(endpoint, *args, **kwargs):
-    if '.' in endpoint:
-        c = TemplateContent(endpoint)
+def getcontent(__endpoint, *args, **kwargs):
+    if '.' in __endpoint:
+        c = TemplateContent(__endpoint)
     else:
-        klass = findcontent(endpoint)
+        klass = findcontent(__endpoint)
         c = klass()
     c.process(args, kwargs)
     return c
@@ -83,10 +83,8 @@ class TemplateContent(Content):
         self.primary_type = ext_registry[ext.lstrip('.')]
 
     def create(self, **kwargs):
-        # circular import fun!!
-        from blazeweb.templating import render_template
         self.update_context(kwargs)
-        return render_template(self.endpoint, **kwargs)
+        return ag.tplengine.render_template(self.endpoint, kwargs)
 
     def update_context(self, context):
         context.update({

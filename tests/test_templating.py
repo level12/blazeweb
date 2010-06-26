@@ -19,6 +19,18 @@ class TestContent(object):
       c = getcontent('index.html', a='foo')
       assert c.primary == 'app index: foo', c.primary
 
+   def test_endpoint_template_variable(self):
+      try:
+         # had to switch the variable name, we are just identifying the problem
+         # with this test
+         c = getcontent('getcontent.html', __endpoint='foo')
+         assert False
+      except TypeError, e:
+         assert "getcontent() got multiple values for keyword argument '__endpoint'" == str(e)
+
+      c = getcontent('getcontent.html', endpoint='foo')
+      assert c.primary == 'the endpoint: foo', c.primary
+
    @inrequest()
    def test_in_request_usage(self):
       user.name = 'foo'
