@@ -44,6 +44,31 @@ class TestContent(object):
       assert 'nesting_content3.html' in body, body
       assert '/* nesting_content3.css */' in body, body
 
+   def test_page_methods_are_not_autoescaped(self):
+      c = getcontent('nesting_content.html', endpoint='foo')
+      body = c.primary
+      # JS
+      assert '// no & autoescape' in body, body
+      # CSS
+      assert '/* no & autoescape */' in body, body
+
+   def test_page_method_formatting(self):
+      c = getcontent('nesting_content2.html')
+      icss = '        /* nesting_content2.css */\n' +\
+             '        \n' + \
+             '        /* nesting_content3.css */'
+      css = """/* nesting_content2.css */
+
+/* nesting_content3.css */"""
+      assert css in c.page_css(reindent=None), c.page_css()
+      assert icss in c.page_css(), c.page_css()
+
+
+      ijs = '        // nesting_content2.js'
+      js = '// nesting_content2.js'
+      assert js == c.page_js(reindent=None), c.page_js()
+      assert ijs == c.page_js(), c.page_js()
+
    @inrequest()
    def test_in_request_usage(self):
       user.name = 'foo'

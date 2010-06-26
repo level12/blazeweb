@@ -1,5 +1,6 @@
 from os import path
 
+from blazeutils.strings import reindent as bureindent
 from blazeweb.globals import ag, settings
 from blazeweb.hierarchy import findcontent, findfile, split_endpoint
 
@@ -57,9 +58,9 @@ class Content(object):
     def primary(self):
         return self.get(self.primary_type)
 
-    def get(self, type):
+    def get(self, type, join_with=u''):
         try:
-            return u''.join(self.data[type])
+            return join_with.join(self.data[type])
         except KeyError:
             return u''
 
@@ -119,11 +120,17 @@ class TemplateContent(Content):
         self.update_nonprimary_from_endpoint(__endpoint)
         return u''
 
-    def page_css(self):
-        return self.get('text/css')
+    def page_css(self, reindent=8):
+        css = self.get('text/css', join_with='\n\n')
+        if reindent:
+            css = bureindent(css, 8)
+        return ag.tplengine.mark_safe(css)
 
-    def page_js(self):
-        return self.get('text/javascript')
+    def page_js(self, reindent=8):
+        js = self.get('text/javascript')
+        if reindent:
+            js = bureindent(js, reindent)
+        return ag.tplengine.mark_safe(js)
 
 ext_registry = {
     'txt': 'text/plain',
