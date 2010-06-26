@@ -8,7 +8,7 @@ from nose.tools import eq_
 from blazeweb.globals import ag
 from blazeweb.hierarchy import hm, findview, HierarchyImportError, findfile, \
     FileNotFound, findobj, listplugins, list_plugin_mappings, visitmods, \
-    gatherobjs
+    gatherobjs, findcontent
 
 import config
 from newlayout.application import make_wsgi
@@ -298,7 +298,7 @@ class TestPTA(object):
         pta_make_wsgi('Testruns')
 
     def test_list_plugins(self):
-        expected = ['tests', 'nomodel', 'nosettings', 'sessiontests', 'routingtests', 'usertests', 'disabled']
+        expected = ['tests', 'badimport1', 'nomodel', 'nosettings', 'sessiontests', 'routingtests', 'usertests', 'disabled']
         eq_(expected, listplugins())
 
     def test_gatherobjs(self):
@@ -310,6 +310,59 @@ class TestPTA(object):
         eq_(result['appstack.tasks.init_db']['action_001'].__module__, 'blazewebtestapp.tasks.init_db')
         eq_(result['appstack.tasks.init_db']['action_002'].__module__, 'blazewebtestapp.tasks.init_db')
         eq_(result['appstack.tasks.init_db']['action_005'].__module__, 'blazewebtestapp2.tasks.init_db')
+
+    def test_find_view_hierarchy_import_errors_get_raised(self):
+        try:
+            v = findview('badimport1:Index')
+            assert False
+        except HierarchyImportError, e:
+            assert 'module "nothere." not found; searched plugstack' in str(e), e
+
+    def test_find_view_no_plugin(self):
+        try:
+            v = findview('notaplugin:Foo')
+            assert False
+        except HierarchyImportError, e:
+            assert 'An object for View endpoint "notaplugin:Foo" was not found' == str(e), e
+
+    def test_find_content_no_plugin(self):
+        try:
+            v = findcontent('notaplugin:Foo')
+            assert False
+        except HierarchyImportError, e:
+            assert 'An object for Content endpoint "notaplugin:Foo" was not found' == str(e), e
+
+    def test_find_content_no_module(self):
+        try:
+            v = findcontent('routingtests:Foo')
+            assert False
+        except HierarchyImportError, e:
+            assert 'An object for Content endpoint "routingtests:Foo" was not found' == str(e), e
+
+    def test_find_content_no_attribute(self):
+        try:
+            v = findcontent('tests:NotThere')
+            assert False
+        except HierarchyImportError, e:
+            assert 'An object for Content endpoint "tests:NotThere" was not found' == str(e), e
+
+    def test_find_content_no_object_app_level(self):
+        from appstack.content import iexist
+        assert iexist
+        try:
+            v = findcontent('NotThere')
+            assert False
+        except HierarchyImportError, e:
+            assert 'An object for Content endpoint "NotThere" was not found' == str(e), e
+
+    def test_find_content_hierarchy_import_errors_get_raised(self):
+        try:
+            v = findcontent('badimport1:Foo')
+            assert False
+        except HierarchyImportError, e:
+            assert 'module "nothere." not found; searched plugstack' in str(e), e
+
+
 class TestMin2(object):
     @classmethod
     def setup_class(cls):
@@ -318,6 +371,13 @@ class TestMin2(object):
     def test_plugin_mappings(self):
         expected = [('minimal2', 'internalonly', None), ('minimal2', 'news', None), ('minimal2', 'news', 'newsplug4'), ('minimal2', 'foo', 'foobwp')]
         eq_(expected, list_plugin_mappings())
+
+    def test_find_content_no_module_app_level(self):
+        try:
+            v = findcontent('NotThere')
+            assert False
+        except HierarchyImportError, e:
+            assert 'An object for Content endpoint "NotThere" was not found' == str(e), e
 
 def test_visitmods_reloading():
     m2_make_wsgi()

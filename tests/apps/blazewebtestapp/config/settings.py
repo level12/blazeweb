@@ -38,6 +38,7 @@ class Testruns(Default):
 
     def setup_plugins(self):
         self.add_plugin(app_package, 'tests')
+        self.add_plugin(app_package, 'badimport1')
         self.add_plugin(app_package, 'nomodel')
         self.add_plugin(app_package, 'nosettings')
         self.add_plugin(app_package, 'sessiontests')

@@ -89,14 +89,32 @@ def list_plugin_mappings(target_plugin=None, reverse=False, inc_apps=False):
 def findcontent(endpoint):
     try:
         return findendpoint(endpoint, 'content')
-    except HierarchyImportError:
+    except HierarchyImportError, e:
+        if not find_exc_is_from(e, endpoint, 'content'):
+            raise
         raise HierarchyImportError('An object for Content endpoint "%s" was not found' % endpoint)
 
 def findview(endpoint):
     try:
         return findendpoint(endpoint, 'views')
-    except HierarchyImportError:
+    except HierarchyImportError, e:
+        if not find_exc_is_from(e, endpoint, 'views'):
+            raise
         raise HierarchyImportError('An object for View endpoint "%s" was not found' % endpoint)
+
+def find_exc_is_from(e, endpoint, where):
+    if ':' not in endpoint:
+        plugin = None,
+        attr = endpoint
+    else:
+        plugin, attr = endpoint.split(':')
+    possible_messages = [
+        'module "%s.%s" not found; searched plugstack' % (plugin, where),
+        'module "%s" not found; searched appstack' % where,
+        'attribute "%s" not found; searched plugstack.%s.%s' % (attr, plugin, where),
+        'attribute "%s" not found; searched appstack.%s' % (attr, where),
+    ]
+    return str(e) in possible_messages
 
 def findendpoint(endpoint, where):
     """
