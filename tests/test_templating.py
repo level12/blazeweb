@@ -69,6 +69,11 @@ class TestContent(object):
       assert js == c.page_js(reindent=None), c.page_js()
       assert ijs == c.page_js(), c.page_js()
 
+   def test_included_content_default_safe(self):
+      c = getcontent('nesting_content.html', endpoint='foo')
+      body = c.primary
+      assert 'nc2 autoescape: &amp; False' in c.primary, c.primary
+
    @inrequest()
    def test_in_request_usage(self):
       user.name = 'foo'

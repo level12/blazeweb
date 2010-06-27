@@ -94,6 +94,8 @@ class TemplateContent(Content):
             'include_css': self.include_css,
             'include_js': self.include_js,
             'getcontent': self.include_content,
+            'include_content': self.include_content,
+            'include_html': self.include_html,
             'page_css': self.page_css,
             'page_js': self.page_js,
         })
@@ -103,6 +105,14 @@ class TemplateContent(Content):
         if self.plugin:
             endpoint = '%s:%s' % (self.plugin, endpoint)
         return endpoint
+
+    def include_content(self, __endpoint, *args, **kwargs):
+        c = self.update_nonprimary_from_endpoint(__endpoint, *args, **kwargs)
+        return c.primary
+
+    def include_html(self, __endpoint, *args, **kwargs):
+        c = self.update_nonprimary_from_endpoint(__endpoint, *args, **kwargs)
+        return ag.tplengine.mark_safe(c.primary)
 
     def include_content(self, __endpoint, *args, **kwargs):
         c = self.update_nonprimary_from_endpoint(__endpoint, *args, **kwargs)
