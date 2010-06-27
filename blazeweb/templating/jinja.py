@@ -2,7 +2,7 @@ from __future__ import with_statement
 import logging
 from os import path
 
-from jinja2 import Environment, TemplateNotFound, BaseLoader
+from jinja2 import Environment, TemplateNotFound, BaseLoader, Template as j2Template
 from jinja2.utils import Markup
 
 from blazeweb.globals import settings
@@ -11,6 +11,21 @@ import blazeweb.templating as templating
 
 log = logging.getLogger(__name__)
 
+class Template(j2Template):
+
+    @classmethod
+    def _from_namespace(cls, environment, namespace, globals):
+        def _custom_root_render_function(context):
+            endpoint_stack = context.get('__TemplateContent.endpoint_stack')
+            endpoint_stack.append(t.name)
+            for event in t._real_root_render_func(context):
+                yield event
+            endpoint_stack.pop()
+        t = j2Template._from_namespace(environment, namespace, globals)
+        t._real_root_render_func = namespace['root']
+        t.root_render_func = _custom_root_render_function
+        return t
+
 class Translator(templating.EngineBase):
 
     def __init__(self):
@@ -18,6 +33,7 @@ class Translator(templating.EngineBase):
             loader=self.create_loader(),
             **self.get_settings()
             )
+        self.env.template_class = Template
         self.init_globals()
         self.init_filters()
 

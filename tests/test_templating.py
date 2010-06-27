@@ -63,7 +63,6 @@ class TestContent(object):
       assert css in c.page_css(reindent=None), c.page_css()
       assert icss in c.page_css(), c.page_css()
 
-
       ijs = '        // nesting_content2.js'
       js = '// nesting_content2.js'
       assert js == c.page_js(reindent=None), c.page_js()
@@ -73,6 +72,15 @@ class TestContent(object):
       c = getcontent('nesting_content.html', endpoint='foo')
       body = c.primary
       assert 'nc2 autoescape: &amp; False' in c.primary, c.primary
+
+   def test_direct_includes(self):
+      c = getcontent('direct_include.html')
+      body = c.primary
+      assert 'nesting_content2.html' in body, body
+      assert 'nesting_content3.html' in body, body
+      assert '/* nesting_content2.css */' in body, body
+      assert '// nesting_content2.js' in body
+      assert '/* nesting_content3.css */' in body, body
 
    @inrequest()
    def test_in_request_usage(self):

@@ -74,15 +74,18 @@ class TemplateContent(Content):
 
     def __init__(self, endpoint):
         plugin, template = split_endpoint(endpoint)
-        self.plugin = plugin
         self.template = template
         self.endpoint = endpoint
+        # the endpoint stack is used when the template engine's own
+        # "include" is used.  It puts the included endpoint on the stack
+        # which allows the include_css() and include_js() functions to
+        # correctly determine the name of the file that is trying to be
+        # included.
+        self.endpoint_stack = []
         Content.__init__(self)
-
 
     def settype(self):
         basename, ext = path.splitext(self.template)
-        self.basename = basename
         self.primary_type = ext_registry[ext.lstrip('.')]
 
     def create(self, **kwargs):
@@ -98,12 +101,16 @@ class TemplateContent(Content):
             'include_html': self.include_html,
             'page_css': self.page_css,
             'page_js': self.page_js,
+            '__TemplateContent.endpoint_stack': self.endpoint_stack
         })
 
     def _supporting_endpoint_from_ext(self, extension):
-        endpoint = '%s.%s' % (self.basename, extension)
-        if self.plugin:
-            endpoint = '%s:%s' % (self.plugin, endpoint)
+        current_endpoint = self.endpoint_stack[-1]
+        plugin, template = split_endpoint(current_endpoint)
+        basename, _ = path.splitext(template)
+        endpoint = '%s.%s' % (basename, extension)
+        if plugin:
+            endpoint = '%s:%s' % (plugin, endpoint)
         return endpoint
 
     def include_content(self, __endpoint, *args, **kwargs):
@@ -111,8 +118,8 @@ class TemplateContent(Content):
         return c.primary
 
     def include_html(self, __endpoint, *args, **kwargs):
-        c = self.update_nonprimary_from_endpoint(__endpoint, *args, **kwargs)
-        return ag.tplengine.mark_safe(c.primary)
+        html = self.include_content(__endpoint, *args, **kwargs)
+        return ag.tplengine.mark_safe(html)
 
     def include_content(self, __endpoint, *args, **kwargs):
         c = self.update_nonprimary_from_endpoint(__endpoint, *args, **kwargs)
