@@ -568,19 +568,18 @@ class SecureView(View):
         self.is_authorized = self.auth_calculate_any_all(self.require_any, self.require_all)
 
     def auth_calculate_any_all(self, any, all):
-
         # if require_all is given and there are any failures, deny authorization
-        for perm in tolist(self.require_all):
+        for perm in tolist(all):
             if not user.has_token(perm):
                 return False
         # if there was at least one value for require_all and not values for
         # require any, then the user is authorized
-        if self.require_all and not self.require_any:
+        if all and not any:
             return True
         # at this point, require_all passed or was empty and require_any has
         # at least one value, so this is the final check to determine
         # authorization
-        if user.has_any_token(self.require_any):
+        if user.has_any_token(any):
             return True
         return False
 
