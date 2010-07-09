@@ -6,6 +6,7 @@ import sys
 from blazeutils.datastructures import BlankObject, OrderedDict, UniqueList
 from blazeutils.error_handling import raise_unexpected_import_error
 from blazeweb.globals import ag, settings
+from blazeweb.utils import registry_has_object
 
 log = logging.getLogger(__name__)
 
@@ -23,11 +24,10 @@ class FileNotFound(Exception):
         raised when a file is not found in findfile()
     """
 
-
 class HierarchyManager(object):
 
     def __init__(self):
-        self.builtin_import = __builtin__.__import__
+        self._builtin_import = __builtin__.__import__
         self.replace_builtin()
 
     def replace_builtin(self):
@@ -35,8 +35,20 @@ class HierarchyManager(object):
         log.debug('HierarchyManager replaced __builtin__.__import__')
 
     def restore_builtin(self):
-        __builtin__.__import__ = self.builtin_import
+        __builtin__.__import__ = self._builtin_import
         log.debug('HierarchyManager restored __builtin__.__import__')
+
+    def builtin_import(self, name, globals={}, locals={}, fromlist=[], level=-1):
+        mod = self._builtin_import(name, globals, locals, fromlist, level)
+        # for module reloading purposes in visitmods(), we need to keep track
+        # of what application imported a module.  But we only need to do that
+        # for modules that are in BlazeWeb applications or are BW plugins
+        if registry_has_object(ag):
+            # is this module part of the main or supporting app?
+            toplevel = name.split('.')[0]
+            if toplevel in listapps() or toplevel in list_plugin_packages():
+                mod._blazeweb_hierarchy_last_imported_by = id(ag.app)
+        return mod
 
     def blazeweb_import(self, name, globals={}, locals={}, fromlist=[], level=-1):
         instack_collection = ImportOverrideHelper.doimport(name, fromlist)
@@ -44,7 +56,6 @@ class HierarchyManager(object):
             return instack_collection
         return self.builtin_import(name, globals, locals, fromlist, level)
 hm = HierarchyManager()
-
 
 def listapps(reverse=False):
     if reverse:
@@ -65,6 +76,18 @@ def listplugins(reverse=False):
     if reverse:
         retval.reverse()
     return retval
+
+def list_plugin_packages():
+    """
+        a flat list of enabled plugin packages
+    """
+    if not hasattr(ag, 'hierarchy_plugin_packages'):
+        packages = []
+        for _, _, packagename in list_plugin_mappings():
+            if packagename:
+                packages.append(packagename)
+        ag.hierarchy_plugin_packages = packages
+    return ag.hierarchy_plugin_packages
 
 def list_plugin_mappings(target_plugin=None, reverse=False, inc_apps=False):
     """
@@ -185,14 +208,15 @@ def visitmods(dotpath, reverse=False, call_with_mod=None, reloadmod=True):
         reverse: visit modules in the reverse order, from the bottom up
         call_with_mod: a callable that will be called after the module is loaded
             with the loaded module as the only argument to the callable.
-        reloadmod: uses reload() on the module if it has already been imported;
-            this is useful when loading a module has a side-affect and that
-            side-affect needs to be repeated for each app.  An example of this
-            is when a "views" modules are loaded because they use @asview.  That
-            decorator, when fired, adds a route in the current app to the view.
-            If the views module is shared among more than one application
-            running in the same process, an external plugin for example, then
-            that side-affect needs to be repeated for each application.
+        reloadmod: uses reload() on the module if it has already been imported
+            by another application; this is useful when loading a module has a
+            side-affect and that side-affect needs to be repeated for each app.
+            An example of this is when a "views" modules are loaded because they
+            use @asview. That decorator, when fired, adds a route in the current
+            app to the view. If the views module is shared among more than one
+            application running in the same process, an external plugin for
+            example, then that side-affect needs to be repeated for each
+            application.
     """
     visitlist = list_plugin_mappings(inc_apps=True, reverse=reverse)
     for app, pname, package in visitlist:
@@ -204,8 +228,11 @@ def visitmods(dotpath, reverse=False, call_with_mod=None, reloadmod=True):
             else:
                 impstr = '%s.plugins.%s.%s' % (app, pname, dotpath)
             if sys.modules.has_key(impstr):
-                if reloadmod:
+                mod_loaded_by = getattr(sys.modules[impstr], '_blazeweb_hierarchy_last_imported_by', None)
+                current_app_id = id(ag.app)
+                if reloadmod and mod_loaded_by != current_app_id:
                     module = reload(sys.modules[impstr])
+                    module._blazeweb_hierarchy_last_imported_by = current_app_id
                 else:
                     module = sys.modules[impstr]
             else:

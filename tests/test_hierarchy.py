@@ -382,15 +382,24 @@ class TestMin2(object):
 def test_visitmods_reloading():
     m2_make_wsgi()
     rulenum = len(list(ag.route_map.iter_rules()))
+    # if all the tests are run, and reload doesn't work, then this this will
+    # fail b/c other tests have already loaded minimal2/views.py
     assert rulenum >= 9, ag.route_map
 
     from minimal2.views import page1
     firstid = id(page1)
 
+    # reloading should only work once per application, so running it again
+    # for the same app should not cause any further side effects
+    visitmods('views')
+    rulenum2 = len(list(ag.route_map.iter_rules()))
+    assert rulenum == rulenum2, ag.route_map
+
     m2_make_wsgi()
     rulenum = len(list(ag.route_map.iter_rules()))
+    # if only this tests is run, and reload doesn't work, then this this will
+    # fail b/c the previous m2_make_wsgi() loaded minimal2/views.py
     assert rulenum >= 9, ag.route_map
-
 
     from minimal2.views import page1
     secondid = id(page1)
