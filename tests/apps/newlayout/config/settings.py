@@ -23,6 +23,8 @@ class Default(nlDefault):
         # don't use exception catching, debuggers, logging, etc.
         self.apply_test_settings()
 
+        # application level setting should take precedence over what is defined
+        # in the plugin's settings file
         self.plugins.news.bar = 3
 
     def get_storage_dir(self):

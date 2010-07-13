@@ -38,6 +38,9 @@ class Dispatching(Default):
         self.add_plugin(self.app_package, 'news', 'newsplug4')
         self.add_plugin(self.app_package, 'foo', 'foobwp')
 
+        # plugins should be able to add things to this list
+        self.some_list = ['from app']
+
 class EventSettings(Default):
     def init(self):
         Default.init(self)

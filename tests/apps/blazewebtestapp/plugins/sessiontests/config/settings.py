@@ -1,13 +1,8 @@
-from werkzeug.routing import Rule
+from blazeweb.config import PluginSettings
 
-from blazeweb.config import QuickSettings
+class Settings(PluginSettings):
 
-class Settings(QuickSettings):
-    
-    def __init__(self):
-        QuickSettings.__init__(self)
-        
-        self.routes = ([
-            Rule('/sessiontests/setfoo', endpoint='sessiontests:SetFoo'),
-            Rule('/sessiontests/getfoo', endpoint='sessiontests:GetFoo'),
-        ])
+    def init(self):
+
+        self.add_route('/sessiontests/setfoo', 'sessiontests:SetFoo')
+        self.add_route('/sessiontests/getfoo', 'sessiontests:GetFoo')

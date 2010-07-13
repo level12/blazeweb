@@ -10,5 +10,5 @@ class Settings(PluginSettings):
         self.add_route('/news/template', 'news:Template')
         self.add_route('/news/reqsetupattr', 'news:TestRequestSetupAttr')
 
-        self.foo = 1
-        self.bar = 2
+        self.for_me.foo = 1
+        self.for_me.bar = 2

@@ -348,10 +348,12 @@ class DefaultSettings(QuickSettings):
         kwargs['endpoint'] = endpoint
         self.routing.routes.append(Rule(route, *args, **kwargs))
 
-class PluginSettings(QuickSettings):
-    def __init__(self):
-        QuickSettings.__init__(self)
-        self.routes = []
+class PluginSettings(object):
+    def __init__(self, app_settings):
+        self.for_me = QuickSettings()
+        self.for_app = QuickSettings()
+        self.for_me.routes = []
+        self.app_settings = app_settings
         self.init()
 
     def init(self):
@@ -359,4 +361,4 @@ class PluginSettings(QuickSettings):
 
     def add_route(self, route, endpoint, *args, **kwargs):
         kwargs['endpoint'] = endpoint
-        self.routes.append(Rule(route, *args, **kwargs))
+        self.for_me.routes.append(Rule(route, *args, **kwargs))

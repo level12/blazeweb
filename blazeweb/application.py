@@ -171,17 +171,24 @@ class WSGIApp(object):
         for pname in listplugins():
             try:
                 Settings = findobj('%s:config.settings.Settings' % pname)
-                ms = Settings()
-                # update the plugin's settings with any plugin level settings made
-                # at the app level.  This allows us to override plugin settings
-                # in our application's settings.py file.
+                ps = Settings(self.settings)
+
+                # update plugin-level settings
                 try:
-                    ms.update(self.settings.plugins[pname])
+                    self.settings.plugins[pname].setdefaults(ps.for_me)
                 except KeyError, e:
                     if pname not in str(e):
-                        raise # pragma: no cover
-                self.settings.plugins[pname] = ms
+                        raise
+                    # the application's settings did not override any of this
+                    # plugin's settings and therefore doesn't have a settings
+                    # object for this plugin.  Therefore, we just add it.
+                    self.settings.plugins[pname] = ps.for_me
+
+                # update application-level settings
+                self.settings.setdefaults(ps.for_app)
             except HierarchyImportError, e:
+                # this happens if the plugin did not have a settings module or
+                # did not have a Settings class in the module
                 if '%s.config.settings' % pname not in str(e) and 'Settings' not in str(e):
                     raise # pragma: no cover
 

@@ -1,13 +1,12 @@
 from werkzeug.routing import Rule
 
-from blazeweb.config import QuickSettings
+from blazeweb.config import PluginSettings
 
-class Settings(QuickSettings):
+class Settings(PluginSettings):
 
-    def __init__(self):
-        QuickSettings.__init__(self)
+    def init(self):
 
-        self.routes = ([
+        self.for_me.routes = ([
             Rule('/tests/rvb', endpoint='tests:Rvb'),
             Rule('/tests/rvbwsnip', endpoint='tests:RvbWithSnippet'),
             Rule('/tests/get', endpoint='tests:Get'),
@@ -50,4 +49,4 @@ class Settings(QuickSettings):
             Rule('/tests/text.txt/<towho>', endpoint='tests:text.txt'),
         ])
 
-        self.foo = 'baz'
+        self.for_me.foo = 'baz'

@@ -1,12 +1,7 @@
-from werkzeug.routing import Rule
+from blazeweb.config import PluginSettings
 
-from blazeweb.config import QuickSettings
+class Settings(PluginSettings):
 
-class Settings(QuickSettings):
-    
-    def __init__(self):
-        QuickSettings.__init__(self)
-        
-        self.routes = ([
-            Rule('/routingtests/currenturl', endpoint='routingtests:CurrentUrl'),
-        ])
+    def init(self):
+
+        self.add_route('/routingtests/currenturl', 'routingtests:CurrentUrl')

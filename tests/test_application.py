@@ -14,18 +14,24 @@ def test_plugin_settings():
     app = make_wsgi()
 
     assert settings.plugins.news.foo == 1
-    assert settings.plugins.news.bar == 3
+    eq_(settings.plugins.news.bar, 3)
     assert settings.plugins.pnoroutes.noroutes == True
 
     assert "<Rule '/fake/route' -> news:notthere>" in str(ag.route_map), ag.route_map
 
 def test_external_plugin_settings():
     app = m2_make_wsgi('Dispatching')
-    
+
     # an internal-only plugin
     assert settings.plugins.news.min2news == 'internal'
     # an external-only plugin
     assert settings.plugins.foo.fooattr == True
+
+    # an application level setting from a plugin
+    assert settings.setting_from_plugin == 'minimal2'
+
+    # plugins can add/change the app's current settings
+    eq_(settings.some_list, ['from app', 'minimal2'])
 
 def test_bad_settings_profile():
     try:
@@ -75,4 +81,3 @@ def test_environ_hooks():
 
     r = ta.get('/news/reqsetupattr')
     r.mustcontain('foo')
-
