@@ -9,8 +9,10 @@ from paste.registry import RegistryManager
 from werkzeug import EnvironHeaders, LimitedStream, \
     SharedDataMiddleware, DebuggedApplication
 
-from blazeweb.globals import settings, ag
+
 from blazeweb import routing
+from blazeweb.hierarchy import list_plugin_mappings, findfile, FileNotFound
+from blazeweb.globals import settings, ag
 from blazeweb.utils.filesystem import mkdirs
 
 class HttpRequestLogger(object):
@@ -75,6 +77,54 @@ class HttpRequestLogger(object):
         environ['wsgi.input'] = wsgi_input
         return environ['wsgi.input']
 
+class StaticFileServer(SharedDataMiddleware):
+    """
+        Serves static files based on hierarchy structure
+    """
+    def __init__(self, app, **kwargs):
+        exports = {'/' + routing.static_url('/') : ''}
+        SharedDataMiddleware.__init__(self, app, exports, **kwargs)
+
+    def get_directory_loader(self, directory):
+        def loader(pathpart):
+            if pathpart is None:
+                return None, None
+            if not pathpart.count('/'):
+                return None, None
+            type, pathpart = pathpart.split('/', 1)
+            if not pathpart:
+                return None, None
+            if type not in ('app', 'plugin'):
+                return None, None
+            if type == 'plugin':
+                if not pathpart.count('/'):
+                    return None, None
+                plugin, pathpart = pathpart.split('/', 1)
+            # look in the static directory
+            pathpart = 'static/' + pathpart
+            if type == 'app':
+                endpoint = pathpart
+            else:
+                endpoint = '%s:%s' % (plugin, pathpart)
+            try:
+                fpath = findfile(endpoint)
+                return path.basename(fpath), self._opener(fpath)
+            except FileNotFound:
+                return None, None
+        return loader
+
+def static_files(app):
+    settings = ag.app.settings
+    if settings.static_files.enabled:
+        # serve static files from static directory (e.g. after copying
+        # from the source packages; use static-copy command for that)
+        if settings.static_files.location  == 'static':
+            exported_dirs = {'/' + routing.static_url('/') : settings.dirs.static}
+            return SharedDataMiddleware(app, exported_dirs)
+        # serve static files from source packages based on hierarchy rules
+        return StaticFileServer(app)
+    return app
+
 def full_wsgi_stack(app):
     """
         returns the WSGIApp wrapped in common middleware
@@ -87,9 +137,7 @@ def full_wsgi_stack(app):
 
     app = RegistryManager(app)
 
-    # serve static files from static directory
-    if settings.static_files.enabled:
-        app = SharedDataMiddleware(app, {'/' + routing.static_url('/') : settings.dirs.static})
+    app = static_files(app)
 
     # show nice stack traces and debug output if enabled
     if settings.debugger.enabled:

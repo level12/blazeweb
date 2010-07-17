@@ -55,6 +55,11 @@ class WithTestSettings(Default):
         Default.init(self)
         self.auto_abort_as_builtin = True
 
+class ForStaticFileTesting(Default):
+    def init(self):
+        Default.init(self)
+        self.static_files.location  = 'source'
+
 class AttributeErrorInSettings(Default):
     def init(self):
         Default.init(self)

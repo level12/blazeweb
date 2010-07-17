@@ -274,8 +274,16 @@ class DefaultSettings(QuickSettings):
         # Static Files
         ######################################################################
         # should we use Werkzeug's SharedData middleware for serving static
-        # files?
+        # files?  Only applies when using middleware.full_wsgi_stack() or
+        # middleware.static_files()
         self.static_files.enabled = True
+        # should static files be served from the static directory (e.g. after
+        # they are copied there) or from the application and plugin source
+        # directories?  Possible values are: "static" and "source".  "source"
+        # is slower and should be used primarily for development environments
+        # when static files are changing often and copying to the static
+        # directory after each change is a hassle.
+        self.static_files.location = 'static'
 
         #######################################################################
         # Automatic Actions
@@ -338,7 +346,7 @@ class DefaultSettings(QuickSettings):
 
         self.exception_handling = None
         self.debugger.enabled = True
-        self.auto_copy_static.enabled = True
+        self.static_files.location  = 'source'
         self.auto_abort_as_builtin = True
 
         if override_email:
