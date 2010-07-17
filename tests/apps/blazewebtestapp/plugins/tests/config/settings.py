@@ -47,6 +47,7 @@ class Settings(PluginSettings):
             Rule('/tests/usermessages', endpoint='tests:UserMessages'),
             Rule('/tests/tchooser/<rtype>', endpoint='tests:TemplateChooser'),
             Rule('/tests/text.txt/<towho>', endpoint='tests:text.txt'),
+            Rule('/jsonify-exception', endpoint='tests:JsonifyException'),
         ])
 
         self.for_me.foo = 'baz'

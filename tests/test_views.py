@@ -2,6 +2,7 @@ import unittest
 
 from werkzeug import Client, BaseResponse
 
+from blazeweb._internal import json
 from blazeweb.globals import settings, user
 from blazeweb.exceptions import ProgrammingError
 from blazeweb.hierarchy import HierarchyImportError
@@ -383,6 +384,26 @@ class TestViews(unittest.TestCase):
         r = self.client.get('/tests/text.txt/&fred')
         assert r.headers['Content-Type'] == 'text/plain; charset=utf-8', r.headers
         assert 'Hello &amp;fred!' in r.data, r.data
+
+    def test_jsonify_exception(self):
+        # we have exception handling turned off during testing, so we should
+        # get the exception passed all the way up
+        try:
+            r = self.client.get('/jsonify-exception')
+            assert False
+        except NameError, e:
+            if 'foo' not in str(e):
+                raise
+
+        try:
+            settings.exception_handling = ['handle']
+            r = self.client.get('/jsonify-exception')
+            assert r.status_code == 500, r.status_code
+            data = json.loads(r.data)
+            assert data['error'] == 1, data
+            assert data['data'] is None, data
+        finally:
+            settings.exception_handling = None
 
 class TestApp2(unittest.TestCase):
 

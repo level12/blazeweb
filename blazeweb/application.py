@@ -46,6 +46,8 @@ class RequestManager(object):
             log.debug('beaker session found, id: %s', rg.session.id)
         else:
             rg.session = None
+        # if set, it will be called with an unhandled exception if necessary
+        rg.exception_handler = None
 
     def init_routing(self):
         rg.urladapter = ag.route_map.bind_to_environ(self.environ)
@@ -331,15 +333,18 @@ class WSGIApp(object):
             response.description = '<pre>%s</pre>' % escape(exception_with_context())
             return response
         if 'handle' in self.settings.exception_handling:
-            endpoint = self.settings.error_docs.get(500)
-            if endpoint is not None:
-                log.debug('handling exception with error doc endpoint %s' % endpoint)
-                try:
-                    return self.response_cycle(endpoint, {}, error_doc_code=500)
-                except HTTPException, httpe:
-                    log.debug('error doc endpoint %s raised HTTPException: %s', endpoint, httpe)
-                except Exception, exc:
-                    log.exception('error doc endpoint %s raised exception:', endpoint)
+            if rg.exception_handler:
+                return rg.exception_handler(e)
+            else:
+                endpoint = self.settings.error_docs.get(500)
+                if endpoint is not None:
+                    log.debug('handling exception with error doc endpoint %s' % endpoint)
+                    try:
+                        return self.response_cycle(endpoint, {}, error_doc_code=500)
+                    except HTTPException, httpe:
+                        log.debug('error doc endpoint %s raised HTTPException: %s', endpoint, httpe)
+                    except Exception, exc:
+                        log.exception('error doc endpoint %s raised exception:', endpoint)
             # turn the exception into a 500 server response
             log.debug('handling exception with generic 500 response')
             return InternalServerError()

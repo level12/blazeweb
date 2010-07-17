@@ -679,21 +679,24 @@ class _RouteToTemplate(View):
 ### json related
 ###
 
+def json_exception_handler(e):
+    data_with_context = {
+        'error': 1,
+        'data': None,
+        'messages': [{'error':'exception encountered, see logs for details'}]
+        }
+    jsonstr = json.dumps(data_with_context)
+    return Response(jsonstr, status=500, mimetype='application/json')
+
 @decorator
 def jsonify(f, self, *args, **kwargs):
     """
         use on a function in the view callback; it will take the returned data
         and call render_json() with the data.  Will also handle exceptions.
     """
-    has_error = 0
-    data = None
-    try:
-        data = f(self, *args, **kwargs)
-    except Exception, e:
-        has_error = 1
-        log.exception('error calling jsonified function %s', f)
-        user.add_message('error', 'internal error encountered, exception logged')
-    self.render_json(data, has_error)
+    rg.exception_handler = json_exception_handler
+    data = f(self, *args, **kwargs)
+    self.render_json(data)
 
 ###
 ### view forwarding

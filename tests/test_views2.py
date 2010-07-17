@@ -657,17 +657,6 @@ def test_json_handlers():
     assert data['error'] == 0, data
     assert data['data']['foo1'] == 'bar', data
 
-    # test jsonify decorator with exception
-    class Jsonify(View):
-        @jsonify
-        def default(self):
-            foo
-    r = Jsonify({}, 'jsonify').process()
-    eq_(r.headers['Content-Type'], 'application/json')
-    data = json.loads(r.data)
-    assert data['error'] == 1, data
-    assert data['data'] is None, data
-
 def test_request_hijacking():
     r = ta.get('/request-hijack/forward')
     assert 'app index: 1' in r

@@ -1,7 +1,7 @@
 from blazeweb.globals import rg
 from blazeweb.content import getcontent
 from blazeweb.utils import redirect
-from blazeweb.views import View, forward
+from blazeweb.views import View, forward, jsonify
 from werkzeug.exceptions import ServiceUnavailable
 from formencode.validators import UnicodeString, Int
 
@@ -218,3 +218,8 @@ class TemplateChooser(View):
             self.render_endpoint('app_level.html')
         if rtype == 'content':
             self.render_endpoint('tests:HwSnippet')
+
+class JsonifyException(View):
+    @jsonify
+    def default(self):
+        foo
