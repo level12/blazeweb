@@ -115,6 +115,7 @@ class StaticFileServer(SharedDataMiddleware):
 
 def static_files(app):
     settings = ag.app.settings
+
     if settings.static_files.enabled:
         # serve static files from static directory (e.g. after copying
         # from the source packages; use static-copy command for that)
@@ -124,6 +125,20 @@ def static_files(app):
         # serve static files from source packages based on hierarchy rules
         return StaticFileServer(app)
     return app
+
+class RegistrySetup(object):
+    """
+        Sets up the paste.registry objects and application level
+        globals for each request.
+    """
+    def __init__(self, wsgiapp, bwapp):
+        self.wsgiapp = wsgiapp
+        self.bwapp = bwapp
+
+    def __call__(self, environ, start_response):
+        environ['paste.registry'].register(settings, self.bwapp.settings)
+        environ['paste.registry'].register(ag, self.bwapp.ag)
+        return self.wsgiapp(environ, start_response)
 
 def full_wsgi_stack(app):
     """
@@ -135,9 +150,9 @@ def full_wsgi_stack(app):
     if settings.beaker.enabled:
         app = SessionMiddleware(app, **dict(settings.beaker))
 
-    app = RegistryManager(app)
-
     app = static_files(app)
+
+    app = minimal_wsgi_stack(app)
 
     # show nice stack traces and debug output if enabled
     if settings.debugger.enabled:
@@ -156,5 +171,6 @@ def minimal_wsgi_stack(app):
         returns a WSGI application wrapped in minimal middleware, mostly useful
         for internal testing
     """
+    app = RegistrySetup(app, ag.app)
     app = RegistryManager(app)
     return app

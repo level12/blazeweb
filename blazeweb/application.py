@@ -32,8 +32,6 @@ class RequestManager(object):
     def init_registry(self):
         environ = self.environ
         environ['paste.registry'].register(rg, BlankObject())
-        environ['paste.registry'].register(settings, self.app.settings)
-        environ['paste.registry'].register(ag, self.app.ag)
         environ['paste.registry'].register(user, self.init_user())
 
     def init_rg(self):

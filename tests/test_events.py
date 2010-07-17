@@ -22,19 +22,31 @@ class EventTestApp(WSGIApp):
 class TestEvents(object):
 
     def test_event(self):
+        # newlayout event should fire, it should be the only one
         nlapp = EventTestApp(WithTestSettings())
+        assert len(called) == 1, called
         assert called[0][1] == 'newlayout', called
 
+        # do a functional tests, which uses the event
+        # blazeweb.response_cycle.ended to append the string 'newlayout' to the
+        # response of the requested view (in this case, "foo")
         nlta = TestApp(minimal_wsgi_stack(nlapp))
         r = nlta.get('/eventtest')
         r.mustcontain('foonewlayout')
 
+        # instantiate the minimal2 application, only one event, the one from that
+        # app, should fire
         m2app = EventTestApp(EventSettings())
+        assert len(called) == 1, called
         assert called[0][1] == 'minimal2', called
 
+        # same as above, but the minimal2 application is modifying the request
         m2ta = TestApp(minimal_wsgi_stack(m2app))
         r = m2ta.get('/eventtest')
         r.mustcontain('foominimal2')
 
+        # now that we have instantiated the minimal2 application, we want to
+        # make sure that request level events for the newlayout application are
+        # still working as expected
         r = nlta.get('/eventtest')
         r.mustcontain('foonewlayout')
