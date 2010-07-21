@@ -87,3 +87,11 @@ class TestContent(object):
       user.name = 'foo'
       c = getcontent('user_test.html')
       assert c.primary == 'user\'s name: foo', c.primary
+
+   @inrequest()
+   def test_context_variable_takes_precedence(self):
+      user.name = 'foo'
+      class MyUser(object):
+         name = 'bar'
+      c = getcontent('user_test.html', user=MyUser())
+      assert c.primary == 'user\'s name: bar', c.primary

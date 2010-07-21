@@ -48,14 +48,11 @@ class EngineBase(object):
         return filters
 
     def update_context(self, context):
-        toadd = {
-            'settings': settings._current_obj(),
-        }
+        context.setdefault('settings', settings._current_obj())
         if registry_has_object(user):
-            toadd['user'] = user._current_obj()
+            context.setdefault('user', user._current_obj())
         else:
-            toadd['user'] = None
-        context.update(toadd)
+            context.setdefault('user', None)
 
 def default_engine():
     tmod = __import__('blazeweb.templating.%s' % settings.templating.default_engine, fromlist=[''])
