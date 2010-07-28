@@ -10,9 +10,10 @@ from blazeweb.globals import rg
 log = logging.getLogger(__name__)
 
 class User(LazyDict):
+    messages_type = OrderedDict
 
     def __init__(self):
-        self.messages = OrderedDict()
+        self.messages = self.messages_type()
         # initialize values
         self.clear()
         LazyDict.__init__(self)
@@ -56,7 +57,7 @@ class User(LazyDict):
         msgs = self.messages.values()
         if clear:
             log.debug('SessionUser messages cleared')
-            self.messages = {}
+            self.messages = self.messages_type()
         return msgs
 
     def __repr__(self):
