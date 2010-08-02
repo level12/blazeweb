@@ -1,7 +1,8 @@
+import logging
 from os import path
-import time
-from tempfile import TemporaryFile
 from StringIO import StringIO
+from tempfile import TemporaryFile
+import time
 
 from beaker.middleware import SessionMiddleware
 from blazeutils import randchars, pformat, tolist
@@ -9,11 +10,12 @@ from paste.registry import RegistryManager
 from werkzeug import EnvironHeaders, LimitedStream, \
     SharedDataMiddleware, DebuggedApplication
 
-
 from blazeweb import routing
 from blazeweb.hierarchy import list_plugin_mappings, findfile, FileNotFound
 from blazeweb.globals import settings, ag
 from blazeweb.utils.filesystem import mkdirs
+
+log = logging.getLogger(__name__)
 
 class HttpRequestLogger(object):
     """
@@ -85,31 +87,40 @@ class StaticFileServer(SharedDataMiddleware):
         exports = {'/' + routing.static_url('/') : ''}
         SharedDataMiddleware.__init__(self, app, exports, **kwargs)
 
+    def debug(self, pathpart, msg):
+        log.debug('StaticFileServer 404 (%s): %s', pathpart, msg)
+
     def get_directory_loader(self, directory):
         def loader(pathpart):
             if pathpart is None:
+                self.debug(pathpart, 'pathpart is None')
                 return None, None
             if not pathpart.count('/'):
+                self.debug(pathpart, 'pathpart had no slashes')
                 return None, None
-            type, pathpart = pathpart.split('/', 1)
-            if not pathpart:
+            type, locpath = pathpart.split('/', 1)
+            if not locpath:
+                self.debug(pathpart, 'pathpart had type, but not locpath')
                 return None, None
             if type not in ('app', 'plugin'):
+                self.debug(pathpart, 'type was not "app" or "plugin"')
                 return None, None
             if type == 'plugin':
-                if not pathpart.count('/'):
+                if not locpath.count('/'):
+                    self.debug(pathpart, 'plugin type, but locpath had no slashes')
                     return None, None
-                plugin, pathpart = pathpart.split('/', 1)
+                plugin, locpath = locpath.split('/', 1)
             # look in the static directory
-            pathpart = 'static/' + pathpart
+            locpath = 'static/' + locpath
             if type == 'app':
-                endpoint = pathpart
+                endpoint = locpath
             else:
-                endpoint = '%s:%s' % (plugin, pathpart)
+                endpoint = '%s:%s' % (plugin, locpath)
             try:
                 fpath = findfile(endpoint)
                 return path.basename(fpath), self._opener(fpath)
             except FileNotFound:
+                self.debug(pathpart, 'endpoint "%s" not found' % endpoint)
                 return None, None
         return loader
 
