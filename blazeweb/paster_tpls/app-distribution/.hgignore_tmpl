@@ -1,0 +1,2 @@
+^(build|dist|{{project}}\.egg-info)/
+\.py[co]$

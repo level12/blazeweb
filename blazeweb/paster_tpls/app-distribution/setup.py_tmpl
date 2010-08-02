@@ -1,0 +1,21 @@
+from setuptools import setup, find_packages
+
+from {{project}} import VERSION
+
+setup(name='{{project.lower()}}',
+      version=VERSION,
+      description="{{description or ''}}",
+      long_description="""long description""",
+      author={{repr(author or '')}},
+      author_email={{repr(programmer_email or '')}},
+      packages=find_packages(),
+      include_package_data=True,
+      zip_safe=False,
+      install_requires=[
+          'BlazeWeb>=0.3dev'
+      ],
+      entry_points="""
+          [console_scripts]
+          {{project}} = {{project}}.application:script_entry
+      """,
+      )
