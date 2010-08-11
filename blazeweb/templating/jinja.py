@@ -16,7 +16,7 @@ class Template(j2Template):
     @classmethod
     def _from_namespace(cls, environment, namespace, globals):
         def _custom_root_render_function(context):
-            endpoint_stack = context.get('__TemplateContent.endpoint_stack')
+            endpoint_stack = context.get('__TemplateContent.endpoint_stack', [])
             endpoint_stack.append(t.name)
             for event in t._real_root_render_func(context):
                 yield event
