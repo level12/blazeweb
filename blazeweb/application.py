@@ -210,8 +210,11 @@ class WSGIApp(object):
         if self.settings.auto_abort_as_builtin == True:
             __builtin__.dabort = abort
 
+        signal('blazeweb.auto_actions.initialized').send(self.init_auto_actions)
+
     def init_logging(self):
         create_handlers_from_settings(self.settings)
+        signal('blazeweb.logging.initialized').send(self.init_logging)
 
     def init_routing(self):
         # setup the Map object with the appropriate settings
