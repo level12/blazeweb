@@ -31,6 +31,7 @@ class EngineBase(object):
         globals = {}
         globals['url_for'] = url_for
         globals['current_url'] = current_url
+        globals['static_url'] = static_url
         return globals
 
     def mark_safe(self):
