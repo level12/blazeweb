@@ -118,9 +118,21 @@ class TestUserUnit(object):
     def test_super_user_perms(self):
         u = User()
         u.is_super_user = True
+        assert u.is_super_user
         assert u.has_perm('foobar')
         u.add_perm('foobar')
         assert u.has_perm('foobar')
 
         assert u.has_any_perm('baz', 'zip')
         assert u.has_any_perm('foobar', 'baz')
+
+    def test_get_set_properties(self):
+        u = User()
+        assert not u.is_authenticated
+        u.is_authenticated = True
+        assert u.is_authenticated
+
+        u = User()
+        assert not u.is_super_user
+        u.is_super_user = True
+        assert u.is_super_user

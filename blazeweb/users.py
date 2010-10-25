@@ -16,10 +16,22 @@ class User(LazyDict):
         self.clear()
         LazyDict.__init__(self)
 
+    def _get_is_authenticated(self):
+        return self._is_authenticated
+    def _set_is_authenticated(self, value):
+        self._is_authenticated = value
+    is_authenticated = property(_get_is_authenticated, _set_is_authenticated)
+
+    def _get_is_super_user(self):
+        return self._is_super_user
+    def _set_is_super_user(self, value):
+        self._is_super_user = value
+    is_super_user = property(_get_is_super_user, _set_is_super_user)
+
     def clear(self):
         log.debug('SessionUser object getting cleared() of auth info')
-        self.is_authenticated = False
-        self.is_super_user = False
+        self._is_authenticated = False
+        self._is_super_user = False
         self.perms = set()
         LazyDict.clear(self)
 
