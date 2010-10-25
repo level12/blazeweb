@@ -29,21 +29,21 @@ class GetAuthenticated(View):
 class AddPerm(View):
 
     def default(self):
-        user.add_token('foo-bar')
+        user.add_perm('foo-bar')
 
 class GetPerms(View):
 
     def default(self):
-        return '%s%s%s' % (user.has_token('foo-bar'), user.has_token('foo-baz'), user.has_any_token('foo-bar', 'foo-baz'))
+        return '%s%s%s' % (user.has_perm('foo-bar'), user.has_perm('foo-baz'), user.has_any_perm('foo-bar', 'foo-baz'))
 
 class Clear(View):
 
     def default(self):
         user.foo = 'bar'
-        user.add_token('foo-bar')
+        user.add_perm('foo-bar')
         user.is_authenticated = True
         user.clear()
-        return '%s%s%s' % (user.is_authenticated, user.has_token('foo-bar'), getattr(user, 'foo', None))
+        return '%s%s%s' % (user.is_authenticated, user.has_perm('foo-bar'), getattr(user, 'foo', None))
 
 class SetMessage(View):
 

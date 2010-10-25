@@ -557,20 +557,12 @@ class SecureView(View):
             return
         self.is_authenticated = True
 
-        try:
-            if user.is_super_user:
-                self.is_authorized = True
-                return
-        except AttributeError, e:
-            if 'is_super_user' not in str(e):
-                raise # pragma: no cover
-
         self.is_authorized = self.auth_calculate_any_all(self.require_any, self.require_all)
 
     def auth_calculate_any_all(self, any, all):
         # if require_all is given and there are any failures, deny authorization
         for perm in tolist(all):
-            if not user.has_token(perm):
+            if not user.has_perm(perm):
                 return False
         # if there was at least one value for require_all and not values for
         # require any, then the user is authorized
@@ -579,7 +571,7 @@ class SecureView(View):
         # at this point, require_all passed or was empty and require_any has
         # at least one value, so this is the final check to determine
         # authorization
-        if user.has_any_token(any):
+        if user.has_any_perm(any):
             return True
         return False
 

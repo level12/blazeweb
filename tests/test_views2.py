@@ -566,7 +566,7 @@ def test_secure_view():
         def auth_pre(self):
             self.require_any = 'perm1', 'perm2'
             user.is_authenticated = True
-            user.add_token('perm2')
+            user.add_perm('perm2')
         def default(self):
             return 'ra'
     r = TestView({}, 'test').process()
@@ -576,10 +576,9 @@ def test_secure_view():
     # authentication, require all passes, no is_super_user attribute
     class TestView(SecureView):
         def auth_pre(self):
-            del user.is_super_user
             self.require_all = 'perm1', 'perm2'
             user.is_authenticated = True
-            user.add_token('perm2', 'perm1')
+            user.add_perm('perm2', 'perm1')
         def default(self):
             return 'ra'
     r = TestView({}, 'test').process()
@@ -592,7 +591,7 @@ def test_secure_view():
             self.require_all = 'perm1', 'perm2'
             self.require_any = 'perm2'
             user.is_authenticated = True
-            user.add_token('perm2')
+            user.add_perm('perm2')
     try:
         r = TestView({}, 'test').process()
         assert False

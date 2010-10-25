@@ -1,10 +1,14 @@
 import unittest
 
-import config
-from blazewebtestapp.applications import make_wsgi
 from werkzeug import Client, BaseResponse
 
-class TestUser(unittest.TestCase):
+from blazeweb.users import User
+
+import config
+from blazewebtestapp.applications import make_wsgi
+
+
+class TestUserFunctional(unittest.TestCase):
 
     def setUp(self):
         self.app = make_wsgi('Testruns')
@@ -66,3 +70,57 @@ class TestUser(unittest.TestCase):
 
         self.assertEqual(r.status, '200 OK')
         self.assertEqual(r.data, '0')
+
+class TestUserUnit(object):
+    def _check_empty(self, u):
+        assert u.is_authenticated == False
+        assert u.is_super_user == False
+        assert not u.perms
+
+    def test_defaults(self):
+        u = User()
+        self._check_empty(u)
+
+    def test_clear(self):
+        u = User()
+        u.is_authenticated = True
+        u.is_super_user = True
+        u.add_perm('foobar')
+        u.clear()
+        self._check_empty(u)
+
+    def test_lazy_dict_attrs(self):
+        u = User()
+        u.foobar = 1
+        assert u['foobar'] == 1
+
+    def test_api_attrs_not_in_dict(self):
+        u = User()
+        u.foobar = 1
+
+        keys = u.keys()
+        assert 'foobar' in keys
+        assert 'is_authenticated' not in keys
+
+    def test_perms(self):
+        u = User()
+        assert not u.has_perm('foobar')
+        u.add_perm('foobar')
+        assert u.has_perm('foobar')
+
+        assert not u.has_any_perm('baz', 'zip')
+        assert not u.has_any_perm(('baz', 'zip'))
+        assert u.has_any_perm('baz', 'foobar')
+        assert u.has_any_perm('foobar', 'baz')
+        assert u.has_any_perm(('baz', 'foobar'))
+        assert u.has_any_perm(['foobar', 'baz'])
+
+    def test_super_user_perms(self):
+        u = User()
+        u.is_super_user = True
+        assert u.has_perm('foobar')
+        u.add_perm('foobar')
+        assert u.has_perm('foobar')
+
+        assert u.has_any_perm('baz', 'zip')
+        assert u.has_any_perm('foobar', 'baz')

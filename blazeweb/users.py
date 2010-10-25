@@ -5,8 +5,6 @@ from blazeutils.datastructures import LazyDict, OrderedDict
 from blazeutils.helpers import tolist
 from blazeutils.strings import randchars
 
-from blazeweb.globals import rg
-
 log = logging.getLogger(__name__)
 
 class User(LazyDict):
@@ -22,24 +20,27 @@ class User(LazyDict):
         log.debug('SessionUser object getting cleared() of auth info')
         self.is_authenticated = False
         self.is_super_user = False
-        self.tokens = {}
+        self.perms = set()
         LazyDict.clear(self)
 
-    def add_token(self, *tokens):
-        for token in tokens:
-            self.tokens[token] = True
+    def _has_any(self, haystack, needles, arg_needles):
+        needles = set(tolist(needles))
+        if len(arg_needles) > 0:
+            needles |= set(arg_needles)
+        return bool(haystack.intersection(needles))
 
-    def has_token(self, token):
-        return self.tokens.has_key(token)
+    def add_perm(self, *perms):
+        self.perms |= set(perms)
 
-    def has_any_token(self, tokens, *args):
-        tokens = tolist(tokens)
-        if len(args) > 0:
-            tokens.extend(args)
-        for token in tokens:
-            if self.has_token(token):
-                return True
-        return False
+    def has_perm(self, perm):
+        if self.is_super_user:
+            return True
+        return perm in self.perms
+
+    def has_any_perm(self, perms, *args):
+        if self.is_super_user:
+            return True
+        return self._has_any(self.perms, perms, args)
 
     def add_message(self, severity, text, ident=None):
         log.debug('SessionUser message added: %s, %s, %s', severity, text, ident)
