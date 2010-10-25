@@ -25,6 +25,8 @@ from blazeweb.wrappers import Request
 log = logging.getLogger(__name__)
 
 class RequestManager(object):
+    user_class = User
+
     def __init__(self, app, environ):
         self.app = app
         self.environ = environ
@@ -54,11 +56,11 @@ class RequestManager(object):
         environ = self.environ
         if 'beaker.session' in environ:
             if '__blazeweb_user' not in environ['beaker.session']:
-                environ['beaker.session']['__blazeweb_user'] = User()
+                environ['beaker.session']['__blazeweb_user'] = self.user_class()
             return environ['beaker.session']['__blazeweb_user']
         # having a user object that is not in a session makes sense for testing
         # purposes, but probably not in production use
-        return User()
+        return self.user_class()
 
     def __enter__(self):
         self.init_registry()
