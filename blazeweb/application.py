@@ -34,6 +34,7 @@ class RequestManager(object):
     def init_registry(self):
         environ = self.environ
         environ['paste.registry'].register(rg, BlankObject())
+        self.init_rg()
         environ['paste.registry'].register(user, self.init_user())
 
     def init_rg(self):
@@ -64,7 +65,6 @@ class RequestManager(object):
 
     def __enter__(self):
         self.init_registry()
-        self.init_rg()
         self.init_routing()
         # allow middleware higher in the stack to help initilize the request
         # after the registry variables have been setup
