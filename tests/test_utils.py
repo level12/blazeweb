@@ -36,20 +36,20 @@ class TestFirstApp(object):
         assert_contents('nlsupporting', path.join('newlayout', 'static', 'app', 'statictest2.txt'))
 
         # app plugin files
-        assert_contents('newlayout:news', path.join('newlayout', 'static', 'plugins', 'news', 'statictest.txt'))
-        assert_contents('nlsupporting:news', path.join('newlayout', 'static', 'plugins', 'news', 'statictest4.txt'))
+        assert_contents('newlayout:news', path.join('newlayout', 'static', 'plugin', 'news', 'statictest.txt'))
+        assert_contents('nlsupporting:news', path.join('newlayout', 'static', 'plugin', 'news', 'statictest4.txt'))
 
         # external plugin files
-        assert_contents('newsplug1', path.join('newlayout', 'static', 'plugins', 'news', 'statictest2.txt'))
-        assert_contents('newsplug2', path.join('newlayout', 'static', 'plugins', 'news', 'statictest3.txt'))
-        assert_contents('newsplug3', path.join('newlayout', 'static', 'plugins', 'news', 'statictest5.txt'))
+        assert_contents('newsplug1', path.join('newlayout', 'static', 'plugin', 'news', 'statictest2.txt'))
+        assert_contents('newsplug2', path.join('newlayout', 'static', 'plugin', 'news', 'statictest3.txt'))
+        assert_contents('newsplug3', path.join('newlayout', 'static', 'plugin', 'news', 'statictest5.txt'))
 
     def test_removal(self):
         # create test files so we know if they are deleted
         mkdirs(path.join(script_test_path, 'newlayout', 'static', 'app'))
-        mkdirs(path.join(script_test_path, 'newlayout', 'static', 'plugins', 'news'))
+        mkdirs(path.join(script_test_path, 'newlayout', 'static', 'plugin', 'news'))
         app_fpath = path.join(script_test_path, 'newlayout', 'static', 'app', 'inapp.txt')
-        plugin_fpath = path.join(script_test_path, 'newlayout', 'static', 'plugins', 'news', 'inplugin.txt')
+        plugin_fpath = path.join(script_test_path, 'newlayout', 'static', 'plugin', 'news', 'inplugin.txt')
         root_fpath = path.join(script_test_path, 'newlayout', 'static', 'inroot.txt')
         open(app_fpath, 'w')
         open(plugin_fpath, 'w')
