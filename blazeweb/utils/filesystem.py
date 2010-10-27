@@ -60,7 +60,7 @@ def copy_static_files(delete_existing=False):
         app_stat_path = path.join(statroot, 'app')
         if path.exists(app_stat_path):
             rmtree(app_stat_path)
-        plugin_stat_path = path.join(statroot, 'plugins')
+        plugin_stat_path = path.join(statroot, 'plugin')
         if path.exists(plugin_stat_path):
             rmtree(plugin_stat_path)
 
@@ -77,7 +77,7 @@ def copy_static_files(delete_existing=False):
             if not pname:
                 targetpath = 'app'
             else:
-                targetpath = path.join('plugins', pname)
+                targetpath = path.join('plugin', pname)
             targetpath = path.join(statroot, targetpath)
 
             copytree(srcpath, targetpath)
