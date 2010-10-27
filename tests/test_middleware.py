@@ -21,9 +21,9 @@ class TestStaticFileServer(object):
     def test_bad_type(self):
         self.ta.get('/static/foo/something.txt', status=404)
 
-    def test_no_plugin(self):
-        self.ta.get('/static/plugin/', status=404)
-        self.ta.get('/static/plugin', status=404)
+    def test_no_component(self):
+        self.ta.get('/static/component/', status=404)
+        self.ta.get('/static/component', status=404)
 
     def test_top_level_file(self):
         r = self.ta.get('/static/app/statictest.txt')
@@ -33,10 +33,10 @@ class TestStaticFileServer(object):
         r = self.ta.get('/static/app/statictest2.txt')
         assert 'nlsupporting' in r, r
 
-    def test_from_internal_plugin(self):
-        r = self.ta.get('/static/plugin/news/statictest.txt')
+    def test_from_internal_component(self):
+        r = self.ta.get('/static/component/news/statictest.txt')
         assert 'newlayout:news' in r, r
 
-    def test_from_external_plugin(self):
-        r = self.ta.get('/static/plugin/news/statictest5.txt')
-        assert 'newsplug3' in r, r
+    def test_from_external_component(self):
+        r = self.ta.get('/static/component/news/statictest5.txt')
+        assert 'newscomp3' in r, r

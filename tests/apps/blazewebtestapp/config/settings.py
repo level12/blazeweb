@@ -24,7 +24,7 @@ class Testruns(Default):
         Default.init(self)
 
         self.supporting_apps = ['blazewebtestapp2']
-        self.setup_plugins()
+        self.setup_components()
 
         self.routing.routes.extend([
             Rule('/', endpoint='tests:Index')
@@ -36,19 +36,19 @@ class Testruns(Default):
         # a fake setting for testing
         self.foo = 'bar'
 
-    def setup_plugins(self):
-        self.add_plugin(app_package, 'tests')
-        self.add_plugin(app_package, 'badimport1')
-        self.add_plugin(app_package, 'nomodel')
-        self.add_plugin(app_package, 'nosettings')
-        self.add_plugin(app_package, 'sessiontests')
-        self.add_plugin(app_package, 'routingtests')
-        self.add_plugin(app_package, 'usertests')
-        self.add_plugin(app_package, 'disabled')
-        self.plugins.blazewebtestapp.disabled.enabled = False
-        # blazewebtestapp2 plugins
-        self.add_plugin('blazewebtestapp2', 'tests')
-        self.add_plugin('blazewebtestapp2', 'routingtests')
+    def setup_components(self):
+        self.add_component(app_package, 'tests')
+        self.add_component(app_package, 'badimport1')
+        self.add_component(app_package, 'nomodel')
+        self.add_component(app_package, 'nosettings')
+        self.add_component(app_package, 'sessiontests')
+        self.add_component(app_package, 'routingtests')
+        self.add_component(app_package, 'usertests')
+        self.add_component(app_package, 'disabled')
+        self.components.blazewebtestapp.disabled.enabled = False
+        # blazewebtestapp2 components
+        self.add_component('blazewebtestapp2', 'tests')
+        self.add_component('blazewebtestapp2', 'routingtests')
 
 class WithLogs(Testruns):
     def init(self):

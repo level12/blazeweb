@@ -88,7 +88,7 @@ setup(
     shell = blazeweb.commands:ShellCommand
     routes = blazeweb.commands:RoutesCommand
     static-copy = blazeweb.commands:StaticCopyCommand
-    plugin-map = blazeweb.commands:PluginMapCommand
+    component-map = blazeweb.commands:ComponentMapCommand
 
 
     [blazeweb.blazeweb_project_template]

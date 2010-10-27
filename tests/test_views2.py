@@ -469,7 +469,7 @@ def test_templating():
     # but can be turned on with the extension
     assert 'ae ext: a&amp;b' in r.body, r
 
-    # test plugin template default name
+    # test component template default name
     r = ta.get('/news/template')
     assert 'news index: 1' == r.body, r
 

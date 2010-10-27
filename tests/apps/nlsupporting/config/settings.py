@@ -7,6 +7,6 @@ app_package = path.basename(basedir)
 
 class Default(DefaultSettings):
 
-    def setup_plugins(self):
-        self.add_plugin(app_package, 'news')
-        self.add_plugin(app_package, 'news', 'newsplug3')
+    def setup_components(self):
+        self.add_component(app_package, 'news')
+        self.add_component(app_package, 'news', 'newscomp3')

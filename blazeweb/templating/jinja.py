@@ -77,10 +77,10 @@ class HierarchyLoader(BaseLoader):
     def find_template_path(self, endpoint):
         # try module level first
         try:
-            plugin, template = split_endpoint(endpoint)
+            component, template = split_endpoint(endpoint)
             endpoint = path.join('templates', template)
-            if plugin:
-                endpoint = '%s:%s' % (plugin, endpoint)
+            if component:
+                endpoint = '%s:%s' % (component, endpoint)
             return findfile(endpoint)
         except FileNotFound:
             pass

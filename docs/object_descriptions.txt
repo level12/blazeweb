@@ -31,7 +31,7 @@ Uppermost python package of your distribution. It defines:
 - application code
     - views
     -
-- plugins
+- components
 
 WSGIApp
 

@@ -11,7 +11,7 @@ from werkzeug import EnvironHeaders, LimitedStream, \
     SharedDataMiddleware, DebuggedApplication
 
 from blazeweb import routing
-from blazeweb.hierarchy import list_plugin_mappings, findfile, FileNotFound
+from blazeweb.hierarchy import list_component_mappings, findfile, FileNotFound
 from blazeweb.globals import settings, ag
 from blazeweb.utils.filesystem import mkdirs
 
@@ -102,20 +102,20 @@ class StaticFileServer(SharedDataMiddleware):
             if not locpath:
                 self.debug(pathpart, 'pathpart had type, but not locpath')
                 return None, None
-            if type not in ('app', 'plugin'):
-                self.debug(pathpart, 'type was not "app" or "plugin"')
+            if type not in ('app', 'component'):
+                self.debug(pathpart, 'type was not "app" or "component"')
                 return None, None
-            if type == 'plugin':
+            if type == 'component':
                 if not locpath.count('/'):
-                    self.debug(pathpart, 'plugin type, but locpath had no slashes')
+                    self.debug(pathpart, 'component type, but locpath had no slashes')
                     return None, None
-                plugin, locpath = locpath.split('/', 1)
+                component, locpath = locpath.split('/', 1)
             # look in the static directory
             locpath = 'static/' + locpath
             if type == 'app':
                 endpoint = locpath
             else:
-                endpoint = '%s:%s' % (plugin, locpath)
+                endpoint = '%s:%s' % (component, locpath)
             try:
                 fpath = findfile(endpoint)
                 return path.basename(fpath), self._opener(fpath)

@@ -14,8 +14,8 @@ class TestAltStack(object):
     def setup_class(cls):
         try:
             del sys.modules['minimal2.views']
-            del sys.modules['minimal2.plugins.news.views']
-            del sys.modules['newsplug4.views']
+            del sys.modules['minimal2.components.news.views']
+            del sys.modules['newscomp4.views']
         except KeyError:
             pass
         cls.wsgiapp = make_wsgi('Dispatching', use_session=False)
@@ -33,12 +33,12 @@ class TestAltStack(object):
         r = self.ta.get('/page1')
         r.mustcontain('page2!')
 
-    def test_asview_from_plugin(self):
-        # internal plugin
+    def test_asview_from_component(self):
+        # internal component
         r = self.ta.get('/news')
         r.mustcontain('min2 news index')
 
-        # external plugin
+        # external component
         r = self.ta.get('/news/display')
         r.mustcontain('np4 display')
 

@@ -1,5 +1,5 @@
 """
-This needs to go in its own mode so that we can avoid any blazeweb imports unless
+This needs to go in its own module so that we can avoid any blazeweb imports unless
 the plugin is active.  This helps with test coverage of blazeweb.
 """
 

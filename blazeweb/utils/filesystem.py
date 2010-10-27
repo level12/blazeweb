@@ -13,7 +13,7 @@ from shutil import copy2, copystat, rmtree
 from blazeutils import NotGiven
 
 from blazeweb.globals import settings
-from blazeweb.hierarchy import list_plugin_mappings, hm
+from blazeweb.hierarchy import list_component_mappings, hm
 
 __all__ = [
     'mkdirs',
@@ -49,10 +49,10 @@ def mkdirs(newdir, mode=NotGiven):
 
 def copy_static_files(delete_existing=False):
     """
-        copy's files from the apps and plugins to the static directory
+        copy's files from the apps and components to the static directory
         defined in the settings.  Files are copied in a hierarchical way
-        such that apps and plugins lower in priority have their files
-        overwritten by apps/plugins with higher priority.
+        such that apps and components lower in priority have their files
+        overwritten by apps/components with higher priority.
     """
     statroot = settings.dirs.static
 
@@ -60,24 +60,24 @@ def copy_static_files(delete_existing=False):
         app_stat_path = path.join(statroot, 'app')
         if path.exists(app_stat_path):
             rmtree(app_stat_path)
-        plugin_stat_path = path.join(statroot, 'plugin')
-        if path.exists(plugin_stat_path):
-            rmtree(plugin_stat_path)
+        component_stat_path = path.join(statroot, 'component')
+        if path.exists(component_stat_path):
+            rmtree(component_stat_path)
 
-    for app, pname, package in list_plugin_mappings(reverse=True, inc_apps=True):
+    for app, pname, package in list_component_mappings(reverse=True, inc_apps=True):
 
         package_mod = hm.builtin_import(package or app, fromlist=[''])
         pkgdir = path.dirname(package_mod.__file__)
         if package or not pname:
             srcpath = pkgdir
         else:
-            srcpath = path.join(pkgdir, 'plugins', pname)
+            srcpath = path.join(pkgdir, 'components', pname)
         srcpath = path.join(srcpath, 'static')
         if path.isdir(srcpath):
             if not pname:
                 targetpath = 'app'
             else:
-                targetpath = path.join('plugin', pname)
+                targetpath = path.join('component', pname)
             targetpath = path.join(statroot, targetpath)
 
             copytree(srcpath, targetpath)

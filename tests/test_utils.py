@@ -35,24 +35,24 @@ class TestFirstApp(object):
         assert_contents('newlayout', path.join('newlayout', 'static', 'app', 'statictest.txt'))
         assert_contents('nlsupporting', path.join('newlayout', 'static', 'app', 'statictest2.txt'))
 
-        # app plugin files
-        assert_contents('newlayout:news', path.join('newlayout', 'static', 'plugin', 'news', 'statictest.txt'))
-        assert_contents('nlsupporting:news', path.join('newlayout', 'static', 'plugin', 'news', 'statictest4.txt'))
+        # app component files
+        assert_contents('newlayout:news', path.join('newlayout', 'static', 'component', 'news', 'statictest.txt'))
+        assert_contents('nlsupporting:news', path.join('newlayout', 'static', 'component', 'news', 'statictest4.txt'))
 
-        # external plugin files
-        assert_contents('newsplug1', path.join('newlayout', 'static', 'plugin', 'news', 'statictest2.txt'))
-        assert_contents('newsplug2', path.join('newlayout', 'static', 'plugin', 'news', 'statictest3.txt'))
-        assert_contents('newsplug3', path.join('newlayout', 'static', 'plugin', 'news', 'statictest5.txt'))
+        # external component files
+        assert_contents('newscomp1', path.join('newlayout', 'static', 'component', 'news', 'statictest2.txt'))
+        assert_contents('newscomp2', path.join('newlayout', 'static', 'component', 'news', 'statictest3.txt'))
+        assert_contents('newscomp3', path.join('newlayout', 'static', 'component', 'news', 'statictest5.txt'))
 
     def test_removal(self):
         # create test files so we know if they are deleted
         mkdirs(path.join(script_test_path, 'newlayout', 'static', 'app'))
-        mkdirs(path.join(script_test_path, 'newlayout', 'static', 'plugin', 'news'))
+        mkdirs(path.join(script_test_path, 'newlayout', 'static', 'component', 'news'))
         app_fpath = path.join(script_test_path, 'newlayout', 'static', 'app', 'inapp.txt')
-        plugin_fpath = path.join(script_test_path, 'newlayout', 'static', 'plugin', 'news', 'inplugin.txt')
+        component_fpath = path.join(script_test_path, 'newlayout', 'static', 'component', 'news', 'incomponent.txt')
         root_fpath = path.join(script_test_path, 'newlayout', 'static', 'inroot.txt')
         open(app_fpath, 'w')
-        open(plugin_fpath, 'w')
+        open(component_fpath, 'w')
         open(root_fpath, 'w')
 
         copy_static_files(delete_existing=True)
@@ -60,9 +60,9 @@ class TestFirstApp(object):
         # make sure at least one file is there from the static copies
         assert_contents('newlayout', path.join('newlayout', 'static', 'app', 'statictest.txt'))
 
-        # app and plugin dirs should have been deleted
+        # app and component dirs should have been deleted
         assert not path.exists(app_fpath)
-        assert not path.exists(plugin_fpath)
+        assert not path.exists(component_fpath)
 
         # other items in the static directory are still there
         assert path.exists(root_fpath)

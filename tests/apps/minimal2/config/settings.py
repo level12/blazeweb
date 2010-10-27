@@ -33,12 +33,12 @@ class Dispatching(Default):
         self.apply_test_settings()
         self.static_files.enabled = False
 
-        self.add_plugin(self.app_package, 'internalonly')
-        self.add_plugin(self.app_package, 'news')
-        self.add_plugin(self.app_package, 'news', 'newsplug4')
-        self.add_plugin(self.app_package, 'foo', 'foobwp')
+        self.add_component(self.app_package, 'internalonly')
+        self.add_component(self.app_package, 'news')
+        self.add_component(self.app_package, 'news', 'newscomp4')
+        self.add_component(self.app_package, 'foo', 'foobwp')
 
-        # plugins should be able to add things to this list
+        # components should be able to add things to this list
         self.some_list = ['from app']
 
 class EventSettings(Default):

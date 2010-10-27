@@ -69,7 +69,7 @@ class DefaultSettings(QuickSettings):
         self.supporting_apps = []
 
         # don't want this to be empty
-        self.plugins = QuickSettings()
+        self.components = QuickSettings()
 
         #######################################################################
         # ROUTING
@@ -278,7 +278,7 @@ class DefaultSettings(QuickSettings):
         # middleware.static_files()
         self.static_files.enabled = True
         # should static files be served from the static directory (e.g. after
-        # they are copied there) or from the application and plugin source
+        # they are copied there) or from the application and component source
         # directories?  Possible values are: "static" and "source".  "source"
         # is slower and should be used primarily for development environments
         # when static files are changing often and copying to the static
@@ -306,16 +306,16 @@ class DefaultSettings(QuickSettings):
         # namespace as 'dabort'.  The 'd' is for development.
         self.auto_abort_as_builtin = False
 
-    def add_plugin(self, app_package, namespace, package=None):
+    def add_component(self, app_package, namespace, package=None):
         # a little hack to get the default value to hang an application's
-        # plugin's off of
-        self.pluginmap._data.setdefault(app_package, EnabledSettings())
-        self.set_dotted('pluginmap.%s.%s.enabled' % (app_package, namespace), True)
+        # component's off of
+        self.componentmap._data.setdefault(app_package, EnabledSettings())
+        self.set_dotted('componentmap.%s.%s.enabled' % (app_package, namespace), True)
         if package:
-            self.set_dotted('plugin_packages.%s' % package, namespace)
-        cvalue = self.get_dotted('pluginmap.%s.%s.packages' % (app_package, namespace))
+            self.set_dotted('component_packages.%s' % package, namespace)
+        cvalue = self.get_dotted('componentmap.%s.%s.packages' % (app_package, namespace))
         if not cvalue:
-            self.set_dotted('pluginmap.%s.%s.packages' % (app_package, namespace), [package])
+            self.set_dotted('componentmap.%s.%s.packages' % (app_package, namespace), [package])
             return
         cvalue.append(package)
 
@@ -356,7 +356,7 @@ class DefaultSettings(QuickSettings):
         kwargs['endpoint'] = endpoint
         self.routing.routes.append(Rule(route, *args, **kwargs))
 
-class PluginSettings(object):
+class ComponentSettings(object):
     def __init__(self, app_settings):
         self.for_me = QuickSettings()
         self.for_app = QuickSettings()

@@ -29,7 +29,7 @@ for detecting that is:
     - testrun
     - routes
     - tasks
-    + those defined in the appstack and plugstack
+    + those defined in the appstack and compstack
 - blazeweb
     - project
-    - plugin
+    - component

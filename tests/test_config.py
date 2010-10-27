@@ -324,7 +324,7 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(settings.foo, 'bar')
 
     def test_modsettings(self):
-        self.assertEqual(settings.plugins.tests.foo, 'baz')
+        self.assertEqual(settings.components.tests.foo, 'baz')
 
     def test_settingslock(self):
         """ tests the lock() in appinit() """
@@ -338,7 +338,7 @@ class TestConfig(unittest.TestCase):
     def test_modulesettingslock(self):
         """ tests the lock() in appinit() for module settings """
         try:
-            this = settings.plugins.tests.notthere
+            this = settings.components.tests.notthere
         except AttributeError, e:
             assert str(e) == "object has no attribute 'notthere' (object is locked)"
         else:
@@ -354,20 +354,20 @@ class TestDefaultSettings(object):
         # assume we are in a virtualenv
         assert settings.dirs.storage.endswith('storage-minimal2')
 
-class TestPluginSettings(object):
+class TestComponentSettings(object):
 
     @classmethod
     def setup_class(cls):
         make_wsgi_min2('Dispatching')
 
-    def test_plugins(self):
-        pm = settings.pluginmap.minimal2
+    def test_components(self):
+        pm = settings.componentmap.minimal2
         assert pm.internalonly.enabled == True
         assert pm.internalonly.packages == [None]
         assert pm.news.enabled == True
-        assert pm.news.packages == [None, 'newsplug4']
+        assert pm.news.packages == [None, 'newscomp4']
         assert pm.foo.enabled == True
         assert pm.foo.packages == ['foobwp']
-        assert settings.plugin_packages.newsplug4 == 'news'
-        assert settings.plugin_packages.foobwp == 'foo'
-        eq_( settings.plugin_packages.todict().keys(), ['newsplug4', 'foobwp'])
+        assert settings.component_packages.newscomp4 == 'news'
+        assert settings.component_packages.foobwp == 'foo'
+        eq_( settings.component_packages.todict().keys(), ['newscomp4', 'foobwp'])

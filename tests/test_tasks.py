@@ -16,10 +16,10 @@ class TestTasks(object):
         {'init-db': [
                 ('action_000', 'appstack.tasks.init_db', 'blazewebtestapp.tasks.init_db'),
                 ('action_001', 'appstack.tasks.init_db', 'blazewebtestapp.tasks.init_db'),
-                ('action_001', 'plugstack.routingtests.tasks.init_db', 'blazewebtestapp.plugins.routingtests.tasks.init_db'),
-                ('action_001', 'plugstack.tests.tasks.init_db', 'blazewebtestapp2.plugins.tests.tasks.init_db'),
+                ('action_001', 'compstack.routingtests.tasks.init_db', 'blazewebtestapp.components.routingtests.tasks.init_db'),
+                ('action_001', 'compstack.tests.tasks.init_db', 'blazewebtestapp2.components.tests.tasks.init_db'),
                 ('action_002', 'appstack.tasks.init_db', 'blazewebtestapp.tasks.init_db'),
-                ('action_003', 'plugstack.routingtests.tasks.init_db', 'blazewebtestapp2.plugins.routingtests.tasks.init_db'),
+                ('action_003', 'compstack.routingtests.tasks.init_db', 'blazewebtestapp2.components.routingtests.tasks.init_db'),
                 ('action_005', 'appstack.tasks.init_db', 'blazewebtestapp2.tasks.init_db'),
             ],
         'init-data': [

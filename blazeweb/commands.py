@@ -8,7 +8,7 @@ from werkzeug import Client, BaseResponse
 from werkzeug.script import make_shell
 
 from blazeweb.globals import ag, settings
-from blazeweb.hierarchy import list_plugin_mappings
+from blazeweb.hierarchy import list_component_mappings
 from blazeweb.paster_tpl import run_template
 from blazeweb.tasks import run_tasks
 from blazeweb.utils.filesystem import copy_static_files
@@ -232,7 +232,7 @@ class RoutesCommand(pscmd.Command):
 
 class StaticCopyCommand(pscmd.Command):
         # Parser configuration
-        summary = "copy's app and plugin static files to the designated location"
+        summary = "copy's app and component static files to the designated location"
         usage = ""
 
         min_args = 0
@@ -243,7 +243,7 @@ class StaticCopyCommand(pscmd.Command):
                       dest='delete_existing',
                       action='store_true',
                       default=False,
-                      help='Delete "app" and "plugin" directories in the destination if they exist')
+                      help='Delete "app" and "component" directories in the destination if they exist')
 
         def command(self):
             copy_static_files(delete_existing=self.options.delete_existing)
@@ -282,9 +282,9 @@ class JinjaConvertCommand(pscmd.Command):
                     fh.write(contents.encode('utf-8'))
                 print '    %s' % fname
 
-class PluginMapCommand(pscmd.Command):
+class ComponentMapCommand(pscmd.Command):
     # Parser configuration
-    summary = "List the plugin map"
+    summary = "List the component map"
     usage = ""
 
     min_args = 0
@@ -293,4 +293,4 @@ class PluginMapCommand(pscmd.Command):
     parser = pscmd.Command.standard_parser(verbose=False)
 
     def command(self):
-        pprint(list_plugin_mappings(inc_apps=True))
+        pprint(list_component_mappings(inc_apps=True))

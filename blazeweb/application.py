@@ -12,7 +12,7 @@ from blazeweb.globals import ag, rg, settings, user
 from blazeweb.events import Namespace, signal
 from blazeweb.exceptions import ProgrammingError
 from blazeweb.hierarchy import findobj, HierarchyImportError, \
-    listplugins, visitmods, findview, split_endpoint
+    listcomponents, visitmods, findview, split_endpoint
 from blazeweb.logs import create_handlers_from_settings
 from blazeweb.mail import mail_programmers
 from blazeweb.templating import default_engine
@@ -119,7 +119,7 @@ class WSGIApp(object):
         self.init_ag()
         self.init_signals()
         self.init_events()
-        self.init_plugin_settings()
+        self.init_component_settings()
         self.init_auto_actions()
         self.init_logging()
         self.init_routing()
@@ -168,30 +168,30 @@ class WSGIApp(object):
         visitmods('events')
         signal('blazeweb.events.initialized').send(self.init_events)
 
-    def init_plugin_settings(self):
-        # now we need to assign plugin's settings to the main setting object
-        for pname in listplugins():
+    def init_component_settings(self):
+        # now we need to assign component's settings to the main setting object
+        for cname in listcomponents():
             try:
-                Settings = findobj('%s:config.settings.Settings' % pname)
+                Settings = findobj('%s:config.settings.Settings' % cname)
                 ps = Settings(self.settings)
 
-                # update plugin-level settings
+                # update component-level settings
                 try:
-                    self.settings.plugins[pname].setdefaults(ps.for_me)
+                    self.settings.components[cname].setdefaults(ps.for_me)
                 except KeyError, e:
-                    if pname not in str(e):
+                    if cname not in str(e):
                         raise
                     # the application's settings did not override any of this
-                    # plugin's settings and therefore doesn't have a settings
-                    # object for this plugin.  Therefore, we just add it.
-                    self.settings.plugins[pname] = ps.for_me
+                    # component's settings and therefore doesn't have a settings
+                    # object for this component.  Therefore, we just add it.
+                    self.settings.components[cname] = ps.for_me
 
                 # update application-level settings
                 self.settings.setdefaults(ps.for_app)
             except HierarchyImportError, e:
-                # this happens if the plugin did not have a settings module or
+                # this happens if the component did not have a settings module or
                 # did not have a Settings class in the module
-                if '%s.config.settings' % pname not in str(e) and 'Settings' not in str(e):
+                if '%s.config.settings' % cname not in str(e) and 'Settings' not in str(e):
                     raise # pragma: no cover
 
         # lock the settings, this ensures that an attribute error is thrown if an
@@ -229,9 +229,9 @@ class WSGIApp(object):
         # application routes first since they should take precedence
         self.add_routing_rules(self.settings.routing.routes)
 
-        # now the routes from plugin settings
-        for pname in self.settings.plugins.keys():
-            psettings = self.settings.plugins[pname]
+        # now the routes from component settings
+        for pname in self.settings.components.keys():
+            psettings = self.settings.components[pname]
             try:
                 self.add_routing_rules(psettings.routes)
             except AttributeError, e:

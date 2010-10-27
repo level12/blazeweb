@@ -23,7 +23,7 @@ class Testruns(Default):
             Rule('/', endpoint='tests:Index')
         ])
 
-        self.add_plugin(app_package, 'tests')
+        self.add_component(app_package, 'tests')
 
         self.emails.programmers = ['you@example.com']
         self.email.subject_prefix = '[pysvmt test app] '

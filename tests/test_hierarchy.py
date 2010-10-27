@@ -7,7 +7,7 @@ from nose.tools import eq_
 
 from blazeweb.globals import ag
 from blazeweb.hierarchy import hm, findview, HierarchyImportError, findfile, \
-    FileNotFound, findobj, listplugins, list_plugin_mappings, visitmods, \
+    FileNotFound, findobj, listcomponents, list_component_mappings, visitmods, \
     gatherobjs, findcontent
 
 import config
@@ -20,38 +20,38 @@ class TestMostStuff(object):
     def setup_class(cls):
         app = make_wsgi()
 
-    def test_plugin_view(self):
+    def test_component_view(self):
         view = findview('news:FakeView')
-        assert 'newlayout.plugins.news.views.FakeView' in str(view), view
+        assert 'newlayout.components.news.views.FakeView' in str(view), view
 
-        from plugstack.news.views import FakeView
+        from compstack.news.views import FakeView
         assert view is FakeView, (view, FakeView)
 
-    def test_plugstack_import_overrides(self):
-        import newlayout.plugins.news.views as nlviews
-        import newsplug1.views as np1views
-        import nlsupporting.plugins.news as nlsnews
+    def test_compstack_import_overrides(self):
+        import newlayout.components.news.views as nlviews
+        import newscomp1.views as np1views
+        import nlsupporting.components.news as nlsnews
 
-        from plugstack.news.views import FakeView
+        from compstack.news.views import FakeView
         assert nlviews.FakeView is FakeView
 
         # test with "as"
-        from plugstack.news.views import FakeView as psFakeView
+        from compstack.news.views import FakeView as psFakeView
         assert nlviews.FakeView is psFakeView
 
         # test two attributes from different modules
-        from plugstack.news.views import FakeView, InNewsPlug1
+        from compstack.news.views import FakeView, InNewsComp1
         assert nlviews.FakeView is psFakeView
-        assert np1views.InNewsPlug1 is InNewsPlug1
+        assert np1views.InNewsComp1 is InNewsComp1
 
         # testing import from main module
-        from plugstack.news import somefunc
+        from compstack.news import somefunc
         assert nlsnews.somefunc is somefunc
 
-    def test_plugin_import_failures(self):
+    def test_component_import_failures(self):
         # test non-attribute import
         try:
-            import plugstack.news.views
+            import compstack.news.views
             assert False
         except HierarchyImportError, e:
             if 'non-attribute importing is not supported' not in str(e):
@@ -59,24 +59,24 @@ class TestMostStuff(object):
 
         # test no module found
         try:
-            from plugstack.something.notthere import foobar
+            from compstack.something.notthere import foobar
             assert False
         except HierarchyImportError, e:
-            assert str(e) == 'module "something.notthere" not found; searched plugstack'
+            assert str(e) == 'module "something.notthere" not found; searched compstack'
 
         # test module exists, but attribute not found
         try:
-            from plugstack.news.views import nothere
+            from compstack.news.views import nothere
             assert False
         except HierarchyImportError, e:
-            assert str(e) == 'attribute "nothere" not found; searched plugstack.news.views'
+            assert str(e) == 'attribute "nothere" not found; searched compstack.news.views'
 
-        # test importing from plugstack directly
+        # test importing from compstack directly
         try:
-            from plugstack import news
+            from compstack import news
             assert False
         except ImportError, e:
-            if 'No module named plugstack' not in str(e):
+            if 'No module named compstack' not in str(e):
                 raise
 
     def test_appstack_import_overrides(self):
@@ -111,7 +111,7 @@ class TestMostStuff(object):
         except HierarchyImportError, e:
             assert str(e) == 'attribute "notthere" not found; searched appstack.views'
 
-        # test importing from plugstack directly
+        # test importing from compstack directly
         try:
             from appstack import views
             assert False
@@ -119,30 +119,30 @@ class TestMostStuff(object):
             if 'No module named appstack' not in str(e):
                 raise
 
-    def test_package_plugin(self):
-        view = findview('news:InNewsPlug1')
-        assert 'newsplug1.views.InNewsPlug1' in str(view)
+    def test_package_component(self):
+        view = findview('news:InNewsComp1')
+        assert 'newscomp1.views.InNewsComp1' in str(view)
 
-    def test_package_plugin_two_deep(self):
-        view = findview('news:InNewsPlug2')
-        assert 'newsplug2.views.InNewsPlug2' in str(view)
+    def test_package_component_two_deep(self):
+        view = findview('news:InNewsComp2')
+        assert 'newscomp2.views.InNewsComp2' in str(view)
 
-    def test_from_supporting_app_internal_plugin(self):
+    def test_from_supporting_app_internal_component(self):
         view = findview('news:InNlSupporting')
-        assert 'nlsupporting.plugins.news.views.InNlSupporting' in str(view)
+        assert 'nlsupporting.components.news.views.InNlSupporting' in str(view)
 
-    def test_from_supporting_app_external_plugin(self):
-        view = findview('news:InNewsPlug3')
-        assert 'newsplug3.views.InNewsPlug3' in str(view)
+    def test_from_supporting_app_external_component(self):
+        view = findview('news:InNewsComp3')
+        assert 'newscomp3.views.InNewsComp3' in str(view)
 
-    def test_package_plugin_priority(self):
-        # upper external plugins have priority over lower externals
+    def test_package_component_priority(self):
+        # upper external components have priority over lower externals
         view = findview('news:News1HasPriority')
-        assert 'newsplug1.views.News1HasPriority' in str(view)
+        assert 'newscomp1.views.News1HasPriority' in str(view)
 
-        # plugins in the application have priority over externals
+        # components in the application have priority over externals
         view = findview('news:InAppHasPriority')
-        assert 'newlayout.plugins.news.views.InAppHasPriority' in str(view)
+        assert 'newlayout.components.news.views.InAppHasPriority' in str(view)
 
     def test_import_cache(self):
         eh = logging_handler('blazeweb.hierarchy')
@@ -162,27 +162,27 @@ class TestMostStuff(object):
         assert 'newlayout.news.views.FakeView' in str(FakeView), FakeView
 
         view = findview('news:FakeView')
-        assert 'newlayout.plugins.news.views.FakeView' in str(view), view
+        assert 'newlayout.components.news.views.FakeView' in str(view), view
 
     def test_app_level_view(self):
         view = findview('AppLevelView')
         assert 'newlayout.views.AppLevelView' in str(view), view
 
-    def test_disabled_plugin(self):
+    def test_disabled_component(self):
         try:
             view = findview('pdisabled:FakeView')
             assert False
         except HierarchyImportError, e:
             assert 'An object for View endpoint "pdisabled:FakeView" was not found' in str(e), e
 
-    def test_no_setting_plugin(self):
+    def test_no_setting_component(self):
         try:
             view = findview('pnosetting:FakeView')
             assert False
         except HierarchyImportError, e:
             assert 'An object for View endpoint "pnosetting:FakeView" was not found' in str(e)
 
-    def test_good_plugin_but_object_not_there(self):
+    def test_good_component_but_object_not_there(self):
         try:
             view = findview('news:nothere')
             assert False
@@ -211,25 +211,25 @@ class TestMostStuff(object):
         except FileNotFound:
             pass
 
-    def test_plugin_findfile(self):
+    def test_component_findfile(self):
         fullpath = findfile('news:templates/srcnews.txt')
-        expected = path.join('newlayout', 'plugins', 'news', 'templates', 'srcnews.txt')
+        expected = path.join('newlayout', 'components', 'news', 'templates', 'srcnews.txt')
         assert fullpath.endswith(expected), fullpath
 
-        fullpath = findfile('news:templates/nplug1.txt')
-        expected = path.join('newsplug1', 'templates', 'nplug1.txt')
+        fullpath = findfile('news:templates/ncomp1.txt')
+        expected = path.join('newscomp1', 'templates', 'ncomp1.txt')
         assert fullpath.endswith(expected), fullpath
 
-        fullpath = findfile('news:templates/nplug2.txt')
-        expected = path.join('newsplug2', 'templates', 'nplug2.txt')
+        fullpath = findfile('news:templates/ncomp2.txt')
+        expected = path.join('newscomp2', 'templates', 'ncomp2.txt')
         assert fullpath.endswith(expected), fullpath
 
         fullpath = findfile('news:templates/supporting_news_src.txt')
-        expected = path.join('nlsupporting', 'plugins', 'news', 'templates', 'supporting_news_src.txt')
+        expected = path.join('nlsupporting', 'components', 'news', 'templates', 'supporting_news_src.txt')
         assert fullpath.endswith(expected), fullpath
 
-        fullpath = findfile('news:templates/nplug3.txt')
-        expected = path.join('newsplug3', 'templates', 'nplug3.txt')
+        fullpath = findfile('news:templates/ncomp3.txt')
+        expected = path.join('newscomp3', 'templates', 'ncomp3.txt')
         assert fullpath.endswith(expected), fullpath
 
         try:
@@ -251,37 +251,37 @@ class TestMostStuff(object):
 
     def test_findobj(self):
         view = findobj('news:views.FakeView')
-        assert 'newlayout.plugins.news.views.FakeView' in str(view), view
+        assert 'newlayout.components.news.views.FakeView' in str(view), view
 
         view = findobj('views.AppLevelView')
         assert 'newlayout.views.AppLevelView' in str(view), view
 
-    def test_list_plugins(self):
+    def test_list_components(self):
         plist = ['news', 'pnoroutes', 'badimport']
-        eq_(plist, listplugins())
+        eq_(plist, listcomponents())
 
         plist.reverse()
-        eq_(plist, listplugins(reverse=True))
+        eq_(plist, listcomponents(reverse=True))
 
-    def test_plugin_mappings(self):
-        plist = [('newlayout', 'news', None), ('newlayout', 'news', 'newsplug1'), ('newlayout', 'news', 'newsplug2'), ('newlayout', 'pnoroutes', None), ('newlayout', 'badimport', None), ('nlsupporting', 'news', None), ('nlsupporting', 'news', 'newsplug3')]
-        eq_(plist, list_plugin_mappings())
+    def test_component_mappings(self):
+        plist = [('newlayout', 'news', None), ('newlayout', 'news', 'newscomp1'), ('newlayout', 'news', 'newscomp2'), ('newlayout', 'pnoroutes', None), ('newlayout', 'badimport', None), ('nlsupporting', 'news', None), ('nlsupporting', 'news', 'newscomp3')]
+        eq_(plist, list_component_mappings())
 
 
-        plistwapps = [('newlayout',  None, None), ('newlayout', 'news', None), ('newlayout', 'news', 'newsplug1'), ('newlayout', 'news', 'newsplug2'), ('newlayout', 'pnoroutes', None), ('newlayout', 'badimport', None), ('nlsupporting',  None, None), ('nlsupporting', 'news', None), ('nlsupporting', 'news', 'newsplug3')]
-        eq_(plistwapps, list_plugin_mappings(inc_apps=True))
+        plistwapps = [('newlayout',  None, None), ('newlayout', 'news', None), ('newlayout', 'news', 'newscomp1'), ('newlayout', 'news', 'newscomp2'), ('newlayout', 'pnoroutes', None), ('newlayout', 'badimport', None), ('nlsupporting',  None, None), ('nlsupporting', 'news', None), ('nlsupporting', 'news', 'newscomp3')]
+        eq_(plistwapps, list_component_mappings(inc_apps=True))
 
         plist.reverse()
-        eq_(plist, list_plugin_mappings(reverse=True))
+        eq_(plist, list_component_mappings(reverse=True))
 
-        plist = [('newlayout', 'news', None), ('newlayout', 'news', 'newsplug1'), ('newlayout', 'news', 'newsplug2'), ('nlsupporting', 'news', None), ('nlsupporting', 'news', 'newsplug3')]
-        eq_(plist, list_plugin_mappings('news'))
+        plist = [('newlayout', 'news', None), ('newlayout', 'news', 'newscomp1'), ('newlayout', 'news', 'newscomp2'), ('nlsupporting', 'news', None), ('nlsupporting', 'news', 'newscomp3')]
+        eq_(plist, list_component_mappings('news'))
 
     def test_visitmods(self):
         bset = set(sys.modules.keys())
         visitmods('tovisit')
         aset = set(sys.modules.keys())
-        eq_(aset.difference(bset), set(['nlsupporting.tovisit', 'nlsupporting.plugins.news.tovisit', 'newlayout.plugins.badimport.tovisit', 'newsplug3.tovisit', 'newlayout.plugins.news.tovisit', 'newlayout.tovisit']))
+        eq_(aset.difference(bset), set(['nlsupporting.tovisit', 'nlsupporting.components.news.tovisit', 'newlayout.components.badimport.tovisit', 'newscomp3.tovisit', 'newlayout.components.news.tovisit', 'newlayout.tovisit']))
 
         # test that we don't catch another import error
         try:
@@ -297,16 +297,16 @@ class TestPTA(object):
     def setup_class(cls):
         pta_make_wsgi('Testruns')
 
-    def test_list_plugins(self):
+    def test_list_components(self):
         expected = ['tests', 'badimport1', 'nomodel', 'nosettings', 'sessiontests', 'routingtests', 'usertests', 'disabled']
-        eq_(expected, listplugins())
+        eq_(expected, listcomponents())
 
     def test_gatherobjs(self):
         result = gatherobjs('tasks.init_db', lambda name, obj: name.startswith('action_'))
         eq_(result['appstack.tasks.init_db']['action_000'].__module__, 'blazewebtestapp.tasks.init_db')
-        eq_(result['plugstack.routingtests.tasks.init_db']['action_001'].__module__, 'blazewebtestapp.plugins.routingtests.tasks.init_db')
-        eq_(result['plugstack.routingtests.tasks.init_db']['action_003'].__module__, 'blazewebtestapp2.plugins.routingtests.tasks.init_db')
-        eq_(result['plugstack.tests.tasks.init_db']['action_001'].__module__, 'blazewebtestapp2.plugins.tests.tasks.init_db')
+        eq_(result['compstack.routingtests.tasks.init_db']['action_001'].__module__, 'blazewebtestapp.components.routingtests.tasks.init_db')
+        eq_(result['compstack.routingtests.tasks.init_db']['action_003'].__module__, 'blazewebtestapp2.components.routingtests.tasks.init_db')
+        eq_(result['compstack.tests.tasks.init_db']['action_001'].__module__, 'blazewebtestapp2.components.tests.tasks.init_db')
         eq_(result['appstack.tasks.init_db']['action_001'].__module__, 'blazewebtestapp.tasks.init_db')
         eq_(result['appstack.tasks.init_db']['action_002'].__module__, 'blazewebtestapp.tasks.init_db')
         eq_(result['appstack.tasks.init_db']['action_005'].__module__, 'blazewebtestapp2.tasks.init_db')
@@ -316,21 +316,21 @@ class TestPTA(object):
             v = findview('badimport1:Index')
             assert False
         except HierarchyImportError, e:
-            assert 'module "nothere." not found; searched plugstack' in str(e), e
+            assert 'module "nothere." not found; searched compstack' in str(e), e
 
-    def test_find_view_no_plugin(self):
+    def test_find_view_no_component(self):
         try:
-            v = findview('notaplugin:Foo')
+            v = findview('notacomponent:Foo')
             assert False
         except HierarchyImportError, e:
-            assert 'An object for View endpoint "notaplugin:Foo" was not found' == str(e), e
+            assert 'An object for View endpoint "notacomponent:Foo" was not found' == str(e), e
 
-    def test_find_content_no_plugin(self):
+    def test_find_content_no_component(self):
         try:
-            v = findcontent('notaplugin:Foo')
+            v = findcontent('notacomponent:Foo')
             assert False
         except HierarchyImportError, e:
-            assert 'An object for Content endpoint "notaplugin:Foo" was not found' == str(e), e
+            assert 'An object for Content endpoint "notacomponent:Foo" was not found' == str(e), e
 
     def test_find_content_no_module(self):
         try:
@@ -360,7 +360,7 @@ class TestPTA(object):
             v = findcontent('badimport1:Foo')
             assert False
         except HierarchyImportError, e:
-            assert 'module "nothere." not found; searched plugstack' in str(e), e
+            assert 'module "nothere." not found; searched compstack' in str(e), e
 
 
 class TestMin2(object):
@@ -368,9 +368,9 @@ class TestMin2(object):
     def setup_class(cls):
         m2_make_wsgi('Dispatching')
 
-    def test_plugin_mappings(self):
-        expected = [('minimal2', 'internalonly', None), ('minimal2', 'news', None), ('minimal2', 'news', 'newsplug4'), ('minimal2', 'foo', 'foobwp')]
-        eq_(expected, list_plugin_mappings())
+    def test_component_mappings(self):
+        expected = [('minimal2', 'internalonly', None), ('minimal2', 'news', None), ('minimal2', 'news', 'newscomp4'), ('minimal2', 'foo', 'foobwp')]
+        eq_(expected, list_component_mappings())
 
     def test_find_content_no_module_app_level(self):
         try:

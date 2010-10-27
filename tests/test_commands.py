@@ -31,7 +31,7 @@ def test_app_usage():
     assert 'tasks' in result.stdout
     assert 'shell' in result.stdout
     assert 'static-copy' in result.stdout
-    assert 'plugin-map' in result.stdout
+    assert 'component-map' in result.stdout, result.stdout
 
 def test_bad_profile():
     result = run_application('minimal2', '-p', 'profilenotthere', expect_error = True)

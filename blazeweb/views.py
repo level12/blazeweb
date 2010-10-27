@@ -32,17 +32,17 @@ __all__ = (
 ### internal stuff
 ###
 
-def _calc_plugin_name(module):
-    """ calculates the plugin a view is in """
+def _calc_component_name(module):
+    """ calculates the component a view is in """
     parts = module.split('.')
     if len(parts) == 2:
         """ its in a package, that means the first part is the package name """
         if parts[0] in listapps():
             # its app level
             return None
-        # it should be a plugin
-        return settings.plugin_packages[parts[0]]
-    # its an internal plug
+        # it should be a component
+        return settings.component_packages[parts[0]]
+    # its an internal component
     return parts[2]
 
 class _ProcessorWrapper(formencode.validators.Wrapper):
@@ -106,9 +106,9 @@ class View(object):
         self.mimetype = 'text/html'
         # store endpoint for later use
         self.endpoint = endpoint
-        # store the plugin name for later use
-        plugin, _ = split_endpoint(endpoint)
-        self._plugin_name = plugin
+        # store the component name for later use
+        component, _ = split_endpoint(endpoint)
+        self._component_name = component
 
         log.debug('%s view instantiated', self.__class__.__name__)
 
@@ -425,8 +425,8 @@ class View(object):
 
                 # look for a template file with the name given.  If the view
                 # is app level, then the search is done in the appstack's
-                # templates.  If the view is plugin level, then the search is
-                # done in the plugstack for that plugin.
+                # templates.  If the view is component level, then the search is
+                # done in the compstack for that component.
                 self.render_template('some_file.html')
 
             Calling render_template() will setup the Response object based on
@@ -441,8 +441,8 @@ class View(object):
             # instance.
             filename = '%s.%s' % (case_cw2us(self.__class__.__name__), default_ext)
         endpoint = filename
-        if self._plugin_name:
-            endpoint = '%s:%s' % (self._plugin_name, endpoint)
+        if self._component_name:
+            endpoint = '%s:%s' % (self._component_name, endpoint)
         return self.render_endpoint(endpoint, send_response)
 
     def render_endpoint(self, endpoint, send_response=True):
@@ -450,15 +450,15 @@ class View(object):
             Render a template or Content object by endpoint:
 
             # look for a template file by endpoint, useful if you need a
-            # template from another plugin:
-            self.render_endpoint('otherplugin:some_template.html')
+            # template from another component:
+            self.render_endpoint('othercomponent:some_template.html')
 
-            # or if the view is plugin level and a template from the main
+            # or if the view is component level and a template from the main
             # application is needed.
             self.render_endpoint('app_level.html')
 
             # a Content object can also be rendered by omitting an extension:
-            self.render_endpoint('myplugin:SomeContent')
+            self.render_endpoint('mycomponent:SomeContent')
         """
         c = getcontent(endpoint, **self.template_vars)
         self.retval = c
@@ -607,12 +607,12 @@ def asview(rule=None, **options):
         lrule = rule
         fname = f.__name__
         getargs = options.pop('getargs', [])
-        plugin_prefix = _calc_plugin_name(f.__module__)
+        component_prefix = _calc_component_name(f.__module__)
 
         # calculate the endpoint
         endpoint = fname
-        if plugin_prefix is not None:
-            endpoint = '%s:%s' % (plugin_prefix, endpoint)
+        if component_prefix is not None:
+            endpoint = '%s:%s' % (component_prefix, endpoint)
 
         # setup the routing
         if lrule is None:

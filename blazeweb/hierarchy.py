@@ -42,11 +42,11 @@ class HierarchyManager(object):
         mod = self._builtin_import(name, globals, locals, fromlist, level)
         # for module reloading purposes in visitmods(), we need to keep track
         # of what application imported a module.  But we only need to do that
-        # for modules that are in BlazeWeb applications or are BW plugins
+        # for modules that are in BlazeWeb applications or are BW components
         if registry_has_object(ag):
             # is this module part of the main or supporting app?
             toplevel = name.split('.')[0]
-            if toplevel in listapps() or toplevel in list_plugin_packages():
+            if toplevel in listapps() or toplevel in list_component_packages():
                 mod._blazeweb_hierarchy_last_imported_by = id(ag.app)
         return mod
 
@@ -65,45 +65,45 @@ def listapps(reverse=False):
         return apps
     return [settings.app_package] + settings.supporting_apps
 
-def listplugins(reverse=False):
+def listcomponents(reverse=False):
     """
-        a flat list of the namespace of each enabled plugin
+        a flat list of the namespace of each enabled component
     """
     ul = UniqueList()
-    for _, pname, _ in list_plugin_mappings():
+    for _, pname, _ in list_component_mappings():
         ul.append(pname)
     retval = list(ul)
     if reverse:
         retval.reverse()
     return retval
 
-def list_plugin_packages():
+def list_component_packages():
     """
-        a flat list of enabled plugin packages
+        a flat list of enabled component packages
     """
-    if not hasattr(ag, 'hierarchy_plugin_packages'):
+    if not hasattr(ag, 'hierarchy_component_packages'):
         packages = []
-        for _, _, packagename in list_plugin_mappings():
+        for _, _, packagename in list_component_mappings():
             if packagename:
                 packages.append(packagename)
-        ag.hierarchy_plugin_packages = packages
-    return ag.hierarchy_plugin_packages
+        ag.hierarchy_component_packages = packages
+    return ag.hierarchy_component_packages
 
-def list_plugin_mappings(target_plugin=None, reverse=False, inc_apps=False):
+def list_component_mappings(target_component=None, reverse=False, inc_apps=False):
     """
-        A list of tuples: (app name, plugin name, package name)
+        A list of tuples: (app name, component name, package name)
 
-        The package name will be None if the location of the plugin is internal
+        The package name will be None if the location of the component is internal
         to the app.
     """
     retval = []
     for app in listapps():
         if inc_apps:
             retval.append((app, None, None))
-        aplugins = getattr(settings.pluginmap, app)
-        for pname in aplugins.keys():
-            if target_plugin is None or pname == target_plugin:
-                for package in aplugins.get_dotted('%s.packages' % pname):
+        acomponents = getattr(settings.componentmap, app)
+        for pname in acomponents.keys():
+            if target_component is None or pname == target_component:
+                for package in acomponents.get_dotted('%s.packages' % pname):
                     retval.append((app, pname, package))
     if reverse:
         retval.reverse()
@@ -127,14 +127,14 @@ def findview(endpoint):
 
 def find_exc_is_from(e, endpoint, where):
     if ':' not in endpoint:
-        plugin = None,
+        component = None,
         attr = endpoint
     else:
-        plugin, attr = endpoint.split(':')
+        component, attr = endpoint.split(':')
     possible_messages = [
-        'module "%s.%s" not found; searched plugstack' % (plugin, where),
+        'module "%s.%s" not found; searched compstack' % (component, where),
         'module "%s" not found; searched appstack' % where,
-        'attribute "%s" not found; searched plugstack.%s.%s' % (attr, plugin, where),
+        'attribute "%s" not found; searched compstack.%s.%s' % (attr, component, where),
         'attribute "%s" not found; searched appstack.%s' % (attr, where),
     ]
     return str(e) in possible_messages
@@ -144,16 +144,16 @@ def findendpoint(endpoint, where):
         locate an object in the hierarchy based on an endpoint.  Usage:
 
         findendpoint('Index', 'views') => from appstack.views import Index
-        findendpoint('news:Index', 'views') => from plugstack.news.views import Index
-        findendpoint('news:Something', 'content') => from plugstack.news.content import Something
+        findendpoint('news:Index', 'views') => from compstack.news.views import Index
+        findendpoint('news:Something', 'content') => from compstack.news.content import Something
 
         Raises: ImportError if view is not found.  But can also raise an
             ImportError if other
     """
     if ':' not in endpoint:
         return AppFinder(where, endpoint).search()
-    plugin, attr = endpoint.split(':')
-    return PluginFinder(plugin, where, attr).search()
+    component, attr = endpoint.split(':')
+    return ComponentFinder(component, where, attr).search()
 
 def findfile(endpoint_path):
     """
@@ -166,9 +166,9 @@ def findfile(endpoint_path):
 
         findfile('news:templates/index.html') could return one of the following:
 
-            .../myapp-dist/myapp/plugins/news/templates/index.html
-            .../newsplugin-dist/newsplugin/templates/index.html
-            .../supportingapp-dist/supportingapp/plugins/news/templates/index.html
+            .../myapp-dist/myapp/components/news/templates/index.html
+            .../newscomponent-dist/newscomponent/templates/index.html
+            .../supportingapp-dist/supportingapp/components/news/templates/index.html
 
         Raises: FileNotFound if the path can not be found in the hierarchy
     """
@@ -183,14 +183,14 @@ def findobj(endpoint):
         Allows hieararchy importing based on strings:
 
         findobject('views.Index') => from appstack.views import Index
-        findobject('news:views.Index') => from plugstack.news.views import Index
+        findobject('news:views.Index') => from compstack.news.views import Index
     """
     if '.' not in endpoint:
         raise ValueError('endpoint should have a "."; see docstring for usage')
 
     if ':' in endpoint:
-        plugin, impname = endpoint.split(':')
-        impstring = 'plugstack.%s.' % plugin
+        component, impname = endpoint.split(':')
+        impstring = 'compstack.%s.' % component
     else:
         impname = endpoint
         impstring = 'appstack.'
@@ -202,7 +202,7 @@ def findobj(endpoint):
 
 def visitmods(dotpath, reverse=False, call_with_mod=None, reloadmod=True):
     """
-        Import python modules installed in the appstack or plugtack.  Modules
+        Import python modules installed in the appstack or compstack.  Modules
         are visited from the top down.
 
         reverse: visit modules in the reverse order, from the bottom up
@@ -214,11 +214,11 @@ def visitmods(dotpath, reverse=False, call_with_mod=None, reloadmod=True):
             An example of this is when a "views" modules are loaded because they
             use @asview. That decorator, when fired, adds a route in the current
             app to the view. If the views module is shared among more than one
-            application running in the same process, an external plugin for
+            application running in the same process, an external component for
             example, then that side-affect needs to be repeated for each
             application.
     """
-    visitlist = list_plugin_mappings(inc_apps=True, reverse=reverse)
+    visitlist = list_component_mappings(inc_apps=True, reverse=reverse)
     for app, pname, package in visitlist:
         try:
             if not pname and not package:
@@ -226,7 +226,7 @@ def visitmods(dotpath, reverse=False, call_with_mod=None, reloadmod=True):
             elif package:
                 impstr = '%s.%s' % (package, dotpath)
             else:
-                impstr = '%s.plugins.%s.%s' % (app, pname, dotpath)
+                impstr = '%s.components.%s.%s' % (app, pname, dotpath)
             if sys.modules.has_key(impstr):
                 mod_loaded_by = getattr(sys.modules[impstr], '_blazeweb_hierarchy_last_imported_by', None)
                 current_app_id = id(ag.app)
@@ -251,7 +251,7 @@ def gatherobjs(dotpath, filter, reloadmod=False):
     def getkey(app, pname):
         if not pname:
             return 'appstack.%s' % dotpath
-        return 'plugstack.%s.%s' % (pname, dotpath)
+        return 'compstack.%s.%s' % (pname, dotpath)
     collected = OrderedDict()
     def process_module(module, app, pname, package):
         modkey = getkey(app, pname)
@@ -278,8 +278,8 @@ class FileFinderBase(object):
     def findfile(cls, endpoint_path):
         if ':' not in endpoint_path:
             return AppFileFinder(endpoint_path).search()
-        plugin, pathpart = endpoint_path.split(':')
-        return PluginFileFinder(plugin, pathpart).search()
+        component, pathpart = endpoint_path.split(':')
+        return ComponentFileFinder(component, pathpart).search()
 
     def package_dir(self, package):
         package_mod = hm.builtin_import(package, fromlist=[''])
@@ -306,19 +306,19 @@ class AppFileFinder(FileFinderBase):
             if ospath.exists(testpath):
                 return testpath
 
-class PluginFileFinder(FileFinderBase):
+class ComponentFileFinder(FileFinderBase):
 
     def assign_cachekey(self):
-        self.cachekey = '%s:%s' % (self.plugin, self.pathpart)
+        self.cachekey = '%s:%s' % (self.component, self.pathpart)
 
-    def __init__(self, plugin, pathpart):
-        self.plugin = plugin
+    def __init__(self, component, pathpart):
+        self.component = component
         FileFinderBase.__init__(self, pathpart)
 
     def search_apps(self):
-        for app, pname, package in list_plugin_mappings(self.plugin):
+        for app, pname, package in list_component_mappings(self.component):
             if not package:
-                testpath = ospath.join(self.package_dir(app), 'plugins', self.plugin, self.pathpart)
+                testpath = ospath.join(self.package_dir(app), 'components', self.component, self.pathpart)
             else:
                 testpath = ospath.join(self.package_dir(package), self.pathpart)
             if ospath.exists(testpath):
@@ -402,24 +402,24 @@ class AppFinder(FinderBase):
             if module:
                 return module
 
-class PluginFinder(FinderBase):
-    type = 'plugstack'
+class ComponentFinder(FinderBase):
+    type = 'compstack'
 
-    def __init__(self, plugin, location, attr):
-        self.plugin = plugin
+    def __init__(self, component, location, attr):
+        self.component = component
         FinderBase.__init__(self, location, attr)
 
     @property
     def exclocation(self):
-        return '%s.%s' % (self.plugin, self.location)
+        return '%s.%s' % (self.component, self.location)
 
     def assign_cachekey(self):
-        self.cachekey = 'plugstack.%s.%s:%s' % (self.plugin, self.location, self.attr)
+        self.cachekey = 'compstack.%s.%s:%s' % (self.component, self.location, self.attr)
 
     def search_apps(self):
-        for app, pname, package in list_plugin_mappings(self.plugin):
+        for app, pname, package in list_component_mappings(self.component):
             if not package:
-                dlocation = '%s.plugins.%s.%s' % (app, self.plugin, self.location)
+                dlocation = '%s.components.%s.%s' % (app, self.component, self.location)
             else:
                 dlocation = '%s.%s' % (package, self.location)
             module = self.try_import(dlocation)
@@ -434,8 +434,8 @@ class ImportOverrideHelper(object):
 
     @classmethod
     def doimport(cls, name, fromlist):
-        if name.startswith('plugstack.'):
-            return PlugstackImport(name, fromlist).search()
+        if name.startswith('compstack.'):
+            return CompstackImport(name, fromlist).search()
         if name.startswith('appstack.'):
             return AppstackImport(name, fromlist).search()
 
@@ -450,17 +450,17 @@ class ImportOverrideHelper(object):
         return collector
 
 
-class PlugstackImport(ImportOverrideHelper):
-    type = 'plugstack'
+class CompstackImport(ImportOverrideHelper):
+    type = 'compstack'
 
     def find_attrobj(self, attr):
         parts = self.name.split('.', 2)
-        plugin = parts[1]
+        component = parts[1]
         try:
             name = parts[2]
         except IndexError:
             name = ''
-        return PluginFinder(plugin, name, attr).search()
+        return ComponentFinder(component, name, attr).search()
 
 
 class AppstackImport(ImportOverrideHelper):

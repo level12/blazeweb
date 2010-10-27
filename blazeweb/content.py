@@ -73,7 +73,7 @@ class Content(object):
 class TemplateContent(Content):
 
     def __init__(self, endpoint):
-        plugin, template = split_endpoint(endpoint)
+        component, template = split_endpoint(endpoint)
         self.template = template
         self.endpoint = endpoint
         # the endpoint stack is used when the template engine's own
@@ -106,11 +106,11 @@ class TemplateContent(Content):
 
     def _supporting_endpoint_from_ext(self, extension):
         current_endpoint = self.endpoint_stack[-1]
-        plugin, template = split_endpoint(current_endpoint)
+        component, template = split_endpoint(current_endpoint)
         basename, _ = path.splitext(template)
         endpoint = '%s.%s' % (basename, extension)
-        if plugin:
-            endpoint = '%s:%s' % (plugin, endpoint)
+        if component:
+            endpoint = '%s:%s' % (component, endpoint)
         return endpoint
 
     def include_content(self, __endpoint, *args, **kwargs):

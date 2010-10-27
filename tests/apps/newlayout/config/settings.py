@@ -18,32 +18,32 @@ class Default(nlDefault):
         self.add_route('/request-hijack/<sendtype>', 'None')
 
         self.supporting_apps.append('nlsupporting')
-        self.setup_plugins()
+        self.setup_components()
 
         # don't use exception catching, debuggers, logging, etc.
         self.apply_test_settings()
 
         # application level setting should take precedence over what is defined
-        # in the plugin's settings file
-        self.plugins.news.bar = 3
+        # in the component's settings file
+        self.components.news.bar = 3
 
     def get_storage_dir(self):
         return path.join(basedir, '..', '..', 'test-output', app_package)
 
-    def setup_plugins(self):
+    def setup_components(self):
         """
-            plugins need to be in order of importance, so supporting apps
-            need to setup their plugins later
+            components need to be in order of importance, so supporting apps
+            need to setup their components later
         """
-        self.add_plugin(app_package, 'news')
-        self.add_plugin(app_package, 'news', 'newsplug1')
-        self.add_plugin(app_package, 'news', 'newsplug2')
-        self.add_plugin(app_package, 'pdisabled')
-        self.add_plugin(app_package, 'pnoroutes')
-        self.pluginmap.newlayout.pdisabled.enabled = False
-        self.add_plugin(app_package, 'badimport')
+        self.add_component(app_package, 'news')
+        self.add_component(app_package, 'news', 'newscomp1')
+        self.add_component(app_package, 'news', 'newscomp2')
+        self.add_component(app_package, 'pdisabled')
+        self.add_component(app_package, 'pnoroutes')
+        self.componentmap.newlayout.pdisabled.enabled = False
+        self.add_component(app_package, 'badimport')
 
-        nlDefault.setup_plugins(self)
+        nlDefault.setup_components(self)
 
 class AutoCopyStatic(Default):
     def init(self):
