@@ -2,7 +2,7 @@ from StringIO import StringIO
 
 from webtest import TestApp
 
-from blazeutils.json import json
+from blazeutils.jsonh import jsonmod
 from blazeweb.globals import rg
 from blazeweb.testing import inrequest
 from blazeweb.wrappers import Request
@@ -72,6 +72,6 @@ class TestRequest(object):
       assert rg.request is sec_req
 
    def test_json_property(self):
-      req = Request.from_values(json.dumps({'a': 1, 'b': 2}), content_type='application/json')
+      req = Request.from_values(jsonmod.dumps({'a': 1, 'b': 2}), content_type='application/json')
       data = req.json
       assert data['a'] == 1, data

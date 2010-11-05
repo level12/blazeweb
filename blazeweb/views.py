@@ -13,7 +13,7 @@ from werkzeug.routing import Rule
 
 from blazeweb.globals import ag, rg, user, settings
 from blazeweb import routing
-from blazeutils.json import json, assert_have_json
+from blazeutils.jsonh import jsonmod, assert_have_json
 from blazeweb.content import getcontent, Content
 from blazeweb.hierarchy import listapps, split_endpoint
 from blazeweb.exceptions import ProgrammingError
@@ -484,7 +484,7 @@ class View(object):
             'data': data,
             'messages': user_messages
             }
-        jsonstr = json.dumps(data_with_context, indent=indent)
+        jsonstr = jsonmod.dumps(data_with_context, indent=indent)
         self.mimetype = 'application/json'
         self.retval = jsonstr
         if send_response:
@@ -678,7 +678,7 @@ def json_exception_handler(e):
         'data': None,
         'messages': [{'error':'exception encountered, see logs for details'}]
         }
-    jsonstr = json.dumps(data_with_context)
+    jsonstr = jsonmod.dumps(data_with_context)
     return Response(jsonstr, status=500, mimetype='application/json')
 
 @decorator

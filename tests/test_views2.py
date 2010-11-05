@@ -5,7 +5,7 @@ from webtest import TestApp
 from werkzeug import MultiDict, run_wsgi_app, Headers
 from werkzeug.exceptions import BadRequest, HTTPException
 
-from blazeutils.json import json
+from blazeutils.jsonh import jsonmod
 from blazeweb.exceptions import ProgrammingError
 from blazeweb.globals import rg, user
 import blazeweb.views
@@ -620,7 +620,7 @@ def test_json_handlers():
 
     r = Jsonify({}, 'jsonify').process()
     eq_(r.headers['Content-Type'], 'application/json')
-    data = json.loads(r.data)
+    data = jsonmod.loads(r.data)
     assert data['error'] == 0, data
 
     # test user messages
@@ -630,7 +630,7 @@ def test_json_handlers():
             self.render_json({'foo1': 'bar'})
 
     r = Jsonify({}, 'jsonify').process()
-    data = json.loads(r.data)
+    data = jsonmod.loads(r.data)
     assert data['messages'][0]['severity'] == 'notice', data
     assert data['messages'][0]['text'] == 'hi', data
 
@@ -641,7 +641,7 @@ def test_json_handlers():
             self.render_json({'foo1': 'bar'}, add_user_messages=False)
 
     r = Jsonify({}, 'jsonify').process()
-    data = json.loads(r.data)
+    data = jsonmod.loads(r.data)
     assert len(data['messages']) == 0, data
 
     # test jsonify decorator
@@ -652,7 +652,7 @@ def test_json_handlers():
 
     r = Jsonify({}, 'jsonify').process()
     eq_(r.headers['Content-Type'], 'application/json')
-    data = json.loads(r.data)
+    data = jsonmod.loads(r.data)
     assert data['error'] == 0, data
     assert data['data']['foo1'] == 'bar', data
 

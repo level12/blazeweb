@@ -1,6 +1,6 @@
 import werkzeug as wz
 
-from blazeutils.json import json, assert_have_json
+from blazeutils.jsonh import jsonmod, assert_have_json
 from blazeweb.globals import rg
 from blazeweb.utils import registry_has_object
 
@@ -47,7 +47,7 @@ class Request(BaseRequest):
         """
         assert_have_json()
         if self.mimetype == 'application/json':
-            return json.loads(self.data)
+            return jsonmod.loads(self.data)
 
 class Response(wz.Response):
     """

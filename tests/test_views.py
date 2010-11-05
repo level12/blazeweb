@@ -2,7 +2,7 @@ import unittest
 
 from werkzeug import Client, BaseResponse
 
-from blazeutils.json import json
+from blazeutils.jsonh import jsonmod
 from blazeweb.globals import settings, user
 from blazeweb.exceptions import ProgrammingError
 from blazeweb.hierarchy import HierarchyImportError
@@ -399,7 +399,7 @@ class TestViews(unittest.TestCase):
             settings.exception_handling = ['handle']
             r = self.client.get('/jsonify-exception')
             assert r.status_code == 500, r.status_code
-            data = json.loads(r.data)
+            data = jsonmod.loads(r.data)
             assert data['error'] == 1, data
             assert data['data'] is None, data
         finally:
