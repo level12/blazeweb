@@ -13,7 +13,7 @@ from werkzeug.routing import Rule
 
 from blazeweb.globals import ag, rg, user, settings
 from blazeweb import routing
-from blazeweb._internal import json, _assert_have_json
+from blazeutils.json import json, assert_have_json
 from blazeweb.content import getcontent, Content
 from blazeweb.hierarchy import listapps, split_endpoint
 from blazeweb.exceptions import ProgrammingError
@@ -473,6 +473,7 @@ class View(object):
             also sent.  The resulting json string looks like:
 
         """
+        assert_have_json()
         user_messages = []
         if add_user_messages:
             for msg in user.get_messages():

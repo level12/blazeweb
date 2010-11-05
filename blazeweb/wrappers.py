@@ -1,6 +1,6 @@
 import werkzeug as wz
 
-from blazeweb._internal import json, _assert_have_json
+from blazeutils.json import json, assert_have_json
 from blazeweb.globals import rg
 from blazeweb.utils import registry_has_object
 
@@ -45,8 +45,7 @@ class Request(BaseRequest):
         """If the mimetype is `application/json` this will contain the
         parsed JSON data.
         """
-        if __debug__:
-            _assert_have_json()
+        assert_have_json()
         if self.mimetype == 'application/json':
             return json.loads(self.data)
 

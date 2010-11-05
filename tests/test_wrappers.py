@@ -2,7 +2,7 @@ from StringIO import StringIO
 
 from webtest import TestApp
 
-from blazeweb._internal import json
+from blazeutils.json import json
 from blazeweb.globals import rg
 from blazeweb.testing import inrequest
 from blazeweb.wrappers import Request

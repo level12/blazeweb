@@ -5,7 +5,7 @@ from webtest import TestApp
 from werkzeug import MultiDict, run_wsgi_app, Headers
 from werkzeug.exceptions import BadRequest, HTTPException
 
-from blazeweb._internal import json
+from blazeutils.json import json
 from blazeweb.exceptions import ProgrammingError
 from blazeweb.globals import rg, user
 import blazeweb.views
