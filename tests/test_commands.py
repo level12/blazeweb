@@ -51,27 +51,27 @@ def test_blazeweb_project():
     assert len(result.files_created) > 5
 
 def test_app_testrun():
-    indexstr = '\r\nindex\r\n' if is_win else '\nindex\n'
+    indexstr = '\nindex\n'
     res = run_application('minimal2', 'testrun')
     assert '200 OK' in res.stdout
     assert 'Content-Type: text/html' in res.stdout
-    assert indexstr in res.stdout, res.stdout
+    assert indexstr in res.stdout.replace('\r\n', '\n'), res.stdout.__repr__()
 
     res = run_application('minimal2', 'testrun', '--silent')
     assert '200 OK' not in res.stdout
     assert 'Content-Type: text/html' not in res.stdout
-    assert indexstr not in res.stdout
+    assert indexstr not in res.stdout.replace('\r\n', '\n')
 
-    indexstr2 = 'index\r\n' if is_win else 'index\n'
+    indexstr2 = 'index\n'
     res = run_application('minimal2', 'testrun', '--no-headers')
     assert '200 OK' not in res.stdout
     assert 'Content-Type: text/html' not in res.stdout
-    assert indexstr2 in res.stdout, res.stdout
+    assert indexstr2 in res.stdout.replace('\r\n', '\n'), res.stdout
 
     res = run_application('minimal2', 'testrun', '--no-body')
     assert '200 OK' in res.stdout
     assert 'Content-Type: text/html' in res.stdout
-    assert indexstr not in res.stdout
+    assert indexstr not in res.stdout.replace('\r\n', '\n')
 
 def test_app_tasks():
     res = run_application('minimal2', 'tasks', expect_error=True)
