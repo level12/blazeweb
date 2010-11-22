@@ -168,10 +168,13 @@ class SMTPConnection(object):
         """
         if not email_messages:
             return
-        new_conn_created = self.open()
-        if not self.connection:
-            # We failed silently on open(). Trying to send would be pointless.
-            return
+        if settings.email.is_live:
+            new_conn_created = self.open()
+            if not self.connection:
+                # We failed silently on open(). Trying to send would be pointless.
+                return
+        else:
+            new_conn_created = False
         num_sent = 0
         for message in email_messages:
             sent = self._send(message)
