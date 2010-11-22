@@ -113,8 +113,8 @@ def test_minimal_project_checkout_and_functionality():
     res = env.run(projname, 'testrun')
     assert '200 OK' in res.stdout
     assert 'Content-Type: text/html' in res.stdout
-    indexstr = '\r\nindex\r\n' if is_win else '\nindex\n'
+    indexstr = '\nindex\n'
     assert indexstr in res.stdout
     res = env.run('pip', 'uninstall', projname, '-y')
-    assert 'Successfully uninstalled' in res.stdout, res.stdout
+    assert 'Successfully uninstalled' in res.stdout.replace('\r\n', '\n'), res.stdout
     env.clear()
