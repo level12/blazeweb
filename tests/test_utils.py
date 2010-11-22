@@ -94,7 +94,8 @@ class TestAborting(object):
 
     def test_other(self):
         r = self.ta.get('/abort/other')
-        assert "'b&amp;z': 1, 'foo': 'bar'}</pre>" in r
+        # linux doesn't escape single quotes, windows does
+        assert "'b&amp;z': 1, 'foo': 'bar'}</pre>" in r or "&#39;b&amp;z&#39;: 1, &#39;foo&#39;: &#39;bar&#39;}</pre>" in r, r
 
     def test_dabort(self):
         r = self.ta.get('/abort/dabort')
