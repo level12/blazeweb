@@ -1,5 +1,7 @@
 from urlparse import urlparse
+
 from blazeweb.globals import settings, rg
+from blazeweb.utils import registry_has_object
 from werkzeug import Href, MultiDict
 from werkzeug.routing import Rule, RequestRedirect
 from werkzeug.exceptions import NotFound, MethodNotAllowed
@@ -10,8 +12,37 @@ __all__ = [
     'Rule',
     'url_for',
     'static_url',
-    'current_url'
+    'current_url',
+    'prefix_relative_url',
 ]
+
+def prefix_relative_url(url):
+    """
+        If the url given is an absolute url of any of the following forms:
+
+            http(s)://example.com/the-page
+            /the-page
+            /
+
+        then the url will be returned as-is.  But if it is a relative url:
+
+            the-page
+
+        or an empty string "", then it will be prefixed with forward slash (/)
+        as well as the script-name of the current environment if applicable.
+
+        Note: this function checks for the presence of the current environment
+        in a safe way and can therefore be used both inside and outside of a
+        request context.
+
+    """
+    if url.startswith('http') or url.startswith('/'):
+        return url
+    if registry_has_object(rg):
+        script_name = rg.request.script_root
+        if script_name:
+            return '/%s/%s' % (script_name.lstrip('/'), url)
+    return '/%s' % url
 
 def url_for(endpoint, _external=False, _https=None, **values):
     if _https is not None:

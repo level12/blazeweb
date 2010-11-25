@@ -137,5 +137,29 @@ class TestCurrentUrl(unittest.TestCase):
         self.assertEqual('http://localhost:8080/news/list?page=1&perpage=10', current_url(environ=env, qs_replace={'page':1, 'foo':'bar'}))
         self.assertEqual('http://localhost:8080/news/list?foo=bar&page=1&perpage=10', current_url(environ=env, qs_update={'page':1, 'foo':'bar'}))
 
-if __name__ == '__main__':
-    unittest.main()
+class TestProperUrl(object):
+    @classmethod
+    def setup_class(cls):
+        # make sure an app is created, otherwise the tests can fail if this
+        # test is run by itself
+        cls.app = config.make_wsgi(RoutingSettings)
+
+    def test_absolute(self):
+        eq_(prefix_relative_url('https://example.com/the-page'), 'https://example.com/the-page')
+        eq_(prefix_relative_url('http://example.com/the-page'), 'http://example.com/the-page')
+        eq_(prefix_relative_url('/the-page'), '/the-page')
+        eq_(prefix_relative_url('/'), '/')
+
+    def test_relative_no_request(self):
+        eq_(prefix_relative_url('the-page'), '/the-page')
+        eq_(prefix_relative_url(''), '/')
+
+    @inrequest("/foobar")
+    def test_relative_in_request(self):
+        eq_(prefix_relative_url('the-page'), '/the-page')
+        eq_(prefix_relative_url(''), '/')
+
+    @inrequest("/foobar", "https://localhost:8080/script")
+    def test_relative_in_request_with_scriptname(self):
+        eq_(prefix_relative_url('the-page'), '/script/the-page')
+        eq_(prefix_relative_url(''), '/script/')
