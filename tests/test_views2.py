@@ -130,7 +130,7 @@ def test_arg_processor():
     r = TestView({'a1':2}).process()
     eq_(r.data, '2')
 
-@inrequest('/foo?a=1&b=b&d=3&e=foo@bar.com')
+@inrequest('/foo?a=1&b=b&d=3&e=foo@bar.com&f[]=6&g[]=hi')
 def test_arg_validation():
     class TestView(View):
         def init(self):
@@ -138,6 +138,11 @@ def test_arg_validation():
             self.add_processor('b', int)
             self.add_processor('c', int)
             self.add_processor('d', Int)
+            self.add_processor('f[]', int, pass_as='f')
+            self.add_processor('g[]', pass_as='g')
+            # this makes sure that pass_as is handled corretly even if the
+            # value isn't sent
+            self.add_processor('h[]', pass_as='h')
             self.add_processor('z', int)
             try:
                 # try a bad processor type
@@ -146,7 +151,7 @@ def test_arg_validation():
             except TypeError, e:
                 if 'processor must be a Formencode validator or a callable' != str(e):
                     raise # pragma: no cover
-        def default(self, a, c, d, b=5, z=None):
+        def default(self, a, c, d, f, g, b=5, z=None):
             eq_(a, 1)
             eq_(c, 2)
             eq_(d, 3)
@@ -157,6 +162,9 @@ def test_arg_validation():
             eq_(b, 5)
             # the argument wasn't sent at all
             eq_(z, None)
+            # these arguments have a different name in the get string
+            eq_(f, 6)
+            eq_(g, 'hi')
     r = TestView({'c':u'2'}).process()
 
     # try multiple validators for the same item
@@ -229,7 +237,7 @@ def test_arg_validation_with_strict():
     except BadRequest:
         pass
 
-@inrequest('/foo?a=1&a=2&b=1&b=2&c=1&c=2&d=1&d=2&d=abc&e=1&g=foo&h=1&h=foo&h=bar')
+@inrequest('/foo?a=1&a=2&b=1&b=2&c=1&c=2&d=1&d=2&d=abc&e=1&g=foo&h=1&h=foo&h=bar&i[]=1&j[]=1&j[]=2')
 def test_processing_with_lists():
     class TestView(View):
         def init(self):
@@ -241,7 +249,12 @@ def test_processing_with_lists():
             self.add_processor('f', takes_list=True)
             self.add_processor('g', int, takes_list=True)
             self.add_processor('h', int, takes_list=True, list_item_invalidates=True, show_msg=True)
-        def default(self, a, b, d, e, g, h=[], c=None, f=[]):
+            self.add_processor('i[]', int, takes_list=True, pass_as='i')
+            self.add_processor('j[]', takes_list=True, pass_as='j')
+            # not used, testing pass_as to make sure its handled correclty when
+            # no values are sent
+            self.add_processor('k[]', takes_list=True, pass_as='k')
+        def default(self, a, b, d, e, g, i, j=[], h=[], c=None, f=[]):
             msgs = user.get_messages()
             eq_(a, '1')
             eq_(b, 1)
@@ -260,6 +273,9 @@ def test_processing_with_lists():
             eq_(g, [])
             # single bad value invalidates all values
             eq_(h, [])
+            # pass_as tests
+            eq_(i, [1])
+            eq_(j, ['1', '2'])
     r = TestView({}).process()
 
     # no list strict

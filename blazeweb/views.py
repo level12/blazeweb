@@ -170,7 +170,7 @@ class View(object):
 
     def add_processor(self, argname, processor=None, required=None,
             takes_list = None, list_item_invalidates=False, strict=False,
-            show_msg=False, custom_msg=None ):
+            show_msg=False, custom_msg=None, pass_as=None ):
         """
             Sets up filtering & validation on the calling_args to be used before
             any methods in the call stack are called. The default arguments will
@@ -221,6 +221,10 @@ class View(object):
                 validator.  If not given and the validator is a callable, then
                 the message will be taken from the ValueError exception that
                 is raised.  If given, show_msg is implicitly set to True.
+            pass_as = When the argname is not a valid python variable (e.g.
+                ?listvalues[]=1&listvalues[]=2), then set pass_as to a string
+                that corresponds to the variable name that should be used
+                when passing this value to the action methods.
         """
         if not self.urlargs.has_key(argname):
             self.expect_getargs(argname)
@@ -237,10 +241,10 @@ class View(object):
                         raise TypeError('processor must be a Formencode validator or a callable')
                     proc = _ProcessorWrapper(to_python=proc)
                 self._processors.append((argname, proc, required, takes_list,
-                    list_item_invalidates, strict, show_msg, custom_msg))
+                    list_item_invalidates, strict, show_msg, custom_msg, pass_as))
         else:
             self._processors.append((argname, None, required, takes_list,
-                list_item_invalidates, strict, show_msg, custom_msg))
+                list_item_invalidates, strict, show_msg, custom_msg, pass_as))
 
     ###
     ### methods related to processing the view
@@ -294,17 +298,25 @@ class View(object):
     def process_args(self):
         had_strict_arg_failure = False
         for argname, processor, required, takes_list, list_item_invalidates, \
-                strict, show_msg, custom_msg in self._processors:
+                strict, show_msg, custom_msg, pass_as in self._processors:
             is_invalid = False
+            pass_as = pass_as or argname
             argval = self.calling_args.get(argname, None)
             try:
                 if isinstance(argval, list):
                     if takes_list == False:
                         raise formencode.Invalid('multiple values not allowed', argval, None)
                     if takes_list is None:
-                        self.calling_args[argname] = argval = argval[0]
+                        self.calling_args[pass_as] = argval = argval[0]
                 elif takes_list:
-                    self.calling_args[argname] = argval = tolist(argval)
+                    self.calling_args[pass_as] = argval = tolist(argval)
+                if pass_as != argname:
+                    # catches a couple cases where a replacement doesn't
+                    # already happen above
+                    self.calling_args[pass_as] = argval
+                    # delete the old value if it exists
+                    if argname in self.calling_args:
+                        del self.calling_args[argname]
                 if processor:
                     if takes_list:
                         processor = formencode.ForEach(processor)
@@ -322,7 +334,7 @@ class View(object):
                                 new_list.append(argval[index])
                         # revalidate for conversion and required
                         processed_val = processor.to_python(new_list)
-                    self.calling_args[argname] = processed_val
+                    self.calling_args[pass_as] = processed_val
             except formencode.Invalid, e:
                 is_invalid = True
                 if self.strict_args or strict:
@@ -332,8 +344,8 @@ class View(object):
                     invalid_msg = '%s: %s' % (argname, custom_msg or str(e))
                     user.add_message('error', invalid_msg)
             try:
-                if is_invalid or self.calling_args[argname] is None or self.calling_args[argname] == '':
-                    del self.calling_args[argname]
+                if is_invalid or self.calling_args[pass_as] is None or self.calling_args[pass_as] == '':
+                    del self.calling_args[pass_as]
             except KeyError:
                 pass
         if len(self.invalid_arg_keys) > 0:
