@@ -87,3 +87,36 @@ def clear_settings_handlers():
             def emit(self, record):
                 pass
         logging.root.addHandler(NullHandler())
+
+def setup_handler_logging(handler, level, *loggers):
+    for lname in loggers:
+        logger = logging.getLogger(lname)
+        logger.addHandler(handler)
+        logger.setLevel(level)
+
+def setup_file_logging(fname, level, *loggers, **kwargs):
+    format_str = kwargs.pop('format_str', None) or "%(asctime)s - %(levelname)s - %(name)s - %(message)s"
+    max_bytes = kwargs.pop('max_bytes', None) or settings.logs.max_bytes
+    backup_count = kwargs.pop('backup_count', None) or settings.logs.backup_count
+
+    formatter = logging.Formatter(format_str)
+
+    handler = RotatingFileHandler(
+              path.join(settings.dirs.logs, fname),
+              maxBytes = max_bytes,
+              backupCount = backup_count,
+        )
+    handler.setLevel(level)
+    handler.setFormatter(formatter)
+
+    setup_handler_logging(handler, level, *loggers)
+
+def setup_stdout_logging(level, *loggers, **kwargs):
+    format_str = kwargs.pop('format_str', None) or "%(name)s - %(message)s"
+    formatter = logging.Formatter(format_str)
+
+    handler = logging.StreamHandler()
+    handler.setLevel(level)
+    handler.setFormatter(formatter)
+
+    setup_handler_logging(handler, level, *loggers)
