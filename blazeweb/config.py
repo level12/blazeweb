@@ -247,9 +247,9 @@ class DefaultSettings(QuickSettings):
         self.logs.enabled = True
         # logs will be logged using RotatingFileHandler
         # maximum log file size is 50MB
-        self.logs.max_bytes = 1024*1024*10
+        self.logs.max_bytes = 1024*1024*50
         # maximum number of log files to keep around
-        self.logs.backup_count = 5
+        self.logs.backup_count = 10
         # will log all WARN and above logs to errors.log in the logs directory
         self.logs.errors.enabled = True
         # will log all application logs (level 25) to application.log.  This will
