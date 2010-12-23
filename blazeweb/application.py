@@ -4,12 +4,13 @@ import logging
 
 from blazeutils.datastructures import BlankObject
 from blazeutils.strings import randchars, randhash
+from blinker import Namespace
 from werkzeug.exceptions import HTTPException, InternalServerError
 from werkzeug import create_environ
 from werkzeug.routing import Map, Submount
 
 from blazeweb.globals import ag, rg, settings, user
-from blazeweb.events import Namespace, signal
+from blazeweb.events import signal, SettingsConnectHelper
 from blazeweb.exceptions import ProgrammingError
 from blazeweb.hierarchy import findobj, HierarchyImportError, \
     listcomponents, visitmods, findview, split_endpoint
@@ -115,8 +116,8 @@ class WSGIApp(object):
     def __init__(self, module_or_settings, profile=None):
         self._id = randhash()
 
-        self.init_settings(module_or_settings, profile)
         self.init_ag()
+        self.init_settings(module_or_settings, profile)
         self.init_signals()
         self.init_events()
         self.init_component_settings()
@@ -136,6 +137,13 @@ class WSGIApp(object):
                 if "has no attribute '%s'" % profile not in str(e):
                     raise
                 raise ValueError('settings profile "%s" not found in this application' % profile)
+        SettingsClass = self.settings.__class__
+        # look for any attributes on the settings class instance that have
+        # been decorated by @settings_connect and connect() them
+        for aname, aobj in vars(SettingsClass).iteritems():
+            #print aname
+            if isinstance(aobj, SettingsConnectHelper):
+                aobj.connect()
         settings._push_object(self.settings)
 
     def init_ag(self):

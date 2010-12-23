@@ -50,3 +50,11 @@ class TestEvents(object):
         # still working as expected
         r = nlta.get('/eventtest')
         r.mustcontain('foonewlayout')
+
+    def test_connect_to_signal_decorator(self):
+        # this initialized the application and sets up the settings
+        import minimal3.application
+        assert settings.logging_is_initialized
+
+        # make sure the class doesn't have the attribute
+        assert not hasattr(settings.__class__, 'logging_is_initialized')

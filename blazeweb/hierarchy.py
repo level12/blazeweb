@@ -43,7 +43,7 @@ class HierarchyManager(object):
         # for module reloading purposes in visitmods(), we need to keep track
         # of what application imported a module.  But we only need to do that
         # for modules that are in BlazeWeb applications or are BW components
-        if registry_has_object(ag):
+        if registry_has_object(ag) and registry_has_object(settings):
             # is this module part of the main or supporting app?
             toplevel = name.split('.')[0]
             if toplevel in listapps() or toplevel in list_component_packages():
