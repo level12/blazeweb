@@ -1,4 +1,4 @@
-from blazeweb.globals import settings
+from blazeweb.globals import settings, user, rg
 from blazeweb.utils import abort
 from blazeweb.views import View, asview
 from blazeweb.wrappers import Response
@@ -15,6 +15,8 @@ class Index(View):
         self.assign('a', 1)
         if tname != 'index':
             self.render_template(tname)
+        user.foo = 'bar'
+        rg.session['foo'] = 'bar2'
         self.render_template()
 
 class Abort(View):

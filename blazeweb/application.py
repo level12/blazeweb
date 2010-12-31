@@ -36,7 +36,13 @@ class RequestManager(object):
         environ = self.environ
         environ['paste.registry'].register(rg, BlankObject())
         self.init_rg()
-        environ['paste.registry'].register(user, self.init_user())
+        user_instance = self.init_user()
+        environ['paste.registry'].register(user, user_instance)
+        # make the user class available to the testing framework if applicable
+        # http://pythonpaste.org/webtest/#framework-hooks
+        if 'paste.testing' in environ:
+            environ['paste.testing_variables']['user'] = user_instance
+            environ['paste.testing_variables']['session'] = rg.session
 
     def init_rg(self):
         rg.ident = randchars()
