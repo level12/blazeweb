@@ -189,12 +189,16 @@ class SMTPConnection(object):
         if not email_message.recipients():
             return False
         try:
+            recipients = email_message.recipients()
             if settings.email.is_live:
                 self.connection.sendmail(email_message.from_email,
-                        email_message.recipients(),
+                        recipients,
                         email_message.message().as_string())
             else:
                 log.warn('email.is_live = False, email getting skipped')
+            log_recipients = ';'.join(recipients)
+            log_recipients = log_recipients if len(log_recipients) < 200 else log_recipients[0:200]
+            log.info('Email sent: "%s" to "%s"', email_message.subject, log_recipients)
         except:
             if not self.fail_silently:
                 raise
