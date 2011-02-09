@@ -493,8 +493,11 @@ def _mail_admins(subject, message, format='text'):
     """used for testing"""
     email_class = get_email_class(format)
     fromaddr = settings.emails.from_server or settings.emails.from_default
+    recipients = settings.emails.admins
+    if not recipients:
+        log.warn('mail_admins() used but settings.emails.admins is empty')
     return email_class(settings.email.subject_prefix + subject, message,
-                 fromaddr, settings.emails.admins
+                 fromaddr, recipients
             )
 
 def mail_admins(subject, message, format='text', fail_silently=False):
@@ -506,8 +509,11 @@ def _mail_programmers(subject, message, format='text'):
     """used for testing"""
     email_class = get_email_class(format)
     fromaddr = settings.emails.from_server or settings.emails.from_default
+    recipients = settings.emails.programmers
+    if not recipients:
+        log.warn('mail_programmers() used but settings.emails.programmers is empty')
     return email_class(settings.email.subject_prefix + subject, message,
-               fromaddr , settings.emails.programmers
+               fromaddr , recipients
             )
 
 def mail_programmers(subject, message, format='text', fail_silently=False):

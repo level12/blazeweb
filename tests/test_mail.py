@@ -513,6 +513,13 @@ Bcc: </p>
         assert email.recipients() == ['p1@example.com', 'p2@example.com']
         assert '<p><strong>email body</strong></p>' in msg.as_string()
 
+    def test_mail_programmers_wawrning(self):
+        lh = logging_handler('blazeweb.mail')
+        settings.emails.programmers = []
+
+        email = _mail_programmers('programmers email subject', 'email body')
+        assert 'mail_programmers() used but settings.emails.programmers is empty' in lh.messages['warning'][0]
+
     def test_mail_admins(self):
         settings.email.subject_prefix = '[webapp] '
         settings.emails.admins = ('a1@example.com', 'a2@example.com')
@@ -522,6 +529,14 @@ Bcc: </p>
         assert msg['Subject'] == '[webapp] admins email subject'
         assert email.recipients() == ['a1@example.com', 'a2@example.com']
         assert '<p><strong>email body</strong></p>' in msg.as_string()
+
+    def test_mail_admins_wawrning(self):
+        lh = logging_handler('blazeweb.mail')
+        settings.emails.admins = []
+
+        email = _mail_admins('admins email subject', 'email body')
+        assert 'mail_admins() used but settings.emails.admins is empty' in lh.messages['warning'][0]
+
 
     def test_nofrom(self):
         settings.emails.from_default = ''
