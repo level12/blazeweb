@@ -257,6 +257,9 @@ class DefaultSettings(QuickSettings):
         # application log level is 25, which is greater than INFO but less than
         # WARNING.
         self.logs.application.enabled = True
+        # will log INFO messages to email.log with information about each email
+        # that gets sent out.
+        self.logs.email.enabled = True
         # if you don't want application or error logging and don't setup your
         # own, then you may see error messages on stdout like "No handlers could
         # be found for logger ...".  Enable the null_handler to get rid of

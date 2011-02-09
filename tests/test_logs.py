@@ -26,6 +26,8 @@ class LogsBase(object):
         app_fh.close()
         error_fh = open( path.join(log_base_dir, 'errors.log'), 'w')
         error_fh.close()
+        mail_fh = open( path.join(log_base_dir, 'email.log'), 'w')
+        mail_fh.close()
         #create the app
         make_wsgi(cls.settings_name)
 
@@ -78,6 +80,14 @@ class TestLogs(LogsBase):
 
         eq_('test_error_log', name.strip())
         eq_('warn message', message.strip())
+
+    def test_mail_log(self):
+        log = logging.getLogger('blazeweb.mail')
+        log.info('Email sent...')
+
+        _, message = self.last_line('email')
+
+        eq_('Email sent...', message.strip())
 
 class TestNoLogs(LogsBase):
 

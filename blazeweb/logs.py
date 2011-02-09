@@ -66,6 +66,20 @@ def create_handlers_from_settings(settings):
         app_handler.addFilter(OnlyLevel25())
         logging.root.addHandler(app_handler)
 
+    if settings.logs.email.enabled:
+        format_str = "%(asctime)s - %(message)s"
+        formatter = logging.Formatter(format_str)
+
+        app_handler = RotatingFileHandler(
+              path.join(settings.dirs.logs, 'email.log'),
+              maxBytes=settings.logs.max_bytes,
+              backupCount=settings.logs.backup_count,
+        )
+        app_handler._from_blazeweb_settings = True
+        app_handler.setLevel(logging.INFO)
+        app_handler.setFormatter(formatter)
+        logging.getLogger('blazeweb.mail').addHandler(app_handler)
+        logging.getLogger('blazeweb.mail').setLevel(logging.INFO)
 
 def clear_settings_handlers():
     new_handlers = []
