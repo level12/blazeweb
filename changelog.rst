@@ -1,6 +1,12 @@
 Change Log
 ===========
 
+0.3.3 released 2011-02-11
+-----------------------------
+ - added a new log, on by default, to capture details about sent emails
+ - added warning level logs when mail_programmers() or mail_admins() is
+    used with an empty setting
+
 0.3.2 released 2011-02-04
 -----------------------------
 
