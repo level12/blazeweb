@@ -81,3 +81,32 @@ def test_environ_hooks():
 
     r = ta.get('/news/reqsetupattr')
     r.mustcontain('foo')
+
+class TestUserSessionInteraction(object):
+
+    @classmethod
+    def setup_class(cls):
+        cls.app = make_wsgi('WithTestSettings')
+
+    def test_user_added_to_session_only_when_accessed(self):
+        ta = TestApp(self.app)
+        r = ta.get('/applevelview/foo')
+        assert r.user is None
+        assert r.session.accessed() == False
+
+    def test_user_added_when_accessed(self):
+        ta = TestApp(self.app)
+        r = ta.get('/index/index')
+        assert '<User (' in repr(r.user)
+        assert r.session.has_key('__blazeweb_user')
+        assert r.session.accessed() == True
+
+    def test_framework_hook(self):
+        ta = TestApp(self.app)
+        r = ta.get('/index/index')
+
+        # user attribute set
+        assert r.user.foo == 'bar'
+
+        # session item set
+        assert r.session['foo'] == 'bar2'

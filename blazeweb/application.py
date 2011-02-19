@@ -17,7 +17,7 @@ from blazeweb.hierarchy import findobj, HierarchyImportError, \
 from blazeweb.logs import create_handlers_from_settings
 from blazeweb.mail import mail_programmers
 from blazeweb.templating import default_engine
-from blazeweb.users import User
+from blazeweb.users import UserProxy
 from blazeweb.utils import exception_with_context, abort, _Redirect
 from blazeweb.utils.filesystem import mkdirs, copy_static_files
 from blazeweb.views import _RouteToTemplate, _Forward
@@ -26,7 +26,7 @@ from blazeweb.wrappers import Request
 log = logging.getLogger(__name__)
 
 class RequestManager(object):
-    user_class = User
+    user_class = UserProxy
 
     def __init__(self, app, environ):
         self.app = app
@@ -38,11 +38,6 @@ class RequestManager(object):
         self.init_rg()
         user_instance = self.init_user()
         environ['paste.registry'].register(user, user_instance)
-        # make the user class available to the testing framework if applicable
-        # http://pythonpaste.org/webtest/#framework-hooks
-        if 'paste.testing' in environ:
-            environ['paste.testing_variables']['user'] = user_instance
-            environ['paste.testing_variables']['session'] = rg.session
 
     def init_rg(self):
         rg.ident = randchars()
@@ -51,7 +46,7 @@ class RequestManager(object):
         Request(self.environ)
         if self.environ.has_key('beaker.session'):
             rg.session = self.environ['beaker.session']
-            log.debug('beaker session found, id: %s', rg.session.id)
+            log.debug('using beaker sessions')
         else:
             rg.session = None
         # if set, it will be called with an unhandled exception if necessary
@@ -61,13 +56,6 @@ class RequestManager(object):
         rg.urladapter = ag.route_map.bind_to_environ(self.environ)
 
     def init_user(self):
-        environ = self.environ
-        if 'beaker.session' in environ:
-            if '__blazeweb_user' not in environ['beaker.session']:
-                environ['beaker.session']['__blazeweb_user'] = self.user_class()
-            return environ['beaker.session']['__blazeweb_user']
-        # having a user object that is not in a session makes sense for testing
-        # purposes, but probably not in production use
         return self.user_class()
 
     def __enter__(self):
@@ -80,6 +68,21 @@ class RequestManager(object):
                 callable()
 
     def __exit__(self, exc_type, exc_value, tb):
+        # make the user class available to the testing framework if applicable
+        # http://pythonpaste.org/webtest/#framework-hooks
+        if 'paste.testing' in self.environ:
+            u = user._current_obj()
+            if isinstance(u, UserProxy):
+                # we don't want to send the UserProxy outside of the request
+                # because we will get a StackedObjectProxy error when trying
+                # to access it.  Better to just send None, b/c an attribute
+                # error on None is easier to understand in testing than
+                # a proxy registry error
+                self.environ['paste.testing_variables']['user'] = None
+            else:
+                self.environ['paste.testing_variables']['user'] = u
+            self.environ['paste.testing_variables']['session'] = rg.session
+
         if 'blazeweb.request_teardown' in self.environ:
             for callable in self.environ['blazeweb.request_teardown']:
                 callable()
@@ -113,8 +116,12 @@ class ResponseContext(object):
                 raise ProgrammingError('forward loop detected: %s' % '->'.join([g[0] for g in rg.forward_queue]))
             return True
         if 'beaker.session' in self.environ:
-            log.debug('saving beaker session, id: %s', self.environ['beaker.session'].id)
-            self.environ['beaker.session'].save()
+            bs = self.environ['beaker.session']
+            if bs.accessed():
+                log.debug('saving beaker session, id: %s', bs.id)
+                bs.save()
+            else:
+                log.debug('beaker session not accessed, not saving')
         log.debug('exit response context finished')
 
 class WSGIApp(object):

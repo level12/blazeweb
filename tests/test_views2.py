@@ -489,12 +489,6 @@ def test_templating():
     r = ta.get('/news/template')
     assert 'news index: 1' == r.body, r
 
-def test_testapp_framework_hook():
-    #http://pythonpaste.org/webtest/#framework-hooks
-    r = ta.get('/index/index')
-    assert r.user.foo == 'bar'
-    assert r.session['foo'] == 'bar2'
-
 @inrequest('/foo')
 def test_templating_in_request():
 

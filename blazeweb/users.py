@@ -4,6 +4,8 @@ import random
 from blazeutils.datastructures import LazyDict, OrderedDict
 from blazeutils.helpers import tolist
 from blazeutils.strings import randchars
+from blazeweb.globals import rg, user as guser
+from blazeweb.utils import registry_has_object
 
 log = logging.getLogger(__name__)
 
@@ -122,3 +124,76 @@ class UserMessage(object):
 
     def __repr__(self):
         return '%s: %s' % (self.severity, self.text)
+
+class UserProxy(object):
+    """
+        Track usage of the users global object.
+
+        Initially, the global user is set to an instance of UserProxy.
+        If UserProxy is accessed, a real User object is created and assigned
+        to the user global object.  The UserProxy will then be garbage
+        collected and future accesses to the global user object will
+        go directly to that object.
+
+        This code adapted from paste.registry.
+
+    """
+
+    user_cls = User
+
+    def _new_user_instance(self):
+        return self.user_cls()
+
+    def _user(self):
+        """Lazy initial creation of user object"""
+
+        # load user instance from the beaker session if possible
+        if registry_has_object(rg) and rg.session is not None:
+            if '__blazeweb_user' in rg.session:
+                user_inst = rg.session['__blazeweb_user']
+            else:
+                user_inst = self._new_user_instance()
+                rg.session['__blazeweb_user'] = user_inst
+        else:
+            user_inst = self._new_user_instance()
+
+        # replace underlying object on the user global variable
+        if registry_has_object(guser):
+            cobj = guser._current_obj()
+            if not isinstance(cobj, UserProxy):
+                raise TypeError('UserProxy tried to unregister a class of type: %s' % cobj)
+            rg.environ['paste.registry'].register(guser, user_inst)
+        return user_inst
+
+    def __getattr__(self, attr):
+        return getattr(self._user(), attr)
+
+    def __setattr__(self, attr, value):
+        setattr(self._user(), attr, value)
+
+    def __delattr__(self, name):
+        delattr(self._user(), name)
+
+    def __getitem__(self, key):
+        return self._user()[key]
+
+    def __setitem__(self, key, value):
+        self._user()[key] = value
+
+    def __delitem__(self, key):
+        del self._user()[key]
+
+    def __call__(self, *args, **kw):
+        return self._user()(*args, **kw)
+
+    def __iter__(self):
+        return iter(self._user())
+
+    def __len__(self):
+        return len(self._user())
+
+    def __contains__(self, key):
+        return key in self._user()
+
+    def __nonzero__(self):
+        return bool(self._current_obj())
