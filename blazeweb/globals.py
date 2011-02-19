@@ -1,4 +1,4 @@
-from paste.registry import StackedObjectProxy
+from blazeweb.registry import StackedObjectProxy
 
 __all__ = [
     'ag',
@@ -17,6 +17,3 @@ rg = StackedObjectProxy(name="rg")
 settings = StackedObjectProxy(name="settings")
 # the user object (request only)
 user = StackedObjectProxy(name="user")
-
-
-
