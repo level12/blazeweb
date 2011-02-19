@@ -106,10 +106,7 @@ class TestUserUnit(object):
 
         assert not u._perms
         assert not u.has_key('_perms')
-
-        assert u._is_modified == True
-        assert not u.has_key('_is_modified')
-
+        
         assert not u._messages
         assert not u.has_key('_messages')
 
@@ -147,69 +144,3 @@ class TestUserUnit(object):
         assert not u.is_super_user
         u.is_super_user = True
         assert u.is_super_user
-
-class TestUserModified(object):
-
-    def setUp(self):
-        self.user = User()
-
-    def test_no_change_for_new(self):
-        assert self.user.is_modified() == False
-
-    def test_lazy_dict_attrs(self):
-        self.user.foobar = 1
-        assert self.user.is_modified() == True
-
-    def test_lazy_dict_attr_del(self):
-        self.user.foobar = 1
-        self.user.reset_modified()
-
-        del self.user.foobar
-        assert not hasattr(self.user, 'foobar')
-
-        assert self.user.is_modified() == True
-
-    def test_add_perm(self):
-        self.user.add_perm('foobar')
-        assert self.user.is_modified() == True
-
-    def test_add_message(self):
-        self.user.add_message('notice', 'foo')
-        assert self.user.is_modified() == True
-
-    def test_clear_messages(self):
-        self.user.get_messages(clear = True)
-        assert self.user.is_modified() == True
-
-    def test_dict_set(self):
-        self.user['foobar'] = 1
-        assert self.user.is_modified() == True
-
-    def test_dict_del(self):
-        self.user['foobar'] = 1
-        assert self.user.has_key('foobar')
-
-        self.user.reset_modified()
-
-        del self.user['foobar']
-        assert not self.user.has_key('foobar')
-
-        assert self.user.is_modified() == True
-
-    def test_is_authenticated(self):
-        self.user.is_authenticated = True
-        assert self.user.is_modified() == True
-
-    def test_is_super_user(self):
-        self.user.is_super_user = True
-        assert self.user.is_modified() == True
-
-    def test_clear(self):
-        self.user.clear()
-        assert self.user.is_modified() == True
-
-    def test_reset_modified(self):
-        self.user.is_authenticated = True
-        assert self.user.is_modified() == True
-        self.user.reset_modified()
-        assert self.user.is_modified() == False
