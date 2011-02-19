@@ -106,7 +106,7 @@ class TestUserUnit(object):
 
         assert not u._perms
         assert not u.has_key('_perms')
-        
+
         assert not u._messages
         assert not u.has_key('_messages')
 
@@ -144,3 +144,7 @@ class TestUserUnit(object):
         assert not u.is_super_user
         u.is_super_user = True
         assert u.is_super_user
+
+    def test_repr(self):
+        u = User()
+        assert repr(u)
