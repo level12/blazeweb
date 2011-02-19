@@ -26,7 +26,7 @@ from blazeweb.wrappers import Request
 log = logging.getLogger(__name__)
 
 class RequestManager(object):
-    user_class = UserProxy
+    user_proxy_class = UserProxy
 
     def __init__(self, app, environ):
         self.app = app
