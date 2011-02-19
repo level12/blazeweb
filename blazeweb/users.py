@@ -38,7 +38,7 @@ class User(LazyDict):
         log.debug('SessionUser object getting cleared() of auth info')
         self._is_authenticated = False
         self._is_super_user = False
-        self._perms = set()
+        self.perms = set()
         LazyDict.clear(self)
 
     def _has_any(self, haystack, needles, arg_needles):
@@ -48,17 +48,17 @@ class User(LazyDict):
         return bool(haystack.intersection(needles))
 
     def add_perm(self, *perms):
-        self._perms |= set(perms)
+        self.perms |= set(perms)
 
     def has_perm(self, perm):
         if self.is_super_user:
             return True
-        return perm in self._perms
+        return perm in self.perms
 
     def has_any_perm(self, perms, *args):
         if self.is_super_user:
             return True
-        return self._has_any(self._perms, perms, args)
+        return self._has_any(self.perms, perms, args)
 
     def add_message(self, severity, text, ident=None):
         log.debug('SessionUser message added: %s, %s, %s', severity, text, ident)

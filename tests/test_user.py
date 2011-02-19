@@ -75,7 +75,7 @@ class TestUserUnit(object):
     def _check_empty(self, u):
         assert u.is_authenticated == False
         assert u.is_super_user == False
-        assert not u._perms
+        assert not u.perms
 
     def test_defaults(self):
         u = User()
@@ -104,8 +104,8 @@ class TestUserUnit(object):
         assert u._is_super_user == False
         assert not u.has_key('_is_super_user')
 
-        assert not u._perms
-        assert not u.has_key('_perms')
+        assert not u.perms
+        assert not u.has_key('perms')
 
         assert not u._messages
         assert not u.has_key('_messages')
