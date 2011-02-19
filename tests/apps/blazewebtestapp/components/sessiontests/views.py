@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from blazeweb.globals import user, rg
+from blazeweb.utils import sess_regenerate_id
 from blazeweb.views import View
 
 class SetFoo(View):
@@ -18,3 +19,8 @@ class GetFoo(View):
 
     def default(self):
         return rg.session['foo']
+
+class RegenId(View):
+
+    def default(self):
+        sess_regenerate_id()

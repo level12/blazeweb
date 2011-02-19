@@ -112,3 +112,25 @@ def redirect(location, permanent=False, code=302 ):
         code = 301
     log.debug('%d redirct to %s' % (code, location))
     raise _Redirect(werkzeug.redirect(location, code))
+
+def sess_regenerate_id():
+    """
+        Regenerates the beaker session's id
+
+        Needed until this gets put in place:
+        https://bitbucket.org/bbangert/beaker/issue/75
+    """
+    #rg.session.regenerate_id()
+    try:
+        rg.session.regenerate_id()
+    except AttributeError, e:
+        if 'regenerate_id' not in str(e):
+            raise
+        is_new = rg.session.is_new
+        la = rg.session.last_accessed
+        rg.session._create_id()
+        rg.session.is_new = is_new
+        rg.session.last_accessed = la
+        rg.session.request['set_cookie'] = True
+        if hasattr(rg.session, 'namespace'):
+            del rg.session.namespace

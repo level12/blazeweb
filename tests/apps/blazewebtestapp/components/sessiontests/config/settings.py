@@ -6,3 +6,4 @@ class Settings(ComponentSettings):
 
         self.add_route('/sessiontests/setfoo', 'sessiontests:SetFoo')
         self.add_route('/sessiontests/getfoo', 'sessiontests:GetFoo')
+        self.add_route('/sessiontests/regenid', 'sessiontests:RegenId')
