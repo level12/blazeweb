@@ -56,7 +56,7 @@ class RequestManager(object):
         rg.urladapter = ag.route_map.bind_to_environ(self.environ)
 
     def init_user(self):
-        return self.user_class()
+        return self.user_proxy_class()
 
     def __enter__(self):
         self.init_registry()
