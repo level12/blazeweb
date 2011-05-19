@@ -19,21 +19,21 @@ def dummy_cmd(interactive, verbose, overwrite):
     cmd.options.overwrite = overwrite
     return cmd
 
-#class ProjectTemplate(Template):
-#
-#    summary = 'Template for creating a basic blazeweb project'
-#    _template_dir = ('blazeweb', 'paster_tpls/project')
-#    template_renderer = staticmethod(paste_script_template_renderer)
-#    vars = [
-#        var('description', 'One-line description of the package'),
-#        var('author', 'Your name'),
-#        var('programmer_email', 'Your email'),
-#        ]
-#
-#    def pre(self, command, output_dir, vars):
-#        # convert user's name into a username var
-#        author = vars['author']
-#        vars['username'] = author.split(' ')[0].capitalize()
+class ProjectTemplate(Template):
+
+    summary = 'Template for creating a blazeweb project'
+    _template_dir = ('blazeweb', 'paster_tpls/project')
+    template_renderer = staticmethod(paste_script_template_renderer)
+    vars = [
+        var('description', 'One-line description of the package'),
+        var('author', 'Your name'),
+        var('programmer_email', 'Your email'),
+        ]
+
+    def pre(self, command, output_dir, vars):
+        # convert user's name into a username var
+        author = vars['author']
+        vars['username'] = author.split(' ')[0].capitalize()
 
 class MinimalProjectTemplate(Template):
 

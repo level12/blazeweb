@@ -93,6 +93,7 @@ setup(
 
     [blazeweb.blazeweb_project_template]
     minimal = blazeweb.paster_tpl:MinimalProjectTemplate
+    bwproject = blazeweb.paster_tpl:ProjectTemplate
 
     [nose.plugins]
     blazeweb_initapp = blazeweb.nose_plugin:InitAppPlugin

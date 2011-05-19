@@ -1,5 +1,6 @@
 import os
 from nose.plugins.skip import SkipTest
+from nose.tools import eq_
 
 from blazeutils.config import QuickSettings
 from blazeutils.helpers import tolist
@@ -44,12 +45,6 @@ def test_blazeweb_usage():
     assert 'SETTINGS_PROFILE' not in result.stdout
     assert 'jinja-convert' in result.stdout
 
-def test_blazeweb_project():
-    # project doesn't exist any more; skip for now
-    raise SkipTest
-    result = run_blazeweb('project', 'foobar', '--no-interactive')
-    assert len(result.files_created) > 5
-
 def test_app_testrun():
     indexstr = '\nindex\n'
     res = run_application('minimal2', 'testrun')
@@ -92,29 +87,42 @@ def test_app_routes():
     res = run_application('minimal2', 'routes')
     assert "'/'" in res.stdout, res.stdout
 
-def test_minimal_project_checkout_and_functionality():
-    projname = 'pysminimalprojtest_no_name_clash_hopefully'
-    res = env.run('pip', 'uninstall', projname, '-y', expect_error=True)
-    assert 'not installed' in res.stdout or 'Succesfully uninstalled' in res.stdout
-    result = run_blazeweb('project', '-t', 'minimal', '--no-interactive', projname)
-    assert len(result.files_created) == 9
-    setup_args = ['python', 'setup.py', 'develop']
-    if is_win:
-        # running setup.py on the new project causes the .exe scripts to be
-        # recreated.  This includes the nosetests.exe file.  But in windows
-        # we are using that file to run the tests that are running this code
-        # and that causes a permission denied error.  Therefore, we need to
-        # prevent the setup.py develop command from checking dependencies.
-        setup_args.append('-N')
-    env.run(cwd=os.path.join(script_test_path, projname + '-dist'), *setup_args)
-    res = env.run(projname)
-    script_name = '%s-script.py' % projname if is_win else projname
-    assert 'Usage: %s [global_options]' % script_name in res.stdout, res.stdout
-    res = env.run(projname, 'testrun')
-    assert '200 OK' in res.stdout
-    assert 'Content-Type: text/html' in res.stdout
-    indexstr = '\nindex\n'
-    assert indexstr in res.stdout
-    res = env.run('pip', 'uninstall', projname, '-y')
-    assert 'Successfully uninstalled' in res.stdout.replace('\r\n', '\n'), res.stdout
-    env.clear()
+class TestProjectCommands(object):
+    def check_command(self, projname, template, file_count, look_for):
+        res = env.run('pip', 'uninstall', projname, '-y', expect_error=True)
+        assert 'not installed' in res.stdout or 'Succesfully uninstalled' in res.stdout
+        if template is not None:
+            result = run_blazeweb('project', '-t', template, '--no-interactive', projname)
+        else:
+            result = run_blazeweb('project', '--no-interactive', projname)
+        eq_( len(result.files_created), file_count)
+        setup_args = ['python', 'setup.py', 'develop']
+        if is_win:
+            # running setup.py on the new project causes the .exe scripts to be
+            # recreated.  This includes the nosetests.exe file.  But in windows
+            # we are using that file to run the tests that are running this code
+            # and that causes a permission denied error.  Therefore, we need to
+            # prevent the setup.py develop command from checking dependencies.
+            setup_args.append('-N')
+        env.run(cwd=os.path.join(script_test_path, projname + '-dist'), *setup_args)
+        res = env.run(projname)
+        script_name = '%s-script.py' % projname if is_win else projname
+        assert 'Usage: %s [global_options]' % script_name in res.stdout, res.stdout
+        res = env.run(projname, 'testrun')
+        assert '200 OK' in res.stdout
+        assert 'Content-Type: text/html' in res.stdout
+        indexstr = '\n%s\n' % look_for
+        assert indexstr in res.stdout
+        res = env.run('pip', 'uninstall', projname, '-y')
+        assert 'Successfully uninstalled' in res.stdout.replace('\r\n', '\n'), res.stdout
+        env.clear()
+
+    def test_minimal(self):
+        self.check_command('minimalproj_from_bw_tests', 'minimal', 9, 'index')
+
+    def test_bwproject(self):
+        self.check_command('bwproj_from_bw_tests', 'bwproject', 18, 'Hello World')
+
+    def test_default(self):
+        # should be bwproject
+        self.check_command('bwproj_from_bw_tests', None, 18, 'Hello World')

@@ -11,6 +11,7 @@
 **.tpl = native
 MANIFEST.in = native
 **.sql = native
+**.xml = native
 
 [eol]
-only-consistent = False 
+only-consistent = False

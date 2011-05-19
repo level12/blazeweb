@@ -1,0 +1,13 @@
+from .settings import Default
+
+class Dev(Default):
+    def init(self):
+        Default.init(self)
+        self.apply_dev_settings({{repr(programmer_email or '')}})
+
+class Test(Dev):
+
+    def init(self):
+        Dev.init(self)
+        # common test settings
+        self.apply_test_settings()

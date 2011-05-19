@@ -30,7 +30,7 @@ class ProjectCommand(pscmd.Command):
     parser = pscmd.Command.standard_parser(verbose=False)
     parser.add_option('-t', '--template',
                         dest='template',
-                        default='blazeweb',
+                        default='bwproject',
                         help="The pre-defined template to use")
     parser.add_option('--no-interactive',
                       dest='interactive',

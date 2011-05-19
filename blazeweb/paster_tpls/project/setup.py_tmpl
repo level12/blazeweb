@@ -1,0 +1,32 @@
+import sys, os
+from setuptools import setup, find_packages
+
+from {{project}} import VERSION
+
+cdir = os.path.abspath(os.path.dirname(__file__))
+README = open(os.path.join(cdir, 'readme.rst')).read()
+CHANGELOG = open(os.path.join(cdir, 'changelog.rst')).read()
+
+setup(
+    name='{{project.lower()}}',
+    version=VERSION,
+    description="{{description or ''}}",
+    long_description=README + '\n\n' + CHANGELOG,
+    classifiers=[
+        # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
+    ],
+    author={{repr(author or '')}},
+    author_email={{repr(programmer_email or '')}},
+    url='',
+    license='',
+    packages=find_packages(),
+    include_package_data=True,
+    zip_safe=False,
+    install_requires=[
+        'BlazeWeb>=0.3'
+    ],
+    entry_points="""
+        [console_scripts]
+        {{project.lower()}} = {{project}}.application:script_entry
+    """,
+    )
