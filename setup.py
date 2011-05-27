@@ -39,7 +39,7 @@ required_packages = [
     "html2text>=2.35",
     "jinja2>=2.5",
     "markdown2>=1.0.1",
-    "minimock>=1.2",
+    "minimock<1.2.6",
     "nose>=0.11",
     "Paste>=1.7",
     "PasteScript>=1.7",
