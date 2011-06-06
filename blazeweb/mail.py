@@ -501,7 +501,7 @@ def _mail_admins(subject, message, format='text'):
             )
 
 def mail_admins(subject, message, format='text', fail_silently=False):
-    """Sends a message to the programmers, as defined by the emails.programmers setting."""
+    """Sends a message to the admins, as defined by the emails.admins setting."""
     return _mail_admins(subject, message, format).send(fail_silently=fail_silently)
 
 

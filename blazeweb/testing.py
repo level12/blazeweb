@@ -74,7 +74,7 @@ Called blazeweb.mail.EmailMessage.send()""".strip()
     try:
         import minimock
     except ImportError:
-        raise ImportError('use of the assert_email decorator requires the minimock library')
+        raise ImportError('use of the mockmail decorator requires the minimock library')
     def newfunc(*arg, **kw):
         try:
             override = None
