@@ -351,7 +351,7 @@ class View(object):
         if len(self.invalid_arg_keys) > 0:
             log.debug('%s had bad args: %s', self.__class__.__name__, self.invalid_arg_keys)
         if had_strict_arg_failure:
-            raise BadRequest()
+            raise BadRequest('strict arg failure w/ invalid keys: %s' % self.invalid_arg_keys)
 
     def process_cm_stack(self):
         # loop through all the calls requested
