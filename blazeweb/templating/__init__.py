@@ -1,5 +1,5 @@
 from markdown2 import markdown
-from blazeutils.datetime import safe_strftime
+from blazeutils.dates import safe_strftime
 from blazeutils.numbers import moneyfmt
 from blazeutils.strings import simplify_string, reindent
 
