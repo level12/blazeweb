@@ -146,6 +146,10 @@ class DefaultSettings(QuickSettings):
         # pass through, you can send --pass-through-errors to the serve
         # command.
         self.exception_handling = ['handle', 'email']
+        # handle HTTP exceptions?  Its likely this should only be set to False
+        # when testing to help pinpoint why a certain response code is being
+        # returned
+        self.http_exception_handling = True
 
         #######################################################################
         # DEBUGGING

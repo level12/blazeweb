@@ -308,9 +308,13 @@ class WSGIApp(object):
             except _Redirect, e:
                 response = e.response
             except HTTPException, e:
+                if not self.settings.http_exception_handling:
+                    raise
                 response = self.handle_http_exception(e)
             except Exception, e:
                 response = self.handle_exception(e)
+            # todo: I wonder if this signal send should be called even in the
+            # case of an exception by putting in a finally block
             signal('blazeweb.request.ended').send(response=response)
             return response(environ, start_response)
 
