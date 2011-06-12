@@ -5,11 +5,11 @@ Change Log
 =========================
 
 * fixed `bw project` command, it will now create a decent project file/folder
-  skeleton.
+  skeleton, see example below.
 * minimock's 1.2.6 release breaks some usage of the library, "pin" dependency at
   1.2.5
 * add config option http_exception_handling, default behavior is unchanged
-* add testing.runview() to make it easier to test a views without a WSGI test
+* add testing.runview() to make it easier to test views without a WSGI test
   runner (Werkzeug Client, WebTest TestApp)
 
 Project skeleton will look like::
