@@ -11,3 +11,5 @@ exclude_lines =
     # testing assertions usually used with exceptions
     assert False
 
+    # bare raise statements
+    raise\w*$
