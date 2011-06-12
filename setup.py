@@ -1,24 +1,4 @@
-"""
-Introduction
----------------
-
-BlazeWeb (formerly pysmvt) is a WSGI web framework library designed to be relatively
-"light weight", but with a powerful plug-in and override architecture that
-facilitates modularized development.
-
-Questions & Comments
----------------------
-
-Please visit: http://groups.google.com/group/blazelibs
-
-Current Status
----------------
-
-The code stays pretty stable, but the API is likely to change in the future.
-
-The `BlazeWeb tip <http://bitbucket.org/rsyring/blazeweb/get/tip.zip#egg=blazeweb-dev>`_
-is installable via `easy_install` with ``easy_install BlazeWeb==dev``
-"""
+import os
 import sys
 try:
     from setuptools import setup, find_packages
@@ -26,6 +6,10 @@ except ImportError:
     from ez_setup import use_setuptools
     use_setuptools()
     from setuptools import setup, find_packages
+
+cdir = os.path.abspath(os.path.dirname(__file__))
+README = open(os.path.join(cdir, 'readme.rst')).read()
+CHANGELOG = open(os.path.join(cdir, 'changelog.rst')).read()
 
 import blazeweb
 version = blazeweb.VERSION
@@ -57,7 +41,7 @@ setup(
     name = "BlazeWeb",
     version = version,
     description = "A light weight WSGI framework with a pluggable architecture",
-    long_description = __doc__,
+    long_description=README + '\n\n' + CHANGELOG,
     author = "Randy Syring",
     author_email = "rsyring@gmail.com",
     url='http://pypi.python.org/pypi/BlazeWeb/',
@@ -65,6 +49,11 @@ setup(
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python :: 2.5',
+        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 2.7',
+        'Topic :: Internet :: WWW/HTTP'
       ],
     license='BSD',
     packages=find_packages(exclude=['ez_setup']),
