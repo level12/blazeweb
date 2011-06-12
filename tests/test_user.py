@@ -2,7 +2,7 @@ import unittest
 
 from werkzeug import Client, BaseResponse
 
-from blazeweb.users import User
+from blazeweb.users import User, UserProxy
 
 import config
 from blazewebtestapp.applications import make_wsgi
@@ -148,3 +148,12 @@ class TestUserUnit(object):
     def test_repr(self):
         u = User()
         assert repr(u)
+
+class TestUserProxy(object):
+
+    def test_bool_value(self):
+        # make sure UserProxy._current_obj() returns a SOP with the real
+        # User behind it instead of returning the real User instance.
+        u = UserProxy()
+        if not u:
+            assert False, 'expected user'

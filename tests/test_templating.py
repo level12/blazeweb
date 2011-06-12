@@ -95,3 +95,9 @@ class TestContent(object):
          name = 'bar'
       c = getcontent('user_test.html', user=MyUser())
       assert c.primary == 'user\'s name: bar', c.primary
+
+   @inrequest()
+   def test_user_proxy_in_template(self):
+      c = getcontent('user_proxy_test.html')
+      # user is not authenticated, so we should see False twice
+      assert 'False\nFalse' in c.primary

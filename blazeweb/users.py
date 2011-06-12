@@ -82,6 +82,11 @@ class User(LazyDict):
     def __repr__(self):
         return '<User (%s): %s, %s, %s>' % (hex(id(self)), self.is_authenticated, self.copy(), self._messages)
 
+    def __nonzero__(self):
+        # lazy dict would return False if it was empty, but we want to look more
+        # like just an object if tested for a bool value
+        return True
+
 class UserMessage(object):
 
     def __init__(self, severity, text):
@@ -111,6 +116,17 @@ class UserProxy(object):
 
     def _user(self):
         """Lazy initial creation of user object"""
+        if '_user_inst' in self.__dict__:
+            # if we get called a second time, then
+            # there is already a User instance behind the "user" SOP, that
+            # means something called user._curr_obj() and got ahold of this
+            # UserProxy instance.  The problem is, the code is likely going
+            # to continue calling this instance, instead of the "user" SOP,
+            # therefore, we need to continue proxying the real User instance
+            # hoping the calling code lets go of us eventually
+            # If we continue, didn't do this the code below would try to pop the
+            # User instance off the SOP and throw a TypeError
+            return self.__dict__['_user_inst']
 
         # load user instance from the beaker session if possible
         if registry_has_object(rg) and rg.session is not None:
@@ -122,10 +138,17 @@ class UserProxy(object):
         else:
             user_inst = self._new_user_instance()
 
-        # replace underlying object on the user global variable
+        # save the user instance in case we get called again
+        self.__dict__['_user_inst'] = user_inst
+
+        # replace underlying object on the user global variable to be the real
+        # user instance.  The user has been accessed, so no need to proxy
+        # anymore.  After we replace ourselves, future calls to the global
+        # "user" SOP variable will go to the real user instance, instead of
+        # this UserProxy instance.
         if registry_has_object(guser):
-            cobj = guser._current_obj()
-            if not isinstance(cobj, UserProxy):
+            guser_cur_obj = guser._current_obj()
+            if not isinstance(guser_cur_obj, UserProxy):
                 raise TypeError('UserProxy tried to unregister a class of type: %s' % cobj)
             rg.environ['paste.registry'].register(guser, user_inst)
         return user_inst
@@ -161,4 +184,4 @@ class UserProxy(object):
         return key in self._user()
 
     def __nonzero__(self):
-        return bool(self._current_obj())
+        return bool(self._user())
