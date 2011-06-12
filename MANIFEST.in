@@ -2,5 +2,5 @@ recursive-include docs *
 recursive-include blazeweb/paster_tpls *
 recursive-include tests *
 prune tests/test-output
-include authors.txt changes.txt credits.txt license.txt
+include *.txt *.rst
 global-exclude *.pyc
