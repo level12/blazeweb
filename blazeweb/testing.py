@@ -10,11 +10,13 @@ from werkzeug import Client as WClient, BaseRequest, BaseResponse, \
     cached_property, create_environ, run_wsgi_app
 
 from blazeweb.application import ResponseContext, RequestManager
-from blazeweb.globals import ag, settings, rg
+from blazeweb.globals import ag, settings, rg, user
 import blazeweb.mail
 from blazeweb.middleware import minimal_wsgi_stack
 from blazeweb.hierarchy import findobj
 from blazeweb.scripting import load_current_app, UsageError
+from blazeweb.users import UserProxy
+from blazeweb.views import View
 from blazeweb.wrappers import Request
 
 try:
@@ -147,13 +149,46 @@ def inrequest(path='/[[@inrequest]]', *args, **kwargs):
             This sets up request and response context for testing pursposes.
             The arguments correspond to Werkzeug.create_environ() arguments.
         """
-        func_retval = None
         def wrapping_wsgi_app(env, start_response):
             start_response('200 OK', [('Content-Type', 'text/html')])
             with RequestManager(ag.app, environ):
                 with ResponseContext(None):
                     func_retval = f(*args, **kwargs)
+                    environ['pysmvt.testing.inrequest:func_retval'] = func_retval
             return ['']
         run_wsgi_app(minimal_wsgi_stack(wrapping_wsgi_app), environ)
-        return func_retval
+        return environ['pysmvt.testing.inrequest:func_retval']
     return decorator(inner)
+
+def runview(view, path='/[[@runview]]', *args, **kwargs):
+    if not isinstance(view, View) and issubclass(view, View):
+        # the view is a class, not an instance, so instantiate with empty
+        # URL args and a fake endpoint
+        view = view({}, '__testing__')
+    funcretval = None
+    req_pre = kwargs.pop('pre', None)
+    req_post = kwargs.pop('post', None)
+    required_status = kwargs.pop('status', 200)
+    @inrequest(path, *args, **kwargs)
+    def runview_inner():
+        if req_pre is not None:
+            req_pre()
+        resp = view.process()
+        # this is the same logic that is used in RequestManager.__exit__()
+        # but we just attach directly to the response object instead of putting
+        # it in the environ
+        u = user._current_obj()
+        if isinstance(u, UserProxy):
+            # we don't want to send the UserProxy outside of the request
+            # because we will get a StackedObjectProxy error when trying
+            # to access it.  Better to just send None, b/c an attribute
+            # error on None is easier to understand in testing than
+            # a proxy registry error
+            resp.user = None
+        else:
+            resp.user = u
+        if req_post is not None:
+            req_post()
+        assert resp.status_code == required_status, 'unexpected status code: %s' % resp.status_code
+        return resp
+    return runview_inner()
