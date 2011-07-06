@@ -61,6 +61,9 @@ class Translator(templating.EngineBase):
         self.update_context(context)
         return self.env.get_template(endpoint).render(context)
 
+    def render_string(self, string, context):
+        return self.env.from_string(string).render(context)
+
     def mark_safe(self, value):
         """ when a template has auto-escaping enabled, mark a value as safe """
         return Markup(value)

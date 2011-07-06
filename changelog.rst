@@ -1,6 +1,11 @@
 Change Log
 ----------
 
+??? released ???
+=========================
+
+* add routing.abs_static_url(), is available in the template too
+* jinja.Translator can now render strings: ag.tplengine.render_string(...)
 
 0.4.2 released 2011-06-11
 =========================

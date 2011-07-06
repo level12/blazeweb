@@ -4,7 +4,7 @@ from blazeutils.numbers import moneyfmt
 from blazeutils.strings import simplify_string, reindent
 
 from blazeweb.globals import ag, settings, user
-from blazeweb.routing import url_for, current_url, static_url
+from blazeweb.routing import url_for, current_url, static_url, abs_static_url
 from blazeweb.utils import registry_has_object
 from blazeweb.utils.html import strip_tags
 
@@ -19,19 +19,20 @@ class EngineBase(object):
     """
 
     def __init__(self):
-        raise NotImplementedError('Translor must be subclassed')
+        raise NotImplementedError('EngineBase must be subclassed')
 
-    def render_string(string, context):
-        raise NotImplementedError('Translor must be subclassed')
+    def render_string(self, string, context):
+        raise NotImplementedError('EngineBase must be subclassed')
 
-    def render_template(string, context):
-        raise NotImplementedError('Translor must be subclassed')
+    def render_template(self, endpoint, context):
+        raise NotImplementedError('EngineBase must be subclassed')
 
     def get_globals(self):
         globals = {}
         globals['url_for'] = url_for
         globals['current_url'] = current_url
         globals['static_url'] = static_url
+        globals['abs_static_url'] = abs_static_url
         return globals
 
     def mark_safe(self):

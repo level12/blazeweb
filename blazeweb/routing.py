@@ -14,6 +14,7 @@ __all__ = [
     'static_url',
     'current_url',
     'prefix_relative_url',
+    'abs_static_url',
 ]
 
 def prefix_relative_url(url):
@@ -58,8 +59,16 @@ def url_for(endpoint, _external=False, _https=None, **values):
 def static_url(path):
     """
         Adds the conifgured "static" files prefix to the relative URL passed in.
+
+        NOTE: abs_static_url() will probably be more useful
     """
     return '%s/%s' % (settings.routing.static_prefix.rstrip('/'), path.lstrip('/'))
+
+def abs_static_url(path):
+    """
+        Same as prefix_relative_url(static_url(path))
+    """
+    return prefix_relative_url(static_url(path))
 
 def current_url(root_only=False, host_only=False, strip_querystring=False,
     strip_host=False, https=None, environ=None, qs_replace=None,
