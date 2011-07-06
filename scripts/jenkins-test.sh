@@ -27,4 +27,4 @@ pip install -r pip-jenkins-reqs.txt
 pip install -e ./
 
 # run tests
-nosetests tests --with-coverage --cover-package="$PACKAGE" --with-xunit --with-xcoverage --cover-tests
+nosetests tests --cover-package="$PACKAGE" --with-xunit
