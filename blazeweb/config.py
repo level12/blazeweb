@@ -329,8 +329,11 @@ class DefaultSettings(QuickSettings):
     def get_storage_dir(self):
         ## files should be stored outside the source directory so that your
         ## application can be packaged.  We are assuming that you are in
-        ## a virtualenv.  If not, then we default to the directory above
-        ## the base directory
+        ## a virtualenv or have an environ variable setup. If not, then we
+        ## default to the directory above the base directory
+        bw_storage = os.getenv('BW_STORAGE_DIR')
+        if bw_storage:
+            return bw_storage
         venv_dir = os.getenv('VIRTUAL_ENV')
         if venv_dir:
             return path.join(venv_dir, 'storage-%s' % self.app_package)
