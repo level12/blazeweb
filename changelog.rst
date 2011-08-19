@@ -6,6 +6,7 @@ Change Log
 
 * add routing.abs_static_url(), is available in the template too
 * jinja.Translator can now render strings: ag.tplengine.render_string(...)
+* change requirement in setup.py for minimock now that 1.2.7 has been released
 
 0.4.2 released 2011-06-11
 =========================
