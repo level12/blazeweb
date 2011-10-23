@@ -1,7 +1,7 @@
 Change Log
 ----------
 
-??? released ???
+0.4.3 released 2011-10-22
 =========================
 
 * add routing.abs_static_url(), is available in the template too
