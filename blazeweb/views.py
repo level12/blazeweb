@@ -321,7 +321,8 @@ class View(object):
                     if takes_list:
                         processor = formencode.ForEach(processor)
                     try:
-                        processor.not_empty = required
+                        if required:
+                            processor = formencode.All(formencode.validators.NotEmpty, processor)
                         processed_val = processor.to_python(argval)
                     except formencode.Invalid, e:
                         """ do a second round of processing for list values """

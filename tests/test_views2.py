@@ -182,6 +182,21 @@ def test_arg_validation():
             eq_(e, None)
     r = TestView({}).process()
 
+    # the next test makes sure we don't alter FormEncode validator classes
+    # Int should accept a None value because its empty and by default Int should
+    # allow empty values.  However, b/c of a bug in processor handling, the
+    # required value could alter the Int class.
+    Int.to_python(None)
+    class TestView(View):
+        def init(self):
+            self.add_processor('a', Int, required=True)
+        def default(self, a):
+            eq_(a, 1)
+    r = TestView({}).process()
+    # As long as this doesn't throw a ValueError b/c None is empty, the Int
+    # class was not altered.
+    Int.to_python(None)
+
 @inrequest('/foo?a=1&b=b')
 def test_arg_validation_with_strict():
     # view level stric
