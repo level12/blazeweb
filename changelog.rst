@@ -1,10 +1,11 @@
 Change Log
 ----------
 
-0.4.4 released ???
+0.4.4 released 2011-11-09
 =========================
 
-* 
+* fix a nasty bug in the View arg processing that can alter formencode validator
+    classes
 
 0.4.3 released 2011-10-22
 =========================
