@@ -13,3 +13,4 @@ glob:.coverage
 syntax: glob
 coverage.xml
 nosetests.xml
+*komodo*
