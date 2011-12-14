@@ -69,7 +69,7 @@ setup(
     packages=find_packages(exclude=['ez_setup']),
     include_package_data=True,
     install_requires = required_packages,
-    #cmdclass = {'develop': DevelopCmd},
+    cmdclass = {'develop': DevelopCmd},
     tests_require=['webtest', 'scripttest'],
     entry_points="""
     [console_scripts]
