@@ -2,6 +2,7 @@ import unittest
 import config
 import logging
 
+from blazeutils.helpers import diff
 from blazeutils.testing import logging_handler
 
 from blazeweb.globals import settings
@@ -443,9 +444,8 @@ Bcc: =
 
 ----------------------------------------------------------------------
 
-This is a minimal [XHTML 1.0][1] document with a W3C url for the DTD.
-
-   [1]: http://www.w3.org/TR/xhtml1/
+This is a minimal [XHTML 1.0](http://www.w3.org/TR/xhtml1/) document with a
+W3C url for the DTD.
 """
         html_part = \
 r"""</head>
@@ -460,7 +460,7 @@ Bcc: </p>
     <p>This is a minimal"""
 
         text_message = message.as_string()
-        assert text_part in text_message
+        assert text_part in text_message, diff(text_part, text_message)
         assert html_part in text_message
 
     def test_not_live(self, mm_tracker=None):
