@@ -14,6 +14,7 @@ class DevelopCmd(STDevelopCmd):
         self.distribution.install_requires.extend([
             'WebTest',
             'ScriptTest',
+            'docutils',
         ])
         STDevelopCmd.run(self)
 
