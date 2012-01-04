@@ -37,7 +37,6 @@ class Template(j2Template):
 
     @classmethod
     def _from_namespace(cls, environment, namespace, globals):
-        print namespace.keys()
         # wrap the main root_render_func to track the name of the template
         # that is being rendered
         namespace['root'] = _RootRenderWrapper(namespace['name'], namespace['root'])
