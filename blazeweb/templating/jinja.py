@@ -11,33 +11,45 @@ import blazeweb.templating as templating
 
 log = logging.getLogger(__name__)
 
-def _root_render_wrapper(t, root_render_func):
-    def _custom_root_render_function(context):
+class _RootRenderWrapper(object):
+
+    def __init__(self, tpl_name, root_render_func):
+        self.tpl_name = tpl_name
+        self.root_render_func = root_render_func
+
+    def __call__(self, context):
         endpoint_stack = context.get('__TemplateContent.endpoint_stack', [])
-        endpoint_stack.append(t.name)
-        for event in root_render_func(context):
+        endpoint_stack.append(self.tpl_name)
+        for event in self.root_render_func(context):
             yield event
         endpoint_stack.pop()
-    return _custom_root_render_function
+
+    def __eq__(self, other):
+        """
+            when super() is used in a block, jinja's implimentation looks
+            for the original render func in a list using list.index(), so we
+            need to make our function look like the original for the equals
+            operator
+        """
+        return other == self.root_render_func
 
 class Template(j2Template):
 
     @classmethod
     def _from_namespace(cls, environment, namespace, globals):
-        t = j2Template._from_namespace(environment, namespace, globals)
-
+        print namespace.keys()
         # wrap the main root_render_func to track the name of the template
         # that is being rendered
-        t.root_render_func = _root_render_wrapper(t, t.root_render_func)
+        namespace['root'] = _RootRenderWrapper(namespace['name'], namespace['root'])
 
         # also wrap the root rendering function for each of this template's
         # blocks, otherwise our include functions will not calculate the current
         # template's name correctly when inside a block that is replacing the
         # the block of a parent template
-        for block_name, block_root_render_func in t.blocks.iteritems():
-            t.blocks[block_name] = _root_render_wrapper(t, block_root_render_func)
+        for block_name, block_root_render_func in namespace['blocks'].iteritems():
+            namespace['blocks'][block_name] = _RootRenderWrapper(namespace['name'], block_root_render_func)
 
-        return t
+        return j2Template._from_namespace(environment, namespace, globals)
 
 class Translator(templating.EngineBase):
 

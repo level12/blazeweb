@@ -73,6 +73,16 @@ class TestContent(object):
 """.lstrip()
         )
 
+    def test_super(self):
+        """
+            test_super
+
+            had a problem with the way we wrapped block rendering functions
+            which resulted in super() not working
+        """
+        c = getcontent('test_super.html')
+        eq_(c.primary.strip(), 'The Title |')
+
     def test_page_methods_are_not_autoescaped(self):
        c = getcontent('nesting_content.html', endpoint='foo')
        body = c.primary
