@@ -11,19 +11,32 @@ import blazeweb.templating as templating
 
 log = logging.getLogger(__name__)
 
+def _root_render_wrapper(t, root_render_func):
+    def _custom_root_render_function(context):
+        endpoint_stack = context.get('__TemplateContent.endpoint_stack', [])
+        endpoint_stack.append(t.name)
+        for event in root_render_func(context):
+            yield event
+        endpoint_stack.pop()
+    return _custom_root_render_function
+
 class Template(j2Template):
 
     @classmethod
     def _from_namespace(cls, environment, namespace, globals):
-        def _custom_root_render_function(context):
-            endpoint_stack = context.get('__TemplateContent.endpoint_stack', [])
-            endpoint_stack.append(t.name)
-            for event in t._real_root_render_func(context):
-                yield event
-            endpoint_stack.pop()
         t = j2Template._from_namespace(environment, namespace, globals)
-        t._real_root_render_func = namespace['root']
-        t.root_render_func = _custom_root_render_function
+
+        # wrap the main root_render_func to track the name of the template
+        # that is being rendered
+        t.root_render_func = _root_render_wrapper(t, t.root_render_func)
+
+        # also wrap the root rendering function for each of this template's
+        # blocks, otherwise our include functions will not calculate the current
+        # template's name correctly when inside a block that is replacing the
+        # the block of a parent template
+        for block_name, block_root_render_func in t.blocks.iteritems():
+            t.blocks[block_name] = _root_render_wrapper(t, block_root_render_func)
+
         return t
 
 class Translator(templating.EngineBase):

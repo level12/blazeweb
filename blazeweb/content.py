@@ -1,8 +1,11 @@
 from os import path
+import sys
 
 from blazeutils.strings import reindent as bureindent
+
 from blazeweb.globals import ag, settings
 from blazeweb.hierarchy import findcontent, findfile, split_endpoint
+from blazeweb.utils.rst import rst2html
 
 def getcontent(__endpoint, *args, **kwargs):
     if '.' in __endpoint:
@@ -96,6 +99,8 @@ class TemplateContent(Content):
         context.update({
             'include_css': self.include_css,
             'include_js': self.include_js,
+            'include_rst': self.include_rst,
+            'include_mkdn': self.include_mkdn,
             'getcontent': self.include_content,
             'include_content': self.include_content,
             'include_html': self.include_html,
@@ -137,6 +142,21 @@ class TemplateContent(Content):
         self.update_nonprimary_from_endpoint(__endpoint)
         return u''
 
+    def include_rst(self, __endpoint=None, *args, **kwargs):
+        if __endpoint is None:
+            __endpoint = self._supporting_endpoint_from_ext('rst')
+        rst = TemplateContent(__endpoint).create(**kwargs)
+        html = rst2html(rst)
+        return ag.tplengine.mark_safe(html)
+
+    def include_mkdn(self, __endpoint=None, *args, **kwargs):
+        if __endpoint is None:
+            __endpoint = self._supporting_endpoint_from_ext('mkdn')
+        c = TemplateContent(__endpoint)
+        rst = c.create(**kwargs)
+        html = rst2html(rst)
+        return ag.tplengine.mark_safe(html)
+
     def page_css(self, reindent=8):
         css = self.get('text/css', join_with='\n\n')
         if reindent:
@@ -154,5 +174,5 @@ ext_registry = {
     'htm': 'text/htm',
     'html': 'text/html',
     'css': 'text/css',
-    'js': 'text/javascript'
+    'js': 'text/javascript',
 }

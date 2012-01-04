@@ -7,6 +7,7 @@ from webtest import TestApp
 
 from blazeweb.globals import settings
 from blazeweb.utils.filesystem import copy_static_files, mkdirs
+from blazeweb.utils.rst import rst2html
 
 import config
 from scripting_helpers import script_test_path, env
@@ -108,3 +109,46 @@ def test_auto_copy():
     # make sure at least one file is there from the static copies
     assert_contents('newlayout', path.join('newlayout', 'static', 'app', 'statictest.txt'))
     env.clear()
+
+class TestRST(object):
+    def assert_eq(self, rst, html):
+        converted = rst2html(rst)
+        assert isinstance(converted, unicode)
+        eq_(html, converted)
+
+    def test_document_structure(self):
+        self.assert_eq(
+"""
+Heading 1
+=========
+
+An introductory paragraph.
+
+Heading 2
+---------
+
+Secondary stuff.
+
+Heading 2
+---------
+
+More secondary stuff.""",
+"""<div class="section" id="heading-1">
+<h1>Heading 1</h1>
+<p>An introductory paragraph.</p>
+<div class="section" id="heading-2">
+<h2>Heading 2</h2>
+<p>Secondary stuff.</p>
+</div>
+<div class="section" id="id1">
+<h2>Heading 2</h2>
+<p>More secondary stuff.</p>
+</div>
+</div>
+""")
+
+    def test_simple_inline(self):
+        self.assert_eq(
+            'This is *important*.',
+            u'<p>This is <em>important</em>.</p>\n'
+        )

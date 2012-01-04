@@ -1,7 +1,11 @@
+from blazeutils.testing import raises
+from jinja2 import TemplateNotFound
+from nose.tools import eq_
+
 from blazeweb.content import getcontent, Content
 from blazeweb.globals import user, ag
 from blazeweb.testing import inrequest
-from nose.tools import eq_
+
 
 # create the wsgi application that will be used for testing
 import config
@@ -44,6 +48,30 @@ class TestContent(object):
        assert body.count('nesting_content2.html') == 1, body
        assert 'nesting_content3.html' in body, body
        assert '/* nesting_content3.css */' in body, body
+
+    def test_include_rst(self):
+        c = getcontent('include_rst.html')
+        eq_(
+            c.primary,
+"""
+<p>from <em>include_rst.rst</em></p>
+<p>from <em>include_rst.rst</em></p>
+""".lstrip()
+        )
+
+    @raises(TemplateNotFound, 'include_mkdn_nf.mkdn')
+    def test_include_markdown_not_found(self):
+        c = getcontent('include_mkdn_nf.html')
+
+    def test_include_markdown(self):
+        c = getcontent('include_mkdn.html')
+        eq_(
+            c.primary,
+"""
+<p>from <em>include_mkdn.mkdn</em></p>
+<p>from <em>include_mkdn.mkdn</em></p>
+""".lstrip()
+        )
 
     def test_page_methods_are_not_autoescaped(self):
        c = getcontent('nesting_content.html', endpoint='foo')

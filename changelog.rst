@@ -4,7 +4,7 @@ Change Log
 0.4.5 released ???
 =========================
 
-* ???
+* add include_rst() and include_mkdn() as functions available in Jinja templates
 
 0.4.4 released 2011-11-09
 =========================
