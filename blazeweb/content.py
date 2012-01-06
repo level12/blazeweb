@@ -2,10 +2,10 @@ from os import path
 import sys
 
 from blazeutils.strings import reindent as bureindent
+from blazeutils.rst import rst2html
 
 from blazeweb.globals import ag, settings
 from blazeweb.hierarchy import findcontent, findfile, split_endpoint
-from blazeweb.utils.rst import rst2html
 
 def getcontent(__endpoint, *args, **kwargs):
     if '.' in __endpoint:
@@ -13,7 +13,7 @@ def getcontent(__endpoint, *args, **kwargs):
     else:
         klass = findcontent(__endpoint)
         c = klass()
-    c.process(args, kwargs)
+    c.process(*args, **kwargs)
     return c
 
 class Content(object):
@@ -30,7 +30,7 @@ class Content(object):
     def settype(self):
         self.primary_type = 'text/plain'
 
-    def process(self, args, kwargs):
+    def process(self, *args, **kwargs):
         self.settype()
         content = self.create(*args, **kwargs)
         self.add_content(self.primary_type, content)
@@ -89,7 +89,10 @@ class TemplateContent(Content):
 
     def settype(self):
         basename, ext = path.splitext(self.template)
-        self.primary_type = ext_registry[ext.lstrip('.')]
+        try:
+            self.primary_type = ext_registry[ext.lstrip('.')]
+        except KeyError:
+            self.primary_type = 'text/plain'
 
     def create(self, **kwargs):
         self.update_context(kwargs)
