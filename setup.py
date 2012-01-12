@@ -26,20 +26,21 @@ import blazeweb
 version = blazeweb.VERSION
 
 required_packages = [
-    "Beaker>=1.5",
-    "BlazeUtils>=dev",
-    "Blinker>=1.0",
-    "decorator>=3.0.1",
-    "FormEncode>=1.2",
-    "html2text>=2.35",
-    "jinja2>=2.5",
-    "markdown2>=1.0.1",
-    "minimock",
-    "nose>=0.11",
-    "Paste>=1.7",
-    "PasteScript>=1.7",
-    "WebHelpers>=1.0",
-    "Werkzeug>=0.6",
+    'Beaker>=1.5',
+    # need the .rst stuff, once BlazeUtils makes a release, this can be changed
+    'BlazeUtils ==dev, >0.3.7',
+    'Blinker>=1.0',
+    'decorator>=3.0.1',
+    'FormEncode>=1.2',
+    'html2text>=2.35',
+    'jinja2>=2.5',
+    'markdown2>=1.0.1',
+    'minimock',
+    'nose>=0.11',
+    'Paste>=1.7',
+    'PasteScript>=1.7',
+    'WebHelpers>=1.0',
+    'Werkzeug>=0.6',
 ]
 
 try:
