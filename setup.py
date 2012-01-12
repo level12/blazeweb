@@ -52,7 +52,7 @@ setup(
     name = "BlazeWeb",
     version = version,
     description = "A light weight WSGI framework with a pluggable architecture",
-    long_description=README + '\n\n' + CHANGELOG,
+    long_description= '\n\n'.join((README, CHANGELOG)),
     author = "Randy Syring",
     author_email = "rsyring@gmail.com",
     url='http://pypi.python.org/pypi/BlazeWeb/',
