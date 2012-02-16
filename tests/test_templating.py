@@ -84,70 +84,82 @@ class TestContent(object):
         eq_(c.primary.strip(), 'The Title |')
 
     def test_page_methods_are_not_autoescaped(self):
-       c = getcontent('nesting_content.html', endpoint='foo')
-       body = c.primary
-       # JS
-       assert '// no & autoescape' in body, body
-       # CSS
-       assert '/* no & autoescape */' in body, body
+        c = getcontent('nesting_content.html', endpoint='foo')
+        body = c.primary
+        # JS
+        assert '// no & autoescape' in body, body
+        # CSS
+        assert '/* no & autoescape */' in body, body
 
     def test_page_method_formatting(self):
-       c = getcontent('nesting_content2.html')
-       icss = '        /* nesting_content2.css */\n' +\
-              '        \n' + \
-              '        /* nesting_content3.css */'
-       css = '/* nesting_content2.css */\n\n/* nesting_content3.css */'
+        c = getcontent('nesting_content2.html')
+        icss = '        /* nesting_content2.css */\n' +\
+               '        \n' + \
+               '        /* nesting_content3.css */'
+        css = '/* nesting_content2.css */\n\n/* nesting_content3.css */'
 
-       ijs = '        // nesting_content2.js'
-       js = '// nesting_content2.js'
+        ijs = '        // nesting_content2.js'
+        js = '// nesting_content2.js'
 
-       # re-indent levels are now set through the placeholder method
-       c.page_css_placeholder()
-       c.page_js_placeholder()
+        # re-indent levels are now set through the placeholder method
+        c.page_css_placeholder()
+        c.page_js_placeholder()
 
-       assert icss in c.page_css(), c.page_css()
-       assert ijs == c.page_js(), c.page_js()
+        assert icss in c.page_css(), c.page_css()
+        assert ijs == c.page_js(), c.page_js()
 
-       # re-indent levels are now set through the placeholder method
-       c.page_css_placeholder(reindent=None)
-       c.page_js_placeholder(reindent=None)
+        # re-indent levels are now set through the placeholder method
+        c.page_css_placeholder(reindent=None)
+        c.page_js_placeholder(reindent=None)
 
-       assert css in c.page_css(), c.page_css()
-       assert js == c.page_js(), c.page_js()
+        assert css in c.page_css(), c.page_css()
+        assert js == c.page_js(), c.page_js()
 
     def test_included_content_default_safe(self):
-       c = getcontent('nesting_content.html', endpoint='foo')
-       body = c.primary
-       assert 'nc2 autoescape: &amp; False' in c.primary, c.primary
+        c = getcontent('nesting_content.html', endpoint='foo')
+        body = c.primary
+        assert 'nc2 autoescape: &amp; False' in c.primary, c.primary
 
     def test_direct_includes(self):
-       c = getcontent('direct_include.html')
-       body = c.primary
-       assert 'nesting_content2.html' in body, body
-       assert 'nesting_content3.html' in body, body
-       assert '/* nesting_content2.css */' in body, body
-       assert '// nesting_content2.js' in body
-       assert '/* nesting_content3.css */' in body, body
+        c = getcontent('direct_include.html')
+        body = c.primary
+        assert 'nesting_content2.html' in body, body
+        assert 'nesting_content3.html' in body, body
+        assert '/* nesting_content2.css */' in body, body
+        assert '// nesting_content2.js' in body
+        assert '/* nesting_content3.css */' in body, body
+
+    def test_content_filter(self):
+        def get_nesting_content2():
+            return getcontent('nesting_content2.html')
+        c = getcontent('content_filter.html', get_nesting_content2=get_nesting_content2)
+        body = c.primary
+        assert 'content filter' in body, body
+        assert 'nesting_content2.html' in body, body
+        assert 'nesting_content3.html' in body, body
+        assert '/* nesting_content2.css */' in body, body
+        assert '// nesting_content2.js' in body
+        assert '/* nesting_content3.css */' in body, body
 
     @inrequest()
     def test_in_request_usage(self):
-       user.name = 'foo'
-       c = getcontent('user_test.html')
-       assert c.primary == 'user\'s name: foo', c.primary
+        user.name = 'foo'
+        c = getcontent('user_test.html')
+        assert c.primary == 'user\'s name: foo', c.primary
 
     @inrequest()
     def test_context_variable_takes_precedence(self):
-       user.name = 'foo'
-       class MyUser(object):
-          name = 'bar'
-       c = getcontent('user_test.html', user=MyUser())
-       assert c.primary == 'user\'s name: bar', c.primary
+        user.name = 'foo'
+        class MyUser(object):
+           name = 'bar'
+        c = getcontent('user_test.html', user=MyUser())
+        assert c.primary == 'user\'s name: bar', c.primary
 
     @inrequest()
     def test_user_proxy_in_template(self):
-       c = getcontent('user_proxy_test.html')
-       # user is not authenticated, so we should see False twice
-       assert 'False\nFalse' in c.primary
+        c = getcontent('user_proxy_test.html')
+        # user is not authenticated, so we should see False twice
+        assert 'False\nFalse' in c.primary
 
     def test_string_render(self):
         input = 'Hi {{name}}'

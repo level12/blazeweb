@@ -125,7 +125,8 @@ class TemplateContent(Content):
             'include_html': self.include_html,
             'page_css': self.page_css_placeholder,
             'page_js': self.page_js_placeholder,
-            '__TemplateContent.endpoint_stack': self.endpoint_stack
+            '__TemplateContent.endpoint_stack': self.endpoint_stack,
+            '__TemplateContent.obj': self
         })
 
     def _supporting_endpoint_from_ext(self, extension):

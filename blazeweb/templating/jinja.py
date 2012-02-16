@@ -2,7 +2,8 @@ from __future__ import with_statement
 import logging
 from os import path
 
-from jinja2 import Environment, TemplateNotFound, BaseLoader, Template as j2Template
+from jinja2 import Environment, TemplateNotFound, BaseLoader, \
+    Template as j2Template, contextfilter
 from jinja2.utils import Markup
 
 from blazeweb.globals import settings
@@ -79,7 +80,9 @@ class Translator(templating.EngineBase):
         self.env.globals.update(self.get_globals())
 
     def init_filters(self):
-        self.env.filters.update(self.get_filters())
+        filters = self.get_filters()
+        filters['content'] = content_filter
+        self.env.filters.update(filters)
 
     def render_template(self, endpoint, context):
         self.update_context(context)
@@ -128,3 +131,9 @@ class HierarchyLoader(BaseLoader):
             contents = f.read().decode(self.encoding)
         old = path.getmtime(fpath)
         return contents, fpath, lambda: path.getmtime(fpath) == old
+
+@contextfilter
+def content_filter(context, child_content):
+    parent_content = context['__TemplateContent.obj']
+    parent_content.update_nonprimary_from_content(child_content)
+    return child_content.primary
