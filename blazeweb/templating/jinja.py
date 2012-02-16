@@ -136,4 +136,4 @@ class HierarchyLoader(BaseLoader):
 def content_filter(context, child_content):
     parent_content = context['__TemplateContent.obj']
     parent_content.update_nonprimary_from_content(child_content)
-    return child_content.primary
+    return Markup(child_content.primary)
