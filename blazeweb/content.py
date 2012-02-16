@@ -74,11 +74,18 @@ class Content(object):
         return self.primary.encode(self.charset)
 
 class TemplateContent(Content):
+    css_placeholder = '<<<blazeweb.content.placeholder.page_css>>>'
+    js_placeholder = '<<<blazeweb.content.placeholder.page_css>>>'
 
     def __init__(self, endpoint):
         component, template = split_endpoint(endpoint)
         self.template = template
         self.endpoint = endpoint
+        self.css_reindent_level = None
+        self.js_reindent_level = None
+        self.css_placeholder_count = 0
+        self.js_placeholder_count = 0
+
         # the endpoint stack is used when the template engine's own
         # "include" is used.  It puts the included endpoint on the stack
         # which allows the include_css() and include_js() functions to
@@ -96,7 +103,16 @@ class TemplateContent(Content):
 
     def create(self, **kwargs):
         self.update_context(kwargs)
-        return ag.tplengine.render_template(self.endpoint, kwargs)
+        template_content = ag.tplengine.render_template(self.endpoint, kwargs)
+        if self.css_placeholder_count:
+            css_content = self.page_css()
+            template_content = template_content.replace(
+                    self.css_placeholder, css_content, self.css_placeholder_count)
+        if self.js_placeholder_count:
+            js_content = self.page_js()
+            template_content = template_content.replace(
+                    self.js_placeholder, js_content, self.js_placeholder_count)
+        return template_content
 
     def update_context(self, context):
         context.update({
@@ -107,8 +123,8 @@ class TemplateContent(Content):
             'getcontent': self.include_content,
             'include_content': self.include_content,
             'include_html': self.include_html,
-            'page_css': self.page_css,
-            'page_js': self.page_js,
+            'page_css': self.page_css_placeholder,
+            'page_js': self.page_js_placeholder,
             '__TemplateContent.endpoint_stack': self.endpoint_stack
         })
 
@@ -160,16 +176,26 @@ class TemplateContent(Content):
         html = rst2html(rst)
         return ag.tplengine.mark_safe(html)
 
-    def page_css(self, reindent=8):
+    def page_css_placeholder(self, reindent=8):
+        self.css_placeholder_count += 1
+        self.css_reindent_level = reindent
+        return ag.tplengine.mark_safe(self.css_placeholder)
+
+    def page_css(self):
         css = self.get('text/css', join_with='\n\n')
-        if reindent:
-            css = bureindent(css, 8)
+        if self.css_reindent_level:
+            css = bureindent(css, self.css_reindent_level)
         return ag.tplengine.mark_safe(css)
 
-    def page_js(self, reindent=8):
+    def page_js_placeholder(self, reindent=8):
+        self.js_placeholder_count += 1
+        self.js_reindent_level = reindent
+        return ag.tplengine.mark_safe(self.js_placeholder)
+
+    def page_js(self):
         js = self.get('text/javascript')
-        if reindent:
-            js = bureindent(js, reindent)
+        if self.js_reindent_level:
+            js = bureindent(js, self.js_reindent_level)
         return ag.tplengine.mark_safe(js)
 
 ext_registry = {

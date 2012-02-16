@@ -97,13 +97,23 @@ class TestContent(object):
               '        \n' + \
               '        /* nesting_content3.css */'
        css = '/* nesting_content2.css */\n\n/* nesting_content3.css */'
-       assert css in c.page_css(reindent=None), c.page_css(reindent=None)
-       assert icss in c.page_css(), c.page_css()
 
        ijs = '        // nesting_content2.js'
        js = '// nesting_content2.js'
-       assert js == c.page_js(reindent=None), c.page_js()
+
+       # re-indent levels are now set through the placeholder method
+       c.page_css_placeholder()
+       c.page_js_placeholder()
+
+       assert icss in c.page_css(), c.page_css()
        assert ijs == c.page_js(), c.page_js()
+
+       # re-indent levels are now set through the placeholder method
+       c.page_css_placeholder(reindent=None)
+       c.page_js_placeholder(reindent=None)
+
+       assert css in c.page_css(), c.page_css()
+       assert js == c.page_js(), c.page_js()
 
     def test_included_content_default_safe(self):
        c = getcontent('nesting_content.html', endpoint='foo')
