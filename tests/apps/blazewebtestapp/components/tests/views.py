@@ -73,10 +73,6 @@ class Html(View):
     def default(self):
         self.render_template()
 
-class HtmlCssJs(View):
-    def default(self):
-        self.render_template()
-
 class Redirect(View):
     def default(self):
         redirect('some/other/page')
@@ -192,10 +188,6 @@ class ParentTemplateInheritance(View):
 class ModLevelPriority(View):
     def default(self):
         self.render_template()
-
-class HtmlTemplateFileArgCss(View):
-    def default(self):
-        self.render_template('fileargcss.html')
 
 class HtmlSnippetWithCss(View):
     def default(self):
