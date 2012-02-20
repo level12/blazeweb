@@ -36,7 +36,15 @@ class TestContent(object):
        c = getcontent('getcontent.html', endpoint='foo')
        assert c.primary == 'the endpoint: foo', c.primary
 
-    def test_nested_content(self):
+    def test_script_and_link_tags(self):
+       c = getcontent('nesting_content.html', endpoint='foo')
+       body = c.primary
+       assert '<link href="/static/linked_nesting_content.css" rel="stylesheet" type="text/css" />' in body, body
+       assert '<script src="/static/linked_nesting_content.js" type="text/javascript"></script>' in body, body
+       assert '<link charset="utf-8" href="/static/linked_nesting_content3.css" media="print" rel="stylesheet" type="text/css" />' in body, body
+       assert '<script src="/static/linked_nesting_content3.js" type="text/javascript"></script>' in body, body
+
+    def test_css_and_js_urls(self):
        c = getcontent('nesting_content.html', endpoint='foo')
        body = c.primary
        assert '/* nesting_content.css */' in body
@@ -93,27 +101,29 @@ class TestContent(object):
 
     def test_page_method_formatting(self):
         c = getcontent('nesting_content2.html')
-        icss = '        /* nesting_content2.css */\n' +\
+        icss = '/* nesting_content2.css */\n' +\
                '        \n' + \
                '        /* nesting_content3.css */'
         css = '/* nesting_content2.css */\n\n/* nesting_content3.css */'
 
-        ijs = '        // nesting_content2.js'
-        js = '// nesting_content2.js'
+        ijs = '// nesting_content2.js\n' +\
+              '        \n' + \
+              '        // nesting_content3.js'
+        js = '// nesting_content2.js\n\n// nesting_content3.js'
 
-        # re-indent levels are now set through the placeholder method
-        c.page_css_placeholder()
-        c.page_js_placeholder()
+        # re-indent levels are set through the placeholder method
+        c.page_css_ph()
+        c.page_js_ph()
 
-        assert icss in c.page_css(), c.page_css()
-        assert ijs == c.page_js(), c.page_js()
+        assert icss == c.css_ph.content(), c.css_ph.content()
+        assert ijs == c.js_ph.content(), repr(c.js_ph.content())
 
-        # re-indent levels are now set through the placeholder method
-        c.page_css_placeholder(reindent=None)
-        c.page_js_placeholder(reindent=None)
+        # re-indent levels are set through the placeholder method
+        c.page_css_ph(reindent=None)
+        c.page_js_ph(reindent=None)
 
-        assert css in c.page_css(), c.page_css()
-        assert js == c.page_js(), c.page_js()
+        assert css == c.css_ph.content()
+        assert js == c.js_ph.content(), repr(c.js_ph.content())
 
     def test_included_content_default_safe(self):
         c = getcontent('nesting_content.html', endpoint='foo')

@@ -9,6 +9,9 @@ Change Log
     in the child template the include method is called.
 * add "content" template filter which will merge css/jss from the given content
   object into the parent template
+* add link_css_url(), source_js_url() and complimentary head_link_tags() and
+    head_script_tags() template functions to be able to include CSS/JS URLs from
+    any template.
 
 0.4.4 released 2011-11-09
 =========================

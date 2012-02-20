@@ -1,5 +1,7 @@
 {{- include_js() -}}
 {{- include_css() -}}
+{{ link_css_url('linked_nesting_content.css')}}
+{{ source_js_url('linked_nesting_content.js')}}
 {% extends 'default.html' %}
 {% block body %}
 nesting_content.html{{ include_html('nesting_content2.html', arg1='foo') }}

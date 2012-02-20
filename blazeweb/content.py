@@ -3,9 +3,11 @@ import sys
 
 from blazeutils.strings import reindent as bureindent
 from blazeutils.rst import rst2html
+from webhelpers.html import HTML
 
 from blazeweb.globals import ag, settings
 from blazeweb.hierarchy import findcontent, findfile, split_endpoint
+from blazeweb.routing import abs_static_url
 
 def getcontent(__endpoint, *args, **kwargs):
     if '.' in __endpoint:
@@ -73,18 +75,48 @@ class Content(object):
     def __str__(self):
         return self.primary.encode(self.charset)
 
+class _PlaceHolder(object):
+    def __init__(self, cobj, ident, type, join_on=u'\n\n'):
+        self.cobj = cobj
+        self.placeholder = u'<<<blazeweb.content.placeholder.{0}>>>'.format(ident)
+        self.type = type
+        self.reindent_level = None
+        self.count = 0
+        self.join_on = join_on
+
+    def content(self):
+        text = self.cobj.get(self.type, self.join_on)
+        if self.reindent_level:
+            text = bureindent(text, self.reindent_level)
+            # trim off the first level of indentation so that its in the place
+            # in the template where its inserted and not indented from that
+            # place.
+            text = text.lstrip()
+        return text
+
+    def substitute(self, text):
+        if not self.count:
+            return text
+        ph_content = self.content()
+        return text.replace(self.placeholder, ph_content, self.count)
+
 class TemplateContent(Content):
-    css_placeholder = '<<<blazeweb.content.placeholder.page_css>>>'
-    js_placeholder = '<<<blazeweb.content.placeholder.page_css>>>'
+    ext_registry = {
+        'txt': 'text/plain',
+        'htm': 'text/htm',
+        'html': 'text/html',
+        'css': 'text/css',
+        'js': 'text/javascript',
+    }
 
     def __init__(self, endpoint):
         component, template = split_endpoint(endpoint)
         self.template = template
         self.endpoint = endpoint
-        self.css_reindent_level = None
-        self.js_reindent_level = None
-        self.css_placeholder_count = 0
-        self.js_placeholder_count = 0
+        self.css_ph = _PlaceHolder(self, 'css', 'text/css')
+        self.js_ph = _PlaceHolder(self, 'js', 'text/javascript')
+        self.link_tags_ph = _PlaceHolder(self, 'link_tags', 'x-link-tags', u'\n')
+        self.script_tags_ph = _PlaceHolder(self, 'script_tags', 'x-script-tags', u'\n')
 
         # the endpoint stack is used when the template engine's own
         # "include" is used.  It puts the included endpoint on the stack
@@ -92,27 +124,40 @@ class TemplateContent(Content):
         # correctly determine the name of the file that is trying to be
         # included.
         self.endpoint_stack = []
+
         Content.__init__(self)
+        self.data = {
+            'x-link-tags': [],
+            'x-script-tags': [],
+        }
 
     def settype(self):
         basename, ext = path.splitext(self.template)
         try:
-            self.primary_type = ext_registry[ext.lstrip('.')]
+            self.primary_type = self.ext_registry[ext.lstrip('.')]
         except KeyError:
             self.primary_type = 'text/plain'
 
     def create(self, **kwargs):
         self.update_context(kwargs)
-        template_content = ag.tplengine.render_template(self.endpoint, kwargs)
-        if self.css_placeholder_count:
-            css_content = self.page_css()
-            template_content = template_content.replace(
-                    self.css_placeholder, css_content, self.css_placeholder_count)
-        if self.js_placeholder_count:
-            js_content = self.page_js()
-            template_content = template_content.replace(
-                    self.js_placeholder, js_content, self.js_placeholder_count)
-        return template_content
+        content = ag.tplengine.render_template(self.endpoint, kwargs)
+        #if self.css_placeholder_count:
+        #    css_content = self.page_css()
+        #    template_content = template_content.replace(
+        #            self.css_placeholder, css_content, self.css_placeholder_count)
+        #if self.js_placeholder_count:
+        #    js_content = self.page_js()
+        #    template_content = template_content.replace(
+        #            self.js_placeholder, js_content, self.js_placeholder_count)
+        #if self.script_tags_placeholder_count:
+        #    js_tags_content = self.page_js()
+        #    template_content = template_content.replace(
+        #            self.js_placeholder, js_content, self.js_placeholder_count)
+        content = self.css_ph.substitute(content)
+        content = self.js_ph.substitute(content)
+        content = self.link_tags_ph.substitute(content)
+        content = self.script_tags_ph.substitute(content)
+        return content
 
     def update_context(self, context):
         context.update({
@@ -123,8 +168,12 @@ class TemplateContent(Content):
             'getcontent': self.include_content,
             'include_content': self.include_content,
             'include_html': self.include_html,
-            'page_css': self.page_css_placeholder,
-            'page_js': self.page_js_placeholder,
+            'page_css': self.page_css_ph,
+            'page_js': self.page_js_ph,
+            'link_css_url': self.link_css_url,
+            'source_js_url': self.source_js_url,
+            'head_link_tags': self.head_link_tags_ph,
+            'head_script_tags': self.head_script_tags_ph,
             '__TemplateContent.endpoint_stack': self.endpoint_stack,
             '__TemplateContent.obj': self
         })
@@ -177,32 +226,36 @@ class TemplateContent(Content):
         html = rst2html(rst)
         return ag.tplengine.mark_safe(html)
 
-    def page_css_placeholder(self, reindent=8):
-        self.css_placeholder_count += 1
-        self.css_reindent_level = reindent
-        return ag.tplengine.mark_safe(self.css_placeholder)
+    def head_link_tags_ph(self, reindent=4):
+        ph = self.link_tags_ph
+        ph.count += 1
+        ph.reindent_level = reindent
+        return ag.tplengine.mark_safe(ph.placeholder)
 
-    def page_css(self):
-        css = self.get('text/css', join_with='\n\n')
-        if self.css_reindent_level:
-            css = bureindent(css, self.css_reindent_level)
-        return ag.tplengine.mark_safe(css)
+    def head_script_tags_ph(self, reindent=4):
+        ph = self.script_tags_ph
+        ph.count += 1
+        ph.reindent_level = reindent
+        return ag.tplengine.mark_safe(ph.placeholder)
 
-    def page_js_placeholder(self, reindent=8):
-        self.js_placeholder_count += 1
-        self.js_reindent_level = reindent
-        return ag.tplengine.mark_safe(self.js_placeholder)
+    def page_css_ph(self, reindent=8):
+        ph = self.css_ph
+        ph.count += 1
+        ph.reindent_level = reindent
+        return ag.tplengine.mark_safe(ph.placeholder)
 
-    def page_js(self):
-        js = self.get('text/javascript')
-        if self.js_reindent_level:
-            js = bureindent(js, self.js_reindent_level)
-        return ag.tplengine.mark_safe(js)
+    def page_js_ph(self, reindent=8):
+        ph = self.js_ph
+        ph.count += 1
+        ph.reindent_level = reindent
+        return ag.tplengine.mark_safe(ph.placeholder)
 
-ext_registry = {
-    'txt': 'text/plain',
-    'htm': 'text/htm',
-    'html': 'text/html',
-    'css': 'text/css',
-    'js': 'text/javascript',
-}
+    def link_css_url(self, url, **kwargs):
+        url = abs_static_url(url)
+        link_tag = HTML.link(rel='stylesheet', type='text/css', href=url, **kwargs)
+        self.data['x-link-tags'].append(link_tag)
+
+    def source_js_url(self, url, **kwargs):
+        url = abs_static_url(url)
+        script_tag = HTML.script(type='text/javascript', src=url, **kwargs)
+        self.data['x-script-tags'].append(script_tag)
