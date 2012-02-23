@@ -43,6 +43,9 @@ class TestContent(object):
        assert '<script src="/static/linked_nesting_content.js" type="text/javascript"></script>' in body, body
        assert '<link charset="utf-8" href="/static/linked_nesting_content3.css" media="print" rel="stylesheet" type="text/css" />' in body, body
        assert '<script src="/static/linked_nesting_content3.js" type="text/javascript"></script>' in body, body
+       # make sure the template functions are returning empty strings and not
+       # None
+       assert 'None' not in body, body
 
     def test_css_and_js_urls(self):
        c = getcontent('nesting_content.html', endpoint='foo')

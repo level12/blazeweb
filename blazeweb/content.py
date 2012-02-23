@@ -254,8 +254,10 @@ class TemplateContent(Content):
         url = abs_static_url(url)
         link_tag = HTML.link(rel='stylesheet', type='text/css', href=url, **kwargs)
         self.data['x-link-tags'].append(link_tag)
+        return u''
 
     def source_js_url(self, url, **kwargs):
         url = abs_static_url(url)
         script_tag = HTML.script(type='text/javascript', src=url, **kwargs)
         self.data['x-script-tags'].append(script_tag)
+        return u''
