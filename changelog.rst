@@ -11,7 +11,7 @@ Change Log
 * add include_rst() and include_mkdn() as functions available in Jinja templates
 * css and js from included templates is now always included, regardless of where
   in the child template the include method is called.
-* add "content" template filter which will merge css/jss from the given content
+* add "content" template filter which will merge css/js from the given content
   object into the parent template
 * add link_css_url(), source_js_url() and complimentary head_link_tags() and
   head_script_tags() template functions to be able to include CSS/JS URLs from
