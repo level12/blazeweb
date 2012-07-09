@@ -45,7 +45,7 @@ class InitAppPlugin(nose.plugins.Plugin):
         parser.add_option("--blazeweb-debug",
                           dest=self.opt_debug_name,
                           action="store_true",
-                          help="Disable plugin"
+                          help="plugin will raise exceptions rather then disabling itself"
                         )
 
     def configure(self, options, config):
