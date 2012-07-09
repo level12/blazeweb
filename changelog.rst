@@ -6,12 +6,12 @@ Change Log
 
 * add include_rst() and include_mkdn() as functions available in Jinja templates
 * css and js from included templates is now always included, regardless of where
-    in the child template the include method is called.
+  in the child template the include method is called.
 * add "content" template filter which will merge css/jss from the given content
   object into the parent template
 * add link_css_url(), source_js_url() and complimentary head_link_tags() and
-    head_script_tags() template functions to be able to include CSS/JS URLs from
-    any template.
+  head_script_tags() template functions to be able to include CSS/JS URLs from
+  any template.
 * make HTTP request method handling more robust.  Its now easier to respond to
   request methods that are not GET/POST and we will now correctly return a 405
   Method Not Allowed response when the view can not handle the request method
