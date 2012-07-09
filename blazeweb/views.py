@@ -75,6 +75,28 @@ class View(object):
     The base class all our views will inherit
     """
 
+    # map HTTP REQUEST_METHOD to a method on our class
+    http_method_map = {
+        # legacy methods didn't use http_ prefix
+        'get': 'get',
+        'post': 'post',
+
+        # in hindsight, with this many methods, prefixing with http_ seems best.
+        'head': 'http_head',
+        'put': 'http_put',
+        'delete': 'http_delete',
+        'options': 'http_options',
+        'connect': 'http_connect',
+        'patch': 'http_patch',
+
+        # XHR: special type of request used in JavaScript
+        '_xhr_': 'xhr',
+        
+        # this is the "fallback" method, it will be called if no specific
+        # methods on the class match.
+        '_default_': 'default',
+    }
+
     def __init__(self, urlargs, endpoint):
         # the view methods are responsible for filling self.retval1
         # with the response string or returning the value
@@ -369,19 +391,24 @@ class View(object):
         # now call our "action" methods, only one of these methods will be
         # called depending on the type of request and the attributes
         # available on the view
-        if rg.request.is_xhr and hasattr(self, 'xhr'):
-            retval = self._call_with_expected_args(self.xhr)
-        elif rg.request.method == 'GET' and hasattr(self, 'get'):
-            retval = self._call_with_expected_args(self.get)
-        elif rg.request.method == 'POST' and hasattr(self, 'post'):
-            retval = self._call_with_expected_args(self.post)
-        else:
-            try:
-                retval = self._call_with_expected_args(self.default)
-            except AttributeError, e:
-                if "'%s' object has no attribute 'default'" % self.__class__.__name__ in str(e):
-                    raise ProgrammingError('there were no "action" methods on the view class "%s".  Expecting get(), post(), or default()' % self.__class__.__name__)
-                raise
+        http_method = rg.request.method.lower()
+        method_name = None
+
+        if rg.request.is_xhr:
+            method_name = self.http_method_map['_xhr_']
+        elif http_method in self.http_method_map:
+            method_name = self.http_method_map[http_method]
+
+        # if there wasn't a method name found or the method name doesn't exist
+        # as a method, then try the default handler
+        if method_name is None or not hasattr(self, method_name):
+            method_name = self.http_method_map.get('_default_')
+            if method_name is None or not hasattr(self, method_name):
+                # default fallback failed, we can't handle this request method
+                abort(405)
+
+        # call the method that responds to this request method type
+        retval = self._call_with_expected_args(getattr(self, method_name))
 
         # we allow the views to work on self.retval directly, but if the
         # action method returns a non-None value, it takes precedence

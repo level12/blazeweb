@@ -393,25 +393,40 @@ def test_view_callstack():
     r = TestView({}).process()
     eq_(methods_called, ['test1'])
 
+    # test an 405 Method Not Supported response when we don't have methods on
+    # the class to support the REQUEST_METHOD used.
     class TestView(View):
         pass
     try:
         r = TestView({}).process()
         assert False
-    except ProgrammingError, e:
-        if 'there were no "action" methods on the view class' not in str(e):
-            assert False, e
+    except HTTPException, e:
+        eq_(e.code, 405)
 
-    # make sure an attirbute error in the default method gets passed out
+@inrequest('/', method='HEAD')
+def test_alternate_http_request_method():
+    # test responding to a HEAD request
+    methods_called = []
     class TestView(View):
-        def default(self):
-            baz = self.notthere
+        def http_head(self):
+            methods_called.append('http_head')
+    r = TestView({}).process()
+    eq_(methods_called, ['http_head'])
+
+@inrequest('/', method='FOO')
+def test_not_supported_http_request_method():
+    # the methods shouldn't be called b/c the method mapping dict doesn't have
+    # a "foo" entry
+    class TestView(View):
+        def foo(self):
+            pass
+        def http_foo(self):
+            pass
     try:
         r = TestView({}).process()
         assert False
-    except AttributeError, e:
-        if "'TestView' object has no attribute 'notthere'" != str(e):
-            assert False, e
+    except HTTPException, e:
+        eq_(e.code, 405)
 
 @inrequest('/foo', method='POST')
 def test_view_callstack_with_post():

@@ -74,17 +74,9 @@ class TestViews(unittest.TestCase):
         self.assertEqual(r.status, '200 OK')
         self.assertEqual(r.data, 'Hello World!')
 
-    def test_noactionmethod(self):
-        try:
-            r = self.client.get('tests/noactionmethod')
-        except ProgrammingError, e:
-            assert 'there were no "action" methods on the view class "NoActionMethod"' in str(e), e
-        else:
-            self.fail('should have gotten an exception b/c view does not have action method')
-
     def test_hideexception(self):
         settings.exception_handling = ['handle']
-        r = self.client.get('tests/noactionmethod')
+        r = self.client.get('tests/raiseexc')
         self.assertEqual(r.status, '500 INTERNAL SERVER ERROR')
 
     def test_2gets(self):

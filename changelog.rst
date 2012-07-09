@@ -1,7 +1,7 @@
 Change Log
 ----------
 
-0.4.5 released ???
+0.4.5 released 2012-07-09
 =========================
 
 * add include_rst() and include_mkdn() as functions available in Jinja templates
@@ -12,6 +12,10 @@ Change Log
 * add link_css_url(), source_js_url() and complimentary head_link_tags() and
     head_script_tags() template functions to be able to include CSS/JS URLs from
     any template.
+* make HTTP request method handling more robust.  Its now easier to respond to
+  request methods that are not GET/POST and we will now correctly return a 405
+  Method Not Allowed response when the view can not handle the request method
+  sent over.
 
 0.4.4 released 2011-11-09
 =========================

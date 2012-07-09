@@ -12,7 +12,7 @@ class Settings(ComponentSettings):
             Rule('/tests/get', endpoint='tests:Get'),
             Rule('/tests/post', endpoint='tests:Post'),
             Rule('/tests/prep', endpoint='tests:Prep'),
-            Rule('/tests/noactionmethod', endpoint='tests:NoActionMethod'),
+            Rule('/tests/raiseexc', endpoint='tests:RaiseExc'),
             Rule('/tests/doforward', endpoint='tests:DoForward'),
             Rule('/tests/text', endpoint='tests:Text'),
             Rule('/tests/textwsnip', endpoint='tests:TextWithSnippet'),
