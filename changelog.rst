@@ -1,10 +1,13 @@
 Change Log
 ----------
 
+0.4.7 released ???
+=========================
+
 0.4.6 released 2012-07-16
 =========================
 * Fixed 0.4.5 regression: previously, a POST XHR would try for xhr() and then
-  post() on a view class, but 0.4.5 would only try for xhr().  Fixed.
+  post() on a view class, but 0.4.5 would only try for xhr().
 
 0.4.5 released 2012-07-09
 =========================
