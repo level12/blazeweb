@@ -91,7 +91,7 @@ class View(object):
 
         # XHR: special type of request used in JavaScript
         '_xhr_': 'xhr',
-        
+
         # this is the "fallback" method, it will be called if no specific
         # methods on the class match.
         '_default_': 'default',
@@ -394,9 +394,15 @@ class View(object):
         http_method = rg.request.method.lower()
         method_name = None
 
+        # handle XHR (Ajax) requests
         if rg.request.is_xhr:
             method_name = self.http_method_map['_xhr_']
-        elif http_method in self.http_method_map:
+            # if the method isn't present, treat it as a non-xhr request
+            if method_name and not hasattr(self, method_name):
+                method_name = None
+
+        # handle based on HTTP request method type
+        if not method_name and http_method in self.http_method_map:
             method_name = self.http_method_map[http_method]
 
         # if there wasn't a method name found or the method name doesn't exist

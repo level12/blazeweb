@@ -440,14 +440,25 @@ def test_view_callstack_with_post():
 ajax_headers = Headers()
 ajax_headers.add('X-Requested-With', 'XMLHttpRequest')
 
-@inrequest('/foo', headers=ajax_headers)
+@inrequest('/foo', method='POST', headers=ajax_headers)
 def test_view_callstack_with_ajax():
     methods_called = []
     class TestView(View):
         def xhr(self):
             methods_called.append('xhr')
+        def post(self):
+            methods_called.append('post')
     r = TestView({}).process()
     eq_(methods_called, ['xhr'])
+
+    # if the XHR header isn't present, then the view should fall back to the
+    # method associated with the HTTP request type
+    methods_called = []
+    class TestView(View):
+        def post(self):
+            methods_called.append('post')
+    r = TestView({}).process()
+    eq_(methods_called, ['post'])
 
 def test_application_to_view_coupling():
     r = ta.get('/applevelview', status=404)
