@@ -713,6 +713,15 @@ def test_json_handlers():
     assert data['error'] == 0, data
     assert data['data']['foo1'] == 'bar', data
 
+    # test extra context
+    class Jsonify(View):
+        def default(self):
+            self.render_json({'foo1': 'bar'}, extra_context={'foo':'bar'})
+
+    r = Jsonify({}, 'jsonify').process()
+    data = jsonmod.loads(r.data)
+    assert data['foo'] == 'bar', data
+
 def test_request_hijacking():
     r = ta.get('/request-hijack/forward')
     assert 'app index: 1' in r

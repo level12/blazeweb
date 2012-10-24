@@ -512,11 +512,12 @@ class View(object):
             self.send_response()
         return c
 
-    def render_json(self, data, has_error=0, add_user_messages=True, indent=2, send_response=True):
+    def render_json(self, data, has_error=0, add_user_messages=True, indent=2,
+                    send_response=True, extra_context=None):
         """
             Will send data as a json string with the appopriate mime-type
             as the response.  Status indicators as well as user messages are
-            also sent.  The resulting json string looks like:
+            also sent.
 
         """
         assert_have_json()
@@ -530,6 +531,8 @@ class View(object):
             'data': data,
             'messages': user_messages
             }
+        if extra_context:
+            data_with_context.update(extra_context)
         jsonstr = jsonmod.dumps(data_with_context, indent=indent)
         self.mimetype = 'application/json'
         self.retval = jsonstr
