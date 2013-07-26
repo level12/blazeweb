@@ -16,5 +16,5 @@ Current Status
 The code stays pretty stable, but some of the API will probably
 change in the future.
 
-The `BlazeWeb tip <http://bitbucket.org/rsyring/blazeweb/get/tip.zip#egg=BlazeWeb-dev>`_
+The `BlazeWeb tip <http://bitbucket.org/blazelibs/blazeweb/get/tip.zip#egg=BlazeWeb-dev>`_
 is installable via `easy_install` with ``easy_install BlazeWeb==dev``
