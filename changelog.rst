@@ -1,10 +1,10 @@
 Change Log
 ----------
 
-0.4.8 released ???
+0.4.8 released 2013-12-17
 =========================
 
-* 
+* adjust setup_file_logging() to accept an argument for the settings object
 
 0.4.7 released 2012-10-24
 =========================

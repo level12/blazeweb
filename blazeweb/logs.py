@@ -109,14 +109,15 @@ def setup_handler_logging(handler, level, *loggers):
         logger.setLevel(level)
 
 def setup_file_logging(fname, level, *loggers, **kwargs):
+    loc_settings = kwargs.pop('settings', None) or settings
     format_str = kwargs.pop('format_str', None) or "%(asctime)s - %(levelname)s - %(name)s - %(message)s"
-    max_bytes = kwargs.pop('max_bytes', None) or settings.logs.max_bytes
-    backup_count = kwargs.pop('backup_count', None) or settings.logs.backup_count
+    max_bytes = kwargs.pop('max_bytes', None) or loc_settings.logs.max_bytes
+    backup_count = kwargs.pop('backup_count', None) or loc_settings.logs.backup_count
 
     formatter = logging.Formatter(format_str)
 
     handler = RotatingFileHandler(
-              path.join(settings.dirs.logs, fname),
+              path.join(loc_settings.dirs.logs, fname),
               maxBytes = max_bytes,
               backupCount = backup_count,
         )
