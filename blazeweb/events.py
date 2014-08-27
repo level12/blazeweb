@@ -32,3 +32,27 @@ class SettingsConnectHelper(object):
         # collected
         self.signal = signal(self.signalname)
         self.signal.connect(self)
+
+
+def clear_old_beaker_sessions(sender):
+    # for dbm and file type beaker sessions, files are cached under data_dir
+    #   use the last-accessed time to determine which to prune
+    if settings.beaker.type in ('dbm', 'file') and settings.beaker.auto_clear_sessions:
+        if not hasattr(settings.beaker, 'timeout'):
+            return
+
+        import datetime as dt
+        import os
+        session_path = settings.beaker.data_dir
+        cutoff = (
+            dt.datetime.now() -
+            dt.timedelta(seconds=settings.beaker.timeout)
+        )
+
+        for root, dirnames, filenames in os.walk(session_path):
+            for filename in filenames:
+                session_file = os.path.join(root, filename)
+                if dt.datetime.fromtimestamp(
+                    os.stat(session_file).st_atime
+                ) < cutoff:
+                    os.remove(session_file)

@@ -10,7 +10,7 @@ from werkzeug import create_environ
 from werkzeug.routing import Map, Submount
 
 from blazeweb.globals import ag, rg, settings, user
-from blazeweb.events import signal, SettingsConnectHelper
+from blazeweb.events import signal, SettingsConnectHelper, clear_old_beaker_sessions
 from blazeweb.exceptions import ProgrammingError
 from blazeweb.hierarchy import findobj, HierarchyImportError, \
     listcomponents, visitmods, findview, split_endpoint
@@ -233,10 +233,7 @@ class WSGIApp(object):
         if self.settings.auto_abort_as_builtin == True:
             __builtin__.dabort = abort
 
-        # clear up old beaker sessions, if needed
-        if settings.beaker.enabled and settings.beaker.auto_clear_sessions:
-            self.clear_old_beaker_sessions()
-
+        signal('blazeweb.auto_actions.initialized').connect(clear_old_beaker_sessions)
         signal('blazeweb.auto_actions.initialized').send(self.init_auto_actions)
 
     def init_logging(self):
@@ -266,29 +263,6 @@ class WSGIApp(object):
     def init_templating(self):
         engine = default_engine()
         self.ag.tplengine = engine()
-
-    def clear_old_beaker_sessions(self):
-        if settings.beaker.type == 'ext:database':
-            import datetime as dt
-            import sqlalchemy as sa
-            table_name = getattr(settings.beaker, 'table_name', 'beaker_cache')
-            try:
-                sessions_table = sa.Table(
-                    table_name,
-                    sa.MetaData(settings.beaker.url),
-                    autoload=True
-                )
-                count = sessions_table.delete(
-                    sessions_table.c.accessed < (
-                        dt.datetime.now() -
-                        dt.timedelta(seconds=settings.beaker.timeout)
-                    )
-                ).execute()
-                log.debug('cleared {0} expired sessions'.format(count))
-            except sa.exc.NoSuchTableError:
-                # depending on the database, a table may not be present (yet)
-                #   so, no sessions to cleanup
-                pass
 
     def add_routing_rules(self, rules):
         for rule in rules or ():

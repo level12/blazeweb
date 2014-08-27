@@ -4,6 +4,9 @@ import config
 from blazewebtestapp.applications import make_wsgi
 from werkzeug import Client, BaseResponse
 from blazeweb.testing import TestApp
+from nose.tools import eq_
+import os
+from time import sleep
 
 class TestSession(unittest.TestCase):
 
@@ -41,3 +44,33 @@ class TestSession(unittest.TestCase):
 
         r = ta.get('/sessiontests/getfoo', status=200)
         assert r.body == 'bar'
+
+
+class TestBeakerCleanup(unittest.TestCase):
+    def test_session_cleanup(self):
+        from minimal2.application import make_wsgi as min_make_wsgi
+        from blazeweb.globals import settings
+
+        wsgiapp = min_make_wsgi('BeakerSessions')
+        ta = TestApp(wsgiapp)
+        ta.get('/hassession')
+
+        for i in range(10):
+            open(os.path.join(settings.beaker.data_dir, str(i)), 'a').close()
+            if i == 5:
+                # files 6, 7, 8, 9 will be within timeout
+                sleep(2)
+
+        def count_files():
+            return len([
+                f for f in os.listdir(settings.beaker.data_dir)
+                if os.path.isfile(os.path.join(settings.beaker.data_dir, f))
+            ])
+
+        assert count_files() > 5
+        wsgiapp = min_make_wsgi('BeakerSessions')
+        eq_(count_files(), 4)
+
+        # cleanup
+        for i in range(6, 10):
+            os.remove(os.path.join(settings.beaker.data_dir, str(i)))
