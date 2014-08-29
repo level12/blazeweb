@@ -1,11 +1,13 @@
 Change Log
 ----------
 
-0.4.9 released ???
+0.4.9 released 2014-08-29
 =========================
 
 * add auto-cleanup of beaker sessions for file/dbm storage (if applicable).
   settings.beaker.auto_clear_sessions (default True) controls this function
+* cleanup setup.py and add version.txt file, move to "extra_requires" for specifying developer
+  dependencies.
 
 0.4.8 released 2013-12-17
 =========================

@@ -4,3 +4,4 @@ recursive-include tests *
 prune tests/test-output
 include *.txt *.rst
 global-exclude *.pyc
+include blazeweb/version.txt
