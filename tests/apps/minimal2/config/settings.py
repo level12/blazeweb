@@ -41,6 +41,11 @@ class Dispatching(Default):
         # components should be able to add things to this list
         self.some_list = ['from app']
 
+class BeakerSessions(Dispatching):
+    def init(self):
+        Dispatching.init(self)
+        self.beaker.timeout = 2
+
 class EventSettings(Default):
     def init(self):
         Default.init(self)

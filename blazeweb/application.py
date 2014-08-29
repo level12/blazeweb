@@ -10,7 +10,7 @@ from werkzeug import create_environ
 from werkzeug.routing import Map, Submount
 
 from blazeweb.globals import ag, rg, settings, user
-from blazeweb.events import signal, SettingsConnectHelper
+from blazeweb.events import signal, SettingsConnectHelper, clear_old_beaker_sessions
 from blazeweb.exceptions import ProgrammingError
 from blazeweb.hierarchy import findobj, HierarchyImportError, \
     listcomponents, visitmods, findview, split_endpoint
@@ -233,6 +233,7 @@ class WSGIApp(object):
         if self.settings.auto_abort_as_builtin == True:
             __builtin__.dabort = abort
 
+        signal('blazeweb.auto_actions.initialized').connect(clear_old_beaker_sessions)
         signal('blazeweb.auto_actions.initialized').send(self.init_auto_actions)
 
     def init_logging(self):

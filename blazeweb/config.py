@@ -106,6 +106,7 @@ class DefaultSettings(QuickSettings):
         self.beaker.type = 'dbm'
         self.beaker.data_dir = path.join(self.dirs.tmp, 'session_cache')
         self.beaker.lock_dir = path.join(self.dirs.tmp, 'beaker_locks')
+        self.beaker.auto_clear_sessions = True
 
         #######################################################################
         # TEMPLATES

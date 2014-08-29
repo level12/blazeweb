@@ -4,7 +4,8 @@ Change Log
 0.4.9 released ???
 =========================
 
-* ?
+* add auto-cleanup of beaker sessions for file/dbm storage (if applicable).
+  settings.beaker.auto_clear_sessions (default True) controls this function
 
 0.4.8 released 2013-12-17
 =========================
