@@ -41,6 +41,8 @@ class TestContent(object):
        body = c.primary
        assert '<link href="/static/linked_nesting_content.css" rel="stylesheet" type="text/css" />' in body, body
        assert '<script src="/static/linked_nesting_content.js" type="text/javascript"></script>' in body, body
+       assert '<link href="static/linked_nesting_content_rel.css" rel="stylesheet" type="text/css" />' in body, body
+       assert '<script src="static/linked_nesting_content_rel.js" type="text/javascript"></script>' in body, body
        assert '<link charset="utf-8" href="/static/linked_nesting_content3.css" media="print" rel="stylesheet" type="text/css" />' in body, body
        assert '<script src="/static/linked_nesting_content3.js" type="text/javascript"></script>' in body, body
        # make sure the template functions are returning empty strings and not

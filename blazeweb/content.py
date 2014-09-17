@@ -7,7 +7,7 @@ from webhelpers.html import HTML
 
 from blazeweb.globals import ag, settings
 from blazeweb.hierarchy import findcontent, findfile, split_endpoint
-from blazeweb.routing import abs_static_url
+from blazeweb.routing import abs_static_url, static_url
 
 def getcontent(__endpoint, *args, **kwargs):
     if '.' in __endpoint:
@@ -251,13 +251,19 @@ class TemplateContent(Content):
         return ag.tplengine.mark_safe(ph.placeholder)
 
     def link_css_url(self, url, **kwargs):
-        url = abs_static_url(url)
+        if not kwargs.pop('relative_path', False):
+            url = abs_static_url(url)
+        else:
+            url = static_url(url)
         link_tag = HTML.link(rel='stylesheet', type='text/css', href=url, **kwargs)
         self.data['x-link-tags'].append(link_tag)
         return u''
 
     def source_js_url(self, url, **kwargs):
-        url = abs_static_url(url)
+        if not kwargs.pop('relative_path', False):
+            url = abs_static_url(url)
+        else:
+            url = static_url(url)
         script_tag = HTML.script(type='text/javascript', src=url, **kwargs)
         self.data['x-script-tags'].append(script_tag)
         return u''

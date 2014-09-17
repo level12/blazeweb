@@ -4,7 +4,8 @@ Change Log
 0.4.10 released <in development>
 ===============================
 
-* ???
+* added relative_path kwarg to link_css_url and source_js_url, default behavior
+  remains to use abs_static_url on the url
 
 0.4.9 released 2014-08-29
 =========================
