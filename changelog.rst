@@ -1,7 +1,7 @@
 Change Log
 ----------
 
-0.4.10 released <in development>
+0.4.10 released 2014-09-18
 ===============================
 
 * added relative_path kwarg to link_css_url and source_js_url, default behavior
