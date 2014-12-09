@@ -62,3 +62,15 @@ class StreamResponse(wz.Response):
     """
 
     default_mimetype = 'application/octet-stream'
+
+
+class FileResponse(wz.Response):
+    """
+        Uses werkzeug.wrap_file and direct_passthrough on the response
+    """
+
+    def __init__(self, fileobj=None, status=None, headers=None, mimetype=None, content_type=None,
+                 buffer_size=8192):
+        fw = wz.wrap_file(rg.environ, fileobj, buffer_size)
+        wz.Response.__init__(self, fw, status=status, headers=headers, mimetype=mimetype,
+                             content_type=content_type, direct_passthrough=True)
