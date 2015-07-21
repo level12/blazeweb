@@ -88,7 +88,7 @@ def test_app_routes():
     assert "'/'" in res.stdout, res.stdout
 
 class TestProjectCommands(object):
-    def check_command(self, projname, template, file_count, look_for):
+    def check_command(self, projname, template, file_count, look_for, expect_stderr=False):
         res = env.run('pip', 'uninstall', projname, '-y', expect_error=True)
         assert 'not installed' in res.stdout or 'Succesfully uninstalled' in res.stdout
         if template is not None:
@@ -104,7 +104,8 @@ class TestProjectCommands(object):
             # and that causes a permission denied error.  Therefore, we need to
             # prevent the setup.py develop command from checking dependencies.
             setup_args.append('-N')
-        env.run(cwd=os.path.join(script_test_path, projname + '-dist'), *setup_args)
+        env.run(cwd=os.path.join(script_test_path, projname + '-dist'), expect_stderr=expect_stderr,
+                *setup_args)
         res = env.run(projname)
         script_name = '%s-script.py' % projname if is_win else projname
         assert 'Usage: %s [global_options]' % script_name in res.stdout, res.stdout
@@ -118,7 +119,7 @@ class TestProjectCommands(object):
         env.clear()
 
     def test_minimal(self):
-        self.check_command('minimalproj_from_bw_tests', 'minimal', 9, 'index')
+        self.check_command('minimalproj_from_bw_tests', 'minimal', 9, 'index', expect_stderr=True)
 
     def test_bwproject(self):
         self.check_command('bwproj_from_bw_tests', 'bwproject', 18, 'Hello World')
