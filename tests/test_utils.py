@@ -5,7 +5,9 @@ from nose.tools import eq_
 from blazeutils.strings import normalizews
 from webtest import TestApp
 
-from blazeweb.globals import settings
+from blazeweb.globals import rg, settings
+from blazeweb.testing import inrequest
+from blazeweb.utils import exception_with_context, exception_context_filter
 from blazeweb.utils.filesystem import copy_static_files, mkdirs
 
 import config
@@ -108,3 +110,43 @@ def test_auto_copy():
     # make sure at least one file is there from the static copies
     assert_contents('newlayout', path.join('newlayout', 'static', 'app', 'statictest.txt'))
     env.clear()
+
+
+class TestExceptionContext(object):
+
+    @classmethod
+    def setup_class(cls):
+        make_wsgi('WithTestSettings')
+
+    @inrequest(data={'password': 'passval'}, method='POST')
+    def test_post_filtering(self):
+        try:
+            raise Exception('test exception')
+        except Exception:
+            message = exception_with_context()
+
+            # confirm post data filtering
+            assert 'passval' not in message
+            assert "'password': '<removed>'" in message, message
+
+    @inrequest(data={'password': 'passval'}, method='POST',
+               headers={'COOKIE': 'c1=1; session.id=123'})
+    def test_header_filtering(self):
+        # make sure we are using inrequest() correctly
+        eq_(rg.request.cookies['c1'], '1')
+        eq_(rg.request.cookies['session.id'], '123')
+
+        try:
+            raise Exception('test exception')
+        except Exception:
+            message = exception_with_context()
+
+            # confirm cookies are not output
+            assert 'HTTP_COOKIE' not in message
+            assert 'blazeweb.cookies' in message
+            assert "'session.id': '<removed>'" in message, message
+
+    def test_exc_context_filter(self):
+        data = {'foo': 'bar', 'password': '123', 'secret_key': '456'}
+        filtered_data = exception_context_filter(data)
+        eq_(filtered_data, {'foo': 'bar', 'password': '<removed>', 'secret_key': '<removed>'})

@@ -151,6 +151,9 @@ class DefaultSettings(QuickSettings):
         # when testing to help pinpoint why a certain response code is being
         # returned
         self.http_exception_handling = True
+        # These patterns are matched with fnmatch() against POST keys and HTTP cookie keys.  If
+        # the keys match, their values are replaced with '<remove>'.
+        self.exception_context_filters = ['*password*', '*secret*', '*session.id*']
 
         #######################################################################
         # DEBUGGING

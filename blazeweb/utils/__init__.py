@@ -1,3 +1,4 @@
+import fnmatch
 import re
 import logging
 from traceback import format_exc
@@ -9,7 +10,7 @@ from blazeutils.strings import reindent
 from webhelpers.html import escape
 import werkzeug
 
-from blazeweb.globals import rg
+from blazeweb.globals import rg, settings
 
 log = logging.getLogger(__name__)
 
@@ -83,15 +84,40 @@ def registry_has_object(to_check):
             raise
         return False
 
+
+def exception_context_filter(data):
+    filters = settings.exception_context_filters
+    retval = {}
+    for key in data.keys():
+        value = data[key]
+        # Does this value match any of the filter patterns?
+        if filter(lambda pattern: fnmatch.fnmatch(key, pattern), filters):
+            retval[key] = '<removed>'
+        else:
+            retval[key] = value
+    return retval
+
+
 def exception_with_context():
     """
         formats the last exception as a string and adds context about the
         request.
     """
+    post_data = werkzeug_multi_dict_conv(rg.request.form)
+    post_data = exception_context_filter(post_data)
+
+    # Remove HTTP_COOKIE from the environment since it may contain sensitive info.  It will get
+    # filtered and inserted next.
+    environ = rg.environ.copy()
+    if 'HTTP_COOKIE' in environ:
+        del environ['HTTP_COOKIE']
+        environ['blazeweb.cookies'] = exception_context_filter(rg.request.cookies)
+
     retval = '\n== TRACE ==\n\n%s' % format_exc()
-    retval += '\n\n== ENVIRON ==\n\n%s' % pformat(rg.environ, 4)
-    retval += '\n\n== POST ==\n\n%s\n\n' % pformat(werkzeug_multi_dict_conv(rg.request.form), 4)
+    retval += '\n\n== ENVIRON ==\n\n%s' % pformat(environ, 4)
+    retval += '\n\n== POST ==\n\n%s\n\n' % pformat(post_data, 4)
     return retval
+
 
 class _Redirect(Exception):
     """
