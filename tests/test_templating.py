@@ -191,3 +191,8 @@ class TestContent(object):
         input = '{{ abs_static_url("app/c/style.css") }}'
         res = ag.tplengine.render_string(input, {})
         eq_(res, '/static/app/c/style.css')
+
+    def test_render_json(self):
+        input = 'var foo = {{ obj | json }};'
+        res = ag.tplengine.render_string(input, {'obj': {'some_key': 'This is json formatted'}})
+        eq_(res, 'var foo = {"some_key": "This is json formatted"};')

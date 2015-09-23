@@ -1,5 +1,6 @@
 from markdown2 import markdown
 from blazeutils.dates import safe_strftime
+from blazeutils.jsonh import jsonmod as json
 from blazeutils.numbers import moneyfmt
 from blazeutils.strings import simplify_string, reindent
 
@@ -47,6 +48,7 @@ class EngineBase(object):
         filters['moneyfmt'] = lambda x, *args, **kwargs: self.mark_safe(moneyfmt(x, *args, **kwargs))
         filters['datefmt'] = safe_strftime
         filters['static'] = static_url
+        filters['json'] = json.dumps
         return filters
 
     def update_context(self, context):
