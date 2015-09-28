@@ -46,7 +46,7 @@ class Request(BaseRequest):
         parsed JSON data.
         """
         assert_have_json()
-        if self.mimetype == 'application/json':
+        if self.mimetype.endswith(('+json', '/json')):
             return jsonmod.loads(self.data)
 
 class Response(wz.Response):

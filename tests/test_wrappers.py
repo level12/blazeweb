@@ -72,6 +72,15 @@ class TestRequest(object):
       assert rg.request is sec_req
 
    def test_json_property(self):
-      req = Request.from_values(jsonmod.dumps({'a': 1, 'b': 2}), content_type='application/json')
+      str_data = jsonmod.dumps({'a': 1, 'b': 2})
+      req = Request.from_values(str_data, content_type='application/json')
       data = req.json
       assert data['a'] == 1, data
+
+      req = Request.from_values(str_data, content_type='application/vnd.api+json')
+      data = req.json
+      assert data['a'] == 1, data
+
+      req = Request.from_values(str_data, content_type='application/text')
+      data = req.json
+      assert data is None, data
