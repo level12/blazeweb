@@ -84,3 +84,10 @@ class TestRequest(object):
       req = Request.from_values(str_data, content_type='application/text')
       data = req.json
       assert data is None, data
+
+   def test_json_property_encoding(self):
+      str_data = jsonmod.dumps({'a': u'\u23E3'}, encoding='utf8')
+      req = Request.from_values(str_data, content_type='applciation/json')
+      data = req.json
+      assert data['a'] == u'\u23E3'
+      assert isinstance(data['a'], unicode)
