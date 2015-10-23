@@ -2,10 +2,10 @@ Change Log
 ----------
 
 
-0.4.12 released <in dev>
+0.4.12 released 2015-10-23
 ==========================
 
-* ...
+* add json filter, support all json mimetypes that webtest does in the Request.json property
 
 0.4.11 released 2014-12-08
 ==========================
