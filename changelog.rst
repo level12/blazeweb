@@ -1,11 +1,7 @@
 Change Log
 ----------
 
-0.4.13 released <in progress>
-=============================
-
-
-0.4.13 released <in dev>
+0.4.13 released 2015-10-23
 ==========================
 
 * exception_with_context() is now filtered for sensitive information.  The filters can be
