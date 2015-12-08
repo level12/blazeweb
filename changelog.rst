@@ -1,10 +1,10 @@
 Change Log
 ----------
 
-0.4.14 released <in progress>
+0.4.14 released 2015-12-08
 ==========================
 
-* ?
+* add py.test plugin to load a blaze app for testing, similar to the nose plugin
 
 0.4.13 released 2015-10-23
 ==========================

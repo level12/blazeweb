@@ -91,6 +91,9 @@ setup(
 
     [nose.plugins]
     blazeweb_initapp = blazeweb.nose_plugin:InitAppPlugin
+
+    [pytest11]
+    blazeweb_initapp = blazeweb.pytest_plugin
     """,
     zip_safe=False
 )
