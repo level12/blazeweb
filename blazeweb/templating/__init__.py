@@ -4,7 +4,7 @@ from blazeutils.jsonh import jsonmod as json
 from blazeutils.numbers import moneyfmt
 from blazeutils.strings import simplify_string, reindent
 
-from blazeweb.globals import ag, settings, user
+from blazeweb.globals import ag, settings, user, rg
 from blazeweb.routing import url_for, current_url, static_url, abs_static_url
 from blazeweb.utils import registry_has_object
 from blazeweb.utils.html import strip_tags
@@ -57,6 +57,11 @@ class EngineBase(object):
             context.setdefault('user', user._current_obj())
         else:
             context.setdefault('user', None)
+
+        if registry_has_object(rg):
+            context.setdefault('rg', rg)
+        else:
+            context.setdefault('rg', None)
 
 def default_engine():
     tmod = __import__('blazeweb.templating.%s' % settings.templating.default_engine, fromlist=[''])

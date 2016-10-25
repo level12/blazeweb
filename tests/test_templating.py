@@ -3,7 +3,7 @@ from jinja2 import TemplateNotFound
 from nose.tools import eq_
 
 from blazeweb.content import getcontent, Content
-from blazeweb.globals import user, ag
+from blazeweb.globals import user, ag, rg
 from blazeweb.testing import inrequest
 
 
@@ -161,6 +161,12 @@ class TestContent(object):
         user.name = 'foo'
         c = getcontent('user_test.html')
         assert c.primary == 'user\'s name: foo', c.primary
+
+    @inrequest()
+    def test_rg_usage(self):
+        rg.test_prop = 'Testing Property'
+        c = getcontent('rg_test.html')
+        assert c.primary == 'rg.test_prop: Testing Property', c.primary
 
     @inrequest()
     def test_context_variable_takes_precedence(self):

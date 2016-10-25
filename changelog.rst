@@ -1,10 +1,10 @@
 Change Log
 ----------
 
-0.4.16 released <in development>
+0.4.16 released 2016-09-02
 ==========================
 
-* ?
+* bind rg to template by default
 
 0.4.15 released 2016-06-03
 ==========================
