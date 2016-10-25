@@ -1,10 +1,10 @@
 Change Log
 ----------
 
-0.4.15 released <in development>
+0.4.15 released 2016-06-03
 ==========================
 
-* ?
+* fixed unicode handling for JSON parsing
 
 0.4.14 released 2015-12-08
 ==========================
