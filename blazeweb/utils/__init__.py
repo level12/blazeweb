@@ -8,7 +8,7 @@ from formencode import Invalid
 from blazeutils.helpers import pformat
 from blazeutils.strings import reindent
 import six
-from webhelpers.html import escape
+from webhelpers2.html import escape
 import werkzeug
 
 from blazeweb.globals import rg, settings
