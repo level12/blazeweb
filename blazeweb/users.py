@@ -67,13 +67,13 @@ class User(LazyDict):
         if ident is None:
             while True:
                 ident = random.randrange(100000, 999999)
-                if not self._messages.has_key(ident):
+                if ident not in self._messages:
                     break
         self._messages[ident] = UserMessage(severity, text)
 
     def get_messages(self, clear = True):
         log.debug('SessionUser messages retrieved: %d' % len(self._messages))
-        msgs = self._messages.values()
+        msgs = list(self._messages.values())
         if clear:
             log.debug('SessionUser messages cleared')
             self._messages = self.messages_class()

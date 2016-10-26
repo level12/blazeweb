@@ -16,6 +16,7 @@ from email.Utils import formatdate, parseaddr, formataddr
 from html2text import html2text
 from markdown2 import markdown
 from blazeutils.helpers import tolist
+import six
 
 from blazeweb.globals import settings
 from blazeweb.exceptions import SettingsError
@@ -224,17 +225,17 @@ class EmailMessage(object):
         conversions.
         """
         if to:
-            assert not isinstance(to, basestring), '"to" argument must be a list or tuple'
+            assert not isinstance(to, six.string_types), '"to" argument must be a list or tuple'
             self.to = list(to)
         else:
             self.to = []
         if bcc:
-            assert not isinstance(bcc, basestring), '"bcc" argument must be a list or tuple'
+            assert not isinstance(bcc, six.string_types), '"bcc" argument must be a list or tuple'
             self.bcc = list(bcc)
         else:
             self.bcc = settings.emails.bcc_defaults or []
         if cc:
-            assert not isinstance(cc, basestring), '"cc" argument must be a list or tuple'
+            assert not isinstance(cc, six.string_types), '"cc" argument must be a list or tuple'
             self.cc = list(cc)
         else:
             self.cc = settings.emails.cc_defaults or []

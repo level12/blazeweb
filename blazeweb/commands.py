@@ -1,4 +1,5 @@
 from __future__ import with_statement
+from __future__ import print_function
 import os
 from os import path
 
@@ -111,7 +112,7 @@ class ServeCommand(pscmd.Command):
             if settings.logs.enabled:
                 # our logging conflicts with werkzeug's, see issue #13
                 # this is to give some visual feedback that the server did in fact start
-                print ' * Serving on http://%s:%s/' % (self.options.address, self.options.port)
+                print(' * Serving on http://%s:%s/' % (self.options.address, self.options.port))
             run_simple(
                 self.options.address,
                 self.options.port,
@@ -158,12 +159,12 @@ class TestRunCommand(pscmd.Command):
             resp = c.get(url)
 
             if options.show_headers and not options.silent:
-                print resp.status
-                print resp.headers
+                print(resp.status)
+                print(resp.headers)
 
             if options.show_body and not options.silent:
                 for respstr in resp.response:
-                    print respstr
+                    print(respstr)
 
 class TasksCommand(pscmd.Command):
         # Parser configuration
@@ -247,7 +248,7 @@ class StaticCopyCommand(pscmd.Command):
 
         def command(self):
             copy_static_files(delete_existing=self.options.delete_existing)
-            print '\n - files/dirs copied succesfully\n'
+            print('\n - files/dirs copied succesfully\n')
 
 import re
 class JinjaConvertCommand(pscmd.Command):
@@ -270,7 +271,7 @@ class JinjaConvertCommand(pscmd.Command):
             return contents
 
         def command(self):
-            print 'converting:'
+            print('converting:')
             cwd = os.getcwd()
             for fname in os.listdir(cwd):
                 if not fname.endswith('.html'):
@@ -280,7 +281,7 @@ class JinjaConvertCommand(pscmd.Command):
                 contents = self.change_tags(contents)
                 with open(fname, 'w') as fh:
                     fh.write(contents.encode('utf-8'))
-                print '    %s' % fname
+                print('    %s' % fname)
 
 class ComponentMapCommand(pscmd.Command):
     # Parser configuration

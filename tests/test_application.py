@@ -37,13 +37,13 @@ def test_bad_settings_profile():
     try:
         app = make_wsgi('notthere')
         assert False
-    except ValueError, e:
+    except ValueError as e:
         assert 'settings profile "notthere" not found in this application' == str(e), e
 
     try:
         app = make_wsgi('AttributeErrorInSettings')
         assert False
-    except AttributeError, e:
+    except AttributeError as e:
         assert "'module' object has no attribute 'notthere'" == str(e), e
 
 def test_environ_hooks():
@@ -98,7 +98,7 @@ class TestUserSessionInteraction(object):
         ta = TestApp(self.app)
         r = ta.get('/index/index')
         assert '<User (' in repr(r.user)
-        assert r.session.has_key('__blazeweb_user')
+        assert '__blazeweb_user' in r.session
         assert r.session.accessed() == True
 
     def test_framework_hook(self):

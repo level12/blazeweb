@@ -58,14 +58,14 @@ class TestViews(unittest.TestCase):
         try:
             r = self.client.get('tests/badmod')
             self.fail('should have got ProgrammingError since URL exists but module does not')
-        except HierarchyImportError, e:
+        except HierarchyImportError as e:
             assert 'An object for View endpoint "fatfinger:NotExistant" was not found' == str(e), e
 
     def test_noview(self):
         try:
             r = self.client.get('tests/noview')
             self.fail('should have got ProgrammingError since URL exists but view does not')
-        except HierarchyImportError, e:
+        except HierarchyImportError as e:
             assert 'An object for View endpoint "tests:NotExistant" was not found' == str(e), e
 
     def test_prep(self):
@@ -159,7 +159,7 @@ class TestViews(unittest.TestCase):
         settings.error_docs[503] = 'tests:RaiseExc'
         try:
             r = self.client.get('tests/heraise')
-        except ValueError, e:
+        except ValueError as e:
             self.assertTrue( 'exception for testing' in str(e))
         else:
             self.fail('should have gotten an exception b/c our error handler raised one')
@@ -175,7 +175,7 @@ class TestViews(unittest.TestCase):
     def test_forwardloop(self):
         try:
             r = self.client.get('tests/forwardloop')
-        except ProgrammingError, e:
+        except ProgrammingError as e:
             self.assertTrue( 'forward loop detected:' in str(e))
         else:
             self.fail('excpected exception for a forward loop')
@@ -283,7 +283,7 @@ class TestViews(unittest.TestCase):
     def test_badvalidator(self):
         try:
             r = self.client.get('tests/badvalidator')
-        except TypeError, e:
+        except TypeError as e:
             self.assertEqual( 'processor must be a Formencode validator or a callable', str(e))
         else:
             self.fail('excpected exception for bad validator')
@@ -371,7 +371,7 @@ class TestViews(unittest.TestCase):
         try:
             r = self.client.get('/jsonify-exception')
             assert False
-        except NameError, e:
+        except NameError as e:
             if 'foo' not in str(e):
                 raise
 

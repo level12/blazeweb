@@ -1,10 +1,11 @@
-import __builtin__
 import logging
 from os import path as ospath
 import sys
 
 from blazeutils.datastructures import BlankObject, OrderedDict, UniqueList
 from blazeutils.error_handling import raise_unexpected_import_error
+import six
+
 from blazeweb.globals import ag, settings
 from blazeweb.utils import registry_has_object
 
@@ -27,15 +28,15 @@ class FileNotFound(Exception):
 class HierarchyManager(object):
 
     def __init__(self):
-        self._builtin_import = __builtin__.__import__
+        self._builtin_import = six.moves.builtins.__import__
         self.replace_builtin()
 
     def replace_builtin(self):
-        __builtin__.__import__ = self.blazeweb_import
+        six.moves.builtins.__import__ = self.blazeweb_import
         log.debug('HierarchyManager replaced __builtin__.__import__')
 
     def restore_builtin(self):
-        __builtin__.__import__ = self._builtin_import
+        six.moves.builtins.__import__ = self._builtin_import
         log.debug('HierarchyManager restored __builtin__.__import__')
 
     def builtin_import(self, name, globals={}, locals={}, fromlist=[], level=-1):
@@ -112,7 +113,7 @@ def list_component_mappings(target_component=None, reverse=False, inc_apps=False
 def findcontent(endpoint):
     try:
         return findendpoint(endpoint, 'content')
-    except HierarchyImportError, e:
+    except HierarchyImportError as e:
         if not find_exc_is_from(e, endpoint, 'content'):
             raise
         raise HierarchyImportError('An object for Content endpoint "%s" was not found' % endpoint)
@@ -120,7 +121,7 @@ def findcontent(endpoint):
 def findview(endpoint):
     try:
         return findendpoint(endpoint, 'views')
-    except HierarchyImportError, e:
+    except HierarchyImportError as e:
         if not find_exc_is_from(e, endpoint, 'views'):
             raise
         raise HierarchyImportError('An object for View endpoint "%s" was not found' % endpoint)
@@ -227,7 +228,7 @@ def visitmods(dotpath, reverse=False, call_with_mod=None, reloadmod=True):
                 impstr = '%s.%s' % (package, dotpath)
             else:
                 impstr = '%s.components.%s.%s' % (app, pname, dotpath)
-            if sys.modules.has_key(impstr):
+            if impstr in sys.modules:
                 mod_loaded_by = getattr(sys.modules[impstr], '_blazeweb_hierarchy_last_imported_by', None)
                 current_app_id = id(ag.app)
                 if reloadmod and mod_loaded_by != current_app_id:
@@ -239,7 +240,7 @@ def visitmods(dotpath, reverse=False, call_with_mod=None, reloadmod=True):
                 module = hm.builtin_import(impstr, fromlist=[''])
             if call_with_mod:
                 call_with_mod(module, app=app, pname=pname, package=package)
-        except ImportError, e:
+        except ImportError as e:
             raise_unexpected_import_error(impstr, e)
 
 def gatherobjs(dotpath, filter, reloadmod=False):
@@ -255,7 +256,7 @@ def gatherobjs(dotpath, filter, reloadmod=False):
     collected = OrderedDict()
     def process_module(module, app, pname, package):
         modkey = getkey(app, pname)
-        for k, v in vars(module).iteritems():
+        for k, v in six.iteritems(vars(module)):
             if filter(k, v):
                 modattrs = collected.setdefault(modkey, OrderedDict())
                 modattrs.setdefault(k, v)
@@ -377,7 +378,7 @@ class FinderBase(object):
                 log.debug('found %s: %s', self.cachekey, dlocation)
                 ag.hierarchy_import_cache[self.cachekey] = dlocation
                 return foundmod
-        except ImportError, e:
+        except ImportError as e:
             msg = str(e)
             if 'No module named ' in msg:
                 not_found_mod = msg.replace('No module named ', '')

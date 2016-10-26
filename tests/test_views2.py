@@ -98,7 +98,7 @@ def test_get_args():
     try:
         r = TestView({}).process()
         assert False
-    except BadRequest, e:
+    except BadRequest as e:
         pass
 
     # register get args
@@ -148,7 +148,7 @@ def test_arg_validation():
                 # try a bad processor type
                 self.add_processor('e', 5)
                 assert False
-            except TypeError, e:
+            except TypeError as e:
                 if 'processor must be a Formencode validator or a callable' != str(e):
                     raise # pragma: no cover
         def default(self, a, c, d, f, g, b=5, z=None):
@@ -346,12 +346,12 @@ def test_call_method_changes():
 
     try:
         v.insert_call_method('foo', 'after', 'nothere')
-    except ValueError, e:
+    except ValueError as e:
         if 'target "nothere" was not found in the callstack' != str(e):
             assert False, e
     try:
         v.insert_call_method('whatever', 'behind', 'foo')
-    except ValueError, e:
+    except ValueError as e:
         if 'position "behind" not valid' not in str(e):
             assert False, e
 
@@ -400,7 +400,7 @@ def test_view_callstack():
     try:
         r = TestView({}).process()
         assert False
-    except HTTPException, e:
+    except HTTPException as e:
         eq_(e.code, 405)
 
 @inrequest('/', method='HEAD')
@@ -425,7 +425,7 @@ def test_not_supported_http_request_method():
     try:
         r = TestView({}).process()
         assert False
-    except HTTPException, e:
+    except HTTPException as e:
         eq_(e.code, 405)
 
 @inrequest('/foo', method='POST')
@@ -559,7 +559,7 @@ def test_secure_view():
     try:
         r = TestView({}, 'test').process()
         assert False
-    except HTTPException, e:
+    except HTTPException as e:
         eq_(e.code, 401)
 
     user.clear()
@@ -590,7 +590,7 @@ def test_secure_view():
             user.is_authenticated = True
     try:
         r = TestView({}, 'test').process()
-    except HTTPException, e:
+    except HTTPException as e:
         eq_(e.code, 403)
 
     user.clear()
@@ -602,7 +602,7 @@ def test_secure_view():
     try:
         r = TestView({}, 'test').process()
         assert False
-    except HTTPException, e:
+    except HTTPException as e:
         eq_(e.code, 403)
 
     user.clear()
@@ -614,7 +614,7 @@ def test_secure_view():
     try:
         r = TestView({}, 'test').process()
         assert False
-    except HTTPException, e:
+    except HTTPException as e:
         eq_(e.code, 403)
 
     user.clear()
@@ -652,7 +652,7 @@ def test_secure_view():
     try:
         r = TestView({}, 'test').process()
         assert False
-    except HTTPException, e:
+    except HTTPException as e:
         eq_(e.code, 403)
 
     user.clear()

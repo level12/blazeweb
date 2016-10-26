@@ -6,6 +6,7 @@ import formencode
 from blazeutils.sentinels import NotGiven
 from blazeutils.helpers import tolist
 from blazeutils.strings import case_cw2us
+import six
 from werkzeug import MultiDict, validate_arguments, ArgumentValidationError, \
     abort
 from werkzeug.exceptions import BadRequest
@@ -56,7 +57,7 @@ class _ProcessorWrapper(formencode.validators.Wrapper):
         def result(value, state, func=func):
             try:
                 return func(value)
-            except (ValueError, TypeError), e:
+            except (ValueError, TypeError) as e:
                 raise formencode.Invalid(str(e), {}, value, state)
         return result
 
@@ -248,7 +249,7 @@ class View(object):
                 that corresponds to the variable name that should be used
                 when passing this value to the action methods.
         """
-        if not self.urlargs.has_key(argname):
+        if argname not in self.urlargs:
             self.expect_getargs(argname)
         if custom_msg:
             show_msg = True
@@ -302,7 +303,7 @@ class View(object):
         # start with GET arguments that are expected
         args = MultiDict()
         if self.expected_get_args:
-            for k in rg.request.args.iterkeys():
+            for k in six.iterkeys(rg.request.args):
                 if k in self.expected_get_args:
                     args.setlist(k, rg.request.args.getlist(k))
 
@@ -310,7 +311,7 @@ class View(object):
         # arguments get precedence and we don't want to just .update()
         # because that would allow arbitrary get arguments to affect the
         # values of the URL arguments
-        for k,v in self.urlargs.iteritems():
+        for k,v in six.iteritems(self.urlargs):
             args[k] = v
 
         # trim down to a real dictionary.
@@ -346,7 +347,7 @@ class View(object):
                         if required:
                             processor = formencode.All(formencode.validators.NotEmpty, processor)
                         processed_val = processor.to_python(argval)
-                    except formencode.Invalid, e:
+                    except formencode.Invalid as e:
                         """ do a second round of processing for list values """
                         if not takes_list or not e.error_list or list_item_invalidates:
                             raise
@@ -358,7 +359,7 @@ class View(object):
                         # revalidate for conversion and required
                         processed_val = processor.to_python(new_list)
                     self.calling_args[pass_as] = processed_val
-            except formencode.Invalid, e:
+            except formencode.Invalid as e:
                 is_invalid = True
                 if self.strict_args or strict:
                     had_strict_arg_failure = True
@@ -430,7 +431,7 @@ class View(object):
             # removing it before the bound method is called below
             pos_args = (self,) if method_is_bound else tuple()
             args, kwargs = validate_arguments(method, pos_args , self.calling_args.copy())
-        except ArgumentValidationError, e:
+        except ArgumentValidationError as e:
             log.error('arg validation failed: %s, %s, %s, %s', method, e.missing, e.extra, e.extra_positional)
             raise BadRequest('The browser failed to transmit all '
                              'the data expected.')
@@ -448,7 +449,7 @@ class View(object):
             c = self.retval
             return self.create_response(c.primary, mimetype=c.primary_type)
         # if the retval is a string, add it as the response data
-        if isinstance(self.retval, basestring):
+        if isinstance(self.retval, six.string_types):
             return self.create_response(self.retval)
         # if its callable, assume it is a WSGI application and return it
         # directly

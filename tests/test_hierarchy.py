@@ -1,4 +1,4 @@
-import __builtin__
+import six.moves.builtins
 from os import path
 import sys
 
@@ -53,7 +53,7 @@ class TestMostStuff(object):
         try:
             import compstack.news.views
             assert False
-        except HierarchyImportError, e:
+        except HierarchyImportError as e:
             if 'non-attribute importing is not supported' not in str(e):
                 raise
 
@@ -61,21 +61,21 @@ class TestMostStuff(object):
         try:
             from compstack.something.notthere import foobar
             assert False
-        except HierarchyImportError, e:
+        except HierarchyImportError as e:
             assert str(e) == 'module "something.notthere" not found; searched compstack'
 
         # test module exists, but attribute not found
         try:
             from compstack.news.views import nothere
             assert False
-        except HierarchyImportError, e:
+        except HierarchyImportError as e:
             assert str(e) == 'attribute "nothere" not found; searched compstack.news.views'
 
         # test importing from compstack directly
         try:
             from compstack import news
             assert False
-        except ImportError, e:
+        except ImportError as e:
             if 'No module named compstack' not in str(e):
                 raise
 
@@ -92,7 +92,7 @@ class TestMostStuff(object):
         try:
             import appstack.views
             assert False
-        except HierarchyImportError, e:
+        except HierarchyImportError as e:
             if 'non-attribute importing is not supported' not in str(e):
                 raise
 
@@ -100,7 +100,7 @@ class TestMostStuff(object):
         try:
             from appstack.notthere import foobar
             assert False
-        except HierarchyImportError, e:
+        except HierarchyImportError as e:
             if str(e) != 'module "notthere" not found; searched appstack':
                 raise
 
@@ -108,14 +108,14 @@ class TestMostStuff(object):
         try:
             from appstack.views import notthere
             assert False
-        except HierarchyImportError, e:
+        except HierarchyImportError as e:
             assert str(e) == 'attribute "notthere" not found; searched appstack.views'
 
         # test importing from compstack directly
         try:
             from appstack import views
             assert False
-        except ImportError, e:
+        except ImportError as e:
             if 'No module named appstack' not in str(e):
                 raise
 
@@ -172,28 +172,28 @@ class TestMostStuff(object):
         try:
             view = findview('pdisabled:FakeView')
             assert False
-        except HierarchyImportError, e:
+        except HierarchyImportError as e:
             assert 'An object for View endpoint "pdisabled:FakeView" was not found' in str(e), e
 
     def test_no_setting_component(self):
         try:
             view = findview('pnosetting:FakeView')
             assert False
-        except HierarchyImportError, e:
+        except HierarchyImportError as e:
             assert 'An object for View endpoint "pnosetting:FakeView" was not found' in str(e)
 
     def test_good_component_but_object_not_there(self):
         try:
             view = findview('news:nothere')
             assert False
-        except HierarchyImportError, e:
+        except HierarchyImportError as e:
             assert 'An object for View endpoint "news:nothere" was not found' in str(e), e
 
     def test_import_error_in_target_gets_raised(self):
         try:
             view = findview('badimport:nothere')
             assert False
-        except ImportError, e:
+        except ImportError as e:
             assert 'No module named foo' == str(e), e
 
     def test_app_findfile(self):
@@ -287,7 +287,7 @@ class TestMostStuff(object):
         try:
             visitmods('views')
             assert False
-        except ImportError, e:
+        except ImportError as e:
             if str(e) != 'No module named foo':
                 raise
 
@@ -315,35 +315,35 @@ class TestPTA(object):
         try:
             v = findview('badimport1:Index')
             assert False
-        except HierarchyImportError, e:
+        except HierarchyImportError as e:
             assert 'module "nothere." not found; searched compstack' in str(e), e
 
     def test_find_view_no_component(self):
         try:
             v = findview('notacomponent:Foo')
             assert False
-        except HierarchyImportError, e:
+        except HierarchyImportError as e:
             assert 'An object for View endpoint "notacomponent:Foo" was not found' == str(e), e
 
     def test_find_content_no_component(self):
         try:
             v = findcontent('notacomponent:Foo')
             assert False
-        except HierarchyImportError, e:
+        except HierarchyImportError as e:
             assert 'An object for Content endpoint "notacomponent:Foo" was not found' == str(e), e
 
     def test_find_content_no_module(self):
         try:
             v = findcontent('routingtests:Foo')
             assert False
-        except HierarchyImportError, e:
+        except HierarchyImportError as e:
             assert 'An object for Content endpoint "routingtests:Foo" was not found' == str(e), e
 
     def test_find_content_no_attribute(self):
         try:
             v = findcontent('tests:NotThere')
             assert False
-        except HierarchyImportError, e:
+        except HierarchyImportError as e:
             assert 'An object for Content endpoint "tests:NotThere" was not found' == str(e), e
 
     def test_find_content_no_object_app_level(self):
@@ -352,14 +352,14 @@ class TestPTA(object):
         try:
             v = findcontent('NotThere')
             assert False
-        except HierarchyImportError, e:
+        except HierarchyImportError as e:
             assert 'An object for Content endpoint "NotThere" was not found' == str(e), e
 
     def test_find_content_hierarchy_import_errors_get_raised(self):
         try:
             v = findcontent('badimport1:Foo')
             assert False
-        except HierarchyImportError, e:
+        except HierarchyImportError as e:
             assert 'module "nothere." not found; searched compstack' in str(e), e
 
 
@@ -376,7 +376,7 @@ class TestMin2(object):
         try:
             v = findcontent('NotThere')
             assert False
-        except HierarchyImportError, e:
+        except HierarchyImportError as e:
             assert 'An object for Content endpoint "NotThere" was not found' == str(e), e
 
 def test_visitmods_reloading():

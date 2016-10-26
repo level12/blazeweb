@@ -4,6 +4,8 @@ without further escaping in HTML. Marking something as a "safe string" means
 that the producer of the string has already turned characters that should not
 be interpreted by the HTML engine (e.g. '<') into the appropriate entities.
 """
+import six
+
 from blazeweb.utils.functional import curry, Promise
 
 class EscapeData(object):
@@ -15,7 +17,7 @@ class EscapeString(str, EscapeData):
     """
     pass
 
-class EscapeUnicode(unicode, EscapeData):
+class EscapeUnicode(six.text_type, EscapeData):
     """
     A unicode object that should be HTML-escaped when output.
     """
@@ -56,7 +58,7 @@ class SafeString(str, SafeData):
 
     decode = curry(_proxy_method, method = str.decode)
 
-class SafeUnicode(unicode, SafeData):
+class SafeUnicode(six.text_type, SafeData):
     """
     A unicode subclass that has been specifically marked as "safe" for HTML
     output purposes.
@@ -84,7 +86,7 @@ class SafeUnicode(unicode, SafeData):
         else:
             return SafeUnicode(data)
 
-    encode = curry(_proxy_method, method = unicode.encode)
+    encode = curry(_proxy_method, method = six.text_type.encode)
 
 def mark_safe(s):
     """
@@ -97,7 +99,7 @@ def mark_safe(s):
         return s
     if isinstance(s, str) or (isinstance(s, Promise) and s._delegate_str):
         return SafeString(s)
-    if isinstance(s, (unicode, Promise)):
+    if isinstance(s, (six.text_type, Promise)):
         return SafeUnicode(s)
     return SafeString(str(s))
 
@@ -113,7 +115,7 @@ def mark_for_escaping(s):
         return s
     if isinstance(s, str) or (isinstance(s, Promise) and s._delegate_str):
         return EscapeString(s)
-    if isinstance(s, (unicode, Promise)):
+    if isinstance(s, (six.text_type, Promise)):
         return EscapeUnicode(s)
     return EscapeString(str(s))
 

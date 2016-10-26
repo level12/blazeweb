@@ -99,16 +99,16 @@ class TestUserUnit(object):
         u.foobar = 1
 
         assert u._is_authenticated == False
-        assert not u.has_key('_is_authenticated')
+        assert '_is_authenticated' not in u
 
         assert u._is_super_user == False
-        assert not u.has_key('_is_super_user')
+        assert '_is_super_user' not in u
 
         assert not u.perms
-        assert not u.has_key('perms')
+        assert 'perms' not in u
 
         assert not u._messages
-        assert not u.has_key('_messages')
+        assert '_messages' not in u
 
     def test_perms(self):
         u = User()

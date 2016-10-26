@@ -176,7 +176,7 @@ class TestQuickSettings(unittest.TestCase):
 
         try:
             foo = s.not_there
-        except AttributeError, e:
+        except AttributeError as e:
             assert str(e) == "object has no attribute 'not_there' (object is locked)"
         else:
             self.fail("lock did not work, expected AttributeError")
@@ -184,7 +184,7 @@ class TestQuickSettings(unittest.TestCase):
         # make sure lock went to children
         try:
             foo = s.db.not_there
-        except AttributeError, e:
+        except AttributeError as e:
             assert str(e) == "object has no attribute 'not_there' (object is locked)"
         else:
             self.fail("lock did not work on child, expected AttributeError")
@@ -203,7 +203,7 @@ class TestQuickSettings(unittest.TestCase):
 
         try:
             foo = s.not_there
-        except AttributeError, e:
+        except AttributeError as e:
             assert str(e) == "object has no attribute 'not_there' (object is locked)"
         else:
             self.fail("lock did not work, expected AttributeError")
@@ -211,7 +211,7 @@ class TestQuickSettings(unittest.TestCase):
         # make sure lock went to children
         try:
             foo = s.db.not_there
-        except AttributeError, e:
+        except AttributeError as e:
             assert str(e) == "object has no attribute 'not_there' (object is locked)"
         else:
             self.fail("lock did not work on child, expected AttributeError")
@@ -272,7 +272,7 @@ class TestQuickSettings(unittest.TestCase):
 
         try:
             self.assertEqual(s.modules.users.var1, 'foo')
-        except AttributeError, e:
+        except AttributeError as e:
             assert str(e) == "object has no attribute 'var1' (object is locked)"
         else:
             self.fail("expected AttributeError for 'var1'")
@@ -330,7 +330,7 @@ class TestConfig(unittest.TestCase):
         """ tests the lock() in appinit() """
         try:
             this = settings.notthere
-        except AttributeError, e:
+        except AttributeError as e:
             assert str(e) == "object has no attribute 'notthere' (object is locked)"
         else:
             self.fail("expected AttributeError for 'notthere'")
@@ -339,7 +339,7 @@ class TestConfig(unittest.TestCase):
         """ tests the lock() in appinit() for module settings """
         try:
             this = settings.components.tests.notthere
-        except AttributeError, e:
+        except AttributeError as e:
             assert str(e) == "object has no attribute 'notthere' (object is locked)"
         else:
             self.fail("expected AttributeError for 'notthere'")

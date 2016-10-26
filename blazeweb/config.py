@@ -1,6 +1,7 @@
 from os import path
 import os
 
+import six
 from werkzeug.routing import Rule
 from blazeutils.config import QuickSettings
 from blazeutils.datastructures import OrderedDict
@@ -22,11 +23,11 @@ class EnabledSettings(QuickSettings):
         return len(self.keys())
 
     def iteritems(self, showinactive=False):
-        for k,v in self._data.iteritems():
+        for k,v in six.iteritems(self._data):
             try:
                 if showinactive or v.enabled == True:
                     yield k,v
-            except AttributeError, e:
+            except AttributeError as e:
                 if "object has no attribute 'enabled'" not in str(e):
                     raise
 
@@ -35,7 +36,7 @@ class EnabledSettings(QuickSettings):
             try:
                 if v.enabled == True:
                     yield v
-            except AttributeError, e:
+            except AttributeError as e:
                 if "object has no attribute 'enabled'" not in str(e):
                     raise
 
@@ -223,8 +224,8 @@ class DefaultSettings(QuickSettings):
         # OTHER DEFAULTS
         #######################################################################
         self.default.charset = 'utf-8'
-        self.default.file_mode = 0640
-        self.default.dir_mode = 0750
+        self.default.file_mode = 0o640
+        self.default.dir_mode = 0o750
 
         #######################################################################
         # ERROR DOCUMENTS

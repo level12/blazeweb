@@ -87,7 +87,7 @@ class InitAppPlugin(nose.plugins.Plugin):
 
             # we also support events for pre-test setup
             signal('blazeweb.pre_test_init').send()
-        except UsageError, e:
+        except UsageError as e:
             if self.val_debug:
                 raise
             self.val_disable = True

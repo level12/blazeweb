@@ -7,6 +7,7 @@ from formencode.validators import URL
 from formencode import Invalid
 from blazeutils.helpers import pformat
 from blazeutils.strings import reindent
+import six
 from webhelpers.html import escape
 import werkzeug
 
@@ -51,7 +52,7 @@ def abort(send):
 
     if isinstance(send, int) or hasattr(send, '__call__'):
         response = send
-    elif isinstance(send, basestring):
+    elif isinstance(send, six.string_types):
         response = Response(response_body % escape(send))
     else:
         response = Response(response_body % ('<pre>%s</pre>' % escape(pformat(send))))
@@ -63,7 +64,7 @@ def werkzeug_multi_dict_conv(md):
         if only one value or a list if multiple values
     '''
     retval = {}
-    for key, value in md.to_dict(flat=False).iteritems():
+    for key, value in six.iteritems(md.to_dict(flat=False)):
         if len(value) == 1:
             retval[key] = value[0]
         else:
@@ -79,7 +80,7 @@ def registry_has_object(to_check):
     # http://trac.pythonpaste.org/pythonpaste/ticket/408
     try:
         return bool(to_check._object_stack())
-    except AttributeError, e:
+    except AttributeError as e:
         if "'thread._local' object has no attribute 'objects'" != str(e):
             raise
         return False
@@ -91,7 +92,7 @@ def exception_context_filter(data):
     for key in data.keys():
         value = data[key]
         # Does this value match any of the filter patterns?
-        if filter(lambda pattern: fnmatch.fnmatch(key, pattern), filters):
+        if [pattern for pattern in filters if fnmatch.fnmatch(key, pattern)]:
             retval[key] = '<removed>'
         else:
             retval[key] = value
@@ -149,7 +150,7 @@ def sess_regenerate_id():
     #rg.session.regenerate_id()
     try:
         rg.session.regenerate_id()
-    except AttributeError, e:
+    except AttributeError as e:
         if 'regenerate_id' not in str(e):
             raise
         is_new = rg.session.is_new

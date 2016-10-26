@@ -3,6 +3,7 @@ import sys
 
 from blazeutils.strings import reindent as bureindent
 from blazeutils.rst import rst2html
+import six
 from webhelpers.html import HTML
 
 from blazeweb.globals import ag, settings
@@ -50,7 +51,7 @@ class Content(object):
         return c
 
     def update_nonprimary_from_content(self, c):
-        for type, clist in c.data.iteritems():
+        for type, clist in six.iteritems(c.data):
             if type != self.primary_type:
                 self.data.setdefault(type, [])
                 self.data[type].extend(clist)

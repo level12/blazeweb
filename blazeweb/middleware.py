@@ -52,7 +52,7 @@ class HttpRequestLogger(object):
             should_log = True
             if self.pi_filter is not None and self.pi_filter not in environ['PATH_INFO']:
                 should_log = False
-            if self.rm_filter is not None and environ['REQUEST_METHOD'].lower() not in map(lambda x: x.lower(), tolist(self.rm_filter)):
+            if self.rm_filter is not None and environ['REQUEST_METHOD'].lower() not in [x.lower() for x in tolist(self.rm_filter)]:
                 should_log = False
             if should_log:
                 wsgi_input = self.replace_wsgi_input(environ)

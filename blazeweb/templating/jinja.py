@@ -1,4 +1,5 @@
 from __future__ import with_statement
+from __future__ import absolute_import
 import logging
 from os import path
 
@@ -9,6 +10,7 @@ from jinja2.utils import Markup
 from blazeweb.globals import settings
 from blazeweb.hierarchy import FileNotFound, findfile, split_endpoint
 import blazeweb.templating as templating
+import six
 
 log = logging.getLogger(__name__)
 
@@ -46,7 +48,7 @@ class Template(j2Template):
         # blocks, otherwise our include functions will not calculate the current
         # template's name correctly when inside a block that is replacing the
         # the block of a parent template
-        for block_name, block_root_render_func in namespace['blocks'].iteritems():
+        for block_name, block_root_render_func in six.iteritems(namespace['blocks']):
             namespace['blocks'][block_name] = _RootRenderWrapper(namespace['name'], block_root_render_func)
 
         return j2Template._from_namespace(environment, namespace, globals)

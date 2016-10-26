@@ -30,7 +30,7 @@ class TestContent(object):
           # with this test
           c = getcontent('getcontent.html', __endpoint='foo')
           assert False
-       except TypeError, e:
+       except TypeError as e:
           assert "getcontent() got multiple values for keyword argument '__endpoint'" == str(e)
 
        c = getcontent('getcontent.html', endpoint='foo')

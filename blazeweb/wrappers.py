@@ -1,3 +1,4 @@
+import six
 import werkzeug as wz
 
 from blazeutils.jsonh import jsonmod, assert_have_json
@@ -47,7 +48,7 @@ class Request(BaseRequest):
         """
         assert_have_json()
         if self.mimetype.endswith(('+json', '/json')):
-            return jsonmod.loads(unicode(self.data, self.charset))
+            return jsonmod.loads(six.text_type(self.data, self.charset))
 
 class Response(wz.Response):
     """

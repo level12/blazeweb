@@ -80,7 +80,7 @@ class TestEmail(unittest.TestCase):
 
         try:
             message = email.message()
-        except BadHeaderError, e:
+        except BadHeaderError as e:
             assert 'Header values can\'t contain newlines' in str(e)
         else:
             self.fail("header injection allowed in subject")
@@ -90,7 +90,7 @@ class TestEmail(unittest.TestCase):
 
         try:
             message = email.message()
-        except BadHeaderError, e:
+        except BadHeaderError as e:
             assert 'Header values can\'t contain newlines' in str(e)
         else:
             self.fail("header injection allowed in from")
@@ -100,7 +100,7 @@ class TestEmail(unittest.TestCase):
 
         try:
             message = email.message()
-        except BadHeaderError, e:
+        except BadHeaderError as e:
             assert 'Header values can\'t contain newlines' in str(e)
         else:
             self.fail("header injection allowed in reply_to")
@@ -110,7 +110,7 @@ class TestEmail(unittest.TestCase):
 
         try:
             message = email.message()
-        except BadHeaderError, e:
+        except BadHeaderError as e:
             assert 'Header values can\'t contain newlines' in str(e)
         else:
             self.fail("header injection allowed in custom header")
@@ -476,7 +476,7 @@ Bcc: </p>
 
     def test_email_log_entry(self, mm_tracker=None):
         lh = logging_handler('blazeweb.mail')
-        to = ['test%s@example.com' % n for n in xrange(0,12)]
+        to = ['test%s@example.com' % n for n in range(0,12)]
         send_mail('test text email', 'email content', to)
         assert 'Email sent: "test text email" to "test0@example.com;test1@example.com;test2@example.com;test3@example.com;test4@example.com;test5@example.com;test6@example.com;test7@example.com;test8@example.com;test9@example.com;test10@example.com;t"' in lh.messages['info'][0], lh.messages['info']
 
@@ -545,7 +545,7 @@ Bcc: </p>
         try:
             message = email.message()
             self.fail('expected SettingsError since from was not set')
-        except SettingsError, e:
+        except SettingsError as e:
             assert 'email must have a from address' in str(e)
 
     def test_adminfrom(self):

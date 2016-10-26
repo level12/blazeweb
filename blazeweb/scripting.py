@@ -1,3 +1,4 @@
+from __future__ import print_function
 import optparse
 import os
 from os import path
@@ -79,8 +80,8 @@ class ScriptingHelperBase(object):
             runner = command(command_name)
             self.modify_runner(runner, options)
             exit_code = runner.run(args)
-        except pscmd.BadCommand, e:
-            print e.message
+        except pscmd.BadCommand as e:
+            print(e.message)
             exit_code = e.exit_code
         sys.exit(exit_code)
 
@@ -139,12 +140,12 @@ def load_current_app(app_name=None, profile=None):
         raise UsageError('Could not determine the current application name.  Is the CWD a blazeweb application?')
     try:
         pkg_pymod = __import__(app_name , globals(), locals(), [''])
-    except ImportError, e:
+    except ImportError as e:
         raise UsageError('Could not import name "%s".  Is the CWD a blazeweb application?' % app_name)
 
     try:
         app_pymod = __import__('%s.application' % app_name , globals(), locals(), [''])
-    except ImportError, e:
+    except ImportError as e:
         raise_unexpected_import_error('%s.application' % app_name, e)
         raise UsageError('Could not import name "%s.application".  Is the CWD a pysmvt application?' % app_name)
 

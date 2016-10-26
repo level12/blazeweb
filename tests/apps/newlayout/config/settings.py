@@ -1,3 +1,4 @@
+from __future__ import print_function
 from os import path
 
 from nlsupporting.config.settings import Default as nlDefault
@@ -63,4 +64,4 @@ class ForStaticFileTesting(Default):
 class AttributeErrorInSettings(Default):
     def init(self):
         Default.init(self)
-        print path.notthere
+        print(path.notthere)

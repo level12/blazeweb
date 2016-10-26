@@ -1,3 +1,4 @@
+from __future__ import print_function
 from os import path
 
 from blazeweb.config import DefaultSettings
@@ -55,13 +56,13 @@ class Test(Default):
     def init(self):
         Default.init(self)
 
-        print 'Test settings'
+        print('Test settings')
 
 class Test2(Default):
     def init(self):
         Default.init(self)
 
-        print 'Test2 settings'
+        print('Test2 settings')
 
 class TestStorageDir(Default):
     def init(self):

@@ -1,5 +1,6 @@
 from StringIO import StringIO
 
+import six
 from webtest import TestApp
 
 from blazeutils.jsonh import jsonmod
@@ -90,4 +91,4 @@ class TestRequest(object):
       req = Request.from_values(str_data, content_type='applciation/json')
       data = req.json
       assert data['a'] == u'\u2153', data['a']
-      assert isinstance(data['a'], unicode)
+      assert isinstance(data['a'], six.text_type)
