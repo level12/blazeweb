@@ -27,6 +27,14 @@ class FileNotFound(Exception):
 
 default_import_level = -1 if six.PY2 else 0
 
+
+def _is_expected_import_error(error_msg, import_string):
+    if not error_msg.startswith('No module named'):
+        return False
+    no_module_found = error_msg.replace('No module named ', '').replace("'", '')
+    return import_string.startswith(no_module_found)
+
+
 class HierarchyManager(object):
 
     def __init__(self):
@@ -243,6 +251,11 @@ def visitmods(dotpath, reverse=False, call_with_mod=None, reloadmod=True):
             if call_with_mod:
                 call_with_mod(module, app=app, pname=pname, package=package)
         except ImportError as e:
+            # in python 3, any attempt at importing a non-existent module within a component
+            #   will end up here, so we need to check the message before we treat it as an
+            #   unexpected import error
+            if six.PY3 and _is_expected_import_error(str(e), impstr):
+                continue
             raise_unexpected_import_error(impstr, e)
 
 def gatherobjs(dotpath, filter, reloadmod=False):
@@ -381,11 +394,14 @@ class FinderBase(object):
                 ag.hierarchy_import_cache[self.cachekey] = dlocation
                 return foundmod
         except ImportError as e:
+            # in python 3, any attempt at importing a non-existent module within a component
+            #   will end up here, so we need to check the message before we treat it as an
+            #   unexpected import error
             msg = str(e)
-            if 'No module named ' in msg:
-                not_found_mod = msg.replace('No module named ', '').replace("'", '')
-                if dlocation.endswith(not_found_mod):
-                    return
+            if six.PY3 and _is_expected_import_error(msg, dlocation):
+                return
+            if 'No module named ' in msg and dlocation.endswith(msg.replace('No module named ', '')):
+                return
             if dlocation in str(e):
                 return
             raise
