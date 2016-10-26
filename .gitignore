@@ -1,0 +1,14 @@
+MANIFEST
+*/.egg-info
+*.egg-info
+*.pyc
+*.pyco
+docs/_build
+/writeable/tmp/.*
+
+*/writeable/logs/*.log
+tests/test-output*
+.coverage
+coverage.xml
+nosetests.xml
+*komodo*
