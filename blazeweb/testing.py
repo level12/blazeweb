@@ -5,7 +5,7 @@ import smtplib
 from decorator import decorator
 from nose.tools import make_decorator
 from blazeutils.datastructures import BlankObject
-from webhelpers.html import tools
+from webhelpers2.html import tools
 from werkzeug import Client as WClient, BaseRequest, BaseResponse, \
     cached_property, create_environ, run_wsgi_app
 

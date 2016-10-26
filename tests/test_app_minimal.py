@@ -1,9 +1,10 @@
+from __future__ import absolute_import
 from webtest import TestApp
 
 from blazeweb.globals import settings
 
 # make sure the path gets appended so we can import by name
-import config
+import tests.config
 
 # application imports
 from minimal2.application import make_wsgi

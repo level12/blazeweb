@@ -26,7 +26,7 @@ class EscapeUnicode(six.text_type, EscapeData):
 class SafeData(object):
     pass
 
-class SafeString(str, SafeData):
+class SafeString(six.binary_type, SafeData):
     """
     A string subclass that has been specifically marked as "safe" (requires no
     further escaping) for HTML output purposes.
@@ -51,12 +51,12 @@ class SafeString(str, SafeData):
         """
         method = kwargs.pop('method')
         data = method(self, *args, **kwargs)
-        if isinstance(data, str):
+        if isinstance(data, six.binary_type):
             return SafeString(data)
         else:
             return SafeUnicode(data)
 
-    decode = curry(_proxy_method, method = str.decode)
+    decode = curry(_proxy_method, method = six.binary_type.decode)
 
 class SafeUnicode(six.text_type, SafeData):
     """

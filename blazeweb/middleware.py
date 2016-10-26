@@ -1,6 +1,6 @@
 import logging
 from os import path
-from StringIO import StringIO
+from io import StringIO
 from tempfile import TemporaryFile
 import time
 

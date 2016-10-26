@@ -5,7 +5,7 @@ from webtest import TestApp
 from blazeweb.globals import user, ag
 from blazeweb.views import asview, forward
 
-import config
+import tests.config
 from minimal2.application import make_wsgi
 
 class TestAltStack(object):

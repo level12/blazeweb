@@ -10,7 +10,7 @@ from blazeweb.hierarchy import hm, findview, HierarchyImportError, findfile, \
     FileNotFound, findobj, listcomponents, list_component_mappings, visitmods, \
     gatherobjs, findcontent
 
-import config
+import tests.config
 from newlayout.application import make_wsgi
 from blazewebtestapp.applications import make_wsgi as pta_make_wsgi
 from minimal2.application import make_wsgi as m2_make_wsgi

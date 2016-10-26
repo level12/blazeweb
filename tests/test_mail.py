@@ -6,7 +6,7 @@ from blazeutils.helpers import diff
 from blazeutils.testing import logging_handler
 
 from blazeweb.globals import settings
-import blazeweb.config
+import tests.config
 from blazeweb.mail import EmailMessage, BadHeaderError, EmailMultiAlternatives, \
     MarkdownMessage, HtmlMessage, send_mail, _mail_programmers, _mail_admins
 from blazeweb.exceptions import SettingsError

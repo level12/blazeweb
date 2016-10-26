@@ -7,7 +7,7 @@ from blazeweb.globals import settings, user
 from blazeweb.exceptions import ProgrammingError
 from blazeweb.hierarchy import HierarchyImportError
 
-import config
+import tests.config
 from blazewebtestapp.applications import make_wsgi
 from blazewebtestapp2.applications import make_wsgi as make_wsgi2
 

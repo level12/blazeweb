@@ -1,6 +1,6 @@
 import unittest
 
-import config
+import tests.config
 from blazewebtestapp.applications import make_wsgi
 from werkzeug import Client, BaseResponse
 from blazeweb.testing import TestApp

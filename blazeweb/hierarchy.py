@@ -25,6 +25,8 @@ class FileNotFound(Exception):
         raised when a file is not found in findfile()
     """
 
+default_import_level = -1 if six.PY2 else 0
+
 class HierarchyManager(object):
 
     def __init__(self):
@@ -39,7 +41,7 @@ class HierarchyManager(object):
         six.moves.builtins.__import__ = self._builtin_import
         log.debug('HierarchyManager restored __builtin__.__import__')
 
-    def builtin_import(self, name, globals={}, locals={}, fromlist=[], level=-1):
+    def builtin_import(self, name, globals={}, locals={}, fromlist=[], level=default_import_level):
         mod = self._builtin_import(name, globals, locals, fromlist, level)
         # for module reloading purposes in visitmods(), we need to keep track
         # of what application imported a module.  But we only need to do that
@@ -51,7 +53,7 @@ class HierarchyManager(object):
                 mod._blazeweb_hierarchy_last_imported_by = id(ag.app)
         return mod
 
-    def blazeweb_import(self, name, globals={}, locals={}, fromlist=[], level=-1):
+    def blazeweb_import(self, name, globals={}, locals={}, fromlist=[], level=default_import_level):
         instack_collection = ImportOverrideHelper.doimport(name, fromlist)
         if instack_collection:
             return instack_collection

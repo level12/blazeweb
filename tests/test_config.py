@@ -4,7 +4,7 @@ from blazeweb.globals import settings
 from blazeweb.config import QuickSettings, EnabledSettings
 from blazeweb.hierarchy import listapps
 from nose.tools import eq_
-import config
+import tests.config
 from minimal2.application import make_wsgi as make_wsgi_min2
 from blazewebtestapp.applications import make_wsgi
 

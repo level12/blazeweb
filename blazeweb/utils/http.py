@@ -1,5 +1,5 @@
 import urllib
-from email.Utils import formatdate
+from email.utils import formatdate
 
 import six
 

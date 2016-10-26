@@ -6,12 +6,12 @@ import socket
 import time
 import random
 import re
-from email import Charset, Encoders
-from email.MIMEText import MIMEText
-from email.MIMEMultipart import MIMEMultipart
-from email.MIMEBase import MIMEBase
-from email.Header import Header
-from email.Utils import formatdate, parseaddr, formataddr
+from email import encoders, charset
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email.header import Header
+from email.utils import formatdate, parseaddr, formataddr
 
 from html2text import html2text
 from markdown2 import markdown
@@ -26,7 +26,7 @@ log = logging.getLogger(__name__)
 
 # Don't BASE64-encode UTF-8 messages so that we avoid unwanted attention from
 # some spam filters.
-Charset.add_charset('utf-8', Charset.SHORTEST, Charset.QP, 'utf-8')
+charset.add_charset('utf-8', charset.SHORTEST, charset.QP, 'utf-8')
 
 # Default MIME type to use on attachments (if it is not explicitly given
 # and cannot be guessed).
@@ -389,7 +389,7 @@ class EmailMessage(object):
             # Encode non-text attachments with base64.
             attachment = MIMEBase(basetype, subtype)
             attachment.set_payload(content)
-            Encoders.encode_base64(attachment)
+            encoders.encode_base64(attachment)
         if filename:
             attachment.add_header('Content-Disposition', 'attachment',
                                   filename=filename)

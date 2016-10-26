@@ -1,4 +1,4 @@
-import config
+from tests import config
 import unittest
 
 from nose.tools import eq_

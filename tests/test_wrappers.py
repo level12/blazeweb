@@ -1,4 +1,4 @@
-from StringIO import StringIO
+from io import StringIO
 
 import six
 from webtest import TestApp

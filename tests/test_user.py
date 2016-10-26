@@ -4,7 +4,7 @@ from werkzeug import Client, BaseResponse
 
 from blazeweb.users import User, UserProxy
 
-import config
+import tests.config
 from blazewebtestapp.applications import make_wsgi
 
 

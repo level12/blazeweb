@@ -1,5 +1,4 @@
 import logging
-from new import classobj
 
 from decorator import decorator
 import formencode
@@ -677,7 +676,7 @@ def asview(rule=None, **options):
         # create the class that will handle this function if it doesn't already
         # exist in the cache
         if cachekey not in CLASS_CACHE:
-            fvh = classobj(fname, (_AsViewHandler, ), {})
+            fvh = type(fname, (_AsViewHandler, ), {})
             fvh.__module__ = f.__module__
 
             # make the getargs available

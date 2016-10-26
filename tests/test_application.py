@@ -6,7 +6,7 @@ from werkzeug import run_wsgi_app
 
 from blazeweb.globals import settings, ag, rg
 
-import config
+import tests.config
 from newlayout.application import make_wsgi
 from minimal2.application import make_wsgi as m2_make_wsgi
 

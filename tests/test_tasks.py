@@ -2,7 +2,7 @@ from nose.tools import eq_
 from blazeweb.tasks import run_tasks
 
 # create the wsgi application that will be used for testing
-import config
+import tests.config
 from blazewebtestapp.applications import make_wsgi
 
 class TestTasks(object):

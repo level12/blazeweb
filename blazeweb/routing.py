@@ -1,4 +1,4 @@
-from urlparse import urlparse
+from six.moves.urllib.parse import urlparse
 
 from blazeweb.globals import settings, rg
 from blazeweb.utils import registry_has_object

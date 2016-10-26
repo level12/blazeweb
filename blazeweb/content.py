@@ -4,7 +4,7 @@ import sys
 from blazeutils.strings import reindent as bureindent
 from blazeutils.rst import rst2html
 import six
-from webhelpers.html import HTML
+from webhelpers2.html import HTML
 
 from blazeweb.globals import ag, settings
 from blazeweb.hierarchy import findcontent, findfile, split_endpoint
