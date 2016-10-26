@@ -383,8 +383,6 @@ class FinderBase(object):
         except ImportError as e:
             msg = str(e)
             if 'No module named ' in msg:
-                return
-
                 not_found_mod = msg.replace('No module named ', '').replace("'", '')
                 if dlocation.endswith(not_found_mod):
                     return

@@ -3,6 +3,7 @@ MANIFEST
 *.egg-info
 *.pyc
 *.pyco
+*.py~
 docs/_build
 /writeable/tmp/.*
 

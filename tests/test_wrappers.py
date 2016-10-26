@@ -1,4 +1,4 @@
-from io import StringIO
+from io import BytesIO
 
 import six
 from webtest import TestApp
@@ -19,7 +19,7 @@ class TestRequest(object):
     def test_confirm_muttable(self):
         req = Request.from_values({
              'foo': 'bar',
-             'txtfile': (StringIO('my file contents'), 'test.txt'),
+             'txtfile': (BytesIO('my file contents'), 'test.txt'),
         },
         path='/foo?val1=1&val2=2')
         assert req.path == '/foo'
@@ -37,7 +37,7 @@ class TestRequest(object):
         assert len(req.files) == 0
         req.replace_http_args(data={
              'foo': 'bar',
-             'txtfile': (StringIO('my file contents'), 'test.txt'),
+             'txtfile': (BytesIO('my file contents'), 'test.txt'),
         },
         path='/foo?val1=1&val2=2')
         assert rg.request is req
