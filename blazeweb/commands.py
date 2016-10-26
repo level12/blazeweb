@@ -4,6 +4,7 @@ import os
 from os import path
 
 from blazeutils.helpers import pprint
+import six
 from werkzeug.serving import run_simple
 from werkzeug import Client, BaseResponse
 from werkzeug.script import make_shell
@@ -51,15 +52,23 @@ class ProjectCommand(pscmd.Command):
         vars = {'project': projname,
                 'package': projname,
                 }
-        run_template(
-            self.options.interactive,
-            self.options.verbose,
-            self.options.overwrite,
-            vars,
-            output_dir,
-            self.options.template,
-            'blazeweb_project_template'
-        )
+        try:
+            run_template(
+                self.options.interactive,
+                self.options.verbose,
+                self.options.overwrite,
+                vars,
+                output_dir,
+                self.options.template,
+                'blazeweb_project_template'
+            )
+        except TypeError as e:
+            if not six.PY2 and 'bytes' in str(e):
+                print('ERROR: project command unavailable for python 3 due to '
+                      'problem in paste library')
+                return
+            raise
+
 
 ###
 ### Now Application Specific Commands
@@ -164,6 +173,8 @@ class TestRunCommand(pscmd.Command):
 
             if options.show_body and not options.silent:
                 for respstr in resp.response:
+                    if isinstance(respstr, six.binary_type):
+                        respstr = respstr.decode()
                     print(respstr)
 
 class TasksCommand(pscmd.Command):

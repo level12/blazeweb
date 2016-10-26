@@ -41,7 +41,7 @@ class TestMinimal1(object):
 
     def test_url_args_overwrite_get_args(self):
         r = self.ta.get('/ap/2?foo=1')
-        assert r.body == '2', r.body
+        assert r.body == b'2', r.body
 
     def test_list(self):
         r = self.ta.get('/tolist?foo=1&foo=2')
