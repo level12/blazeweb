@@ -7,12 +7,6 @@ except ImportError:
     use_setuptools()
     from setuptools import setup, find_packages
 
-# pip install -e .[develop]
-develop_requires = [
-    'WebTest',
-    'ScriptTest',
-    'docutils',
-]
 
 cdir = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(cdir, 'readme.rst')).read()
@@ -29,7 +23,6 @@ required_packages = [
     'jinja2>=2.5',
     'markdown2>=1.0.1',
     'minimock',
-    'nose>=0.11',
     'Paste>=1.7',
     'PasteScript>=1.7',
     'WebHelpers>=1.0',
@@ -55,16 +48,15 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',
-        'Programming Language :: Python :: 2.5',
-        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
         'Topic :: Internet :: WWW/HTTP'
     ],
     license='BSD',
     packages=find_packages(exclude=['ez_setup']),
     include_package_data=True,
     install_requires=required_packages,
-    extras_require={'develop': develop_requires},
     entry_points="""
     [console_scripts]
     bw = blazeweb.scripting:blazeweb_entry

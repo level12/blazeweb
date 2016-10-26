@@ -1,0 +1,6 @@
+coverage.xml
+nosetests.xml
+*komodo*
+.tox/
+BlazeWeb-*
+tests/test-output
