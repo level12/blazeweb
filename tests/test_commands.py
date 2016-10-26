@@ -5,7 +5,8 @@ from nose.tools import eq_
 from blazeutils.config import QuickSettings
 from blazeutils.helpers import tolist
 
-from scripting_helpers import env, script_test_path, here, is_win
+from tests.scripting_helpers import env, script_test_path, here, is_win
+
 
 def run_application(testapp, *args, **kw):
     cwd = os.path.join(here, 'apps', testapp)

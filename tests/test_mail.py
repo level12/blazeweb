@@ -61,8 +61,8 @@ class TestEmail(unittest.TestCase):
 
         assert message['Subject'].encode() == 'Subject'
         assert message.get_payload() == 'Content'
-        assert message['From'] == 'from@example.com'
-        assert message['To'] == 'to@example.com'
+        assert message['From'] == b'from@example.com'
+        assert message['To'] == b'to@example.com'
         assert email.recipients() == ['to@example.com']
 
     def test_multi_recip(self):
@@ -71,8 +71,8 @@ class TestEmail(unittest.TestCase):
 
         assert message['Subject'].encode() == 'Subject'
         assert message.get_payload() == 'Content'
-        assert message['From'] == 'from@example.com'
-        assert message['To'] == 'to@example.com, other@example.com'
+        assert message['From'] == b'from@example.com'
+        assert message['To'] == b'to@example.com, other@example.com'
         assert email.recipients() == ['to@example.com', 'other@example.com']
 
     def test_header_inj_sub(self):
@@ -128,8 +128,8 @@ class TestEmail(unittest.TestCase):
 
         assert message['Subject'].encode() == 'Subject'
         assert message.get_payload() == 'Content'
-        assert message['From'] == 'root@localhost'
-        assert message['To'] == 'to@example.com'
+        assert message['From'] == b'root@localhost'
+        assert message['To'] == b'to@example.com'
 
     def test_extra_header(self):
         email = EmailMessage('Subject', 'Content', to=['to@example.com'], headers = {'Reply-To': 'replyto@example.com'})
@@ -137,9 +137,9 @@ class TestEmail(unittest.TestCase):
 
         assert message['Subject'].encode() == 'Subject'
         assert message.get_payload() == 'Content'
-        assert message['From'] == 'root@localhost'
-        assert message['To'] == 'to@example.com'
-        assert message['Reply-To'] == 'replyto@example.com'
+        assert message['From'] == b'root@localhost'
+        assert message['To'] == b'to@example.com'
+        assert message['Reply-To'] == b'replyto@example.com'
 
     def test_reply_to(self):
         email = EmailMessage('Subject', 'Content', to=['to@example.com'], reply_to='replyto@example.com')
@@ -147,9 +147,9 @@ class TestEmail(unittest.TestCase):
 
         assert message['Subject'].encode() == 'Subject'
         assert message.get_payload() == 'Content'
-        assert message['From'] == 'root@localhost'
-        assert message['To'] == 'to@example.com'
-        assert message['Reply-To'] == 'replyto@example.com'
+        assert message['From'] == b'root@localhost'
+        assert message['To'] == b'to@example.com'
+        assert message['Reply-To'] == b'replyto@example.com'
 
     def test_reply_to_default(self):
         settings.emails.reply_to = 'replyto@example.com'
@@ -158,9 +158,9 @@ class TestEmail(unittest.TestCase):
 
         assert message['Subject'].encode() == 'Subject'
         assert message.get_payload() == 'Content'
-        assert message['From'] == 'root@localhost'
-        assert message['To'] == 'to@example.com'
-        assert message['Reply-To'] == 'replyto@example.com'
+        assert message['From'] == b'root@localhost'
+        assert message['To'] == b'to@example.com'
+        assert message['Reply-To'] == b'replyto@example.com'
 
     def test_bcc(self):
         email = EmailMessage('Subject', 'Content', to=['to@example.com'], bcc=['bcc1@example.com', 'bcc2@example.com'])
@@ -168,8 +168,8 @@ class TestEmail(unittest.TestCase):
 
         assert message['Subject'].encode() == 'Subject'
         assert message.get_payload() == 'Content'
-        assert message['From'] == 'root@localhost'
-        assert message['To'] == 'to@example.com'
+        assert message['From'] == b'root@localhost'
+        assert message['To'] == b'to@example.com'
         assert email.recipients() == ['to@example.com', 'bcc1@example.com', 'bcc2@example.com']
 
     def test_bcc_defaults(self):
@@ -179,8 +179,8 @@ class TestEmail(unittest.TestCase):
 
         assert message['Subject'].encode() == 'Subject'
         assert message.get_payload() == 'Content'
-        assert message['From'] == 'root@localhost'
-        assert message['To'] == 'to@example.com'
+        assert message['From'] == b'root@localhost'
+        assert message['To'] == b'to@example.com'
         assert email.recipients() == ['to@example.com', 'bcc1@example.com', 'bcc2@example.com']
 
         email = EmailMessage('Subject', 'Content', to=['to@example.com'], bcc=['bcc3@example.com'])
@@ -188,8 +188,8 @@ class TestEmail(unittest.TestCase):
 
         assert message['Subject'].encode() == 'Subject'
         assert message.get_payload() == 'Content'
-        assert message['From'] == 'root@localhost'
-        assert message['To'] == 'to@example.com'
+        assert message['From'] == b'root@localhost'
+        assert message['To'] == b'to@example.com'
         assert email.recipients() == ['to@example.com', 'bcc3@example.com']
 
     def test_cc(self):
@@ -198,9 +198,9 @@ class TestEmail(unittest.TestCase):
 
         assert message['Subject'].encode() == 'Subject'
         assert message.get_payload() == 'Content'
-        assert message['From'] == 'root@localhost'
-        assert message['To'] == 'to@example.com'
-        assert message['Cc'] == 'cc1@example.com, cc2@example.com'
+        assert message['From'] == b'root@localhost'
+        assert message['To'] == b'to@example.com'
+        assert message['Cc'] == b'cc1@example.com, cc2@example.com'
         assert email.recipients() == ['to@example.com', 'cc1@example.com', 'cc2@example.com']
 
     def test_cc_defaults(self):
@@ -210,9 +210,9 @@ class TestEmail(unittest.TestCase):
 
         assert message['Subject'].encode() == 'Subject'
         assert message.get_payload() == 'Content'
-        assert message['From'] == 'root@localhost'
-        assert message['To'] == 'to@example.com'
-        assert message['Cc'] == 'cc1@example.com, cc2@example.com'
+        assert message['From'] == b'root@localhost'
+        assert message['To'] == b'to@example.com'
+        assert message['Cc'] == b'cc1@example.com, cc2@example.com'
         assert email.recipients() == ['to@example.com', 'cc1@example.com', 'cc2@example.com']
 
         email = EmailMessage('Subject', 'Content', to=['to@example.com'], cc=['cc3@example.com'])
@@ -220,9 +220,9 @@ class TestEmail(unittest.TestCase):
 
         assert message['Subject'].encode() == 'Subject'
         assert message.get_payload() == 'Content'
-        assert message['From'] == 'root@localhost'
-        assert message['To'] == 'to@example.com'
-        assert message['Cc'] == 'cc3@example.com'
+        assert message['From'] == b'root@localhost'
+        assert message['To'] == b'to@example.com'
+        assert message['Cc'] == b'cc3@example.com'
         assert email.recipients() == ['to@example.com', 'cc3@example.com']
 
     def test_bcc_always(self):
@@ -233,8 +233,8 @@ class TestEmail(unittest.TestCase):
         message = email.message()
         assert message['Subject'].encode() == 'Subject'
         assert message.get_payload() == 'Content'
-        assert message['From'] == 'root@localhost'
-        assert message['To'] == 'to@example.com'
+        assert message['From'] == b'root@localhost'
+        assert message['To'] == b'to@example.com'
 
         email = EmailMessage('Subject', 'Content', to=['to@example.com'], bcc=['bcc3@example.com'])
 
@@ -242,8 +242,8 @@ class TestEmail(unittest.TestCase):
         message = email.message()
         assert message['Subject'].encode() == 'Subject'
         assert message.get_payload() == 'Content'
-        assert message['From'] == 'root@localhost'
-        assert message['To'] == 'to@example.com'
+        assert message['From'] == b'root@localhost'
+        assert message['To'] == b'to@example.com'
 
 
     def test_cc_always(self):
@@ -254,9 +254,9 @@ class TestEmail(unittest.TestCase):
         message = email.message()
         assert message['Subject'].encode() == 'Subject'
         assert message.get_payload() == 'Content'
-        assert message['From'] == 'root@localhost'
-        assert message['To'] == 'to@example.com'
-        assert message['Cc'] == 'cc1@example.com, cc2@example.com'
+        assert message['From'] == b'root@localhost'
+        assert message['To'] == b'to@example.com'
+        assert message['Cc'] == b'cc1@example.com, cc2@example.com'
 
         email = EmailMessage('Subject', 'Content', to=['to@example.com'], cc=['cc3@example.com'])
 
@@ -264,9 +264,9 @@ class TestEmail(unittest.TestCase):
         message = email.message()
         assert message['Subject'].encode() == 'Subject'
         assert message.get_payload() == 'Content'
-        assert message['From'] == 'root@localhost'
-        assert message['To'] == 'to@example.com'
-        assert message['Cc'] == 'cc3@example.com, cc1@example.com, cc2@example.com'
+        assert message['From'] == b'root@localhost'
+        assert message['To'] == b'to@example.com'
+        assert message['Cc'] == b'cc3@example.com, cc1@example.com, cc2@example.com'
 
     def test_overrides(self, mm_tracker=None):
         """Test overrides"""
@@ -276,9 +276,9 @@ class TestEmail(unittest.TestCase):
         message = email.message()
 
         assert message['Subject'].encode() == 'Subject'
-        assert message['From'] == 'from@example.com'
-        assert message['To'] == 'override@example.com'
-        assert message['Cc'] == None
+        assert message['From'] == b'from@example.com'
+        assert message['To'] == b'override@example.com'
+        assert message['Cc'] is None
         assert email.recipients() == ['override@example.com']
 
         msg_body = '%s\n\nTo: to@example.com  =\n\nCc: cc@example.com  =\n\nBcc: bcc@example.com\n\n%s\n\nContent' % ('-'*70, '-'*70)
@@ -296,9 +296,9 @@ class TestEmail(unittest.TestCase):
 
         message = email.message()
         assert message['Subject'].encode() == 'Subject'
-        assert message['From'] == 'from@example.com'
-        assert message['To'] == 'override@example.com'
-        assert message['Cc'] == None
+        assert message['From'] == b'from@example.com'
+        assert message['To'] == b'override@example.com'
+        assert message['Cc'] is None
 
         msg_body = '%s\n\nTo: to@example.com  =\n\nCc: cc@example.com  =\n\nBcc: bcc@example.com\n\n%s\n\nContent' % ('-'*70, '-'*70)
         assert msg_body in message.as_string()
@@ -551,22 +551,22 @@ Bcc: </p>
     def test_adminfrom(self):
         email = _mail_admins('admins email subject', '**email body**', 'markdown')
         msg = email.message()
-        assert msg['From'] == 'root@localhost'
+        assert msg['From'] == b'root@localhost'
 
         settings.emails.from_server = 'server@localhost'
         email = _mail_admins('admins email subject', '**email body**', 'markdown')
         msg = email.message()
-        assert msg['From'] == 'server@localhost'
+        assert msg['From'] == b'server@localhost'
 
     def test_programmersfrom(self):
         email = _mail_programmers('programmers email subject', '**email body**', 'markdown')
         msg = email.message()
-        assert msg['From'] == 'root@localhost'
+        assert msg['From'] == b'root@localhost'
 
         settings.emails.from_server = 'server@localhost'
         email = _mail_programmers('programmers email subject', '**email body**', 'markdown')
         msg = email.message()
-        assert msg['From'] == 'server@localhost'
+        assert msg['From'] == b'server@localhost'
 
 if __name__ == '__main__':
     unittest.main()

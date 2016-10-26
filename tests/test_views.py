@@ -291,11 +291,11 @@ class TestViews(unittest.TestCase):
     def test_static(self):
         r = self.client.get('/static/app/helloworld.html')
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(r.data, 'Hello World!')
+        self.assertEqual(r.decoded, 'Hello World!')
 
         r = self.client.get('/static/app/helloworld2.html')
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(r.data.strip(), 'Hellow blazewebtestapp2!')
+        self.assertEqual(r.decoded.strip(), 'Hellow blazewebtestapp2!')
 
     def test_app2(self):
         # app2's test module won't have its settings imported

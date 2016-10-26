@@ -44,7 +44,7 @@ def test_bad_settings_profile():
         app = make_wsgi('AttributeErrorInSettings')
         assert False
     except AttributeError as e:
-        assert "'module' object has no attribute 'notthere'" == str(e), e
+        assert "has no attribute 'notthere'" in str(e), e
 
 def test_environ_hooks():
     tracker = []

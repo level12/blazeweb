@@ -234,7 +234,7 @@ def visitmods(dotpath, reverse=False, call_with_mod=None, reloadmod=True):
                 mod_loaded_by = getattr(sys.modules[impstr], '_blazeweb_hierarchy_last_imported_by', None)
                 current_app_id = id(ag.app)
                 if reloadmod and mod_loaded_by != current_app_id:
-                    module = reload(sys.modules[impstr])
+                    module = six.moves.reload_module(sys.modules[impstr])
                     module._blazeweb_hierarchy_last_imported_by = current_app_id
                 else:
                     module = sys.modules[impstr]
@@ -383,7 +383,9 @@ class FinderBase(object):
         except ImportError as e:
             msg = str(e)
             if 'No module named ' in msg:
-                not_found_mod = msg.replace('No module named ', '')
+                return
+
+                not_found_mod = msg.replace('No module named ', '').replace("'", '')
                 if dlocation.endswith(not_found_mod):
                     return
             if dlocation in str(e):

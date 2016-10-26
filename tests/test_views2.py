@@ -38,7 +38,7 @@ def test_basic_view():
     r = v.process()
 
     assert isinstance(r, Response)
-    eq_(r.data, 'hw')
+    eq_(r.decoded, 'hw')
 
 @inrequest()
 def test_retval_edit():
@@ -52,7 +52,7 @@ def test_retval_edit():
     r = v.process()
 
     assert isinstance(r, Response)
-    eq_(r.data, 'hw')
+    eq_(r.decoded, 'hw')
 
 @inrequest()
 def test_wsgi_app_return():
@@ -80,7 +80,7 @@ def test_non_string_return():
 
     v = TestView({})
     r = v.process()
-    eq_(r.data, '2')
+    eq_(r.decoded, '2')
 
 @inrequest('/foo?bar=baz')
 def test_get_args():
@@ -88,8 +88,8 @@ def test_get_args():
     class TestView(View):
         def default(self, bar):
             return bar
-    r = TestView({'bar':'2'}).process()
-    assert r.data == '2'
+    r = TestView({'bar': '2'}).process()
+    assert r.decoded == '2'
 
     # no args causes 400
     class TestView(View):
@@ -109,7 +109,7 @@ def test_get_args():
         def default(self, bar):
             return bar
     r = TestView({}).process()
-    assert r.data == 'baz'
+    assert r.decoded == 'baz'
 
 @inrequest('/foo?bar=baz&a1=a')
 def test_arg_processor():
@@ -123,12 +123,12 @@ def test_arg_processor():
 
         def default(self, bar, a1):
             eq_(bar, 'baz')
-            return str(a1)
+            return bytes(a1)
     r = TestView({}).process()
-    eq_(r.data, u'a')
+    eq_(r.decoded, 'a')
     # url values take precedence
-    r = TestView({'a1':2}).process()
-    eq_(r.data, '2')
+    r = TestView({'a1': 2}).process()
+    eq_(r.decoded, '2')
 
 @inrequest('/foo?a=1&b=b&d=3&e=foo@bar.com&f[]=6&g[]=hi')
 def test_arg_validation():
@@ -499,36 +499,36 @@ def test_templating():
 
     # test template based on view name
     r = ta.get('/index/index')
-    assert 'app index: 1' == r.body, r
+    assert b'app index: 1' == r.body, r
 
     # choose an alternate template
     r = ta.get('/index/index2.html')
-    assert 'index2: 1' in r.body, r
+    assert b'index2: 1' in r.body, r
     # test a global
-    assert 'curl: http://localhost:80/index/index2.html' in r.body, r
+    assert b'curl: http://localhost:80/index/index2.html' in r.body, r
     # test a filter
-    assert 'markdown: <p><strong>cool</strong></p>' in r.body, r
+    assert b'markdown: <p><strong>cool</strong></p>' in r.body, r
     # test embedded content
-    assert 'content: hello world' in r.body, r
-    assert 'customized content: hello fred' in r.body, r
+    assert b'content: hello world' in r.body, r
+    assert b'customized content: hello fred' in r.body, r
     # test that safe strings work for this filter and that func args work
-    assert 'simplify: some&string' in r.body, r
+    assert b'simplify: some&string' in r.body, r
     # autoescape
-    assert 'autoescape: &amp;' in r.body, r
+    assert b'autoescape: &amp;' in r.body, r
     # autoescape extensions
-    assert 'ae ext: a&b' in r.body, r
+    assert b'ae ext: a&b' in r.body, r
     # url prefix
-    assert 'static url: static/app/statictest.txt' in r.body, r
+    assert b'static url: static/app/statictest.txt' in r.body, r
 
     # autoescape in a text file should be off
     r = ta.get('/index/testing.txt')
-    assert 'autoescape: a&b' in r.body, r
+    assert b'autoescape: a&b' in r.body, r
     # but can be turned on with the extension
-    assert 'ae ext: a&amp;b' in r.body, r
+    assert b'ae ext: a&amp;b' in r.body, r
 
     # test component template default name
     r = ta.get('/news/template')
-    assert 'news index: 1' == r.body, r
+    assert b'news index: 1' == r.body, r
 
 @inrequest('/foo')
 def test_templating_in_request():
@@ -541,7 +541,7 @@ def test_templating_in_request():
             # default
             assert False
     r = TestViews2A({}).process()
-    eq_( r.data.strip(), 'a')
+    eq_(r.decoded.strip(), 'a')
 
     # but it can be overridden
     class TestViews2A(View):
@@ -570,7 +570,7 @@ def test_secure_view():
         def default(self):
             return 'an'
     r = TestView({}, 'test').process()
-    assert r.data == 'an', r.data
+    assert r.decoded == 'an', r.data
 
     user.clear()
     # authentication only
@@ -581,7 +581,7 @@ def test_secure_view():
         def default(self):
             return 'an'
     r = TestView({}, 'test').process()
-    assert r.data == 'an', r.data
+    assert r.decoded == 'an', r.data
 
     user.clear()
     # authentication, but no requires given
@@ -627,7 +627,7 @@ def test_secure_view():
         def default(self):
             return 'ra'
     r = TestView({}, 'test').process()
-    assert r.data == 'ra', r.data
+    assert r.decoded == 'ra', r.data
 
     user.clear()
     # authentication, require all passes, no is_super_user attribute
@@ -639,7 +639,7 @@ def test_secure_view():
         def default(self):
             return 'ra'
     r = TestView({}, 'test').process()
-    assert r.data == 'ra', r.data
+    assert r.decoded == 'ra', r.data
 
     user.clear()
     # authentication, require all fails on one, require_any doesn't matter
@@ -665,7 +665,7 @@ def test_secure_view():
         def default(self):
             return 'su'
     r = TestView({}, 'test').process()
-    assert r.data == 'su', r.data
+    assert r.decoded == 'su', r.data
 
 @inrequest('/json')
 def test_json_handlers():
@@ -677,7 +677,7 @@ def test_json_handlers():
 
     r = Jsonify({}, 'jsonify').process()
     eq_(r.headers['Content-Type'], 'application/json')
-    data = jsonmod.loads(r.data)
+    data = jsonmod.loads(r.decoded)
     assert data['error'] == 0, data
 
     # test user messages
@@ -687,7 +687,7 @@ def test_json_handlers():
             self.render_json({'foo1': 'bar'})
 
     r = Jsonify({}, 'jsonify').process()
-    data = jsonmod.loads(r.data)
+    data = jsonmod.loads(r.decoded)
     assert data['messages'][0]['severity'] == 'notice', data
     assert data['messages'][0]['text'] == 'hi', data
 
@@ -698,7 +698,7 @@ def test_json_handlers():
             self.render_json({'foo1': 'bar'}, add_user_messages=False)
 
     r = Jsonify({}, 'jsonify').process()
-    data = jsonmod.loads(r.data)
+    data = jsonmod.loads(r.decoded)
     assert len(data['messages']) == 0, data
 
     # test jsonify decorator
@@ -709,7 +709,7 @@ def test_json_handlers():
 
     r = Jsonify({}, 'jsonify').process()
     eq_(r.headers['Content-Type'], 'application/json')
-    data = jsonmod.loads(r.data)
+    data = jsonmod.loads(r.decoded)
     assert data['error'] == 0, data
     assert data['data']['foo1'] == 'bar', data
 
@@ -719,7 +719,7 @@ def test_json_handlers():
             self.render_json({'foo1': 'bar'}, extra_context={'foo':'bar'})
 
     r = Jsonify({}, 'jsonify').process()
-    data = jsonmod.loads(r.data)
+    data = jsonmod.loads(r.decoded)
     assert data['foo'] == 'bar', data
 
 def test_request_hijacking():

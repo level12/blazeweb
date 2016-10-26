@@ -50,6 +50,11 @@ class Request(BaseRequest):
         if self.mimetype.endswith(('+json', '/json')):
             return jsonmod.loads(six.text_type(self.data, self.charset))
 
+    @wz.cached_property
+    def decoded(self):
+        return six.text_type(self.data, self.charset)
+
+
 class Response(wz.Response):
     """
     Response Object

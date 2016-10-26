@@ -1,7 +1,7 @@
 from os import path
 from blazeweb.application import WSGIApp
 from blazeweb.middleware import minimal_wsgi_stack
-import settings as settingsmod
+import {{package}}.settings as settingsmod
 from blazeweb.scripting import application_entry
 
 def make_wsgi(profile='Default'):

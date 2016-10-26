@@ -31,7 +31,7 @@ def argprecedence(foo=None):
 
 @asview('/tolist', getargs=('foo'))
 def tolist(foo=None):
-    return str(foo)
+    return ', '.join(foo)
 
 @asview('/wontwork')
 def wontwork(foo):

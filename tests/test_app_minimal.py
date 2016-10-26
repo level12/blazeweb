@@ -45,7 +45,7 @@ class TestMinimal1(object):
 
     def test_list(self):
         r = self.ta.get('/tolist?foo=1&foo=2')
-        r.mustcontain("[u'1', u'2']")
+        r.mustcontain("1, 2")
 
     def test_badargspec(self):
         r = self.ta.get('/wontwork?foo=1', status=400)

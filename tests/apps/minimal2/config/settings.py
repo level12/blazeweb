@@ -20,7 +20,7 @@ class Default(DefaultSettings):
         self.apply_test_settings()
 
     def get_storage_dir(self):
-        return path.join(basedir, '..', '..', 'test-output', app_package)
+        return path.join(basedir, '..', '..', 'test-output', self.app_package)
 
 class Dev(Default):
     def init(self):

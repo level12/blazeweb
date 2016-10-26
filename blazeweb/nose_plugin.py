@@ -6,6 +6,7 @@ the plugin is active.  This helps with test coverage of blazeweb.
 import os
 
 import nose.plugins
+import sys
 from blazeutils import tolist
 
 class InitAppPlugin(nose.plugins.Plugin):
@@ -64,6 +65,9 @@ class InitAppPlugin(nose.plugins.Plugin):
             self.val_debug = getattr(options, self.opt_debug_name)
 
     def begin(self):
+        # Add test apps to import path
+        sys.path.append(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'apps'))
+
         if self.val_disable:
             return
         # import here so we can avoid test coverage issues

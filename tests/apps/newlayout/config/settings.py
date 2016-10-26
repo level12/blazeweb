@@ -29,7 +29,7 @@ class Default(nlDefault):
         self.components.news.bar = 3
 
     def get_storage_dir(self):
-        return path.join(basedir, '..', '..', 'test-output', app_package)
+        return path.join(basedir, '..', '..', 'test-output', self.app_package)
 
     def setup_components(self):
         """

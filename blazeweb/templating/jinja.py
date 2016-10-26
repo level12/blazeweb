@@ -129,7 +129,7 @@ class HierarchyLoader(BaseLoader):
         fpath = self.find_template_path(endpoint)
         if not fpath:
             raise TemplateNotFound(endpoint)
-        with open(fpath) as f:
+        with open(fpath, 'rb') as f:
             contents = f.read().decode(self.encoding)
         old = path.getmtime(fpath)
         return contents, fpath, lambda: path.getmtime(fpath) == old
