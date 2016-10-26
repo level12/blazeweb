@@ -251,10 +251,10 @@ def visitmods(dotpath, reverse=False, call_with_mod=None, reloadmod=True):
             if call_with_mod:
                 call_with_mod(module, app=app, pname=pname, package=package)
         except ImportError as e:
-            # in python 3, any attempt at importing a non-existent module within a component
+            # in python 3+, any attempt at importing a non-existent module within a component
             #   will end up here, so we need to check the message before we treat it as an
             #   unexpected import error
-            if six.PY3 and _is_expected_import_error(str(e), impstr):
+            if not six.PY2 and _is_expected_import_error(str(e), impstr):
                 continue
             raise_unexpected_import_error(impstr, e)
 
@@ -394,11 +394,11 @@ class FinderBase(object):
                 ag.hierarchy_import_cache[self.cachekey] = dlocation
                 return foundmod
         except ImportError as e:
-            # in python 3, any attempt at importing a non-existent module within a component
+            # in python 3+, any attempt at importing a non-existent module within a component
             #   will end up here, so we need to check the message before we treat it as an
             #   unexpected import error
             msg = str(e)
-            if six.PY3 and _is_expected_import_error(msg, dlocation):
+            if not six.PY2 and _is_expected_import_error(msg, dlocation):
                 return
             if 'No module named ' in msg and dlocation.endswith(msg.replace('No module named ', '')):
                 return
@@ -412,7 +412,7 @@ class AppFinder(FinderBase):
     type = 'appstack'
 
     def assign_cachekey(self):
-        self.cachekey = 'aopstack.%s:%s' % (self.location, self.attr)
+        self.cachekey = 'appstack.%s:%s' % (self.location, self.attr)
 
     def search_apps(self):
         for app in listapps():
@@ -430,17 +430,17 @@ class ComponentFinder(FinderBase):
 
     @property
     def exclocation(self):
-        return '%s.%s' % (self.component, self.location)
+        return '%s%s' % (self.component, ('.%s' % self.location) if self.location else '')
 
     def assign_cachekey(self):
-        self.cachekey = 'compstack.%s.%s:%s' % (self.component, self.location, self.attr)
+        self.cachekey = 'compstack.%s:%s' % (self.exclocation, self.attr)
 
     def search_apps(self):
         for app, pname, package in list_component_mappings(self.component):
             if not package:
-                dlocation = '%s.components.%s.%s' % (app, self.component, self.location)
+                dlocation = '%s.components.%s' % (app, self.exclocation)
             else:
-                dlocation = '%s.%s' % (package, self.location)
+                dlocation = '%s%s' % (package, ('.%s' % self.location) if self.location else '')
             module = self.try_import(dlocation)
             if module:
                 return module

@@ -76,7 +76,7 @@ class TestMostStuff(object):
             from compstack import news
             assert False
         except ImportError as e:
-            if 'No module named compstack' not in str(e):
+            if 'No module named compstack' not in str(e).replace("'", ''):
                 raise
 
     def test_appstack_import_overrides(self):
@@ -111,12 +111,12 @@ class TestMostStuff(object):
         except HierarchyImportError as e:
             assert str(e) == 'attribute "notthere" not found; searched appstack.views'
 
-        # test importing from compstack directly
+        # test importing from appstack directly
         try:
             from appstack import views
             assert False
         except ImportError as e:
-            if 'No module named appstack' not in str(e):
+            if 'No module named appstack' not in str(e).replace("'", ''):
                 raise
 
     def test_package_component(self):
@@ -194,7 +194,7 @@ class TestMostStuff(object):
             view = findview('badimport:nothere')
             assert False
         except ImportError as e:
-            assert 'No module named foo' == str(e), e
+            assert 'No module named foo' == str(e).replace("'", ''), e
 
     def test_app_findfile(self):
         fullpath = findfile('templates/blank.txt')
@@ -288,7 +288,7 @@ class TestMostStuff(object):
             visitmods('views')
             assert False
         except ImportError as e:
-            if str(e) != 'No module named foo':
+            if str(e).replace("'", '') != 'No module named foo':
                 raise
 
 class TestPTA(object):
@@ -316,7 +316,7 @@ class TestPTA(object):
             v = findview('badimport1:Index')
             assert False
         except HierarchyImportError as e:
-            assert 'module "nothere." not found; searched compstack' in str(e), e
+            assert 'module "nothere" not found; searched compstack' in str(e), e
 
     def test_find_view_no_component(self):
         try:
@@ -360,7 +360,7 @@ class TestPTA(object):
             v = findcontent('badimport1:Foo')
             assert False
         except HierarchyImportError as e:
-            assert 'module "nothere." not found; searched compstack' in str(e), e
+            assert 'module "nothere" not found; searched compstack' in str(e), e
 
 
 class TestMin2(object):
