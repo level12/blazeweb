@@ -91,7 +91,7 @@ class TestCurrentUrl(unittest.TestCase):
 
         self.assertEqual(r.status, '200 OK')
 
-        self.assertEqual(r.data, 'http://localhost/routingtests/currenturl?foo=bar')
+        self.assertEqual(r.data, b'http://localhost/routingtests/currenturl?foo=bar')
 
     def test_arguments(self):
         env = create_environ("/news/list?param=foo", "http://localhost:8080/script")

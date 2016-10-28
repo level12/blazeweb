@@ -8,7 +8,7 @@ from blazeweb.testing import inrequest
 
 
 # create the wsgi application that will be used for testing
-import config
+from . import config
 from newlayout.application import make_wsgi
 
 def setup_module():
@@ -31,7 +31,9 @@ class TestContent(object):
           c = getcontent('getcontent.html', __endpoint='foo')
           assert False
        except TypeError as e:
-          assert "getcontent() got multiple values for keyword argument '__endpoint'" == str(e)
+          msg_str = str(e)
+          assert msg_str.startswith("getcontent() got multiple values for ")
+          assert msg_str.endswith("'__endpoint'")
 
        c = getcontent('getcontent.html', endpoint='foo')
        assert c.primary == 'the endpoint: foo', c.primary

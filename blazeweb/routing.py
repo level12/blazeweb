@@ -139,7 +139,7 @@ def current_url(root_only=False, host_only=False, strip_querystring=False,
             # are converted appropriately
             qs_update = MultiDict(qs_update)
 
-            for key, value_list in qs_update.iterlists():
+            for key, value_list in qs_update.lists():
                 # multidicts extend, not replace, so we need
                 # to get rid of the key first
                 try:
@@ -153,7 +153,7 @@ def current_url(root_only=False, host_only=False, strip_querystring=False,
             # are converted appropriately
             qs_replace = MultiDict(qs_replace)
 
-            for key, value_list in qs_replace.iterlists():
+            for key, value_list in qs_replace.lists():
                 # multidicts extend, not replace, so we need
                 # to get rid of the key first
                 try:

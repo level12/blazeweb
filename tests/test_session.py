@@ -23,12 +23,12 @@ class TestSession(unittest.TestCase):
         r = self.client.get('/sessiontests/setfoo')
 
         self.assertEqual(r.status, '200 OK')
-        self.assertEqual(r.data, 'foo set')
+        self.assertEqual(r.data, b'foo set')
 
         r = self.client.get('/sessiontests/getfoo')
 
         self.assertEqual(r.status, '200 OK')
-        self.assertEqual(r.data, 'bar')
+        self.assertEqual(r.data, b'bar')
 
     def test_session_regen_id(self):
         ta = TestApp(self.app)
@@ -43,7 +43,7 @@ class TestSession(unittest.TestCase):
         assert r.session.id in r.headers['Set-Cookie']
 
         r = ta.get('/sessiontests/getfoo', status=200)
-        assert r.body == 'bar'
+        assert r.body == b'bar'
 
 
 class TestBeakerCleanup(unittest.TestCase):

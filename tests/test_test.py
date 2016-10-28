@@ -4,9 +4,9 @@ from scripttest import TestFileEnvironment
 
 from blazeweb.routing import current_url
 from blazeweb.testing import inrequest
-from scripting_helpers import env, here, script_test_path, base_environ, apps_path
+from .scripting_helpers import env, here, script_test_path, base_environ, apps_path
 
-import config
+from . import config
 from newlayout.application import make_wsgi
 
 def setup_module():
