@@ -7,7 +7,7 @@ from blazeweb.hierarchy import visitmods
 from blazeweb.middleware import minimal_wsgi_stack
 from blazeweb.application import WSGIApp
 
-import config
+from . import config
 from newlayout.config.settings import WithTestSettings
 from minimal2.config.settings import EventSettings
 

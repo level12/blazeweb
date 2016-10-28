@@ -7,5 +7,5 @@ signal('blazeweb.events.initialized').connect(fire_after_event_init)
 
 def modify_response(sender, response=None):
     if 'eventtest' in rg.request.url:
-        response.data = response.data + 'minimal2'
+        response.data = response.data + b'minimal2'
 signal('blazeweb.response_cycle.ended').connect(modify_response)

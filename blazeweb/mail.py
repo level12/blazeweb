@@ -81,7 +81,7 @@ def forbid_multi_line_headers(name, val):
     if '\n' in val or '\r' in val:
         raise BadHeaderError("Header values can't contain newlines (got %r for header %r)" % (val, name))
     try:
-        val = val.encode('ascii')
+        val.encode('ascii')
     except UnicodeEncodeError:
         if name.lower() in ('to', 'from', 'cc'):
             result = []
