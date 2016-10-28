@@ -23,12 +23,12 @@ class TestUserFunctional(unittest.TestCase):
         r = self.client.get('/usertests/setfoo')
 
         self.assertEqual(r.status, '200 OK')
-        self.assertEqual(r.data, 'foo set')
+        self.assertEqual(r.data, b'foo set')
 
         r = self.client.get('/usertests/getfoo')
 
         self.assertEqual(r.status, '200 OK')
-        self.assertEqual(r.data, 'barbaz')
+        self.assertEqual(r.data, b'barbaz')
 
     def test_auth(self):
         r = self.client.get('/usertests/setauth')
@@ -38,7 +38,7 @@ class TestUserFunctional(unittest.TestCase):
         r = self.client.get('/usertests/getauth')
 
         self.assertEqual(r.status, '200 OK')
-        self.assertEqual(r.data, 'True')
+        self.assertEqual(r.data, b'True')
 
     def test_perm(self):
         r = self.client.get('/usertests/addperm')
@@ -48,13 +48,13 @@ class TestUserFunctional(unittest.TestCase):
         r = self.client.get('/usertests/getperms')
 
         self.assertEqual(r.status, '200 OK')
-        self.assertEqual(r.data, 'TrueFalseTrue')
+        self.assertEqual(r.data, b'TrueFalseTrue')
 
     def test_clear(self):
         r = self.client.get('/usertests/clear')
 
         self.assertEqual(r.status, '200 OK')
-        self.assertEqual(r.data, 'FalseFalseNone')
+        self.assertEqual(r.data, b'FalseFalseNone')
 
     def test_message(self):
         r = self.client.get('/usertests/setmsg')
@@ -64,12 +64,12 @@ class TestUserFunctional(unittest.TestCase):
         r = self.client.get('/usertests/getmsg')
 
         self.assertEqual(r.status, '200 OK')
-        self.assertEqual(r.data, 'test: my message')
+        self.assertEqual(r.data, b'test: my message')
 
         r = self.client.get('/usertests/nomsg')
 
         self.assertEqual(r.status, '200 OK')
-        self.assertEqual(r.data, '0')
+        self.assertEqual(r.data, b'0')
 
 class TestUserUnit(object):
     def _check_empty(self, u):

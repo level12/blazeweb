@@ -10,7 +10,7 @@ from blazeweb.testing import inrequest
 from blazeweb.utils import exception_with_context, exception_context_filter
 from blazeweb.utils.filesystem import copy_static_files, mkdirs
 
-import config
+from . import config
 from scripting_helpers import script_test_path, env
 from newlayout.application import make_wsgi
 

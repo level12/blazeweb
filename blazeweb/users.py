@@ -87,6 +87,10 @@ class User(LazyDict):
         # like just an object if tested for a bool value
         return True
 
+    def __bool__(self):
+        return True
+
+
 class UserMessage(object):
 
     def __init__(self, severity, text):
@@ -183,5 +187,9 @@ class UserProxy(object):
     def __contains__(self, key):
         return key in self._user()
 
+    # when evaluating an object as boolean, python 2 uses nonzero, but python 3 uses bool
     def __nonzero__(self):
+        return bool(self._user())
+
+    def __bool__(self):
         return bool(self._user())
