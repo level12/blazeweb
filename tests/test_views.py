@@ -27,32 +27,32 @@ class TestViews(unittest.TestCase):
         r = self.client.get('tests/rvb')
 
         self.assertEqual(r.status, '200 OK')
-        self.assertEqual(r.data, 'Hello World!')
+        self.assertEqual(r.data, b'Hello World!')
 
     def test_responding_view_base_with_snippet(self):
         r = self.client.get('tests/rvbwsnip')
 
         self.assertEqual(r.status, '200 OK')
-        self.assertEqual(r.data, 'Hello World!')
+        self.assertEqual(r.data, b'Hello World!')
 
     def test_get(self):
         r = self.client.get('tests/get')
 
         self.assertEqual(r.status, '200 OK')
-        self.assertEqual(r.data, 'Hello World!')
+        self.assertEqual(r.data, b'Hello World!')
 
     def test_post(self):
         r = self.client.post('tests/post')
 
         self.assertEqual(r.status, '200 OK')
-        self.assertEqual(r.data, 'Hello World!')
+        self.assertEqual(r.data, b'Hello World!')
 
     def test_404_noroute(self):
         r = self.client.get('nothere')
 
         self.assertEqual(r.status, '404 NOT FOUND')
-        self.assertTrue('Not Found' in r.data)
-        self.assertTrue('If you entered the URL manually please check your spelling and try again.' in r.data)
+        self.assertTrue(b'Not Found' in r.data)
+        self.assertTrue(b'If you entered the URL manually please check your spelling and try again.' in r.data)
 
     def test_nomodule(self):
         try:
@@ -72,7 +72,7 @@ class TestViews(unittest.TestCase):
         r = self.client.get('tests/prep')
 
         self.assertEqual(r.status, '200 OK')
-        self.assertEqual(r.data, 'Hello World!')
+        self.assertEqual(r.data, b'Hello World!')
 
     def test_hideexception(self):
         settings.exception_handling = ['handle']
@@ -83,44 +83,44 @@ class TestViews(unittest.TestCase):
         r = self.client.get('tests/get')
 
         self.assertEqual(r.status, '200 OK')
-        self.assertEqual(r.data, 'Hello World!')
+        self.assertEqual(r.data, b'Hello World!')
 
         r = self.client.get('tests/get')
         self.assertEqual(r.status, '200 OK')
-        self.assertEqual(r.data, 'Hello World!')
+        self.assertEqual(r.data, b'Hello World!')
 
     def test_forward(self):
         r = self.client.get('tests/doforward')
 
         self.assertEqual(r.status, '200 OK')
-        self.assertEqual(r.data, 'forward to me')
+        self.assertEqual(r.data, b'forward to me')
 
     def test_text(self):
         r = self.client.get('tests/text')
 
         self.assertEqual(r.status, '200 OK')
-        self.assertEqual(r.data, 'Hello World!')
+        self.assertEqual(r.data, b'Hello World!')
         self.assertEqual( r.headers['Content-Type'], 'text/plain; charset=utf-8' )
 
     def test_textwsnip(self):
         r = self.client.get('tests/textwsnip')
 
         self.assertEqual(r.status, '200 OK')
-        self.assertEqual(r.data, 'Hello World!')
+        self.assertEqual(r.data, b'Hello World!')
         self.assertEqual( r.headers['Content-Type'], 'text/plain; charset=utf-8' )
 
     def test_textwsnip2(self):
         r = self.client.get('tests/textwsnip2')
 
         self.assertEqual(r.status, '200 OK')
-        self.assertEqual(r.data, 'Hello World!')
+        self.assertEqual(r.data, b'Hello World!')
         self.assertEqual( r.headers['Content-Type'], 'text/plain; charset=utf-8' )
 
     def test_html(self):
         r = self.client.get('tests/html')
 
         self.assertEqual(r.status, '200 OK')
-        self.assertEqual(r.data, 'Hello World!')
+        self.assertEqual(r.data, b'Hello World!')
         self.assertEqual( r.headers['Content-Type'], 'text/html; charset=utf-8' )
 
     def test_redirect(self):
@@ -145,7 +145,7 @@ class TestViews(unittest.TestCase):
         r = self.client.get('tests/heraise')
 
         self.assertEqual(r.status_code, 503)
-        assert 'server is temporarily unable' in r.data
+        assert b'server is temporarily unable' in r.data
 
     def test_errordoc(self):
         settings.error_docs[503] = 'tests:Rvb'
@@ -153,7 +153,7 @@ class TestViews(unittest.TestCase):
 
         self.assertEqual(r.status_code, 503)
         self.assertEqual(r.status, '503 SERVICE UNAVAILABLE')
-        self.assertEqual(r.data, 'Hello World!')
+        self.assertEqual(r.data, b'Hello World!')
 
     def test_errordocexc(self):
         settings.error_docs[503] = 'tests:RaiseExc'
@@ -170,7 +170,7 @@ class TestViews(unittest.TestCase):
         r = self.client.get('tests/heraise')
 
         self.assertEqual(r.status_code, 500)
-        assert 'Internal Server Error' in r.data
+        assert b'Internal Server Error' in r.data
 
     def test_forwardloop(self):
         try:
@@ -184,46 +184,46 @@ class TestViews(unittest.TestCase):
         r = self.client.get('tests/urlargs')
 
         self.assertEqual(r.status, '200 OK')
-        self.assertEqual(r.data, 'Hello World!')
+        self.assertEqual(r.data, b'Hello World!')
 
         r = self.client.get('tests/urlargs/fred')
 
         self.assertEqual(r.status, '200 OK')
-        self.assertEqual(r.data, 'Hello fred!')
+        self.assertEqual(r.data, b'Hello fred!')
 
         r = self.client.get('tests/urlargs/10')
 
         self.assertEqual(r.status, '200 OK')
-        self.assertEqual(r.data, 'Give me a name!')
+        self.assertEqual(r.data, b'Give me a name!')
 
     def test_getargs(self):
 
         r = self.client.get('tests/getargs')
         self.assertEqual(r.status, '200 OK')
-        self.assertEqual(r.data, 'Hello World!')
+        self.assertEqual(r.data, b'Hello World!')
 
         r = self.client.get('tests/getargs?towho=fred&greeting=Hi&extra=bar')
         self.assertEqual(r.status, '200 OK')
-        self.assertEqual(r.data, 'Hello fred!')
+        self.assertEqual(r.data, b'Hello fred!')
 
 
     def test_getargs2(self):
 
         r = self.client.get('tests/getargs2')
         self.assertEqual(r.status, '200 OK')
-        self.assertEqual(r.data, 'Hello World!')
+        self.assertEqual(r.data, b'Hello World!')
 
         r = self.client.get('tests/getargs2?towho=fred')
         self.assertEqual(r.status, '200 OK')
-        self.assertEqual(r.data, 'Hello fred!')
+        self.assertEqual(r.data, b'Hello fred!')
 
         r = self.client.get('tests/getargs2?num=10')
         self.assertEqual(r.status, '200 OK')
-        self.assertEqual(r.data, 'Hello World, 10!')
+        self.assertEqual(r.data, b'Hello World, 10!')
 
         r = self.client.get('tests/getargs2?num=ten')
         self.assertEqual(r.status, '200 OK')
-        self.assertEqual(r.data, 'Hello World!')
+        self.assertEqual(r.data, b'Hello World!')
 
 
     def test_getargs3(self):
@@ -231,54 +231,54 @@ class TestViews(unittest.TestCase):
         self.assertEqual(r.status_code, 400)
         # we are no longer going to manipulate the response object to include
         # user messages
-        self.assertTrue('integer' not in r.data)
+        self.assertTrue(b'integer' not in r.data)
 
         #If you want user messages included in an error response
         # you need to use an error document that will include them, like so:
         settings.error_docs[400] = 'tests:UserMessages'
         r = self.client.get('tests/getargs3?num=ten&num2=ten')
         self.assertEqual(r.status_code, 400)
-        assert '(error) num2: num: must be an integer' in r.data, r.data
-        assert '(error) num: Please enter an integer value' in r.data, r.data
+        assert b'(error) num2: num: must be an integer' in r.data, r.data
+        assert b'(error) num: Please enter an integer value' in r.data, r.data
 
     def test_reqgetargs(self):
         settings.error_docs[400] = 'tests:UserMessages'
         r = self.client.get('/tests/reqgetargs?num=10&num2=10')
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(r.data, 'Hello World, 10 10 10!')
+        self.assertEqual(r.data, b'Hello World, 10 10 10!')
 
         r = self.client.get('/tests/reqgetargs?num2=ten')
         self.assertEqual(r.status_code, 400)
-        self.assertTrue('(error) num: Please enter a value' in r.data, r.data)
-        self.assertTrue('(error) num2: Please enter an integer value' in r.data)
+        self.assertTrue(b'(error) num: Please enter a value' in r.data, r.data)
+        self.assertTrue(b'(error) num2: Please enter an integer value' in r.data)
 
         r = self.client.get('tests/reqgetargs?num1&num=2')
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(r.data, 'Hello World, 2 10 10!')
+        self.assertEqual(r.data, b'Hello World, 2 10 10!')
 
     def test_listgetargs(self):
 
         r = self.client.get('tests/listgetargs?nums=1&nums=2')
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(r.data, '[1, 2]')
+        self.assertEqual(r.data, b'[1, 2]')
 
         r = self.client.get('tests/listgetargs?nums=ten&nums=2')
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(r.data, '[2]')
+        self.assertEqual(r.data, b'[2]')
 
     def test_customvalidator(self):
 
         r = self.client.get('tests/customvalidator?num=asek')
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(r.data, '10')
+        self.assertEqual(r.data, b'10')
 
         r = self.client.get('tests/customvalidator')
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(r.data, '10')
+        self.assertEqual(r.data, b'10')
 
         r = self.client.get('tests/customvalidator?num=5')
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(r.data, '5')
+        self.assertEqual(r.data, b'5')
 
     def test_badvalidator(self):
         try:
@@ -291,11 +291,11 @@ class TestViews(unittest.TestCase):
     def test_static(self):
         r = self.client.get('/static/app/helloworld.html')
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(r.decoded, 'Hello World!')
+        self.assertEqual(r.get_data(), b'Hello World!')
 
         r = self.client.get('/static/app/helloworld2.html')
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(r.decoded.strip(), 'Hellow blazewebtestapp2!')
+        self.assertEqual(r.get_data().strip(), b'Hellow blazewebtestapp2!')
 
     def test_app2(self):
         # app2's test module won't have its settings imported
@@ -307,30 +307,30 @@ class TestViews(unittest.TestCase):
     def test_appfallback(self):
         r = self.client.get('tests/appfallback')
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(r.data, 'Hello app2!')
+        self.assertEqual(r.data, b'Hello app2!')
 
     def test_htmltemplatefilearg(self):
         r = self.client.get('tests/htmltemplatefilearg')
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(r.data, 'Hello File Arg!')
+        self.assertEqual(r.data, b'Hello File Arg!')
 
     def test_htmltemplateinheritance(self):
         """ test inheritance at the module level from a supporting app """
         r = self.client.get('tests/templateinheritance')
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(r.data, 'Hello Template Inheritance!')
+        self.assertEqual(r.data, b'Hello Template Inheritance!')
 
     def test_parenttemplate(self):
         """ test extending a template from the parent application """
         r = self.client.get('tests/parenttemplate')
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(r.data, 'Hello Parent Template!')
+        self.assertEqual(r.data, b'Hello Parent Template!')
 
     def test_parenttemplateinheritance(self):
         """ test extending a template from a supporting app"""
         r = self.client.get('tests/parenttemplateinheritance')
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(r.data, 'Hello App2 Parent Template!')
+        self.assertEqual(r.data, b'Hello App2 Parent Template!')
 
     def test_modlevelpriority(self):
         """ make sure that when inheriting that a module level template in a
@@ -339,7 +339,7 @@ class TestViews(unittest.TestCase):
         """
         r = self.client.get('tests/modlevelpriority')
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(r.data, 'Hello mod level priority!')
+        self.assertEqual(r.data, b'Hello mod level priority!')
 
     def test_disabled_module(self):
         """ a disabled module should not be processed and therefore we should
@@ -347,23 +347,23 @@ class TestViews(unittest.TestCase):
         r = self.client.get('/disabled/notthere')
 
         self.assertEqual(r.status, '404 NOT FOUND')
-        self.assertTrue('Not Found' in r.data)
-        self.assertTrue('If you entered the URL manually please check your spelling and try again.' in r.data)
+        self.assertTrue(b'Not Found' in r.data)
+        self.assertTrue(b'If you entered the URL manually please check your spelling and try again.' in r.data)
 
     def test_render_endpoint(self):
         # app level endpoint
         r = self.client.get('/tests/tchooser/endpoint')
-        assert 'app level' in r.data, r.data
+        assert b'app level' in r.data, r.data
 
         # render content
         r = self.client.get('/tests/tchooser/content')
-        assert 'Hello World!' in r.data, r.data
+        assert b'Hello World!' in r.data, r.data
 
     def test_render_template_directly(self):
         # app level endpoint
         r = self.client.get('/tests/text.txt/&fred')
         assert r.headers['Content-Type'] == 'text/plain; charset=utf-8', r.headers
-        assert 'Hello &amp;fred!' in r.data, r.data
+        assert b'Hello &amp;fred!' in r.data, r.data
 
     def test_jsonify_exception(self):
         # we have exception handling turned off during testing, so we should
@@ -379,7 +379,7 @@ class TestViews(unittest.TestCase):
             settings.exception_handling = ['handle']
             r = self.client.get('/jsonify-exception')
             assert r.status_code == 500, r.status_code
-            data = jsonmod.loads(r.data)
+            data = jsonmod.loads(r.data.decode())
             assert data['error'] == 1, data
             assert data['data'] is None, data
         finally:
@@ -399,13 +399,13 @@ class TestApp2(unittest.TestCase):
     def test_app2(self):
         r = self.client.get('tests/rvbapp2')
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(r.data, 'Hello app2!')
+        self.assertEqual(r.data, b'Hello app2!')
 
     def test_underscore_templates(self):
         r = self.client.get('tests/underscoretemplates')
 
         self.assertEqual(r.status, '200 OK')
-        self.assertEqual(r.data, 'Hello World!')
+        self.assertEqual(r.data, b'Hello World!')
         self.assertEqual( r.headers['Content-Type'], 'text/html; charset=utf-8' )
 
 if __name__ == '__main__':

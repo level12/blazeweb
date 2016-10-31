@@ -8,7 +8,7 @@ from blazeweb.globals import rg
 from blazeweb.testing import inrequest
 from blazeweb.wrappers import Request
 
-import config
+from . import config
 from newlayout.application import make_wsgi
 
 def setup_module():
@@ -19,7 +19,7 @@ class TestRequest(object):
     def test_confirm_muttable(self):
         req = Request.from_values({
              'foo': 'bar',
-             'txtfile': (BytesIO('my file contents'), 'test.txt'),
+             'txtfile': (BytesIO(b'my file contents'), 'test.txt'),
         },
         path='/foo?val1=1&val2=2')
         assert req.path == '/foo'
@@ -37,7 +37,7 @@ class TestRequest(object):
         assert len(req.files) == 0
         req.replace_http_args(data={
              'foo': 'bar',
-             'txtfile': (BytesIO('my file contents'), 'test.txt'),
+             'txtfile': (BytesIO(b'my file contents'), 'test.txt'),
         },
         path='/foo?val1=1&val2=2')
         assert rg.request is req

@@ -14,7 +14,7 @@ from blazeweb.testing import inrequest
 from blazeweb.wrappers import Response
 
 # create the wsgi application that will be used for testing
-import config
+from . import config
 from newlayout.application import make_wsgi
 
 ta = None
@@ -38,7 +38,7 @@ def test_basic_view():
     r = v.process()
 
     assert isinstance(r, Response)
-    eq_(r.decoded, 'hw')
+    eq_(r.get_data(), b'hw')
 
 @inrequest()
 def test_retval_edit():
@@ -52,7 +52,7 @@ def test_retval_edit():
     r = v.process()
 
     assert isinstance(r, Response)
-    eq_(r.decoded, 'hw')
+    eq_(r.get_data(), b'hw')
 
 @inrequest()
 def test_wsgi_app_return():
@@ -80,7 +80,7 @@ def test_non_string_return():
 
     v = TestView({})
     r = v.process()
-    eq_(r.decoded, '2')
+    eq_(r.get_data(), b'2')
 
 @inrequest('/foo?bar=baz')
 def test_get_args():
@@ -89,7 +89,7 @@ def test_get_args():
         def default(self, bar):
             return bar
     r = TestView({'bar': '2'}).process()
-    assert r.decoded == '2'
+    assert r.get_data() == b'2'
 
     # no args causes 400
     class TestView(View):
@@ -109,7 +109,7 @@ def test_get_args():
         def default(self, bar):
             return bar
     r = TestView({}).process()
-    assert r.decoded == 'baz'
+    assert r.get_data() == b'baz'
 
 @inrequest('/foo?bar=baz&a1=a')
 def test_arg_processor():
@@ -123,12 +123,12 @@ def test_arg_processor():
 
         def default(self, bar, a1):
             eq_(bar, 'baz')
-            return bytes(a1)
+            return '{}'.format(a1)
     r = TestView({}).process()
-    eq_(r.decoded, 'a')
+    eq_(r.get_data(), b'a')
     # url values take precedence
     r = TestView({'a1': 2}).process()
-    eq_(r.decoded, '2')
+    eq_(r.get_data(), b'2')
 
 @inrequest('/foo?a=1&b=b&d=3&e=foo@bar.com&f[]=6&g[]=hi')
 def test_arg_validation():
@@ -541,7 +541,7 @@ def test_templating_in_request():
             # default
             assert False
     r = TestViews2A({}).process()
-    eq_(r.decoded.strip(), 'a')
+    eq_(r.get_data().strip(), b'a')
 
     # but it can be overridden
     class TestViews2A(View):
@@ -549,7 +549,7 @@ def test_templating_in_request():
             self.render_template(send_response=False)
             return 'foo'
     r = TestViews2A({}).process()
-    eq_( r.data, 'foo')
+    eq_(r.data, b'foo')
 
 @inrequest('/foo?a=1&b=b&d=3')
 def test_secure_view():
@@ -570,7 +570,7 @@ def test_secure_view():
         def default(self):
             return 'an'
     r = TestView({}, 'test').process()
-    assert r.decoded == 'an', r.data
+    assert r.get_data() == b'an', r.data
 
     user.clear()
     # authentication only
@@ -581,7 +581,7 @@ def test_secure_view():
         def default(self):
             return 'an'
     r = TestView({}, 'test').process()
-    assert r.decoded == 'an', r.data
+    assert r.get_data() == b'an', r.data
 
     user.clear()
     # authentication, but no requires given
@@ -627,7 +627,7 @@ def test_secure_view():
         def default(self):
             return 'ra'
     r = TestView({}, 'test').process()
-    assert r.decoded == 'ra', r.data
+    assert r.get_data() == b'ra', r.data
 
     user.clear()
     # authentication, require all passes, no is_super_user attribute
@@ -639,7 +639,7 @@ def test_secure_view():
         def default(self):
             return 'ra'
     r = TestView({}, 'test').process()
-    assert r.decoded == 'ra', r.data
+    assert r.get_data() == b'ra', r.data
 
     user.clear()
     # authentication, require all fails on one, require_any doesn't matter
@@ -665,7 +665,7 @@ def test_secure_view():
         def default(self):
             return 'su'
     r = TestView({}, 'test').process()
-    assert r.decoded == 'su', r.data
+    assert r.get_data() == b'su', r.data
 
 @inrequest('/json')
 def test_json_handlers():
@@ -677,7 +677,7 @@ def test_json_handlers():
 
     r = Jsonify({}, 'jsonify').process()
     eq_(r.headers['Content-Type'], 'application/json')
-    data = jsonmod.loads(r.decoded)
+    data = jsonmod.loads(r.get_data().decode())
     assert data['error'] == 0, data
 
     # test user messages
@@ -687,7 +687,7 @@ def test_json_handlers():
             self.render_json({'foo1': 'bar'})
 
     r = Jsonify({}, 'jsonify').process()
-    data = jsonmod.loads(r.decoded)
+    data = jsonmod.loads(r.get_data().decode())
     assert data['messages'][0]['severity'] == 'notice', data
     assert data['messages'][0]['text'] == 'hi', data
 
@@ -698,7 +698,7 @@ def test_json_handlers():
             self.render_json({'foo1': 'bar'}, add_user_messages=False)
 
     r = Jsonify({}, 'jsonify').process()
-    data = jsonmod.loads(r.decoded)
+    data = jsonmod.loads(r.get_data().decode())
     assert len(data['messages']) == 0, data
 
     # test jsonify decorator
@@ -709,7 +709,7 @@ def test_json_handlers():
 
     r = Jsonify({}, 'jsonify').process()
     eq_(r.headers['Content-Type'], 'application/json')
-    data = jsonmod.loads(r.decoded)
+    data = jsonmod.loads(r.get_data().decode())
     assert data['error'] == 0, data
     assert data['data']['foo1'] == 'bar', data
 
@@ -719,7 +719,7 @@ def test_json_handlers():
             self.render_json({'foo1': 'bar'}, extra_context={'foo':'bar'})
 
     r = Jsonify({}, 'jsonify').process()
-    data = jsonmod.loads(r.decoded)
+    data = jsonmod.loads(r.get_data().decode())
     assert data['foo'] == 'bar', data
 
 def test_request_hijacking():

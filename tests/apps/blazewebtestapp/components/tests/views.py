@@ -62,7 +62,7 @@ class Text(View):
 
 class TextWithSnippet(View):
     def default(self):
-        self.assign('output',  getcontent('tests:text_snippet.txt'))
+        self.assign('output', getcontent('tests:text_snippet.txt'))
         self.render_template(default_ext='txt')
 
 class TextWithSnippet2(View):

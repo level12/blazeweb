@@ -73,8 +73,15 @@ class Content(object):
     def __unicode__(self):
         return self.primary
 
-    def __str__(self):
+    def __bytes__(self):
         return self.primary.encode(self.charset)
+
+    def __str__(self):
+        if six.PY2:
+            return self.__bytes__()
+        else:
+            return self.__unicode__()
+
 
 class _PlaceHolder(object):
     def __init__(self, cobj, ident, type, join_on=u'\n\n'):
