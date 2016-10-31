@@ -1,5 +1,4 @@
 from os import path
-import sys
 
 from blazeutils.strings import reindent as bureindent
 from blazeutils.rst import rst2html
@@ -7,8 +6,9 @@ import six
 from webhelpers2.html import HTML
 
 from blazeweb.globals import ag, settings
-from blazeweb.hierarchy import findcontent, findfile, split_endpoint
+from blazeweb.hierarchy import findcontent, split_endpoint
 from blazeweb.routing import abs_static_url, static_url
+
 
 def getcontent(__endpoint, *args, **kwargs):
     if '.' in __endpoint:
@@ -18,6 +18,7 @@ def getcontent(__endpoint, *args, **kwargs):
         c = klass()
     c.process(*args, **kwargs)
     return c
+
 
 class Content(object):
 
@@ -40,10 +41,6 @@ class Content(object):
 
     def create(self):
         return u''
-
-    def add_content(self, content, type):
-        self.content.setdefault(type, [])
-        self.content[type] = content
 
     def update_nonprimary_from_endpoint(self, __endpoint, *args, **kwargs):
         c = getcontent(__endpoint, *args, **kwargs)
@@ -108,6 +105,7 @@ class _PlaceHolder(object):
         ph_content = self.content()
         return text.replace(self.placeholder, ph_content, self.count)
 
+
 class TemplateContent(Content):
     ext_registry = {
         'txt': 'text/plain',
@@ -149,15 +147,15 @@ class TemplateContent(Content):
     def create(self, **kwargs):
         self.update_context(kwargs)
         content = ag.tplengine.render_template(self.endpoint, kwargs)
-        #if self.css_placeholder_count:
+        # if self.css_placeholder_count:
         #    css_content = self.page_css()
         #    template_content = template_content.replace(
         #            self.css_placeholder, css_content, self.css_placeholder_count)
-        #if self.js_placeholder_count:
+        # if self.js_placeholder_count:
         #    js_content = self.page_js()
         #    template_content = template_content.replace(
         #            self.js_placeholder, js_content, self.js_placeholder_count)
-        #if self.script_tags_placeholder_count:
+        # if self.script_tags_placeholder_count:
         #    js_tags_content = self.page_js()
         #    template_content = template_content.replace(
         #            self.js_placeholder, js_content, self.js_placeholder_count)
@@ -202,10 +200,6 @@ class TemplateContent(Content):
     def include_html(self, __endpoint, *args, **kwargs):
         html = self.include_content(__endpoint, *args, **kwargs)
         return ag.tplengine.mark_safe(html)
-
-    def include_content(self, __endpoint, *args, **kwargs):
-        c = self.update_nonprimary_from_endpoint(__endpoint, *args, **kwargs)
-        return c.primary
 
     def include_css(self, __endpoint=None, **kwargs):
         if __endpoint is None:

@@ -15,6 +15,7 @@ from blazeweb.globals import rg, settings
 
 log = logging.getLogger(__name__)
 
+
 def isurl(s, require_tld=True):
     u = URL(add_http=False, require_tld=require_tld)
     try:
@@ -25,6 +26,7 @@ def isurl(s, require_tld=True):
         if url_local is not None:
             return True
         return False
+
 
 def abort(send):
     """
@@ -58,6 +60,7 @@ def abort(send):
         response = Response(response_body % ('<pre>%s</pre>' % escape(pformat(send))))
     werkzeug.abort(response)
 
+
 def werkzeug_multi_dict_conv(md):
     '''
         Werzeug Multi-Dicts are either flat or lists, but we want a single value
@@ -70,6 +73,7 @@ def werkzeug_multi_dict_conv(md):
         else:
             retval[key] = value
     return retval
+
 
 def registry_has_object(to_check):
     """
@@ -127,7 +131,8 @@ class _Redirect(Exception):
     def __init__(self, response):
         self.response = response
 
-def redirect(location, permanent=False, code=302 ):
+
+def redirect(location, permanent=False, code=302):
     """
         location: URI to redirect to
         permanent: if True, sets code to 301 HTTP status code
@@ -140,6 +145,7 @@ def redirect(location, permanent=False, code=302 ):
     log.debug('%d redirct to %s' % (code, location))
     raise _Redirect(werkzeug.redirect(location, code))
 
+
 def sess_regenerate_id():
     """
         Regenerates the beaker session's id
@@ -147,7 +153,6 @@ def sess_regenerate_id():
         Needed until this gets put in place:
         https://bitbucket.org/bbangert/beaker/issue/75
     """
-    #rg.session.regenerate_id()
     try:
         rg.session.regenerate_id()
     except AttributeError as e:

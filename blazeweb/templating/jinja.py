@@ -14,6 +14,7 @@ import six
 
 log = logging.getLogger(__name__)
 
+
 class _RootRenderWrapper(object):
 
     def __init__(self, tpl_name, root_render_func):
@@ -36,6 +37,7 @@ class _RootRenderWrapper(object):
         """
         return other == self.root_render_func
 
+
 class Template(j2Template):
 
     @classmethod
@@ -49,9 +51,12 @@ class Template(j2Template):
         # template's name correctly when inside a block that is replacing the
         # the block of a parent template
         for block_name, block_root_render_func in six.iteritems(namespace['blocks']):
-            namespace['blocks'][block_name] = _RootRenderWrapper(namespace['name'], block_root_render_func)
+            namespace['blocks'][block_name] = _RootRenderWrapper(
+                namespace['name'], block_root_render_func
+            )
 
         return j2Template._from_namespace(environment, namespace, globals)
+
 
 class Translator(templating.EngineBase):
 
@@ -59,7 +64,7 @@ class Translator(templating.EngineBase):
         self.env = Environment(
             loader=self.create_loader(),
             **self.get_settings()
-            )
+        )
         self.env.template_class = Template
         self.init_globals()
         self.init_filters()
@@ -97,6 +102,7 @@ class Translator(templating.EngineBase):
         """ when a template has auto-escaping enabled, mark a value as safe """
         return Markup(value)
 
+
 class HierarchyLoader(BaseLoader):
     """
         A modification of Jinja's FileSystemLoader to take into account
@@ -116,12 +122,12 @@ class HierarchyLoader(BaseLoader):
             return findfile(endpoint)
         except FileNotFound:
             pass
-        ## try app level second if module wasn't specified
-        #try:
+        # try app level second if module wasn't specified
+        # try:
         #    if ':' not in template:
         #        endpoint = 'templates/%s' % template
         #    return findfile(endpoint)
-        #except FileNotFound:
+        # except FileNotFound:
         #    pass
 
     def get_source(self, environment, endpoint):
@@ -133,6 +139,7 @@ class HierarchyLoader(BaseLoader):
             contents = f.read().decode(self.encoding)
         old = path.getmtime(fpath)
         return contents, fpath, lambda: path.getmtime(fpath) == old
+
 
 @contextfilter
 def content_filter(context, child_content):

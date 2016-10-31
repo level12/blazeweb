@@ -12,7 +12,7 @@ from blazeweb.utils.http import urlquote
 
 
 # Configuration for urlize() function.
-LEADING_PUNCTUATION  = ['(', '<', '&lt;']
+LEADING_PUNCTUATION = ['(', '<', '&lt;']
 TRAILING_PUNCTUATION = ['.', ',', ')', '>', '\n', '&gt;']
 
 # List of possible strings used for bullets in bulleted lists.
@@ -20,22 +20,37 @@ DOTS = ['&middot;', '*', '\xe2\x80\xa2', '&#149;', '&bull;', '&#8226;']
 
 unencoded_ampersands_re = re.compile(r'&(?!(\w+|#\d+);)')
 word_split_re = re.compile(r'(\s+)')
-punctuation_re = re.compile('^(?P<lead>(?:%s)*)(?P<middle>.*?)(?P<trail>(?:%s)*)$' % \
+punctuation_re = re.compile(
+    '^(?P<lead>(?:%s)*)(?P<middle>.*?)(?P<trail>(?:%s)*)$' %
     ('|'.join([re.escape(x) for x in LEADING_PUNCTUATION]),
-    '|'.join([re.escape(x) for x in TRAILING_PUNCTUATION])))
+     '|'.join([re.escape(x) for x in TRAILING_PUNCTUATION]))
+)
 simple_email_re = re.compile(r'^\S+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+$')
 link_target_attribute_re = re.compile(r'(<a [^>]*?)target=[^\s>]+')
-html_gunk_re = re.compile(r'(?:<br clear="all">|<i><\/i>|<b><\/b>|<em><\/em>|<strong><\/strong>|<\/?smallcaps>|<\/?uppercase>)', re.IGNORECASE)
-hard_coded_bullets_re = re.compile(r'((?:<p>(?:%s).*?[a-zA-Z].*?</p>\s*)+)' % '|'.join([re.escape(x) for x in DOTS]), re.DOTALL)
+html_gunk_re = re.compile(
+    r'(?:<br clear="all">|<i><\/i>|<b><\/b>|<em><\/em>|<strong><\/strong>|'
+    r'<\/?smallcaps>|<\/?uppercase>)',
+    re.IGNORECASE
+)
+hard_coded_bullets_re = re.compile(
+    r'((?:<p>(?:%s).*?[a-zA-Z].*?</p>\s*)+)' % '|'.join(
+        [re.escape(x) for x in DOTS]
+    ), re.DOTALL
+)
 trailing_empty_content_re = re.compile(r'(?:<p>(?:&nbsp;|\s|<br \/>)*?</p>\s*)+\Z')
 
 if six.PY2:
-    del x # Temporary variable
+    del x  # Temporary variable
+
 
 def escape(html):
     """Returns the given HTML with ampersands, quotes and carets encoded."""
-    return mark_safe(force_unicode(html).replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;').replace("'", '&#39;'))
+    return mark_safe(
+        force_unicode(html).replace('&', '&amp;').replace('<', '&lt;')
+        .replace('>', '&gt;').replace('"', '&quot;').replace("'", '&#39;')
+    )
 escape = allow_lazy(escape, six.text_type)
+
 
 def conditional_escape(html):
     """
@@ -46,9 +61,10 @@ def conditional_escape(html):
     else:
         return escape(html)
 
+
 def linebreaks(value, autoescape=False):
     """Converts newlines into <p> and <br />s."""
-    value = re.sub(r'\r\n|\r|\n', '\n', force_unicode(value)) # normalize newlines
+    value = re.sub(r'\r\n|\r|\n', '\n', force_unicode(value))  # normalize newlines
     paras = re.split('\n{2,}', value)
     if autoescape:
         paras = [u'<p>%s</p>' % escape(p.strip()).replace('\n', '<br />') for p in paras]
@@ -57,25 +73,30 @@ def linebreaks(value, autoescape=False):
     return u'\n\n'.join(paras)
 linebreaks = allow_lazy(linebreaks, six.text_type)
 
+
 def strip_tags(value):
     """Returns the given HTML with all tags stripped."""
     return re.sub(r'<[^>]*?>', '', force_unicode(value))
 strip_tags = allow_lazy(strip_tags)
+
 
 def strip_spaces_between_tags(value):
     """Returns the given HTML with spaces between tags removed."""
     return re.sub(r'>\s+<', '><', force_unicode(value))
 strip_spaces_between_tags = allow_lazy(strip_spaces_between_tags, six.text_type)
 
+
 def strip_entities(value):
     """Returns the given HTML with all entities (&something;) stripped."""
     return re.sub(r'&(?:\w+|#\d+);', '', force_unicode(value))
 strip_entities = allow_lazy(strip_entities, six.text_type)
 
+
 def fix_ampersands(value):
     """Returns the given HTML with all unencoded ampersands encoded correctly."""
     return unencoded_ampersands_re.sub('&amp;', force_unicode(value))
 fix_ampersands = allow_lazy(fix_ampersands, six.text_type)
+
 
 def urlize(text, trim_url_limit=None, nofollow=False, autoescape=False):
     """
@@ -94,7 +115,10 @@ def urlize(text, trim_url_limit=None, nofollow=False, autoescape=False):
 
     If autoescape is True, the link text and URLs will get autoescaped.
     """
-    trim_url = lambda x, limit=trim_url_limit: limit is not None and (len(x) > limit and ('%s...' % x[:max(0, limit - 3)])) or x
+
+    def trim_url(x, limit=trim_url_limit):
+        return limit is not None and (len(x) > limit and ('%s...' % x[:max(0, limit - 3)])) or x
+
     safe_input = isinstance(text, SafeData)
     words = word_split_re.split(force_unicode(text))
     nofollow_attr = nofollow and ' rel="nofollow"' or ''
@@ -108,11 +132,13 @@ def urlize(text, trim_url_limit=None, nofollow=False, autoescape=False):
             url = None
             if middle.startswith('http://') or middle.startswith('https://'):
                 url = urlquote(middle, safe='/&=:;#?+*')
-            elif middle.startswith('www.') or ('@' not in middle and \
-                    middle and middle[0] in string.ascii_letters + string.digits and \
-                    (middle.endswith('.org') or middle.endswith('.net') or middle.endswith('.com'))):
+            elif middle.startswith('www.') or (
+                '@' not in middle and
+                middle and middle[0] in string.ascii_letters + string.digits and
+                (middle.endswith('.org') or middle.endswith('.net') or middle.endswith('.com'))
+            ):
                 url = urlquote('http://%s' % middle, safe='/&=:;#?+*')
-            elif '@' in middle and not ':' in middle and simple_email_re.match(middle):
+            elif '@' in middle and ':' not in middle and simple_email_re.match(middle):
                 url = 'mailto:%s' % middle
                 nofollow_attr = ''
             # Make link.
@@ -135,6 +161,7 @@ def urlize(text, trim_url_limit=None, nofollow=False, autoescape=False):
     return u''.join(words)
 urlize = allow_lazy(urlize, six.text_type)
 
+
 def clean_html(text):
     """
     Clean the given HTML.  Specifically, do the following:
@@ -156,6 +183,7 @@ def clean_html(text):
     text = link_target_attribute_re.sub('\\1', text)
     # Trim stupid HTML such as <br clear="all">.
     text = html_gunk_re.sub('', text)
+
     # Convert hard-coded bullets into HTML unordered lists.
     def replace_p_tags(match):
         s = match.group().replace('</p>', '</li>')

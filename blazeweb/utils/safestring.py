@@ -8,8 +8,10 @@ import six
 
 from blazeweb.utils.functional import curry, Promise
 
+
 class EscapeData(object):
     pass
+
 
 class EscapeString(str, EscapeData):
     """
@@ -17,14 +19,17 @@ class EscapeString(str, EscapeData):
     """
     pass
 
+
 class EscapeUnicode(six.text_type, EscapeData):
     """
     A unicode object that should be HTML-escaped when output.
     """
     pass
 
+
 class SafeData(object):
     pass
+
 
 class SafeString(six.binary_type, SafeData):
     """
@@ -42,7 +47,7 @@ class SafeString(six.binary_type, SafeData):
         elif isinstance(rhs, SafeString):
             return SafeString(t)
         return t
-        
+
     def _proxy_method(self, *args, **kwargs):
         """
         Wrap a call to a normal unicode method up so that we return safe
@@ -56,7 +61,8 @@ class SafeString(six.binary_type, SafeData):
         else:
             return SafeUnicode(data)
 
-    decode = curry(_proxy_method, method = six.binary_type.decode)
+    decode = curry(_proxy_method, method=six.binary_type.decode)
+
 
 class SafeUnicode(six.text_type, SafeData):
     """
@@ -72,7 +78,7 @@ class SafeUnicode(six.text_type, SafeData):
         if isinstance(rhs, SafeData):
             return SafeUnicode(t)
         return t
-    
+
     def _proxy_method(self, *args, **kwargs):
         """
         Wrap a call to a normal unicode method up so that we return safe
@@ -86,7 +92,8 @@ class SafeUnicode(six.text_type, SafeData):
         else:
             return SafeUnicode(data)
 
-    encode = curry(_proxy_method, method = six.text_type.encode)
+    encode = curry(_proxy_method, method=six.text_type.encode)
+
 
 def mark_safe(s):
     """
@@ -103,6 +110,7 @@ def mark_safe(s):
         return SafeUnicode(s)
     return SafeString(str(s))
 
+
 def mark_for_escaping(s):
     """
     Explicitly mark a string as requiring HTML escaping upon output. Has no
@@ -118,4 +126,3 @@ def mark_for_escaping(s):
     if isinstance(s, (six.text_type, Promise)):
         return EscapeUnicode(s)
     return EscapeString(str(s))
-

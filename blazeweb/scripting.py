@@ -10,7 +10,6 @@ import pkg_resources
 import paste.script.command as pscmd
 
 
-
 class ScriptingHelperBase(object):
     def __init__(self):
         self.setup_parser()
@@ -47,10 +46,12 @@ class ScriptingHelperBase(object):
 
     def run(self, args=None):
 
-        if (not args and
-            len(sys.argv) >= 2
-            and os.environ.get('_') and sys.argv[0] != os.environ['_']
-            and os.environ['_'] == sys.argv[1]):
+        if (
+            not args and
+            len(sys.argv) >= 2 and
+            os.environ.get('_') and sys.argv[0] != os.environ['_'] and
+            os.environ['_'] == sys.argv[1]
+        ):
             # probably it's an exe execution
             args = ['exe', os.environ['_']] + sys.argv[2:]
         if args is None:
@@ -88,11 +89,13 @@ class ScriptingHelperBase(object):
     def modify_runner(self, runner, options):
         return runner
 
+
 class BlazeWebHelper(ScriptingHelperBase):
     def __init__(self):
         self.distribution_name = 'blazeweb'
         self.entry_point_name = 'blazeweb.no_app_command'
         ScriptingHelperBase.__init__(self)
+
 
 class AppPackageHelper(ScriptingHelperBase):
     def __init__(self, appfactory):
@@ -104,11 +107,12 @@ class AppPackageHelper(ScriptingHelperBase):
     def setup_parser(self):
         ScriptingHelperBase.setup_parser(self)
         self.parser.add_option(
-        '-p', '--settings-profile',
-        dest='settings_profile',
-        default='Dev',
-        help='Choose which settings profile to use with this command.'\
-            ' If not given, the default will be used.')
+            '-p', '--settings-profile',
+            dest='settings_profile',
+            default='Dev',
+            help='Choose which settings profile to use with this command.'
+                 ' If not given, the default will be used.'
+        )
 
     def modify_runner(self, runner, options):
         # instantiate the app
@@ -117,14 +121,18 @@ class AppPackageHelper(ScriptingHelperBase):
         runner.wsgiapp = self.wsgiapp
         return runner
 
+
 def application_entry(appfactory):
     AppPackageHelper(appfactory).run()
+
 
 def blazeweb_entry():
     BlazeWebHelper().run()
 
+
 class UsageError(Exception):
     pass
+
 
 def load_current_app(app_name=None, profile=None):
     """
@@ -137,17 +145,23 @@ def load_current_app(app_name=None, profile=None):
         """ find the app_package based on the current working directory """
         app_name = find_path_package_name(os.getcwd())
     if not app_name:
-        raise UsageError('Could not determine the current application name.  Is the CWD a blazeweb application?')
+        raise UsageError(
+            ('Could not determine the current application name.  '
+             'Is the CWD a blazeweb application?'))
     try:
-        pkg_pymod = __import__(app_name , globals(), locals(), [''])
+        pkg_pymod = __import__(app_name, globals(), locals(), [''])
     except ImportError as e:
-        raise UsageError('Could not import name "%s".  Is the CWD a blazeweb application?' % app_name)
+        raise UsageError(
+            ('Could not import name "%s".  '
+             'Is the CWD a blazeweb application?') % app_name)
 
     try:
-        app_pymod = __import__('%s.application' % app_name , globals(), locals(), [''])
+        app_pymod = __import__('%s.application' % app_name, globals(), locals(), [''])
     except ImportError as e:
         raise_unexpected_import_error('%s.application' % app_name, e)
-        raise UsageError('Could not import name "%s.application".  Is the CWD a pysmvt application?' % app_name)
+        raise UsageError(
+            ('Could not import name "%s.application".  '
+             'Is the CWD a pysmvt application?') % app_name)
 
     pkg_dir = path.dirname(pkg_pymod.__file__)
     if profile:

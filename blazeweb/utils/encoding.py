@@ -3,6 +3,7 @@ import datetime
 
 import six
 
+
 class DjangoUnicodeDecodeError(UnicodeDecodeError):
     def __init__(self, obj, *args):
         self.obj = obj
@@ -10,8 +11,8 @@ class DjangoUnicodeDecodeError(UnicodeDecodeError):
 
     def __str__(self):
         original = UnicodeDecodeError.__str__(self)
-        return '%s. You passed in %r (%s)' % (original, self.obj,
-                type(self.obj))
+        return '%s. You passed in %r (%s)' % (original, self.obj, type(self.obj))
+
 
 class StrAndUnicode(object):
     """
@@ -22,6 +23,7 @@ class StrAndUnicode(object):
     def __str__(self):
         return self.__unicode__().encode('utf-8')
 
+
 def force_unicode(s, encoding='utf-8', strings_only=False, errors='strict'):
     """
     Similar to smart_unicode, except that lazy instances are resolved to
@@ -29,7 +31,9 @@ def force_unicode(s, encoding='utf-8', strings_only=False, errors='strict'):
 
     If strings_only is True, don't convert (some) non-string-like objects.
     """
-    if strings_only and isinstance(s, (type(None), int, datetime.datetime, datetime.date, datetime.time, float)):
+    if strings_only and isinstance(
+        s, (type(None), int, datetime.datetime, datetime.date, datetime.time, float)
+    ):
         return s
     try:
         if not isinstance(s, six.string_types,):
@@ -47,8 +51,9 @@ def force_unicode(s, encoding='utf-8', strings_only=False, errors='strict'):
                     # without raising a further exception. We do an
                     # approximation to what the Exception's standard str()
                     # output should be.
-                    s = ' '.join([force_unicode(arg, encoding, strings_only,
-                            errors) for arg in s])
+                    s = ' '.join(
+                        [force_unicode(arg, encoding, strings_only, errors) for arg in s]
+                    )
         elif not isinstance(s, six.text_type):
             # Note: We use .decode() here, instead of unicode(s, encoding,
             # errors), so that if s is a SafeString, it ends up being a
@@ -57,6 +62,7 @@ def force_unicode(s, encoding='utf-8', strings_only=False, errors='strict'):
     except UnicodeDecodeError as e:
         raise DjangoUnicodeDecodeError(s, *e.args)
     return s
+
 
 def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):
     """
@@ -74,8 +80,9 @@ def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):
                 # An Exception subclass containing non-ASCII data that doesn't
                 # know how to print itself properly. We shouldn't raise a
                 # further exception.
-                return ' '.join([smart_str(arg, encoding, strings_only,
-                        errors) for arg in s])
+                return ' '.join(
+                    [smart_str(arg, encoding, strings_only, errors) for arg in s]
+                )
             return six.text_type(s).encode(encoding, errors)
     elif isinstance(s, six.text_type):
         return s.encode(encoding, errors)
@@ -83,6 +90,7 @@ def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):
         return s.decode('utf-8', errors).encode(encoding, errors)
     else:
         return s
+
 
 def iri_to_uri(iri):
     """
@@ -101,4 +109,3 @@ def iri_to_uri(iri):
     if iri is None:
         return iri
     return urllib.quote(smart_str(iri), safe='/#%[]=:;$&()+,!?*')
-

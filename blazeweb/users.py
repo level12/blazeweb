@@ -3,11 +3,11 @@ import random
 
 from blazeutils.datastructures import LazyDict, OrderedDict
 from blazeutils.helpers import tolist
-from blazeutils.strings import randchars
 from blazeweb.globals import rg, user as guser
 from blazeweb.utils import registry_has_object
 
 log = logging.getLogger(__name__)
+
 
 class User(LazyDict):
     messages_class = OrderedDict
@@ -71,7 +71,7 @@ class User(LazyDict):
                     break
         self._messages[ident] = UserMessage(severity, text)
 
-    def get_messages(self, clear = True):
+    def get_messages(self, clear=True):
         log.debug('SessionUser messages retrieved: %d' % len(self._messages))
         msgs = list(self._messages.values())
         if clear:
@@ -80,7 +80,9 @@ class User(LazyDict):
         return msgs
 
     def __repr__(self):
-        return '<User (%s): %s, %s, %s>' % (hex(id(self)), self.is_authenticated, self.copy(), self._messages)
+        return '<User (%s): %s, %s, %s>' % (
+            hex(id(self)), self.is_authenticated, self.copy(), self._messages
+        )
 
     def __nonzero__(self):
         # lazy dict would return False if it was empty, but we want to look more
@@ -99,6 +101,7 @@ class UserMessage(object):
 
     def __repr__(self):
         return '%s: %s' % (self.severity, self.text)
+
 
 class UserProxy(object):
     """
@@ -153,7 +156,9 @@ class UserProxy(object):
         if registry_has_object(guser):
             guser_cur_obj = guser._current_obj()
             if not isinstance(guser_cur_obj, UserProxy):
-                raise TypeError('UserProxy tried to unregister a class of type: %s' % cobj)
+                raise TypeError(
+                    'UserProxy tried to unregister a class of type: %s' % guser_cur_obj
+                )
             rg.environ['paste.registry'].register(guser, user_inst)
         return user_inst
 

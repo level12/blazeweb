@@ -4,6 +4,7 @@ class ProgrammingError(Exception):
         not fit any of the builtin exceptions
     """
 
+
 class SettingsError(Exception):
     """
         raised when a settings error is detected

@@ -18,6 +18,7 @@ def urlquote(url, safe='/'):
 
 urlquote = allow_lazy(urlquote, six.text_type)
 
+
 def urlquote_plus(url, safe=''):
     """
     A version of Python's urllib.quote_plus() function that can operate on
@@ -27,6 +28,7 @@ def urlquote_plus(url, safe=''):
     """
     return force_unicode(urllib.quote_plus(smart_str(url), safe))
 urlquote_plus = allow_lazy(urlquote_plus, six.text_type)
+
 
 def urlencode(query, doseq=0):
     """
@@ -38,9 +40,10 @@ def urlencode(query, doseq=0):
         query = query.items()
     return urllib.urlencode(
         [(smart_str(k),
-         isinstance(v, (list,tuple)) and [smart_str(i) for i in v] or smart_str(v))
+         isinstance(v, (list, tuple)) and [smart_str(i) for i in v] or smart_str(v))
             for k, v in query],
         doseq)
+
 
 def cookie_date(epoch_seconds=None):
     """
@@ -54,6 +57,7 @@ def cookie_date(epoch_seconds=None):
     """
     rfcdate = formatdate(epoch_seconds)
     return '%s-%s-%s GMT' % (rfcdate[:7], rfcdate[8:11], rfcdate[12:25])
+
 
 def http_date(epoch_seconds=None):
     """
@@ -71,11 +75,13 @@ def http_date(epoch_seconds=None):
 
 # Base 36 functions: useful for generating compact URLs
 
+
 def base36_to_int(s):
     """
     Convertd a base 36 string to an integer
     """
     return int(s, 36)
+
 
 def int_to_base36(i):
     """

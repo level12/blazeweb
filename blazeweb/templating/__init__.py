@@ -2,12 +2,13 @@ from markdown2 import markdown
 from blazeutils.dates import safe_strftime
 from blazeutils.jsonh import jsonmod as json
 from blazeutils.numbers import moneyfmt
-from blazeutils.strings import simplify_string, reindent
+from blazeutils.strings import simplify_string
 
-from blazeweb.globals import ag, settings, user, rg
+from blazeweb.globals import settings, user, rg
 from blazeweb.routing import url_for, current_url, static_url, abs_static_url
 from blazeweb.utils import registry_has_object
 from blazeweb.utils.html import strip_tags
+
 
 class EngineBase(object):
     """
@@ -42,10 +43,13 @@ class EngineBase(object):
 
     def get_filters(self):
         filters = {}
-        filters['simplify'] = lambda x, *args, **kwargs: self.mark_safe(simplify_string(x, *args, **kwargs))
-        filters['markdown'] = lambda x, *args, **kwargs: self.mark_safe(markdown(x, *args, **kwargs))
-        filters['strip_tags'] = lambda x: self.mark_safe(striptags(x))
-        filters['moneyfmt'] = lambda x, *args, **kwargs: self.mark_safe(moneyfmt(x, *args, **kwargs))
+        filters['simplify'] = lambda x, *args, **kwargs: \
+            self.mark_safe(simplify_string(x, *args, **kwargs))
+        filters['markdown'] = lambda x, *args, **kwargs: \
+            self.mark_safe(markdown(x, *args, **kwargs))
+        filters['strip_tags'] = lambda x: self.mark_safe(strip_tags(x))
+        filters['moneyfmt'] = lambda x, *args, **kwargs: \
+            self.mark_safe(moneyfmt(x, *args, **kwargs))
         filters['datefmt'] = safe_strftime
         filters['static'] = static_url
         filters['json'] = json.dumps
@@ -62,6 +66,7 @@ class EngineBase(object):
             context.setdefault('rg', rg)
         else:
             context.setdefault('rg', None)
+
 
 def default_engine():
     tmod = __import__('blazeweb.templating.%s' % settings.templating.default_engine, fromlist=[''])

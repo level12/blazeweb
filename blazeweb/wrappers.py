@@ -5,9 +5,11 @@ from blazeutils.jsonh import jsonmod, assert_have_json
 from blazeweb.globals import rg
 from blazeweb.utils import registry_has_object
 
+
 class BaseRequest(wz.Request):
     # we want mutable request objects
     parameter_storage_class = wz.MultiDict
+
 
 class Request(BaseRequest):
     """
@@ -61,6 +63,7 @@ class Response(wz.Response):
     """
 
     default_mimetype = 'text/html'
+
 
 class StreamResponse(wz.Response):
     """

@@ -20,6 +20,7 @@ __all__ = [
     'copy_static_files',
 ]
 
+
 class Error(EnvironmentError):
     pass
 
@@ -27,6 +28,7 @@ try:
     WindowsError
 except NameError:
     WindowsError = None
+
 
 def mkdirs(newdir, mode=NotGiven):
     """
@@ -42,10 +44,11 @@ def mkdirs(newdir, mode=NotGiven):
     if os.path.isdir(newdir):
         pass
     elif os.path.isfile(newdir):
-        raise OSError("a file with the same name as the desired " \
+        raise OSError("a file with the same name as the desired "
                       "dir, '%s', already exists." % newdir)
     else:
         os.makedirs(newdir, mode)
+
 
 def copy_static_files(delete_existing=False):
     """
@@ -81,6 +84,7 @@ def copy_static_files(delete_existing=False):
             targetpath = path.join(statroot, targetpath)
 
             copytree(srcpath, targetpath)
+
 
 def copytree(src, dst, symlinks=False, ignore=None):
     """Recursively copy a directory tree using copy2().

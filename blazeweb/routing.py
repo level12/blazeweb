@@ -1,12 +1,8 @@
-from six.moves.urllib.parse import urlparse
-
 from blazeweb.globals import settings, rg
 from blazeweb.utils import registry_has_object
 from werkzeug import Href, MultiDict
-from werkzeug.routing import Rule, RequestRedirect
-from werkzeug.exceptions import NotFound, MethodNotAllowed
+from werkzeug.routing import Rule
 from werkzeug.wrappers import BaseRequest
-from blazeweb.exceptions import SettingsError, ProgrammingError
 
 __all__ = [
     'Rule',
@@ -16,6 +12,7 @@ __all__ = [
     'prefix_relative_url',
     'abs_static_url',
 ]
+
 
 def prefix_relative_url(url):
     """
@@ -45,16 +42,18 @@ def prefix_relative_url(url):
             return '/%s/%s' % (script_name.lstrip('/'), url)
     return '/%s' % url
 
+
 def url_for(endpoint, _external=False, _https=None, **values):
     if _https is not None:
         _external = True
     url = rg.urladapter.build(endpoint, values, force_external=_external)
     if _https and url.startswith('http:'):
         url = url.replace('http:', 'https:', 1)
-    elif _https == False and url.startswith('https:'):
+    elif _https is False and url.startswith('https:'):
         # need to specify _external=True for this to fire
         url = url.replace('https:', 'http:', 1)
     return url
+
 
 def static_url(path):
     """
@@ -64,15 +63,17 @@ def static_url(path):
     """
     return '%s/%s' % (settings.routing.static_prefix.rstrip('/'), path.lstrip('/'))
 
+
 def abs_static_url(path):
     """
         Same as prefix_relative_url(static_url(path))
     """
     return prefix_relative_url(static_url(path))
 
+
 def current_url(root_only=False, host_only=False, strip_querystring=False,
-    strip_host=False, https=None, environ=None, qs_replace=None,
-    qs_update=None):
+                strip_host=False, https=None, environ=None, qs_replace=None,
+                qs_update=None):
     """
     Returns strings based on the current URL.  Assume a request with path:
 
@@ -124,7 +125,7 @@ def current_url(root_only=False, host_only=False, strip_querystring=False,
             retval = ro.url
     if strip_host:
         retval = retval.replace(ro.host_url.rstrip('/'), '', 1)
-    if not strip_host and https != None:
+    if not strip_host and https is not None:
         if https and retval.startswith('http://'):
             retval = retval.replace('http://', 'https://', 1)
         elif not https and retval.startswith('https://'):
@@ -163,7 +164,4 @@ def current_url(root_only=False, host_only=False, strip_querystring=False,
                     pass
 
         return href(args)
-    elif qs_update:
-        href = Href(retval, sort=True)
-        return href(MultiDict(querystring_new))
     return retval

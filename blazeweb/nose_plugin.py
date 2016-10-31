@@ -9,6 +9,7 @@ import nose.plugins
 import sys
 from blazeutils import tolist
 
+
 class InitAppPlugin(nose.plugins.Plugin):
     enabled = True
     opt_app_profile = 'blazeweb_profile'
@@ -29,25 +30,25 @@ class InitAppPlugin(nose.plugins.Plugin):
                           dest=self.opt_app_profile, type="string",
                           default="Test",
                           help="The name of the test profile in settings.py"
-                        )
+                          )
 
         parser.add_option("--blazeweb-package",
                           dest=self.opt_app_name, type="string",
                           help="The name of the application's package, defaults"
                           " to top package of current working directory"
-                        )
+                          )
 
         parser.add_option("--blazeweb-disable",
                           dest=self.opt_disable,
                           action="store_true",
                           help="Disable plugin"
-                        )
+                          )
 
         parser.add_option("--blazeweb-debug",
                           dest=self.opt_debug_name,
                           action="store_true",
                           help="plugin will raise exceptions rather then disabling itself"
-                        )
+                          )
 
     def configure(self, options, config):
         """Configure the plugin"""
