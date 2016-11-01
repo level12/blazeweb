@@ -4,12 +4,15 @@ from paste.script.templates import Template, var
 from paste.util.template import paste_script_template_renderer
 from paste.script import command
 
+
 class DummyCommand(command.Command):
     simulate = False
     parser = command.Command.standard_parser()
 
+
 class DummyOptions(object):
     simulate = False
+
 
 def dummy_cmd(interactive, verbose, overwrite):
     cmd = DummyCommand('dummy')
@@ -18,6 +21,7 @@ def dummy_cmd(interactive, verbose, overwrite):
     cmd.options = DummyOptions()
     cmd.options.overwrite = overwrite
     return cmd
+
 
 class ProjectTemplate(Template):
 
@@ -28,12 +32,13 @@ class ProjectTemplate(Template):
         var('description', 'One-line description of the package'),
         var('author', 'Your name'),
         var('programmer_email', 'Your email'),
-        ]
+    ]
 
     def pre(self, command, output_dir, vars):
         # convert user's name into a username var
         author = vars['author']
         vars['username'] = author.split(' ')[0].capitalize()
+
 
 class MinimalProjectTemplate(Template):
 
@@ -44,9 +49,9 @@ class MinimalProjectTemplate(Template):
         var('description', 'One-line description of the package'),
         var('author', 'Your name'),
         var('programmer_email', 'Your email'),
-        ]
+    ]
 
-#class ModuleTemplate(Template):
+# class ModuleTemplate(Template):
 #
 #    _template_dir = ('blazeweb', 'paster_tpls/module')
 #    template_renderer = staticmethod(paste_script_template_renderer)
@@ -58,6 +63,7 @@ class MinimalProjectTemplate(Template):
 #        print 'Action Required: enabled module in settings.py'
 #        print '-'*70
 #        print 'self.modules.%s.enabled = True' % vars['modname']
+
 
 def run_template(interactive, verbose, overwrite, vars,
                  output_dir, tname, type):
@@ -76,6 +82,7 @@ def run_template(interactive, verbose, overwrite, vars,
     for template in templates:
         template.run(cmd, output_dir, vars)
 
+
 def extend_templates(templates, tmpl_name, type):
     if '#' in tmpl_name:
         dist_name, tmpl_name = tmpl_name.split('#', 1)
@@ -93,7 +100,7 @@ def extend_templates(templates, tmpl_name, type):
     else:
         dist = pkg_resources.get_distribution(dist_name)
         entry = dist.get_entry_info(
-            'blazeweb.%s'%type, tmpl_name)
+            'blazeweb.%s' % type, tmpl_name)
         tmpl = entry.load()(entry.name)
     full_name = '%s#%s' % (dist_name, tmpl_name)
     for item_full_name, item_tmpl in templates:
@@ -104,5 +111,6 @@ def extend_templates(templates, tmpl_name, type):
         extend_templates(templates, req_name, type)
     templates.append((full_name, tmpl))
 
+
 def all_entry_points(type):
-    return list(pkg_resources.iter_entry_points('blazeweb.%s'%type))
+    return list(pkg_resources.iter_entry_points('blazeweb.%s' % type))

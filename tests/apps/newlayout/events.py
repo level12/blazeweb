@@ -3,14 +3,17 @@ from blazeweb.events import signal
 from blazeweb.utils import redirect
 from blazeweb.views import forward
 
+
 def fire_after_event_init(sender):
     return 'newlayout'
 signal('blazeweb.events.initialized').connect(fire_after_event_init)
 
+
 def modify_response(sender, response=None):
     if 'eventtest' in rg.request.url:
-        response.data = response.data + 'newlayout'
+        response.data = response.data + b'newlayout'
 signal('blazeweb.response_cycle.ended').connect(modify_response)
+
 
 def send_to_index(sender, endpoint, urlargs):
     """

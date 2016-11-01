@@ -6,7 +6,9 @@ the plugin is active.  This helps with test coverage of blazeweb.
 import os
 
 import nose.plugins
+import sys
 from blazeutils import tolist
+
 
 class InitAppPlugin(nose.plugins.Plugin):
     enabled = True
@@ -28,25 +30,25 @@ class InitAppPlugin(nose.plugins.Plugin):
                           dest=self.opt_app_profile, type="string",
                           default="Test",
                           help="The name of the test profile in settings.py"
-                        )
+                          )
 
         parser.add_option("--blazeweb-package",
                           dest=self.opt_app_name, type="string",
                           help="The name of the application's package, defaults"
                           " to top package of current working directory"
-                        )
+                          )
 
         parser.add_option("--blazeweb-disable",
                           dest=self.opt_disable,
                           action="store_true",
                           help="Disable plugin"
-                        )
+                          )
 
         parser.add_option("--blazeweb-debug",
                           dest=self.opt_debug_name,
                           action="store_true",
                           help="plugin will raise exceptions rather then disabling itself"
-                        )
+                          )
 
     def configure(self, options, config):
         """Configure the plugin"""
@@ -64,6 +66,9 @@ class InitAppPlugin(nose.plugins.Plugin):
             self.val_debug = getattr(options, self.opt_debug_name)
 
     def begin(self):
+        # Add test apps to import path
+        sys.path.append(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'apps'))
+
         if self.val_disable:
             return
         # import here so we can avoid test coverage issues
@@ -87,7 +92,7 @@ class InitAppPlugin(nose.plugins.Plugin):
 
             # we also support events for pre-test setup
             signal('blazeweb.pre_test_init').send()
-        except UsageError, e:
+        except UsageError:
             if self.val_debug:
                 raise
             self.val_disable = True

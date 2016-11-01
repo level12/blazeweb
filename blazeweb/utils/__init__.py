@@ -7,12 +7,14 @@ from formencode.validators import URL
 from formencode import Invalid
 from blazeutils.helpers import pformat
 from blazeutils.strings import reindent
-from webhelpers.html import escape
+import six
+from webhelpers2.html import escape
 import werkzeug
 
 from blazeweb.globals import rg, settings
 
 log = logging.getLogger(__name__)
+
 
 def isurl(s, require_tld=True):
     u = URL(add_http=False, require_tld=require_tld)
@@ -24,6 +26,7 @@ def isurl(s, require_tld=True):
         if url_local is not None:
             return True
         return False
+
 
 def abort(send):
     """
@@ -51,11 +54,12 @@ def abort(send):
 
     if isinstance(send, int) or hasattr(send, '__call__'):
         response = send
-    elif isinstance(send, basestring):
+    elif isinstance(send, six.string_types):
         response = Response(response_body % escape(send))
     else:
         response = Response(response_body % ('<pre>%s</pre>' % escape(pformat(send))))
     werkzeug.abort(response)
+
 
 def werkzeug_multi_dict_conv(md):
     '''
@@ -63,12 +67,13 @@ def werkzeug_multi_dict_conv(md):
         if only one value or a list if multiple values
     '''
     retval = {}
-    for key, value in md.to_dict(flat=False).iteritems():
+    for key, value in six.iteritems(md.to_dict(flat=False)):
         if len(value) == 1:
             retval[key] = value[0]
         else:
             retval[key] = value
     return retval
+
 
 def registry_has_object(to_check):
     """
@@ -79,7 +84,7 @@ def registry_has_object(to_check):
     # http://trac.pythonpaste.org/pythonpaste/ticket/408
     try:
         return bool(to_check._object_stack())
-    except AttributeError, e:
+    except AttributeError as e:
         if "'thread._local' object has no attribute 'objects'" != str(e):
             raise
         return False
@@ -91,7 +96,7 @@ def exception_context_filter(data):
     for key in data.keys():
         value = data[key]
         # Does this value match any of the filter patterns?
-        if filter(lambda pattern: fnmatch.fnmatch(key, pattern), filters):
+        if [pattern for pattern in filters if fnmatch.fnmatch(key, pattern)]:
             retval[key] = '<removed>'
         else:
             retval[key] = value
@@ -126,7 +131,8 @@ class _Redirect(Exception):
     def __init__(self, response):
         self.response = response
 
-def redirect(location, permanent=False, code=302 ):
+
+def redirect(location, permanent=False, code=302):
     """
         location: URI to redirect to
         permanent: if True, sets code to 301 HTTP status code
@@ -139,6 +145,7 @@ def redirect(location, permanent=False, code=302 ):
     log.debug('%d redirct to %s' % (code, location))
     raise _Redirect(werkzeug.redirect(location, code))
 
+
 def sess_regenerate_id():
     """
         Regenerates the beaker session's id
@@ -146,10 +153,9 @@ def sess_regenerate_id():
         Needed until this gets put in place:
         https://bitbucket.org/bbangert/beaker/issue/75
     """
-    #rg.session.regenerate_id()
     try:
         rg.session.regenerate_id()
-    except AttributeError, e:
+    except AttributeError as e:
         if 'regenerate_id' not in str(e):
             raise
         is_new = rg.session.is_new

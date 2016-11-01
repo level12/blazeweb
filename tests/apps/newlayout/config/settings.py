@@ -1,9 +1,11 @@
+from __future__ import print_function
 from os import path
 
 from nlsupporting.config.settings import Default as nlDefault
 
 basedir = path.dirname(path.dirname(__file__))
 app_package = path.basename(basedir)
+
 
 class Default(nlDefault):
     def init(self):
@@ -28,7 +30,7 @@ class Default(nlDefault):
         self.components.news.bar = 3
 
     def get_storage_dir(self):
-        return path.join(basedir, '..', '..', 'test-output', app_package)
+        return path.join(basedir, '..', '..', 'test-output', self.app_package)
 
     def setup_components(self):
         """
@@ -45,22 +47,26 @@ class Default(nlDefault):
 
         nlDefault.setup_components(self)
 
+
 class AutoCopyStatic(Default):
     def init(self):
         Default.init(self)
         self.auto_copy_static.enabled = True
+
 
 class WithTestSettings(Default):
     def init(self):
         Default.init(self)
         self.auto_abort_as_builtin = True
 
+
 class ForStaticFileTesting(Default):
     def init(self):
         Default.init(self)
-        self.static_files.location  = 'source'
+        self.static_files.location = 'source'
+
 
 class AttributeErrorInSettings(Default):
     def init(self):
         Default.init(self)
-        print path.notthere
+        print(path.notthere)

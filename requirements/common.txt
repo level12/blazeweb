@@ -1,0 +1,14 @@
+beaker
+blazeutils
+blinker
+decorator
+formencode
+html2text
+jinja2
+markdown2
+minimock
+nose
+paste
+pastescript
+webhelpers2
+werkzeug

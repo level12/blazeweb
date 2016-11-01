@@ -2,11 +2,8 @@ import sys
 
 from webtest import TestApp
 
-from blazeweb.globals import user, ag
-from blazeweb.views import asview, forward
-
-import config
 from minimal2.application import make_wsgi
+
 
 class TestAltStack(object):
 
@@ -42,6 +39,7 @@ class TestAltStack(object):
         r = self.ta.get('/news/display')
         r.mustcontain('np4 display')
 
+
 class TestAltStackWithSession(object):
 
     @classmethod
@@ -59,10 +57,10 @@ class TestAltStackWithSession(object):
         r.mustcontain('hello hassession!')
 
     def test_session_saves(self):
-        r = self.ta.get('/session1')
+        self.ta.get('/session1')
 
-        r = self.ta.get('/session2')
+        self.ta.get('/session2')
 
         # get a new ta so that the cookie is different
         nta = TestApp(self.wsgiapp)
-        r = nta.get('/session3')
+        nta.get('/session3')
