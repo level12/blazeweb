@@ -5,6 +5,7 @@ from blazeweb.config import DefaultSettings
 basedir = path.dirname(path.dirname(__file__))
 app_package = path.basename(basedir)
 
+
 class Default(DefaultSettings):
     def init(self):
         self.dirs.base = basedir
@@ -18,6 +19,7 @@ class Default(DefaultSettings):
 
     def get_storage_dir(self):
         return path.join(basedir, '..', '..', 'test-output', app_package)
+
 
 class Testruns(Default):
     def init(self):
@@ -49,6 +51,7 @@ class Testruns(Default):
         # blazewebtestapp2 components
         self.add_component('blazewebtestapp2', 'tests')
         self.add_component('blazewebtestapp2', 'routingtests')
+
 
 class WithLogs(Testruns):
     def init(self):

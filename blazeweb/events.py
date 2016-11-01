@@ -1,7 +1,9 @@
 from blazeweb.globals import ag, settings
 
+
 def signal(name, doc=None):
     return ag.events_namespace.signal(name, doc)
+
 
 def settings_connect(signalname):
     """
@@ -15,6 +17,7 @@ def settings_connect(signalname):
     def the_decorator(method):
         return SettingsConnectHelper(signalname, method)
     return the_decorator
+
 
 class SettingsConnectHelper(object):
 

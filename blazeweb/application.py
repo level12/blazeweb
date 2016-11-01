@@ -1,19 +1,18 @@
-from __future__ import with_statement
-import __builtin__
+import six.moves.builtins
 import logging
 
 from blazeutils.datastructures import BlankObject
 from blazeutils.strings import randchars, randhash
 from blinker import Namespace
+import six
 from werkzeug.exceptions import HTTPException, InternalServerError
-from werkzeug import create_environ
-from werkzeug.routing import Map, Submount
+from werkzeug.routing import Map
 
 from blazeweb.globals import ag, rg, settings, user
 from blazeweb.events import signal, SettingsConnectHelper, clear_old_beaker_sessions
 from blazeweb.exceptions import ProgrammingError
 from blazeweb.hierarchy import findobj, HierarchyImportError, \
-    listcomponents, visitmods, findview, split_endpoint
+    listcomponents, visitmods, findview
 from blazeweb.logs import create_handlers_from_settings
 from blazeweb.mail import mail_programmers
 from blazeweb.templating import default_engine
@@ -24,6 +23,7 @@ from blazeweb.views import _RouteToTemplate, _Forward
 from blazeweb.wrappers import Request
 
 log = logging.getLogger(__name__)
+
 
 class RequestManager(object):
     user_proxy_class = UserProxy
@@ -44,7 +44,7 @@ class RequestManager(object):
         rg.environ = self.environ
         # the request object binds itself to rg.request
         Request(self.environ)
-        if self.environ.has_key('beaker.session'):
+        if 'beaker.session' in self.environ:
             rg.session = self.environ['beaker.session']
             log.debug('using beaker sessions')
         else:
@@ -87,6 +87,7 @@ class RequestManager(object):
             for callable in self.environ['blazeweb.request_teardown']:
                 callable()
 
+
 class ResponseContext(object):
     def __init__(self, error_doc_code):
         self.environ = rg.environ
@@ -113,7 +114,9 @@ class ResponseContext(object):
             log.debug('forwarding to %s (%s)', e.forward_endpoint, e.forward_args)
             rg.forward_queue.append((e.forward_endpoint, e.forward_args))
             if len(rg.forward_queue) == 10:
-                raise ProgrammingError('forward loop detected: %s' % '->'.join([g[0] for g in rg.forward_queue]))
+                raise ProgrammingError(
+                    'forward loop detected: %s' % '->'.join([g[0] for g in rg.forward_queue])
+                )
             return True
         if 'beaker.session' in self.environ:
             bs = self.environ['beaker.session']
@@ -123,6 +126,7 @@ class ResponseContext(object):
             else:
                 log.debug('beaker session not accessed, not saving')
         log.debug('exit response context finished')
+
 
 class WSGIApp(object):
 
@@ -146,15 +150,14 @@ class WSGIApp(object):
             module = module_or_settings
             try:
                 self.settings = getattr(module, profile)()
-            except AttributeError, e:
+            except AttributeError as e:
                 if "has no attribute '%s'" % profile not in str(e):
                     raise
                 raise ValueError('settings profile "%s" not found in this application' % profile)
         SettingsClass = self.settings.__class__
         # look for any attributes on the settings class instance that have
         # been decorated by @settings_connect and connect() them
-        for aname, aobj in vars(SettingsClass).iteritems():
-            #print aname
+        for aname, aobj in six.iteritems(vars(SettingsClass)):
             if isinstance(aobj, SettingsConnectHelper):
                 aobj.connect()
         settings._push_object(self.settings)
@@ -199,7 +202,7 @@ class WSGIApp(object):
                 # update component-level settings
                 try:
                     self.settings.components[cname].setdefaults(ps.for_me)
-                except KeyError, e:
+                except KeyError as e:
                     if cname not in str(e):
                         raise
                     # the application's settings did not override any of this
@@ -209,11 +212,11 @@ class WSGIApp(object):
 
                 # update application-level settings
                 self.settings.setdefaults(ps.for_app)
-            except HierarchyImportError, e:
+            except HierarchyImportError as e:
                 # this happens if the component did not have a settings module or
                 # did not have a Settings class in the module
                 if '%s.config.settings' % cname not in str(e) and 'Settings' not in str(e):
-                    raise # pragma: no cover
+                    raise  # pragma: no cover
 
         # lock the settings, this ensures that an attribute error is thrown if an
         # attribute is accessed that doesn't exist.  Without the lock, a new attr
@@ -230,8 +233,8 @@ class WSGIApp(object):
         # copy static files if requested
         if self.settings.auto_copy_static.enabled:
             copy_static_files(self.settings.auto_copy_static.delete_existing)
-        if self.settings.auto_abort_as_builtin == True:
-            __builtin__.dabort = abort
+        if self.settings.auto_abort_as_builtin is True:
+            six.moves.builtins.dabort = abort
 
         signal('blazeweb.auto_actions.initialized').connect(clear_old_beaker_sessions)
         signal('blazeweb.auto_actions.initialized').send(self.init_auto_actions)
@@ -256,7 +259,7 @@ class WSGIApp(object):
             psettings = self.settings.components[pname]
             try:
                 self.add_routing_rules(psettings.routes)
-            except AttributeError, e:
+            except AttributeError as e:
                 if "no attribute 'routes'" not in str(e):
                     raise  # pragma: no cover
 
@@ -301,18 +304,18 @@ class WSGIApp(object):
             try:
                 try:
                     endpoint, args = rg.urladapter.match()
-                except HTTPException, e:
+                except HTTPException as e:
                     log.debug('routing HTTP exception %s from %s', e, rg.request.url)
                     raise
                 log.debug('wsgi_app processing %s (%s)', endpoint, args)
                 response = self.response_cycle(endpoint, args)
-            except _Redirect, e:
+            except _Redirect as e:
                 response = e.response
-            except HTTPException, e:
+            except HTTPException as e:
                 if not self.settings.http_exception_handling:
                     raise
                 response = self.handle_http_exception(e)
-            except Exception, e:
+            except Exception as e:
                 response = self.handle_exception(e)
             # todo: I wonder if this signal send should be called even in the
             # case of an exception by putting in a finally block
@@ -332,11 +335,11 @@ class WSGIApp(object):
             return e
         try:
             return self.response_cycle(endpoint, {}, error_doc_code=e.code)
-        except HTTPException, httpe:
+        except HTTPException as httpe:
             log.debug('error doc endpoint %s raised HTTPException: %s', endpoint, httpe)
             # the document handler is bad, so send back the original exception
             return e
-        except Exception, exc:
+        except Exception as exc:
             log.debug('error doc endpoint %s raised exception: %s', endpoint, exc)
             return self.handle_exception(exc)
 
@@ -355,12 +358,8 @@ class WSGIApp(object):
         if 'email' in self.settings.exception_handling:
             try:
                 mail_programmers('exception encountered', exception_with_context())
-            except Exception, e:
+            except Exception as e:
                 log.exception('exception when trying to email exception')
-        if 'format' in self.settings.exception_handling:
-            response = InternalServerError()
-            response.description = '<pre>%s</pre>' % escape(exception_with_context())
-            return response
         if 'handle' in self.settings.exception_handling:
             if rg.exception_handler:
                 return rg.exception_handler(e)
@@ -370,9 +369,9 @@ class WSGIApp(object):
                     log.debug('handling exception with error doc endpoint %s' % endpoint)
                     try:
                         return self.response_cycle(endpoint, {}, error_doc_code=500)
-                    except HTTPException, httpe:
+                    except HTTPException as httpe:
                         log.debug('error doc endpoint %s raised HTTPException: %s', endpoint, httpe)
-                    except Exception, exc:
+                    except Exception:
                         log.exception('error doc endpoint %s raised exception:', endpoint)
             # turn the exception into a 500 server response
             log.debug('handling exception with generic 500 response')

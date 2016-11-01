@@ -1,29 +1,24 @@
 from __future__ import with_statement
-import os
-import smtplib
 
 from decorator import decorator
 from nose.tools import make_decorator
-from blazeutils.datastructures import BlankObject
-from webhelpers.html import tools
+from webhelpers2.html import tools
 from werkzeug import Client as WClient, BaseRequest, BaseResponse, \
     cached_property, create_environ, run_wsgi_app
 
 from blazeweb.application import ResponseContext, RequestManager
-from blazeweb.globals import ag, settings, rg, user
+from blazeweb.globals import ag, user
 import blazeweb.mail
 from blazeweb.middleware import minimal_wsgi_stack
-from blazeweb.hierarchy import findobj
-from blazeweb.scripting import load_current_app, UsageError
 from blazeweb.users import UserProxy
 from blazeweb.views import View
-from blazeweb.wrappers import Request
 
 try:
     from webtest import TestApp as WTTestApp
     from webtest import TestResponse as WTTestResponse
 except ImportError:
     WTTestApp = None
+
 
 class Client(WClient):
 
@@ -40,6 +35,7 @@ class Client(WClient):
         if fr:
             return BaseRequest(retval[0]), retval[1]
         return retval
+
 
 def mockmail(func):
     '''
@@ -77,22 +73,29 @@ Called blazeweb.mail.EmailMessage.send()""".strip()
         import minimock
     except ImportError:
         raise ImportError('use of the mockmail decorator requires the minimock library')
+
     def newfunc(*arg, **kw):
         try:
-            override = None
             # setup the mock objects so we can test the email getting sent out
             tt = minimock.TraceTracker()
             minimock.mock('blazeweb.mail.EmailMessage', tracker=tt)
-            blazeweb.mail.EmailMessage.mock_returns = minimock.Mock('blazeweb.mail.EmailMessage', tracker=tt)
+            blazeweb.mail.EmailMessage.mock_returns = minimock.Mock(
+                'blazeweb.mail.EmailMessage', tracker=tt
+            )
             minimock.mock('blazeweb.mail.MarkdownMessage', tracker=tt)
-            blazeweb.mail.MarkdownMessage.mock_returns = minimock.Mock('blazeweb.mail.MarkdownMessage', tracker=tt)
+            blazeweb.mail.MarkdownMessage.mock_returns = minimock.Mock(
+                'blazeweb.mail.MarkdownMessage', tracker=tt
+            )
             minimock.mock('blazeweb.mail.HtmlMessage', tracker=tt)
-            blazeweb.mail.HtmlMessage.mock_returns = minimock.Mock('blazeweb.mail.HtmlMessage', tracker=tt)
+            blazeweb.mail.HtmlMessage.mock_returns = minimock.Mock(
+                'blazeweb.mail.HtmlMessage', tracker=tt
+            )
             kw['mm_tracker'] = tt
             func(*arg, **kw)
         finally:
             minimock.restore()
     return make_decorator(func)(newfunc)
+
 
 class TestResponse(BaseResponse):
 
@@ -142,8 +145,10 @@ else:
         def __init__(self, *args, **kwargs):
             raise ImportError('You must have WebTest installed to use TestApp')
 
+
 def inrequest(path='/[[@inrequest]]', *args, **kwargs):
     environ = create_environ(path, *args, **kwargs)
+
     def inner(f, *args, **kwargs):
         """
             This sets up request and response context for testing pursposes.
@@ -160,15 +165,16 @@ def inrequest(path='/[[@inrequest]]', *args, **kwargs):
         return environ['pysmvt.testing.inrequest:func_retval']
     return decorator(inner)
 
+
 def runview(view, path='/[[@runview]]', *args, **kwargs):
     if not isinstance(view, View) and issubclass(view, View):
         # the view is a class, not an instance, so instantiate with empty
         # URL args and a fake endpoint
         view = view({}, '__testing__')
-    funcretval = None
     req_pre = kwargs.pop('pre', None)
     req_post = kwargs.pop('post', None)
     required_status = kwargs.pop('status', 200)
+
     @inrequest(path, *args, **kwargs)
     def runview_inner():
         if req_pre is not None:

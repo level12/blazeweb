@@ -1,1 +1,1 @@
-from foo import bar
+from foo import bar  # noqa

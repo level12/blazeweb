@@ -1,23 +1,21 @@
 import logging
-from new import classobj
 
 from decorator import decorator
 import formencode
 from blazeutils.sentinels import NotGiven
 from blazeutils.helpers import tolist
 from blazeutils.strings import case_cw2us
+import six
 from werkzeug import MultiDict, validate_arguments, ArgumentValidationError, \
     abort
 from werkzeug.exceptions import BadRequest
 from werkzeug.routing import Rule
 
 from blazeweb.globals import ag, rg, user, settings
-from blazeweb import routing
 from blazeutils.jsonh import jsonmod, assert_have_json
 from blazeweb.content import getcontent, Content
 from blazeweb.hierarchy import listapps, split_endpoint
-from blazeweb.exceptions import ProgrammingError
-from blazeweb.utils import registry_has_object, werkzeug_multi_dict_conv
+from blazeweb.utils import werkzeug_multi_dict_conv
 from blazeweb.wrappers import Response
 
 log = logging.getLogger(__name__)
@@ -28,9 +26,11 @@ __all__ = (
     'asview',
     'jsonify'
 )
-###
-### internal stuff
-###
+
+"""
+    internal stuff
+"""
+
 
 def _calc_component_name(module):
     """ calculates the component a view is in """
@@ -45,6 +45,7 @@ def _calc_component_name(module):
     # its an internal component
     return parts[2]
 
+
 class _ProcessorWrapper(formencode.validators.Wrapper):
     """
         Only catch ValueError and TypeError, otherwise debugging can become
@@ -53,12 +54,14 @@ class _ProcessorWrapper(formencode.validators.Wrapper):
     def wrap(self, func):
         if not func:
             return None
+
         def result(value, state, func=func):
             try:
                 return func(value)
-            except (ValueError, TypeError), e:
+            except (ValueError, TypeError) as e:
                 raise formencode.Invalid(str(e), {}, value, state)
         return result
+
 
 class _ViewCallStackAbort(Exception):
     """
@@ -66,9 +69,11 @@ class _ViewCallStackAbort(Exception):
         call stack. Don't use directly, use the send_response() method on the
         view instead.
     """
-###
-### primary View objects
-###
+
+"""
+    primary View objects
+"""
+
 
 class View(object):
     """
@@ -137,9 +142,9 @@ class View(object):
         # setup our method call stack
         self.init_call_methods()
 
-    ###
-    ### method stack helpers
-    ###
+    """
+        method stack helpers
+    """
     def init_call_methods(self):
         # use this method if you need to do view setup, but need getargs to do it
         # and therefore can not do the setup in init()
@@ -161,14 +166,14 @@ class View(object):
             before = self._cm_stack[:target_pos]
             after = self._cm_stack[target_pos:]
         else:
-            before = self._cm_stack[:target_pos+1]
-            after = self._cm_stack[target_pos+1:]
+            before = self._cm_stack[:target_pos + 1]
+            after = self._cm_stack[target_pos + 1:]
         before.append((name, required, takes_args))
         self._cm_stack = before + after
 
-    ###
-    ### arg helpers
-    ###
+    """
+        arg helpers
+    """
     def expect_getargs(self, *args):
         """
             The arguments passed to this method should be strings that
@@ -191,8 +196,8 @@ class View(object):
         self.expected_get_args.extend(args)
 
     def add_processor(self, argname, processor=None, required=None,
-            takes_list = None, list_item_invalidates=False, strict=False,
-            show_msg=False, custom_msg=None, pass_as=None ):
+                      takes_list=None, list_item_invalidates=False, strict=False,
+                      show_msg=False, custom_msg=None, pass_as=None):
         """
             Sets up filtering & validation on the calling_args to be used before
             any methods in the call stack are called. The default arguments will
@@ -248,7 +253,7 @@ class View(object):
                 that corresponds to the variable name that should be used
                 when passing this value to the action methods.
         """
-        if not self.urlargs.has_key(argname):
+        if argname not in self.urlargs:
             self.expect_getargs(argname)
         if custom_msg:
             show_msg = True
@@ -262,15 +267,19 @@ class View(object):
                     if not hasattr(proc, '__call__'):
                         raise TypeError('processor must be a Formencode validator or a callable')
                     proc = _ProcessorWrapper(to_python=proc)
-                self._processors.append((argname, proc, required, takes_list,
-                    list_item_invalidates, strict, show_msg, custom_msg, pass_as))
+                self._processors.append((
+                    argname, proc, required, takes_list,
+                    list_item_invalidates, strict, show_msg, custom_msg, pass_as
+                ))
         else:
-            self._processors.append((argname, None, required, takes_list,
-                list_item_invalidates, strict, show_msg, custom_msg, pass_as))
+            self._processors.append((
+                argname, None, required, takes_list,
+                list_item_invalidates, strict, show_msg, custom_msg, pass_as
+            ))
 
-    ###
-    ### methods related to processing the view
-    ###
+    """
+        methods related to processing the view
+    """
     def process(self):
         """
             called to get the view's response
@@ -302,7 +311,7 @@ class View(object):
         # start with GET arguments that are expected
         args = MultiDict()
         if self.expected_get_args:
-            for k in rg.request.args.iterkeys():
+            for k in six.iterkeys(rg.request.args):
                 if k in self.expected_get_args:
                     args.setlist(k, rg.request.args.getlist(k))
 
@@ -310,14 +319,14 @@ class View(object):
         # arguments get precedence and we don't want to just .update()
         # because that would allow arbitrary get arguments to affect the
         # values of the URL arguments
-        for k,v in self.urlargs.iteritems():
+        for k, v in six.iteritems(self.urlargs):
             args[k] = v
 
         # trim down to a real dictionary.
         self.calling_args = werkzeug_multi_dict_conv(args)
         log.debug('calling args: %s' % self.calling_args)
 
-    def process_args(self):
+    def process_args(self):  # noqa
         had_strict_arg_failure = False
         for argname, processor, required, takes_list, list_item_invalidates, \
                 strict, show_msg, custom_msg, pass_as in self._processors:
@@ -326,7 +335,7 @@ class View(object):
             argval = self.calling_args.get(argname, None)
             try:
                 if isinstance(argval, list):
-                    if takes_list == False:
+                    if takes_list is False:
                         raise formencode.Invalid('multiple values not allowed', argval, None)
                     if takes_list is None:
                         self.calling_args[pass_as] = argval = argval[0]
@@ -346,7 +355,7 @@ class View(object):
                         if required:
                             processor = formencode.All(formencode.validators.NotEmpty, processor)
                         processed_val = processor.to_python(argval)
-                    except formencode.Invalid, e:
+                    except formencode.Invalid as e:
                         """ do a second round of processing for list values """
                         if not takes_list or not e.error_list or list_item_invalidates:
                             raise
@@ -358,7 +367,7 @@ class View(object):
                         # revalidate for conversion and required
                         processed_val = processor.to_python(new_list)
                     self.calling_args[pass_as] = processed_val
-            except formencode.Invalid, e:
+            except formencode.Invalid as e:
                 is_invalid = True
                 if self.strict_args or strict:
                     had_strict_arg_failure = True
@@ -367,7 +376,8 @@ class View(object):
                     invalid_msg = '%s: %s' % (argname, custom_msg or str(e))
                     user.add_message('error', invalid_msg)
             try:
-                if is_invalid or self.calling_args[pass_as] is None or self.calling_args[pass_as] == '':
+                if is_invalid or self.calling_args[pass_as] is None or \
+                        self.calling_args[pass_as] == '':
                     del self.calling_args[pass_as]
             except KeyError:
                 pass
@@ -429,9 +439,10 @@ class View(object):
             # so we need to "trick" it by sending self here, but then
             # removing it before the bound method is called below
             pos_args = (self,) if method_is_bound else tuple()
-            args, kwargs = validate_arguments(method, pos_args , self.calling_args.copy())
-        except ArgumentValidationError, e:
-            log.error('arg validation failed: %s, %s, %s, %s', method, e.missing, e.extra, e.extra_positional)
+            args, kwargs = validate_arguments(method, pos_args, self.calling_args.copy())
+        except ArgumentValidationError as e:
+            log.error('arg validation failed: %s, %s, %s, %s',
+                      method, e.missing, e.extra, e.extra_positional)
             raise BadRequest('The browser failed to transmit all '
                              'the data expected.')
         if method_is_bound:
@@ -448,7 +459,7 @@ class View(object):
             c = self.retval
             return self.create_response(c.primary, mimetype=c.primary_type)
         # if the retval is a string, add it as the response data
-        if isinstance(self.retval, basestring):
+        if isinstance(self.retval, six.string_types):
             return self.create_response(self.retval)
         # if its callable, assume it is a WSGI application and return it
         # directly
@@ -524,13 +535,13 @@ class View(object):
         user_messages = []
         if add_user_messages:
             for msg in user.get_messages():
-                user_messages.append({'severity':msg.severity, 'text': msg.text})
+                user_messages.append({'severity': msg.severity, 'text': msg.text})
 
         data_with_context = {
             'error': has_error,
             'data': data,
             'messages': user_messages
-            }
+        }
         if extra_context:
             data_with_context.update(extra_context)
         jsonstr = jsonmod.dumps(data_with_context, indent=indent)
@@ -556,6 +567,7 @@ class View(object):
             and immediately return the response.
         """
         raise _ViewCallStackAbort
+
 
 class SecureView(View):
     def __init__(self, urlargs, endpoint):
@@ -584,9 +596,9 @@ class SecureView(View):
             by forgetting that setup_view() comes before authorization
         """
 
-        ###
-        ### setup the call stack methods
-        ###
+        """
+            setup the call stack methods
+        """
         # auth_pre is used to do pre_auth setup when argument values
         # are needed (and can therefore not be done in init()
         self.add_call_method('auth_pre')
@@ -641,13 +653,14 @@ class SecureView(View):
     def not_authorized(self):
         abort(403)
 
-###
-### functions and classes related to processing functions as views
-###
+"""
+    functions and classes related to processing functions as views
+"""
 
 # views modules will get reloaded by hierarchy.visitmods and there is no sense
 # recreating the class definition each time
 CLASS_CACHE = {}
+
 
 def asview(rule=None, **options):
     """
@@ -676,7 +689,7 @@ def asview(rule=None, **options):
         # create the class that will handle this function if it doesn't already
         # exist in the cache
         if cachekey not in CLASS_CACHE:
-            fvh = classobj(fname, (_AsViewHandler, ), {})
+            fvh = type(fname, (_AsViewHandler, ), {})
             fvh.__module__ = f.__module__
 
             # make the getargs available
@@ -686,7 +699,7 @@ def asview(rule=None, **options):
             # recreate next time
             CLASS_CACHE[cachekey] = fvh
         else:
-             fvh = CLASS_CACHE[cachekey]
+            fvh = CLASS_CACHE[cachekey]
 
         # assign the default method.  This can't be cached because on a reload
         # of the views module, the first decorated function will become
@@ -700,13 +713,17 @@ def asview(rule=None, **options):
         return fvh
     return decorate
 
+
 class _AsViewHandler(View):
     def __init__(self, urlargs, endpoint):
         View.__init__(self, urlargs, endpoint)
         self.expect_getargs(*self._asview_getargs)
-###
-### other internal views
-###
+
+
+"""
+    other internal views
+"""
+
 
 class _RouteToTemplate(View):
     """
@@ -717,18 +734,20 @@ class _RouteToTemplate(View):
         self.template_vars = kwargs
         self.render_endpoint(self.endpoint)
 
-###
-### json related
-###
+"""
+    json related
+"""
+
 
 def json_exception_handler(e):
     data_with_context = {
         'error': 1,
         'data': None,
-        'messages': [{'error':'exception encountered, see logs for details'}]
-        }
+        'messages': [{'error': 'exception encountered, see logs for details'}]
+    }
     jsonstr = jsonmod.dumps(data_with_context)
     return Response(jsonstr, status=500, mimetype='application/json')
+
 
 @decorator
 def jsonify(f, self, *args, **kwargs):
@@ -740,15 +759,17 @@ def jsonify(f, self, *args, **kwargs):
     data = f(self, *args, **kwargs)
     self.render_json(data)
 
-###
-### view forwarding
-###
+"""
+    view forwarding
+"""
+
 
 class _Forward(Exception):
     def __init__(self, endpoint, args):
         Exception.__init__(self)
         self.forward_endpoint = endpoint
         self.forward_args = args
+
 
 def forward(endpoint, **kwargs):
     raise _Forward(endpoint, kwargs)

@@ -6,6 +6,7 @@ from blazeweb.config import DefaultSettings
 basedir = path.dirname(path.dirname(__file__))
 app_package = path.basename(basedir)
 
+
 class Default(DefaultSettings):
     def init(self):
         self.dirs.base = basedir
@@ -14,6 +15,7 @@ class Default(DefaultSettings):
 
         # don't use exception catching, debuggers, logging, etc.
         self.apply_test_settings()
+
 
 class Testruns(Default):
     def init(self):

@@ -1,4 +1,5 @@
 from __future__ import with_statement
+from __future__ import absolute_import
 import logging
 from os import path
 
@@ -9,8 +10,10 @@ from jinja2.utils import Markup
 from blazeweb.globals import settings
 from blazeweb.hierarchy import FileNotFound, findfile, split_endpoint
 import blazeweb.templating as templating
+import six
 
 log = logging.getLogger(__name__)
+
 
 class _RootRenderWrapper(object):
 
@@ -34,6 +37,7 @@ class _RootRenderWrapper(object):
         """
         return other == self.root_render_func
 
+
 class Template(j2Template):
 
     @classmethod
@@ -46,10 +50,13 @@ class Template(j2Template):
         # blocks, otherwise our include functions will not calculate the current
         # template's name correctly when inside a block that is replacing the
         # the block of a parent template
-        for block_name, block_root_render_func in namespace['blocks'].iteritems():
-            namespace['blocks'][block_name] = _RootRenderWrapper(namespace['name'], block_root_render_func)
+        for block_name, block_root_render_func in six.iteritems(namespace['blocks']):
+            namespace['blocks'][block_name] = _RootRenderWrapper(
+                namespace['name'], block_root_render_func
+            )
 
         return j2Template._from_namespace(environment, namespace, globals)
+
 
 class Translator(templating.EngineBase):
 
@@ -57,7 +64,7 @@ class Translator(templating.EngineBase):
         self.env = Environment(
             loader=self.create_loader(),
             **self.get_settings()
-            )
+        )
         self.env.template_class = Template
         self.init_globals()
         self.init_filters()
@@ -95,6 +102,7 @@ class Translator(templating.EngineBase):
         """ when a template has auto-escaping enabled, mark a value as safe """
         return Markup(value)
 
+
 class HierarchyLoader(BaseLoader):
     """
         A modification of Jinja's FileSystemLoader to take into account
@@ -114,12 +122,12 @@ class HierarchyLoader(BaseLoader):
             return findfile(endpoint)
         except FileNotFound:
             pass
-        ## try app level second if module wasn't specified
-        #try:
+        # try app level second if module wasn't specified
+        # try:
         #    if ':' not in template:
         #        endpoint = 'templates/%s' % template
         #    return findfile(endpoint)
-        #except FileNotFound:
+        # except FileNotFound:
         #    pass
 
     def get_source(self, environment, endpoint):
@@ -127,10 +135,11 @@ class HierarchyLoader(BaseLoader):
         fpath = self.find_template_path(endpoint)
         if not fpath:
             raise TemplateNotFound(endpoint)
-        with open(fpath) as f:
+        with open(fpath, 'rb') as f:
             contents = f.read().decode(self.encoding)
         old = path.getmtime(fpath)
         return contents, fpath, lambda: path.getmtime(fpath) == old
+
 
 @contextfilter
 def content_filter(context, child_content):

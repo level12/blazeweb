@@ -1,12 +1,17 @@
+from __future__ import print_function
 from decorator import decorator
 from blazeutils import tolist, OrderedDict
+import six
+
 from blazeweb.hierarchy import gatherobjs
+
 
 def _attributes(f, *args, **kwargs):
     """
         does the work of calling the function decorated by `attributes`
     """
     return f(*args, **kwargs)
+
 
 def attributes(*args):
     """
@@ -59,11 +64,12 @@ def run_tasks(tasks, print_call=True, test_only=False, *args, **kwargs):
         # underscore to follow file naming conventions
         underscore_task = task.replace('-', '_')
 
-        collection = gatherobjs('tasks.%s' % underscore_task, lambda objname, obj: objname.startswith('action_'))
+        collection = gatherobjs('tasks.%s' % underscore_task,
+                                lambda objname, obj: objname.startswith('action_'))
 
         callables = []
-        for modkey, modattrs in collection.iteritems():
-            for actname, actobj in modattrs.iteritems():
+        for modkey, modattrs in six.iteritems(collection):
+            for actname, actobj in six.iteritems(modattrs):
                 plus_exit = False
                 callable_attrs = getattr(actobj, '__blazeweb_task_attrs', tuple())
 
@@ -91,8 +97,8 @@ def run_tasks(tasks, print_call=True, test_only=False, *args, **kwargs):
                 callables.append((actname, modkey, actobj, None))
         retval[task] = []
         for call_tuple in sorted(callables):
-            if print_call == True:
-                print '--- Calling: %s:%s ---' % (call_tuple[1], call_tuple[0])
+            if print_call is True:
+                print('--- Calling: %s:%s ---' % (call_tuple[1], call_tuple[0]))
             if test_only:
                 callable_retval = 'test_only=True'
             else:
@@ -101,7 +107,7 @@ def run_tasks(tasks, print_call=True, test_only=False, *args, **kwargs):
                 call_tuple[0],
                 call_tuple[1],
                 callable_retval
-                ))
+            ))
     if print_call and test_only:
-        print '*** NOTICE: test_only=True, no actions called ***'
+        print('*** NOTICE: test_only=True, no actions called ***')
     return retval
