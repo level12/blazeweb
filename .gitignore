@@ -6,10 +6,11 @@ MANIFEST
 *.py~
 docs/_build
 /writeable/tmp/.*
-
+.tox
 */writeable/logs/*.log
 tests/test-output*
 .coverage
 coverage.xml
 nosetests.xml
 *komodo*
+*.nose.xml

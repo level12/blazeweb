@@ -17,13 +17,6 @@ if [ -z "${CIRCLECI}" ]; then
     ARTIFACTS_DPATH="$tmp_src_dpath/.ci/artifacts"
     TEST_REPORTS_DPATH="$tmp_src_dpath/.ci/test-reports"
 
-    # The database is not in the container, it is in the parent VM. We add a
-    # host called "database" to the container to facilitate a named database
-    # endpoint.
-    DATABASE_HOST=$(ip -4 addr show docker0 | grep -Po 'inet \\K[\\d.]+')
-
-    DOCKER_FLAGS="--add-host=database:$DATABASE_HOST"
-
     set -x
     git clone $local_src_dpath/ $tmp_src_dpath
 else
