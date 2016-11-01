@@ -4,9 +4,9 @@ from blazeweb.globals import settings
 from blazeweb.config import QuickSettings, EnabledSettings
 from blazeweb.hierarchy import listapps
 from nose.tools import eq_
-import tests.config
 from minimal2.application import make_wsgi as make_wsgi_min2
 from blazewebtestapp.applications import make_wsgi
+
 
 class Base(QuickSettings):
 
@@ -47,8 +47,8 @@ class Base(QuickSettings):
         #######################################################################
         # SESSIONS
         #######################################################################
-        #beaker session options
-        #http://wiki.pylonshq.com/display/beaker/Configuration+Options
+        # beaker session options
+        # http://wiki.pylonshq.com/display/beaker/Configuration+Options
         self.beaker.type = 'dbm'
         self.beaker.data_dir = 'session_cache'
 
@@ -68,6 +68,7 @@ class Base(QuickSettings):
         # no more values can be added
         self.lock()
 
+
 class Default(Base):
 
     def __init__(self):
@@ -85,7 +86,7 @@ class Default(Base):
         #######################################################################
         # ROUTING
         #######################################################################
-        self.routing.routes.extend([3,4])
+        self.routing.routes.extend([3, 4])
 
         #######################################################################
         # DATABASE
@@ -98,6 +99,7 @@ class Default(Base):
         self.logging.levels = ('info', 'debug')
         self.trap_view_exceptions = False
         self.hide_exceptions = False
+
 
 class UserSettings(QuickSettings):
 
@@ -129,6 +131,7 @@ class UserSettings(QuickSettings):
         # no more values can be added
         self.lock()
 
+
 class TestQuickSettings(unittest.TestCase):
 
     def test_level1(self):
@@ -156,14 +159,14 @@ class TestQuickSettings(unittest.TestCase):
 
         assert s.name.full == 'full'
         assert s.name.short == 'short'
-        assert s.modules.keys() == ['users', 'apputil','contentbase', 'lagcontent']
-        assert s.routing.routes == [1,2,3,4]
+        assert s.modules.keys() == ['users', 'apputil', 'contentbase', 'lagcontent']
+        assert s.routing.routes == [1, 2, 3, 4]
 
-        assert s.db.echo == True
+        assert s.db.echo is True
 
         assert s.logging.levels == ('info', 'debug')
-        assert s.trap_view_exceptions == False
-        assert s.hide_exceptions == False
+        assert s.trap_view_exceptions is False
+        assert s.hide_exceptions is False
 
         assert s.template.default == 'default.html'
         assert s.template.admin == 'admin.html'
@@ -175,7 +178,7 @@ class TestQuickSettings(unittest.TestCase):
         s = Default()
 
         try:
-            foo = s.not_there
+            s.not_there
         except AttributeError as e:
             assert str(e) == "object has no attribute 'not_there' (object is locked)"
         else:
@@ -183,7 +186,7 @@ class TestQuickSettings(unittest.TestCase):
 
         # make sure lock went to children
         try:
-            foo = s.db.not_there
+            s.db.not_there
         except AttributeError as e:
             assert str(e) == "object has no attribute 'not_there' (object is locked)"
         else:
@@ -202,7 +205,7 @@ class TestQuickSettings(unittest.TestCase):
         s.lock()
 
         try:
-            foo = s.not_there
+            s.not_there
         except AttributeError as e:
             assert str(e) == "object has no attribute 'not_there' (object is locked)"
         else:
@@ -210,7 +213,7 @@ class TestQuickSettings(unittest.TestCase):
 
         # make sure lock went to children
         try:
-            foo = s.db.not_there
+            s.db.not_there
         except AttributeError as e:
             assert str(e) == "object has no attribute 'not_there' (object is locked)"
         else:
@@ -221,8 +224,8 @@ class TestQuickSettings(unittest.TestCase):
 
         # beaker would need a dictionary, so lets see if it works
         d = {
-            'type' : 'dbm',
-            'data_dir' : 'session_cache'
+            'type': 'dbm',
+            'data_dir': 'session_cache'
         }
 
         assert dict(s.beaker) == d
@@ -231,11 +234,11 @@ class TestQuickSettings(unittest.TestCase):
     def test_hasattr(self):
         s = Default()
 
-        assert hasattr(s, 'alajsdf') == False
-        assert hasattr(s, 'alajsdf') == False
+        assert hasattr(s, 'alajsdf') is False
+        assert hasattr(s, 'alajsdf') is False
 
         s.unlock()
-        assert hasattr(s, 'alajsdf') == True
+        assert hasattr(s, 'alajsdf') is True
 
     def test_modules(self):
         s = Default()
@@ -246,25 +249,27 @@ class TestQuickSettings(unittest.TestCase):
         except TypeError:
             pass
         else:
-            self.fail('expected TypeError when non QuickSettings object assigned to EnabledSettings object')
+            self.fail('expected TypeError when non QuickSettings object assigned to '
+                      'EnabledSettings object')
         s.modules.fatfingeredmod.enabledd = True
         s.lock()
 
         mods = ['users', 'apputil', 'contentbase', 'lagcontent']
-        allmods = ['users', 'apputil', 'inactivemod', 'contentbase', 'lagcontent', 'fatfingeredmod']
-        self.assertEqual( mods, s.modules.keys() )
-        self.assertEqual( allmods, s.modules.keys(showinactive=True) )
+        allmods = ['users', 'apputil', 'inactivemod', 'contentbase', 'lagcontent',
+                   'fatfingeredmod']
+        self.assertEqual(mods, s.modules.keys())
+        self.assertEqual(allmods, s.modules.keys(showinactive=True))
 
-        self.assertEqual( len(mods), len([v for v in s.modules]))
-        self.assertEqual( len(mods), len(s.modules))
-        self.assertEqual( len(mods), len(s.modules.values()))
-        self.assertEqual( len(allmods), len(s.modules.values(showinactive=True)))
+        self.assertEqual(len(mods), len([v for v in s.modules]))
+        self.assertEqual(len(mods), len(s.modules))
+        self.assertEqual(len(mods), len(s.modules.values()))
+        self.assertEqual(len(allmods), len(s.modules.values(showinactive=True)))
 
-        self.assertEqual( len(mods), len(s.modules.todict()))
-        self.assertEqual( len(allmods), len(s.modules.todict(showinactive=True)))
+        self.assertEqual(len(mods), len(s.modules.todict()))
+        self.assertEqual(len(allmods), len(s.modules.todict(showinactive=True)))
 
-        self.assertTrue( 'users' in s.modules)
-        self.assertFalse( 'inactivemod' in s.modules)
+        self.assertTrue('users' in s.modules)
+        self.assertFalse('inactivemod' in s.modules)
 
     def test_merge(self):
         s = Default()
@@ -307,14 +312,10 @@ class TestQuickSettings(unittest.TestCase):
 
         self.assertEqual(s.modules.users.enabled, True)
 
+
 class TestConfig(unittest.TestCase):
     def setUp(self):
         self.app = make_wsgi('Testruns')
-
-    def tearDown(self):
-        pass
-        #self.app.endrequest()
-        #self.app = None
 
     def test_appslist(self):
         self.assertEqual(['blazewebtestapp', 'blazewebtestapp2'], listapps())
@@ -329,7 +330,7 @@ class TestConfig(unittest.TestCase):
     def test_settingslock(self):
         """ tests the lock() in appinit() """
         try:
-            this = settings.notthere
+            settings.notthere
         except AttributeError as e:
             assert str(e) == "object has no attribute 'notthere' (object is locked)"
         else:
@@ -338,11 +339,12 @@ class TestConfig(unittest.TestCase):
     def test_modulesettingslock(self):
         """ tests the lock() in appinit() for module settings """
         try:
-            this = settings.components.tests.notthere
+            settings.components.tests.notthere
         except AttributeError as e:
             assert str(e) == "object has no attribute 'notthere' (object is locked)"
         else:
             self.fail("expected AttributeError for 'notthere'")
+
 
 class TestDefaultSettings(object):
 
@@ -354,6 +356,7 @@ class TestDefaultSettings(object):
         # assume we are in a virtualenv
         assert settings.dirs.storage.endswith('storage-minimal2')
 
+
 class TestComponentSettings(object):
 
     @classmethod
@@ -362,12 +365,12 @@ class TestComponentSettings(object):
 
     def test_components(self):
         pm = settings.componentmap.minimal2
-        assert pm.internalonly.enabled == True
+        assert pm.internalonly.enabled is True
         assert pm.internalonly.packages == [None]
-        assert pm.news.enabled == True
+        assert pm.news.enabled is True
         assert pm.news.packages == [None, 'newscomp4']
-        assert pm.foo.enabled == True
+        assert pm.foo.enabled is True
         assert pm.foo.packages == ['foobwp']
         assert settings.component_packages.newscomp4 == 'news'
         assert settings.component_packages.foobwp == 'foo'
-        eq_( settings.component_packages.todict().keys(), ['newscomp4', 'foobwp'])
+        eq_(settings.component_packages.todict().keys(), ['newscomp4', 'foobwp'])

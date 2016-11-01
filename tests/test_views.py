@@ -3,11 +3,10 @@ import unittest
 from werkzeug import Client, BaseResponse
 
 from blazeutils.jsonh import jsonmod
-from blazeweb.globals import settings, user
+from blazeweb.globals import settings
 from blazeweb.exceptions import ProgrammingError
 from blazeweb.hierarchy import HierarchyImportError
 
-import tests.config
 from blazewebtestapp.applications import make_wsgi
 from blazewebtestapp2.applications import make_wsgi as make_wsgi2
 
@@ -16,7 +15,6 @@ class TestViews(unittest.TestCase):
 
     def setUp(self):
         self.app = make_wsgi('Testruns')
-        #settings.logging.levels.append(('debug', 'info'))
         self.client = Client(self.app, BaseResponse)
 
     def tearDown(self):
@@ -52,18 +50,19 @@ class TestViews(unittest.TestCase):
 
         self.assertEqual(r.status, '404 NOT FOUND')
         self.assertTrue(b'Not Found' in r.data)
-        self.assertTrue(b'If you entered the URL manually please check your spelling and try again.' in r.data)
+        self.assertTrue(b'If you entered the URL manually please check your spelling '
+                        b'and try again.' in r.data)
 
     def test_nomodule(self):
         try:
-            r = self.client.get('tests/badmod')
+            self.client.get('tests/badmod')
             self.fail('should have got ProgrammingError since URL exists but module does not')
         except HierarchyImportError as e:
             assert 'An object for View endpoint "fatfinger:NotExistant" was not found' == str(e), e
 
     def test_noview(self):
         try:
-            r = self.client.get('tests/noview')
+            self.client.get('tests/noview')
             self.fail('should have got ProgrammingError since URL exists but view does not')
         except HierarchyImportError as e:
             assert 'An object for View endpoint "tests:NotExistant" was not found' == str(e), e
@@ -100,28 +99,28 @@ class TestViews(unittest.TestCase):
 
         self.assertEqual(r.status, '200 OK')
         self.assertEqual(r.data, b'Hello World!')
-        self.assertEqual( r.headers['Content-Type'], 'text/plain; charset=utf-8' )
+        self.assertEqual(r.headers['Content-Type'], 'text/plain; charset=utf-8')
 
     def test_textwsnip(self):
         r = self.client.get('tests/textwsnip')
 
         self.assertEqual(r.status, '200 OK')
         self.assertEqual(r.data, b'Hello World!')
-        self.assertEqual( r.headers['Content-Type'], 'text/plain; charset=utf-8' )
+        self.assertEqual(r.headers['Content-Type'], 'text/plain; charset=utf-8')
 
     def test_textwsnip2(self):
         r = self.client.get('tests/textwsnip2')
 
         self.assertEqual(r.status, '200 OK')
         self.assertEqual(r.data, b'Hello World!')
-        self.assertEqual( r.headers['Content-Type'], 'text/plain; charset=utf-8' )
+        self.assertEqual(r.headers['Content-Type'], 'text/plain; charset=utf-8')
 
     def test_html(self):
         r = self.client.get('tests/html')
 
         self.assertEqual(r.status, '200 OK')
         self.assertEqual(r.data, b'Hello World!')
-        self.assertEqual( r.headers['Content-Type'], 'text/html; charset=utf-8' )
+        self.assertEqual(r.headers['Content-Type'], 'text/html; charset=utf-8')
 
     def test_redirect(self):
         r = self.client.get('tests/redirect')
@@ -160,7 +159,7 @@ class TestViews(unittest.TestCase):
         try:
             r = self.client.get('tests/heraise')
         except ValueError as e:
-            self.assertTrue( 'exception for testing' in str(e))
+            self.assertTrue('exception for testing' in str(e))
         else:
             self.fail('should have gotten an exception b/c our error handler raised one')
 
@@ -174,9 +173,9 @@ class TestViews(unittest.TestCase):
 
     def test_forwardloop(self):
         try:
-            r = self.client.get('tests/forwardloop')
+            self.client.get('tests/forwardloop')
         except ProgrammingError as e:
-            self.assertTrue( 'forward loop detected:' in str(e))
+            self.assertTrue('forward loop detected:' in str(e))
         else:
             self.fail('excpected exception for a forward loop')
 
@@ -206,7 +205,6 @@ class TestViews(unittest.TestCase):
         self.assertEqual(r.status, '200 OK')
         self.assertEqual(r.data, b'Hello fred!')
 
-
     def test_getargs2(self):
 
         r = self.client.get('tests/getargs2')
@@ -225,7 +223,6 @@ class TestViews(unittest.TestCase):
         self.assertEqual(r.status, '200 OK')
         self.assertEqual(r.data, b'Hello World!')
 
-
     def test_getargs3(self):
         r = self.client.get('tests/getargs3?num=ten&num2=ten')
         self.assertEqual(r.status_code, 400)
@@ -233,7 +230,7 @@ class TestViews(unittest.TestCase):
         # user messages
         self.assertTrue(b'integer' not in r.data)
 
-        #If you want user messages included in an error response
+        # If you want user messages included in an error response
         # you need to use an error document that will include them, like so:
         settings.error_docs[400] = 'tests:UserMessages'
         r = self.client.get('tests/getargs3?num=ten&num2=ten')
@@ -282,9 +279,9 @@ class TestViews(unittest.TestCase):
 
     def test_badvalidator(self):
         try:
-            r = self.client.get('tests/badvalidator')
+            self.client.get('tests/badvalidator')
         except TypeError as e:
-            self.assertEqual( 'processor must be a Formencode validator or a callable', str(e))
+            self.assertEqual('processor must be a Formencode validator or a callable', str(e))
         else:
             self.fail('excpected exception for bad validator')
 
@@ -348,7 +345,8 @@ class TestViews(unittest.TestCase):
 
         self.assertEqual(r.status, '404 NOT FOUND')
         self.assertTrue(b'Not Found' in r.data)
-        self.assertTrue(b'If you entered the URL manually please check your spelling and try again.' in r.data)
+        self.assertTrue(b'If you entered the URL manually please check your spelling and '
+                        b'try again.' in r.data)
 
     def test_render_endpoint(self):
         # app level endpoint
@@ -385,11 +383,11 @@ class TestViews(unittest.TestCase):
         finally:
             settings.exception_handling = None
 
+
 class TestApp2(unittest.TestCase):
 
     def setUp(self):
         self.app = make_wsgi2('Testruns')
-        #settings.logging.levels.append(('debug', 'info'))
         self.client = Client(self.app, BaseResponse)
 
     def tearDown(self):
@@ -406,9 +404,8 @@ class TestApp2(unittest.TestCase):
 
         self.assertEqual(r.status, '200 OK')
         self.assertEqual(r.data, b'Hello World!')
-        self.assertEqual( r.headers['Content-Type'], 'text/html; charset=utf-8' )
+        self.assertEqual(r.headers['Content-Type'], 'text/html; charset=utf-8')
 
 if __name__ == '__main__':
-    #unittest.main()
     tests = ['test_responding_view_base', 'test_responding_view_base_with_snippet']
     unittest.TextTestRunner().run(unittest.TestSuite(map(TestViews, tests)))

@@ -149,7 +149,7 @@ class Promise(object):
     pass
 
 
-def lazy(func, *resultclasses):
+def lazy(func, *resultclasses):  # noqa
     """
     Turns any callable into a lazy evaluated callable. You need to give result
     classes or types -- at least one is needed so that the automatic forcing of

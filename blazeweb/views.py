@@ -326,7 +326,7 @@ class View(object):
         self.calling_args = werkzeug_multi_dict_conv(args)
         log.debug('calling args: %s' % self.calling_args)
 
-    def process_args(self):
+    def process_args(self):  # noqa
         had_strict_arg_failure = False
         for argname, processor, required, takes_list, list_item_invalidates, \
                 strict, show_msg, custom_msg, pass_as in self._processors:

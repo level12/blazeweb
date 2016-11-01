@@ -1,27 +1,28 @@
 from io import BytesIO
 
 import six
-from webtest import TestApp
 
 from blazeutils.jsonh import jsonmod
 from blazeweb.globals import rg
 from blazeweb.testing import inrequest
 from blazeweb.wrappers import Request
 
-from . import config
 from newlayout.application import make_wsgi
+
 
 def setup_module():
     make_wsgi()
 
+
 class TestRequest(object):
 
     def test_confirm_muttable(self):
-        req = Request.from_values({
-             'foo': 'bar',
-             'txtfile': (BytesIO(b'my file contents'), 'test.txt'),
-        },
-        path='/foo?val1=1&val2=2')
+        req = Request.from_values(
+            {
+                'foo': 'bar',
+                'txtfile': (BytesIO(b'my file contents'), 'test.txt'),
+            },
+            path='/foo?val1=1&val2=2')
         assert req.path == '/foo'
         assert len(req.args) == 2
         assert req.args['val1'] == u'1'
@@ -35,11 +36,12 @@ class TestRequest(object):
         assert len(req.args) == 0
         assert len(req.form) == 0
         assert len(req.files) == 0
-        req.replace_http_args(data={
-             'foo': 'bar',
-             'txtfile': (BytesIO(b'my file contents'), 'test.txt'),
-        },
-        path='/foo?val1=1&val2=2')
+        req.replace_http_args(
+            data={
+                'foo': 'bar',
+                'txtfile': (BytesIO(b'my file contents'), 'test.txt'),
+            },
+            path='/foo?val1=1&val2=2')
         assert rg.request is req
         assert req.path == '/[[@inrequest]]', rg.request.path
         assert len(req.args) == 2
@@ -51,7 +53,7 @@ class TestRequest(object):
         assert req.files['txtfile'].filename == 'test.txt'
 
     def test_from_values_outside_context(self):
-        req = Request.from_values({'foo':'bar'})
+        req = Request.from_values({'foo': 'bar'})
         assert req.form['foo'] == 'bar'
 
     @inrequest()
@@ -60,8 +62,9 @@ class TestRequest(object):
              creating a request should not affect rg.request by default
         """
         first_req = rg.request
-        sec_req = Request.from_values({'foo':'bar'})
+        sec_req = Request.from_values({'foo': 'bar'})
         assert rg.request is first_req
+        assert first_req is not sec_req
 
     @inrequest()
     def test_from_values_inside_context_with_new_bind(self):
@@ -69,8 +72,9 @@ class TestRequest(object):
              creating a request can affect rg.request
         """
         first_req = rg.request
-        sec_req = Request.from_values({'foo':'bar'}, bind_to_context=True)
+        sec_req = Request.from_values({'foo': 'bar'}, bind_to_context=True)
         assert rg.request is sec_req
+        assert first_req is not sec_req
 
     def test_json_property(self):
         str_data = jsonmod.dumps({'a': 1, 'b': 2})

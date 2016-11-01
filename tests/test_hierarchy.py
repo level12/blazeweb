@@ -1,4 +1,3 @@
-import six.moves.builtins
 from os import path
 import sys
 
@@ -6,19 +5,20 @@ from blazeutils.testing import logging_handler
 from nose.tools import eq_
 
 from blazeweb.globals import ag
-from blazeweb.hierarchy import hm, findview, HierarchyImportError, findfile, \
+from blazeweb.hierarchy import findview, HierarchyImportError, findfile, \
     FileNotFound, findobj, listcomponents, list_component_mappings, visitmods, \
     gatherobjs, findcontent
 
-import tests.config
 from newlayout.application import make_wsgi
 from blazewebtestapp.applications import make_wsgi as pta_make_wsgi
 from minimal2.application import make_wsgi as m2_make_wsgi
+
+
 class TestMostStuff(object):
 
     @classmethod
     def setup_class(cls):
-        app = make_wsgi()
+        make_wsgi()
 
     def test_component_view(self):
         view = findview('news:FakeView')
@@ -51,7 +51,7 @@ class TestMostStuff(object):
     def test_component_import_failures(self):
         # test non-attribute import
         try:
-            import compstack.news.views
+            import compstack.news.views  # noqa
             assert False
         except HierarchyImportError as e:
             if 'non-attribute importing is not supported' not in str(e):
@@ -59,21 +59,21 @@ class TestMostStuff(object):
 
         # test no module found
         try:
-            from compstack.something.notthere import foobar
+            from compstack.something.notthere import foobar  # noqa
             assert False
         except HierarchyImportError as e:
             assert str(e) == 'module "something.notthere" not found; searched compstack'
 
         # test module exists, but attribute not found
         try:
-            from compstack.news.views import nothere
+            from compstack.news.views import nothere  # noqa
             assert False
         except HierarchyImportError as e:
             assert str(e) == 'attribute "nothere" not found; searched compstack.news.views'
 
         # test importing from compstack directly
         try:
-            from compstack import news
+            from compstack import news  # noqa
             assert False
         except ImportError as e:
             if 'No module named compstack' not in str(e).replace("'", ''):
@@ -90,7 +90,7 @@ class TestMostStuff(object):
     def test_appstack_import_failures(self):
         # test non-attribute import
         try:
-            import appstack.views
+            import appstack.views  # noqa
             assert False
         except HierarchyImportError as e:
             if 'non-attribute importing is not supported' not in str(e):
@@ -98,7 +98,7 @@ class TestMostStuff(object):
 
         # test no module found
         try:
-            from appstack.notthere import foobar
+            from appstack.notthere import foobar  # noqa
             assert False
         except HierarchyImportError as e:
             if str(e) != 'module "notthere" not found; searched appstack':
@@ -106,14 +106,14 @@ class TestMostStuff(object):
 
         # test module exists, but attribute not found
         try:
-            from appstack.views import notthere
+            from appstack.views import notthere  # noqa
             assert False
         except HierarchyImportError as e:
             assert str(e) == 'attribute "notthere" not found; searched appstack.views'
 
         # test importing from appstack directly
         try:
-            from appstack import views
+            from appstack import views  # noqa
             assert False
         except ImportError as e:
             if 'No module named appstack' not in str(e).replace("'", ''):
@@ -148,11 +148,11 @@ class TestMostStuff(object):
         eh = logging_handler('blazeweb.hierarchy')
         view1 = findview('news:OnlyForCache')
         dmesgs = ''.join(eh.messages['debug'])
-        assert 'in cache' not in dmesgs , dmesgs
+        assert 'in cache' not in dmesgs, dmesgs
         eh.reset()
         view2 = findview('news:OnlyForCache')
         dmesgs = ''.join(eh.messages['debug'])
-        assert 'in cache' in dmesgs , dmesgs
+        assert 'in cache' in dmesgs, dmesgs
 
         assert view1 is view2, (view1, view2)
 
@@ -170,28 +170,28 @@ class TestMostStuff(object):
 
     def test_disabled_component(self):
         try:
-            view = findview('pdisabled:FakeView')
+            findview('pdisabled:FakeView')
             assert False
         except HierarchyImportError as e:
             assert 'An object for View endpoint "pdisabled:FakeView" was not found' in str(e), e
 
     def test_no_setting_component(self):
         try:
-            view = findview('pnosetting:FakeView')
+            findview('pnosetting:FakeView')
             assert False
         except HierarchyImportError as e:
             assert 'An object for View endpoint "pnosetting:FakeView" was not found' in str(e)
 
     def test_good_component_but_object_not_there(self):
         try:
-            view = findview('news:nothere')
+            findview('news:nothere')
             assert False
         except HierarchyImportError as e:
             assert 'An object for View endpoint "news:nothere" was not found' in str(e), e
 
     def test_import_error_in_target_gets_raised(self):
         try:
-            view = findview('badimport:nothere')
+            findview('badimport:nothere')
             assert False
         except ImportError as e:
             assert 'No module named foo' == str(e).replace("'", ''), e
@@ -225,7 +225,8 @@ class TestMostStuff(object):
         assert fullpath.endswith(expected), fullpath
 
         fullpath = findfile('news:templates/supporting_news_src.txt')
-        expected = path.join('nlsupporting', 'components', 'news', 'templates', 'supporting_news_src.txt')
+        expected = path.join('nlsupporting', 'components', 'news', 'templates',
+                             'supporting_news_src.txt')
         assert fullpath.endswith(expected), fullpath
 
         fullpath = findfile('news:templates/ncomp3.txt')
@@ -240,13 +241,13 @@ class TestMostStuff(object):
 
     def test_findfile_cache(self):
         eh = logging_handler('blazeweb.hierarchy')
-        fullpath = findfile('templates/forcache.txt')
+        findfile('templates/forcache.txt')
         dmesgs = ''.join(eh.messages['debug'])
-        assert 'in cache' not in dmesgs , dmesgs
+        assert 'in cache' not in dmesgs, dmesgs
         eh.reset()
-        fullpath = findfile('templates/forcache.txt')
+        findfile('templates/forcache.txt')
         dmesgs = ''.join(eh.messages['debug'])
-        assert 'in cache' in dmesgs , dmesgs
+        assert 'in cache' in dmesgs, dmesgs
         eh.reset()
 
     def test_findobj(self):
@@ -264,24 +265,42 @@ class TestMostStuff(object):
         eq_(plist, listcomponents(reverse=True))
 
     def test_component_mappings(self):
-        plist = [('newlayout', 'news', None), ('newlayout', 'news', 'newscomp1'), ('newlayout', 'news', 'newscomp2'), ('newlayout', 'pnoroutes', None), ('newlayout', 'badimport', None), ('nlsupporting', 'news', None), ('nlsupporting', 'news', 'newscomp3')]
+        plist = [('newlayout', 'news', None), ('newlayout', 'news', 'newscomp1'),
+                 ('newlayout', 'news', 'newscomp2'), ('newlayout', 'pnoroutes', None),
+                 ('newlayout', 'badimport', None), ('nlsupporting', 'news', None),
+                 ('nlsupporting', 'news', 'newscomp3')]
         eq_(plist, list_component_mappings())
 
-
-        plistwapps = [('newlayout',  None, None), ('newlayout', 'news', None), ('newlayout', 'news', 'newscomp1'), ('newlayout', 'news', 'newscomp2'), ('newlayout', 'pnoroutes', None), ('newlayout', 'badimport', None), ('nlsupporting',  None, None), ('nlsupporting', 'news', None), ('nlsupporting', 'news', 'newscomp3')]
+        plistwapps = [('newlayout', None, None), ('newlayout', 'news', None),
+                      ('newlayout', 'news', 'newscomp1'), ('newlayout', 'news', 'newscomp2'),
+                      ('newlayout', 'pnoroutes', None), ('newlayout', 'badimport', None),
+                      ('nlsupporting', None, None), ('nlsupporting', 'news', None),
+                      ('nlsupporting', 'news', 'newscomp3')]
         eq_(plistwapps, list_component_mappings(inc_apps=True))
 
         plist.reverse()
         eq_(plist, list_component_mappings(reverse=True))
 
-        plist = [('newlayout', 'news', None), ('newlayout', 'news', 'newscomp1'), ('newlayout', 'news', 'newscomp2'), ('nlsupporting', 'news', None), ('nlsupporting', 'news', 'newscomp3')]
+        plist = [('newlayout', 'news', None), ('newlayout', 'news', 'newscomp1'),
+                 ('newlayout', 'news', 'newscomp2'), ('nlsupporting', 'news', None),
+                 ('nlsupporting', 'news', 'newscomp3')]
         eq_(plist, list_component_mappings('news'))
 
     def test_visitmods(self):
         bset = set(sys.modules.keys())
         visitmods('tovisit')
         aset = set(sys.modules.keys())
-        eq_(aset.difference(bset), set(['nlsupporting.tovisit', 'nlsupporting.components.news.tovisit', 'newlayout.components.badimport.tovisit', 'newscomp3.tovisit', 'newlayout.components.news.tovisit', 'newlayout.tovisit']))
+        eq_(
+            aset.difference(bset),
+            set([
+                'nlsupporting.tovisit',
+                'nlsupporting.components.news.tovisit',
+                'newlayout.components.badimport.tovisit',
+                'newscomp3.tovisit',
+                'newlayout.components.news.tovisit',
+                'newlayout.tovisit'
+            ])
+        )
 
         # test that we don't catch another import error
         try:
@@ -291,6 +310,7 @@ class TestMostStuff(object):
             if str(e).replace("'", '') != 'No module named foo':
                 raise
 
+
 class TestPTA(object):
 
     @classmethod
@@ -298,50 +318,58 @@ class TestPTA(object):
         pta_make_wsgi('Testruns')
 
     def test_list_components(self):
-        expected = ['tests', 'badimport1', 'nomodel', 'nosettings', 'sessiontests', 'routingtests', 'usertests', 'disabled']
+        expected = ['tests', 'badimport1', 'nomodel', 'nosettings', 'sessiontests',
+                    'routingtests', 'usertests', 'disabled']
         eq_(expected, listcomponents())
 
     def test_gatherobjs(self):
         result = gatherobjs('tasks.init_db', lambda name, obj: name.startswith('action_'))
-        eq_(result['appstack.tasks.init_db']['action_000'].__module__, 'blazewebtestapp.tasks.init_db')
-        eq_(result['compstack.routingtests.tasks.init_db']['action_001'].__module__, 'blazewebtestapp.components.routingtests.tasks.init_db')
-        eq_(result['compstack.routingtests.tasks.init_db']['action_003'].__module__, 'blazewebtestapp2.components.routingtests.tasks.init_db')
-        eq_(result['compstack.tests.tasks.init_db']['action_001'].__module__, 'blazewebtestapp2.components.tests.tasks.init_db')
-        eq_(result['appstack.tasks.init_db']['action_001'].__module__, 'blazewebtestapp.tasks.init_db')
-        eq_(result['appstack.tasks.init_db']['action_002'].__module__, 'blazewebtestapp.tasks.init_db')
-        eq_(result['appstack.tasks.init_db']['action_005'].__module__, 'blazewebtestapp2.tasks.init_db')
+        eq_(result['appstack.tasks.init_db']['action_000'].__module__,
+            'blazewebtestapp.tasks.init_db')
+        eq_(result['compstack.routingtests.tasks.init_db']['action_001'].__module__,
+            'blazewebtestapp.components.routingtests.tasks.init_db')
+        eq_(result['compstack.routingtests.tasks.init_db']['action_003'].__module__,
+            'blazewebtestapp2.components.routingtests.tasks.init_db')
+        eq_(result['compstack.tests.tasks.init_db']['action_001'].__module__,
+            'blazewebtestapp2.components.tests.tasks.init_db')
+        eq_(result['appstack.tasks.init_db']['action_001'].__module__,
+            'blazewebtestapp.tasks.init_db')
+        eq_(result['appstack.tasks.init_db']['action_002'].__module__,
+            'blazewebtestapp.tasks.init_db')
+        eq_(result['appstack.tasks.init_db']['action_005'].__module__,
+            'blazewebtestapp2.tasks.init_db')
 
     def test_find_view_hierarchy_import_errors_get_raised(self):
         try:
-            v = findview('badimport1:Index')
+            findview('badimport1:Index')
             assert False
         except HierarchyImportError as e:
             assert 'module "nothere" not found; searched compstack' in str(e), e
 
     def test_find_view_no_component(self):
         try:
-            v = findview('notacomponent:Foo')
+            findview('notacomponent:Foo')
             assert False
         except HierarchyImportError as e:
             assert 'An object for View endpoint "notacomponent:Foo" was not found' == str(e), e
 
     def test_find_content_no_component(self):
         try:
-            v = findcontent('notacomponent:Foo')
+            findcontent('notacomponent:Foo')
             assert False
         except HierarchyImportError as e:
             assert 'An object for Content endpoint "notacomponent:Foo" was not found' == str(e), e
 
     def test_find_content_no_module(self):
         try:
-            v = findcontent('routingtests:Foo')
+            findcontent('routingtests:Foo')
             assert False
         except HierarchyImportError as e:
             assert 'An object for Content endpoint "routingtests:Foo" was not found' == str(e), e
 
     def test_find_content_no_attribute(self):
         try:
-            v = findcontent('tests:NotThere')
+            findcontent('tests:NotThere')
             assert False
         except HierarchyImportError as e:
             assert 'An object for Content endpoint "tests:NotThere" was not found' == str(e), e
@@ -350,14 +378,14 @@ class TestPTA(object):
         from appstack.content import iexist
         assert iexist
         try:
-            v = findcontent('NotThere')
+            findcontent('NotThere')
             assert False
         except HierarchyImportError as e:
             assert 'An object for Content endpoint "NotThere" was not found' == str(e), e
 
     def test_find_content_hierarchy_import_errors_get_raised(self):
         try:
-            v = findcontent('badimport1:Foo')
+            findcontent('badimport1:Foo')
             assert False
         except HierarchyImportError as e:
             assert 'module "nothere" not found; searched compstack' in str(e), e
@@ -369,15 +397,17 @@ class TestMin2(object):
         m2_make_wsgi('Dispatching')
 
     def test_component_mappings(self):
-        expected = [('minimal2', 'internalonly', None), ('minimal2', 'news', None), ('minimal2', 'news', 'newscomp4'), ('minimal2', 'foo', 'foobwp')]
+        expected = [('minimal2', 'internalonly', None), ('minimal2', 'news', None),
+                    ('minimal2', 'news', 'newscomp4'), ('minimal2', 'foo', 'foobwp')]
         eq_(expected, list_component_mappings())
 
     def test_find_content_no_module_app_level(self):
         try:
-            v = findcontent('NotThere')
+            findcontent('NotThere')
             assert False
         except HierarchyImportError as e:
             assert 'An object for Content endpoint "NotThere" was not found' == str(e), e
+
 
 def test_visitmods_reloading():
     m2_make_wsgi()

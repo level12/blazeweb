@@ -6,6 +6,7 @@ from nlsupporting.config.settings import Default as nlDefault
 basedir = path.dirname(path.dirname(__file__))
 app_package = path.basename(basedir)
 
+
 class Default(nlDefault):
     def init(self):
         self.dirs.base = basedir
@@ -46,20 +47,24 @@ class Default(nlDefault):
 
         nlDefault.setup_components(self)
 
+
 class AutoCopyStatic(Default):
     def init(self):
         Default.init(self)
         self.auto_copy_static.enabled = True
+
 
 class WithTestSettings(Default):
     def init(self):
         Default.init(self)
         self.auto_abort_as_builtin = True
 
+
 class ForStaticFileTesting(Default):
     def init(self):
         Default.init(self)
-        self.static_files.location  = 'source'
+        self.static_files.location = 'source'
+
 
 class AttributeErrorInSettings(Default):
     def init(self):

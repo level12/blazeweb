@@ -371,7 +371,7 @@ class WSGIApp(object):
                         return self.response_cycle(endpoint, {}, error_doc_code=500)
                     except HTTPException as httpe:
                         log.debug('error doc endpoint %s raised HTTPException: %s', endpoint, httpe)
-                    except Exception as exc:
+                    except Exception:
                         log.exception('error doc endpoint %s raised exception:', endpoint)
             # turn the exception into a 500 server response
             log.debug('handling exception with generic 500 response')

@@ -1,10 +1,6 @@
 import os
-from nose.plugins.skip import SkipTest
 from nose.tools import eq_
 import six
-
-from blazeutils.config import QuickSettings
-from blazeutils.helpers import tolist
 
 from tests.scripting_helpers import env, script_test_path, here, is_win
 
@@ -28,7 +24,8 @@ def run_blazeweb(*args, **kw):
 
 def test_app_usage():
     result = run_application('minimal2')
-    assert 'Usage: application.py [global_options] COMMAND [command_options]' in result.stdout, str(result.stdout)
+    assert 'Usage: application.py [global_options] COMMAND [command_options]' \
+        in result.stdout, str(result.stdout)
     assert 'SETTINGS_PROFILE' in result.stdout
     assert 'project' not in result.stdout
     assert 'Serve the application' in result.stdout
@@ -40,14 +37,16 @@ def test_app_usage():
 
 
 def test_bad_profile():
-    result = run_application('minimal2', '-p', 'profilenotthere', expect_error = True)
-    assert 'settings profile "profilenotthere" not found in this application' in result.stderr, result.stderr
+    result = run_application('minimal2', '-p', 'profilenotthere', expect_error=True)
+    assert 'settings profile "profilenotthere" not found in this application' \
+        in result.stderr, result.stderr
 
 
 def test_blazeweb_usage():
     result = run_blazeweb()
     script_name = 'bw-script.py' if is_win else 'bw'
-    assert 'Usage: ' + script_name + ' [global_options] COMMAND [command_options]' in result.stdout, result.stdout
+    assert 'Usage: ' + script_name + ' [global_options] COMMAND [command_options]' \
+        in result.stdout, result.stdout
     assert 'SETTINGS_PROFILE' not in result.stdout
     assert 'jinja-convert' in result.stdout
 
@@ -106,7 +105,7 @@ if six.PY2:
                 result = run_blazeweb('project', '-t', template, '--no-interactive', projname)
             else:
                 result = run_blazeweb('project', '--no-interactive', projname)
-            eq_( len(result.files_created), file_count)
+            eq_(len(result.files_created), file_count)
             setup_args = ['python', 'setup.py', 'develop']
             if is_win:
                 # running setup.py on the new project causes the .exe scripts to be
@@ -115,7 +114,7 @@ if six.PY2:
                 # and that causes a permission denied error.  Therefore, we need to
                 # prevent the setup.py develop command from checking dependencies.
                 setup_args.append('-N')
-            env.run(cwd=os.path.join(script_test_path, projname + '-dist'), 
+            env.run(cwd=os.path.join(script_test_path, projname + '-dist'),
                     expect_stderr=expect_stderr, *setup_args)
             res = env.run(projname)
             script_name = '%s-script.py' % projname if is_win else projname
@@ -130,16 +129,16 @@ if six.PY2:
             env.clear()
 
         def test_minimal(self):
-            self.check_command('minimalproj_from_bw_tests', 'minimal', 9, 'index', 
+            self.check_command('minimalproj_from_bw_tests', 'minimal', 9, 'index',
                                expect_stderr=True)
 
         def test_bwproject(self):
-            self.check_command('bwproj_from_bw_tests', 'bwproject', 18, 'Hello World', 
+            self.check_command('bwproj_from_bw_tests', 'bwproject', 18, 'Hello World',
                                expect_stderr=True)
 
         def test_default(self):
             # should be bwproject
-            self.check_command('bwproj_from_bw_tests', None, 18, 'Hello World', 
+            self.check_command('bwproj_from_bw_tests', None, 18, 'Hello World',
                                expect_stderr=True)
 else:
     class TestProjectCommands(object):

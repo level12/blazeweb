@@ -1,4 +1,3 @@
-from nose.tools import eq_
 from webtest import TestApp
 
 from blazeweb.globals import settings
@@ -7,17 +6,18 @@ from blazeweb.hierarchy import visitmods
 from blazeweb.middleware import minimal_wsgi_stack
 from blazeweb.application import WSGIApp
 
-from . import config
 from newlayout.config.settings import WithTestSettings
 from minimal2.config.settings import EventSettings
 
 called = []
+
 
 class EventTestApp(WSGIApp):
     def init_events(self):
         global called
         visitmods('events')
         called = signal('blazeweb.events.initialized').send(self.init_events)
+
 
 class TestEvents(object):
 
@@ -53,7 +53,7 @@ class TestEvents(object):
 
     def test_connect_to_signal_decorator(self):
         # this initialized the application and sets up the settings
-        import minimal3.application
+        import minimal3.application  # noqa
         assert settings.logging_is_initialized
 
         # make sure the class doesn't have the attribute

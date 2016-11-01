@@ -1,10 +1,7 @@
-import unittest
-
-from nose.tools import eq_
 from webtest import TestApp
 
-import tests.config
 from newlayout.application import make_wsgi
+
 
 class TestStaticFileServer(object):
 

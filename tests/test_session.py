@@ -1,6 +1,5 @@
 import unittest
 
-import tests.config
 from blazewebtestapp.applications import make_wsgi
 from werkzeug import Client, BaseResponse
 from blazeweb.testing import TestApp
@@ -8,11 +7,11 @@ from nose.tools import eq_
 import os
 from time import sleep
 
+
 class TestSession(unittest.TestCase):
 
     def setUp(self):
         self.app = make_wsgi('Testruns')
-        #settings.logging.levels.append(('debug', 'info'))
         self.client = Client(self.app, BaseResponse)
 
     def tearDown(self):
