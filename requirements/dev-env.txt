@@ -1,0 +1,9 @@
+-r common.txt
+
+coverage
+docutils
+flake8
+scripttest
+tox
+webtest
+

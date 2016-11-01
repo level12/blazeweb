@@ -32,7 +32,7 @@ required_packages = [
     'nose>=0.11',
     'Paste>=1.7',
     'PasteScript>=1.7',
-    'WebHelpers>=1.0',
+    'WebHelpers2',
     'Werkzeug>=0.6',
 ]
 

@@ -50,12 +50,15 @@
 # Agreement.
 
 
+import six
+
+
 def curry(_curried_func, *args, **kwargs):
     def _curried(*moreargs, **morekwargs):
-        return _curried_func(*(args+moreargs), **dict(kwargs, **morekwargs))
+        return _curried_func(*(args + moreargs), **dict(kwargs, **morekwargs))
     return _curried
 
-### Begin from Python 2.5 functools.py ########################################
+# Begin from Python 2.5 functools.py ########################################
 
 # Summary of changes made to the Python 2.5 code below:
 #   * swapped ``partial`` for ``curry`` to maintain backwards-compatibility
@@ -74,10 +77,12 @@ def curry(_curried_func, *args, **kwargs):
 
 WRAPPER_ASSIGNMENTS = ('__module__', '__name__', '__doc__')
 WRAPPER_UPDATES = ('__dict__',)
+
+
 def update_wrapper(wrapper,
                    wrapped,
-                   assigned = WRAPPER_ASSIGNMENTS,
-                   updated = WRAPPER_UPDATES):
+                   assigned=WRAPPER_ASSIGNMENTS,
+                   updated=WRAPPER_UPDATES):
     """Update a wrapper function to look like the wrapped function
 
        wrapper is the function to be updated
@@ -92,16 +97,17 @@ def update_wrapper(wrapper,
     for attr in assigned:
         try:
             setattr(wrapper, attr, getattr(wrapped, attr))
-        except TypeError: # Python 2.3 doesn't allow assigning to __name__.
+        except TypeError:  # Python 2.3 doesn't allow assigning to __name__.
             pass
     for attr in updated:
         getattr(wrapper, attr).update(getattr(wrapped, attr))
     # Return the wrapper so this can be used as a decorator via curry()
     return wrapper
 
+
 def wraps(wrapped,
-          assigned = WRAPPER_ASSIGNMENTS,
-          updated = WRAPPER_UPDATES):
+          assigned=WRAPPER_ASSIGNMENTS,
+          updated=WRAPPER_UPDATES):
     """Decorator factory to apply update_wrapper() to a wrapper function
 
        Returns a decorator that invokes update_wrapper() with the decorated
@@ -113,7 +119,8 @@ def wraps(wrapped,
     return curry(update_wrapper, wrapped=wrapped,
                  assigned=assigned, updated=updated)
 
-### End from Python 2.5 functools.py ##########################################
+# End from Python 2.5 functools.py ##########################################
+
 
 def memoize(func, cache, num_args):
     """
@@ -132,6 +139,7 @@ def memoize(func, cache, num_args):
         return result
     return wraps(func)(wrapper)
 
+
 class Promise(object):
     """
     This is just a base class for the proxy class created in
@@ -140,7 +148,8 @@ class Promise(object):
     """
     pass
 
-def lazy(func, *resultclasses):
+
+def lazy(func, *resultclasses):  # noqa
     """
     Turns any callable into a lazy evaluated callable. You need to give result
     classes or types -- at least one is needed so that the automatic forcing of
@@ -171,8 +180,9 @@ def lazy(func, *resultclasses):
                         continue
                     setattr(cls, k, cls.__promise__(resultclass, k, v))
             cls._delegate_str = str in resultclasses
-            cls._delegate_unicode = unicode in resultclasses
-            assert not (cls._delegate_str and cls._delegate_unicode), "Cannot call lazy() with both str and unicode return types."
+            cls._delegate_unicode = six.text_type in resultclasses
+            assert not (cls._delegate_str and cls._delegate_unicode), \
+                "Cannot call lazy() with both str and unicode return types."
             if cls._delegate_unicode:
                 cls.__unicode__ = cls.__unicode_cast
             elif cls._delegate_str:
@@ -207,19 +217,19 @@ def lazy(func, *resultclasses):
             if self._delegate_str:
                 s = str(self.__func(*self.__args, **self.__kw))
             elif self._delegate_unicode:
-                s = unicode(self.__func(*self.__args, **self.__kw))
+                s = six.text_type(self.__func(*self.__args, **self.__kw))
             else:
                 s = self.__func(*self.__args, **self.__kw)
             if isinstance(rhs, Promise):
-                return -cmp(rhs, s)
+                return -cmp(rhs, s)  # noqa
             else:
-                return cmp(s, rhs)
+                return cmp(s, rhs)  # noqa
 
         def __mod__(self, rhs):
             if self._delegate_str:
                 return str(self) % rhs
             elif self._delegate_unicode:
-                return unicode(self) % rhs
+                return six.text_type(self) % rhs
             else:
                 raise AssertionError('__mod__ not supported for non-string types')
 
@@ -236,6 +246,7 @@ def lazy(func, *resultclasses):
 
     return wraps(func)(__wrapper__)
 
+
 def allow_lazy(func, *resultclasses):
     """
     A decorator that allows a function to be called with one or more lazy
@@ -244,7 +255,7 @@ def allow_lazy(func, *resultclasses):
     function when needed.
     """
     def wrapper(*args, **kwargs):
-        for arg in list(args) + kwargs.values():
+        for arg in list(args) + list(kwargs.values()):
             if isinstance(arg, Promise):
                 break
         else:

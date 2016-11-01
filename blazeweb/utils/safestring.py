@@ -4,10 +4,14 @@ without further escaping in HTML. Marking something as a "safe string" means
 that the producer of the string has already turned characters that should not
 be interpreted by the HTML engine (e.g. '<') into the appropriate entities.
 """
+import six
+
 from blazeweb.utils.functional import curry, Promise
+
 
 class EscapeData(object):
     pass
+
 
 class EscapeString(str, EscapeData):
     """
@@ -15,16 +19,19 @@ class EscapeString(str, EscapeData):
     """
     pass
 
-class EscapeUnicode(unicode, EscapeData):
+
+class EscapeUnicode(six.text_type, EscapeData):
     """
     A unicode object that should be HTML-escaped when output.
     """
     pass
 
+
 class SafeData(object):
     pass
 
-class SafeString(str, SafeData):
+
+class SafeString(six.binary_type, SafeData):
     """
     A string subclass that has been specifically marked as "safe" (requires no
     further escaping) for HTML output purposes.
@@ -40,7 +47,7 @@ class SafeString(str, SafeData):
         elif isinstance(rhs, SafeString):
             return SafeString(t)
         return t
-        
+
     def _proxy_method(self, *args, **kwargs):
         """
         Wrap a call to a normal unicode method up so that we return safe
@@ -49,14 +56,15 @@ class SafeString(str, SafeData):
         """
         method = kwargs.pop('method')
         data = method(self, *args, **kwargs)
-        if isinstance(data, str):
+        if isinstance(data, six.binary_type):
             return SafeString(data)
         else:
             return SafeUnicode(data)
 
-    decode = curry(_proxy_method, method = str.decode)
+    decode = curry(_proxy_method, method=six.binary_type.decode)
 
-class SafeUnicode(unicode, SafeData):
+
+class SafeUnicode(six.text_type, SafeData):
     """
     A unicode subclass that has been specifically marked as "safe" for HTML
     output purposes.
@@ -70,7 +78,7 @@ class SafeUnicode(unicode, SafeData):
         if isinstance(rhs, SafeData):
             return SafeUnicode(t)
         return t
-    
+
     def _proxy_method(self, *args, **kwargs):
         """
         Wrap a call to a normal unicode method up so that we return safe
@@ -84,7 +92,8 @@ class SafeUnicode(unicode, SafeData):
         else:
             return SafeUnicode(data)
 
-    encode = curry(_proxy_method, method = unicode.encode)
+    encode = curry(_proxy_method, method=six.text_type.encode)
+
 
 def mark_safe(s):
     """
@@ -97,9 +106,10 @@ def mark_safe(s):
         return s
     if isinstance(s, str) or (isinstance(s, Promise) and s._delegate_str):
         return SafeString(s)
-    if isinstance(s, (unicode, Promise)):
+    if isinstance(s, (six.text_type, Promise)):
         return SafeUnicode(s)
     return SafeString(str(s))
+
 
 def mark_for_escaping(s):
     """
@@ -113,7 +123,6 @@ def mark_for_escaping(s):
         return s
     if isinstance(s, str) or (isinstance(s, Promise) and s._delegate_str):
         return EscapeString(s)
-    if isinstance(s, (unicode, Promise)):
+    if isinstance(s, (six.text_type, Promise)):
         return EscapeUnicode(s)
     return EscapeString(str(s))
-

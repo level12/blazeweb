@@ -1,6 +1,6 @@
 import logging
 from os import path
-from StringIO import StringIO
+from io import StringIO
 from tempfile import TemporaryFile
 import time
 
@@ -11,11 +11,12 @@ from werkzeug import EnvironHeaders, LimitedStream, \
     SharedDataMiddleware, DebuggedApplication
 
 from blazeweb import routing
-from blazeweb.hierarchy import list_component_mappings, findfile, FileNotFound
+from blazeweb.hierarchy import findfile, FileNotFound
 from blazeweb.globals import settings, ag
 from blazeweb.utils.filesystem import mkdirs
 
 log = logging.getLogger(__name__)
+
 
 class HttpRequestLogger(object):
     """
@@ -33,12 +34,14 @@ class HttpRequestLogger(object):
 
                 <...snip...>
 
-                app = HttpRequestLogger(app, enabled=True, path_info_filter='files/add', request_method_filter='post')
+                app = HttpRequestLogger(app, enabled=True, path_info_filter='files/add',
+                                        request_method_filter='post')
 
                 return app
 
     """
-    def __init__(self, application, enabled=False, path_info_filter=None, request_method_filter=None ):
+    def __init__(self, application, enabled=False, path_info_filter=None,
+                 request_method_filter=None):
         self.log_dir = path.join(settings.dirs.logs, 'http_requests')
         mkdirs(self.log_dir)
         self.application = application
@@ -52,7 +55,9 @@ class HttpRequestLogger(object):
             should_log = True
             if self.pi_filter is not None and self.pi_filter not in environ['PATH_INFO']:
                 should_log = False
-            if self.rm_filter is not None and environ['REQUEST_METHOD'].lower() not in map(lambda x: x.lower(), tolist(self.rm_filter)):
+            if self.rm_filter is not None and environ['REQUEST_METHOD'].lower() not in [
+                x.lower() for x in tolist(self.rm_filter)
+            ]:
                 should_log = False
             if should_log:
                 wsgi_input = self.replace_wsgi_input(environ)
@@ -79,12 +84,13 @@ class HttpRequestLogger(object):
         environ['wsgi.input'] = wsgi_input
         return environ['wsgi.input']
 
+
 class StaticFileServer(SharedDataMiddleware):
     """
         Serves static files based on hierarchy structure
     """
     def __init__(self, app, **kwargs):
-        exports = {'/' + routing.static_url('/') : ''}
+        exports = {'/' + routing.static_url('/'): ''}
         SharedDataMiddleware.__init__(self, app, exports, **kwargs)
 
     def debug(self, pathpart, msg):
@@ -124,18 +130,20 @@ class StaticFileServer(SharedDataMiddleware):
                 return None, None
         return loader
 
+
 def static_files(app):
     settings = ag.app.settings
 
     if settings.static_files.enabled:
         # serve static files from static directory (e.g. after copying
         # from the source packages; use static-copy command for that)
-        if settings.static_files.location  == 'static':
-            exported_dirs = {'/' + routing.static_url('/') : settings.dirs.static}
+        if settings.static_files.location == 'static':
+            exported_dirs = {'/' + routing.static_url('/'): settings.dirs.static}
             return SharedDataMiddleware(app, exported_dirs)
         # serve static files from source packages based on hierarchy rules
         return StaticFileServer(app)
     return app
+
 
 class RegistrySetup(object):
     """
@@ -150,6 +158,7 @@ class RegistrySetup(object):
         environ['paste.registry'].register(settings, self.bwapp.settings)
         environ['paste.registry'].register(ag, self.bwapp.ag)
         return self.wsgiapp(environ, start_response)
+
 
 def full_wsgi_stack(app):
     """
@@ -171,11 +180,14 @@ def full_wsgi_stack(app):
 
     # log http requests, use sparingly on production servers
     if settings.logs.http_requests.enabled:
-        app = HttpRequestLogger(app, True,
-                settings.logs.http_requests.filters.path_info,
-                settings.logs.http_requests.filters.request_method)
+        app = HttpRequestLogger(
+            app, True,
+            settings.logs.http_requests.filters.path_info,
+            settings.logs.http_requests.filters.request_method
+        )
 
     return app
+
 
 def minimal_wsgi_stack(app):
     """

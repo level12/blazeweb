@@ -1,9 +1,11 @@
+from __future__ import print_function
 from os import path
 
 from blazeweb.config import DefaultSettings
 
 basedir = path.dirname(path.dirname(__file__))
 app_package = path.basename(basedir)
+
 
 class Default(DefaultSettings):
     def init(self):
@@ -19,12 +21,14 @@ class Default(DefaultSettings):
         self.apply_test_settings()
 
     def get_storage_dir(self):
-        return path.join(basedir, '..', '..', 'test-output', app_package)
+        return path.join(basedir, '..', '..', 'test-output', self.app_package)
+
 
 class Dev(Default):
     def init(self):
         Default.init(self)
         self.apply_dev_settings()
+
 
 class Dispatching(Default):
 
@@ -41,27 +45,32 @@ class Dispatching(Default):
         # components should be able to add things to this list
         self.some_list = ['from app']
 
+
 class BeakerSessions(Dispatching):
     def init(self):
         Dispatching.init(self)
         self.beaker.timeout = 2
+
 
 class EventSettings(Default):
     def init(self):
         Default.init(self)
         self.apply_test_settings()
 
+
 class Test(Default):
     def init(self):
         Default.init(self)
 
-        print 'Test settings'
+        print('Test settings')
+
 
 class Test2(Default):
     def init(self):
         Default.init(self)
 
-        print 'Test2 settings'
+        print('Test2 settings')
+
 
 class TestStorageDir(Default):
     def init(self):
@@ -71,6 +80,7 @@ class TestStorageDir(Default):
 
     def get_storage_dir(self):
         return DefaultSettings.get_storage_dir(self)
+
 
 class NoAutoImportView(Default):
     def init(self):

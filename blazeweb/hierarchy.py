@@ -1,14 +1,16 @@
-import __builtin__
 import logging
 from os import path as ospath
 import sys
 
 from blazeutils.datastructures import BlankObject, OrderedDict, UniqueList
 from blazeutils.error_handling import raise_unexpected_import_error
+import six
+
 from blazeweb.globals import ag, settings
 from blazeweb.utils import registry_has_object
 
 log = logging.getLogger(__name__)
+
 
 class HierarchyImportError(ImportError):
     """
@@ -19,26 +21,37 @@ class HierarchyImportError(ImportError):
         import in one of the modules the hieararchy lookup accessed.
     """
 
+
 class FileNotFound(Exception):
     """
         raised when a file is not found in findfile()
     """
 
+default_import_level = -1 if six.PY2 else 0
+
+
+def _is_expected_import_error(error_msg, import_string):
+    if not error_msg.startswith('No module named'):
+        return False
+    no_module_found = error_msg.replace('No module named ', '').replace("'", '')
+    return import_string.startswith(no_module_found)
+
+
 class HierarchyManager(object):
 
     def __init__(self):
-        self._builtin_import = __builtin__.__import__
+        self._builtin_import = six.moves.builtins.__import__
         self.replace_builtin()
 
     def replace_builtin(self):
-        __builtin__.__import__ = self.blazeweb_import
+        six.moves.builtins.__import__ = self.blazeweb_import
         log.debug('HierarchyManager replaced __builtin__.__import__')
 
     def restore_builtin(self):
-        __builtin__.__import__ = self._builtin_import
+        six.moves.builtins.__import__ = self._builtin_import
         log.debug('HierarchyManager restored __builtin__.__import__')
 
-    def builtin_import(self, name, globals={}, locals={}, fromlist=[], level=-1):
+    def builtin_import(self, name, globals={}, locals={}, fromlist=[], level=default_import_level):
         mod = self._builtin_import(name, globals, locals, fromlist, level)
         # for module reloading purposes in visitmods(), we need to keep track
         # of what application imported a module.  But we only need to do that
@@ -50,12 +63,13 @@ class HierarchyManager(object):
                 mod._blazeweb_hierarchy_last_imported_by = id(ag.app)
         return mod
 
-    def blazeweb_import(self, name, globals={}, locals={}, fromlist=[], level=-1):
+    def blazeweb_import(self, name, globals={}, locals={}, fromlist=[], level=default_import_level):
         instack_collection = ImportOverrideHelper.doimport(name, fromlist)
         if instack_collection:
             return instack_collection
         return self.builtin_import(name, globals, locals, fromlist, level)
 hm = HierarchyManager()
+
 
 def listapps(reverse=False):
     if reverse:
@@ -64,6 +78,7 @@ def listapps(reverse=False):
         apps.append(settings.app_package)
         return apps
     return [settings.app_package] + settings.supporting_apps
+
 
 def listcomponents(reverse=False):
     """
@@ -77,6 +92,7 @@ def listcomponents(reverse=False):
         retval.reverse()
     return retval
 
+
 def list_component_packages():
     """
         a flat list of enabled component packages
@@ -88,6 +104,7 @@ def list_component_packages():
                 packages.append(packagename)
         ag.hierarchy_component_packages = packages
     return ag.hierarchy_component_packages
+
 
 def list_component_mappings(target_component=None, reverse=False, inc_apps=False):
     """
@@ -109,21 +126,24 @@ def list_component_mappings(target_component=None, reverse=False, inc_apps=False
         retval.reverse()
     return retval
 
+
 def findcontent(endpoint):
     try:
         return findendpoint(endpoint, 'content')
-    except HierarchyImportError, e:
+    except HierarchyImportError as e:
         if not find_exc_is_from(e, endpoint, 'content'):
             raise
         raise HierarchyImportError('An object for Content endpoint "%s" was not found' % endpoint)
 
+
 def findview(endpoint):
     try:
         return findendpoint(endpoint, 'views')
-    except HierarchyImportError, e:
+    except HierarchyImportError as e:
         if not find_exc_is_from(e, endpoint, 'views'):
             raise
         raise HierarchyImportError('An object for View endpoint "%s" was not found' % endpoint)
+
 
 def find_exc_is_from(e, endpoint, where):
     if ':' not in endpoint:
@@ -138,6 +158,7 @@ def find_exc_is_from(e, endpoint, where):
         'attribute "%s" not found; searched appstack.%s' % (attr, where),
     ]
     return str(e) in possible_messages
+
 
 def findendpoint(endpoint, where):
     """
@@ -154,6 +175,7 @@ def findendpoint(endpoint, where):
         return AppFinder(where, endpoint).search()
     component, attr = endpoint.split(':')
     return ComponentFinder(component, where, attr).search()
+
 
 def findfile(endpoint_path):
     """
@@ -178,6 +200,7 @@ def findfile(endpoint_path):
         raise FileNotFound('could not find: %s' % endpoint_path)
     return fpath
 
+
 def findobj(endpoint):
     """
         Allows hieararchy importing based on strings:
@@ -199,6 +222,7 @@ def findobj(endpoint):
     impname = '.'.join(parts[:-1])
     collector = ImportOverrideHelper.doimport(impstring + impname, [attr])
     return getattr(collector, attr)
+
 
 def visitmods(dotpath, reverse=False, call_with_mod=None, reloadmod=True):
     """
@@ -227,11 +251,13 @@ def visitmods(dotpath, reverse=False, call_with_mod=None, reloadmod=True):
                 impstr = '%s.%s' % (package, dotpath)
             else:
                 impstr = '%s.components.%s.%s' % (app, pname, dotpath)
-            if sys.modules.has_key(impstr):
-                mod_loaded_by = getattr(sys.modules[impstr], '_blazeweb_hierarchy_last_imported_by', None)
+            if impstr in sys.modules:
+                mod_loaded_by = getattr(
+                    sys.modules[impstr], '_blazeweb_hierarchy_last_imported_by', None
+                )
                 current_app_id = id(ag.app)
                 if reloadmod and mod_loaded_by != current_app_id:
-                    module = reload(sys.modules[impstr])
+                    module = six.moves.reload_module(sys.modules[impstr])
                     module._blazeweb_hierarchy_last_imported_by = current_app_id
                 else:
                     module = sys.modules[impstr]
@@ -239,8 +265,14 @@ def visitmods(dotpath, reverse=False, call_with_mod=None, reloadmod=True):
                 module = hm.builtin_import(impstr, fromlist=[''])
             if call_with_mod:
                 call_with_mod(module, app=app, pname=pname, package=package)
-        except ImportError, e:
+        except ImportError as e:
+            # in python 3+, any attempt at importing a non-existent module within a component
+            #   will end up here, so we need to check the message before we treat it as an
+            #   unexpected import error
+            if not six.PY2 and _is_expected_import_error(str(e), impstr):
+                continue
             raise_unexpected_import_error(impstr, e)
+
 
 def gatherobjs(dotpath, filter, reloadmod=False):
     """
@@ -253,14 +285,16 @@ def gatherobjs(dotpath, filter, reloadmod=False):
             return 'appstack.%s' % dotpath
         return 'compstack.%s.%s' % (pname, dotpath)
     collected = OrderedDict()
+
     def process_module(module, app, pname, package):
         modkey = getkey(app, pname)
-        for k, v in vars(module).iteritems():
+        for k, v in six.iteritems(vars(module)):
             if filter(k, v):
                 modattrs = collected.setdefault(modkey, OrderedDict())
                 modattrs.setdefault(k, v)
     visitmods(dotpath, call_with_mod=process_module, reloadmod=reloadmod)
     return collected
+
 
 class FileFinderBase(object):
 
@@ -295,6 +329,7 @@ class FileFinderBase(object):
             ag.hierarchy_file_cache[self.cachekey] = fullpath
             return fullpath
 
+
 class AppFileFinder(FileFinderBase):
 
     def assign_cachekey(self):
@@ -305,6 +340,7 @@ class AppFileFinder(FileFinderBase):
             testpath = ospath.join(self.package_dir(app), self.pathpart)
             if ospath.exists(testpath):
                 return testpath
+
 
 class ComponentFileFinder(FileFinderBase):
 
@@ -318,11 +354,14 @@ class ComponentFileFinder(FileFinderBase):
     def search_apps(self):
         for app, pname, package in list_component_mappings(self.component):
             if not package:
-                testpath = ospath.join(self.package_dir(app), 'components', self.component, self.pathpart)
+                testpath = ospath.join(
+                    self.package_dir(app), 'components', self.component, self.pathpart
+                )
             else:
                 testpath = ospath.join(self.package_dir(package), self.pathpart)
             if ospath.exists(testpath):
                 return testpath
+
 
 class FinderBase(object):
 
@@ -352,7 +391,10 @@ class FinderBase(object):
                 return getattr(module, self.attr)
             # this happens when the attribute has been requested previously
             # but wasn't found, and the module was cached
-            raise HierarchyImportError('attribute "%s" not found; searched %s.%s' % (self.attr, self.type, self.exclocation))
+            raise HierarchyImportError(
+                'attribute "%s" not found; searched %s.%s' %
+                (self.attr, self.type, self.exclocation)
+            )
 
         log.debug('search() failed; resubmitting with empty attr for better error message')
         # try again with the attribute set to none to see if this is a problem
@@ -361,8 +403,12 @@ class FinderBase(object):
         self.attr = None
         module = self._search()
         if not module:
-            raise HierarchyImportError('module "%s" not found; searched %s' % (self.exclocation, self.type))
-        raise HierarchyImportError('attribute "%s" not found; searched %s.%s' % (orig_attr, self.type, self.exclocation))
+            raise HierarchyImportError(
+                'module "%s" not found; searched %s' % (self.exclocation, self.type)
+            )
+        raise HierarchyImportError(
+            'attribute "%s" not found; searched %s.%s' % (orig_attr, self.type, self.exclocation)
+        )
 
     def _search(self):
         module = self.cached_module()
@@ -377,23 +423,29 @@ class FinderBase(object):
                 log.debug('found %s: %s', self.cachekey, dlocation)
                 ag.hierarchy_import_cache[self.cachekey] = dlocation
                 return foundmod
-        except ImportError, e:
+        except ImportError as e:
+            # in python 3+, any attempt at importing a non-existent module within a component
+            #   will end up here, so we need to check the message before we treat it as an
+            #   unexpected import error
             msg = str(e)
-            if 'No module named ' in msg:
-                not_found_mod = msg.replace('No module named ', '')
-                if dlocation.endswith(not_found_mod):
-                    return
+            if not six.PY2 and _is_expected_import_error(msg, dlocation):
+                return
+            if 'No module named ' in msg and dlocation.endswith(
+                msg.replace('No module named ', '')
+            ):
+                return
             if dlocation in str(e):
                 return
             raise
 
         log.debug('could not import: %s', self.cachekey)
 
+
 class AppFinder(FinderBase):
     type = 'appstack'
 
     def assign_cachekey(self):
-        self.cachekey = 'aopstack.%s:%s' % (self.location, self.attr)
+        self.cachekey = 'appstack.%s:%s' % (self.location, self.attr)
 
     def search_apps(self):
         for app in listapps():
@@ -401,6 +453,7 @@ class AppFinder(FinderBase):
             module = self.try_import(dlocation)
             if module:
                 return module
+
 
 class ComponentFinder(FinderBase):
     type = 'compstack'
@@ -411,20 +464,21 @@ class ComponentFinder(FinderBase):
 
     @property
     def exclocation(self):
-        return '%s.%s' % (self.component, self.location)
+        return '%s%s' % (self.component, ('.%s' % self.location) if self.location else '')
 
     def assign_cachekey(self):
-        self.cachekey = 'compstack.%s.%s:%s' % (self.component, self.location, self.attr)
+        self.cachekey = 'compstack.%s:%s' % (self.exclocation, self.attr)
 
     def search_apps(self):
         for app, pname, package in list_component_mappings(self.component):
             if not package:
-                dlocation = '%s.components.%s.%s' % (app, self.component, self.location)
+                dlocation = '%s.components.%s' % (app, self.exclocation)
             else:
-                dlocation = '%s.%s' % (package, self.location)
+                dlocation = '%s%s' % (package, ('.%s' % self.location) if self.location else '')
             module = self.try_import(dlocation)
             if module:
                 return module
+
 
 class ImportOverrideHelper(object):
 
@@ -441,8 +495,9 @@ class ImportOverrideHelper(object):
 
     def search(self):
         if not self.fromlist:
-            raise HierarchyImportError('non-attribute importing is not supported; '
-                              'use "from %s import foo, bar" syntax instead' % self.name)
+            raise HierarchyImportError(
+                'non-attribute importing is not supported; '
+                'use "from %s import foo, bar" syntax instead' % self.name)
         collector = BlankObject()
         for attr in self.fromlist:
             attrobj = self.find_attrobj(attr)
@@ -469,6 +524,7 @@ class AppstackImport(ImportOverrideHelper):
     def find_attrobj(self, attr):
         _, name = self.name.split('.', 1)
         return AppFinder(name, attr).search()
+
 
 def split_endpoint(endpoint):
     if ':' in endpoint:

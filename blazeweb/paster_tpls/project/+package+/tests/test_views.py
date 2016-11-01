@@ -1,5 +1,6 @@
-from blazeweb.globals import ag, settings
+from blazeweb.globals import ag
 from blazeweb.testing import TestApp
+
 
 class TestViews(object):
 

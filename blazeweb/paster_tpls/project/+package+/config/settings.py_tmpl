@@ -33,4 +33,4 @@ class Default(DefaultSettings):
 
 # have to have this here, so that site_settings
 # can import Default without circular dependencies
-from site_settings import *
+from .site_settings import *

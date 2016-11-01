@@ -1,12 +1,15 @@
+import six
 import werkzeug as wz
 
 from blazeutils.jsonh import jsonmod, assert_have_json
 from blazeweb.globals import rg
 from blazeweb.utils import registry_has_object
 
+
 class BaseRequest(wz.Request):
     # we want mutable request objects
     parameter_storage_class = wz.MultiDict
+
 
 class Request(BaseRequest):
     """
@@ -47,7 +50,12 @@ class Request(BaseRequest):
         """
         assert_have_json()
         if self.mimetype.endswith(('+json', '/json')):
-            return jsonmod.loads(unicode(self.data, self.charset))
+            return jsonmod.loads(six.text_type(self.data, self.charset))
+
+    @wz.cached_property
+    def decoded(self):
+        return six.text_type(self.data, self.charset)
+
 
 class Response(wz.Response):
     """
@@ -55,6 +63,7 @@ class Response(wz.Response):
     """
 
     default_mimetype = 'text/html'
+
 
 class StreamResponse(wz.Response):
     """

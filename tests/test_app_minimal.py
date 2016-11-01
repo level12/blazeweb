@@ -1,14 +1,11 @@
+from __future__ import absolute_import
 from webtest import TestApp
-
-from blazeweb.globals import settings
-
-# make sure the path gets appended so we can import by name
-import config
 
 # application imports
 from minimal2.application import make_wsgi
 from minimal1.application import wsgiapp, settings
 settings.apply_test_settings()
+
 
 class TestMinimal1(object):
 
@@ -40,11 +37,11 @@ class TestMinimal1(object):
 
     def test_url_args_overwrite_get_args(self):
         r = self.ta.get('/ap/2?foo=1')
-        assert r.body == '2', r.body
+        assert r.body == b'2', r.body
 
     def test_list(self):
         r = self.ta.get('/tolist?foo=1&foo=2')
-        r.mustcontain("[u'1', u'2']")
+        r.mustcontain("1, 2")
 
     def test_badargspec(self):
         r = self.ta.get('/wontwork?foo=1', status=400)
@@ -70,6 +67,7 @@ class TestMinimal1(object):
         r = self.ta.get('/returnwsgiapp')
         r.mustcontain('wsgi hw')
 
+
 class TestMinimal2(object):
 
     @classmethod
@@ -79,6 +77,7 @@ class TestMinimal2(object):
     def test_workingview(self):
         r = self.ta.get('/')
         r.mustcontain('index')
+
 
 class TestNoAutoImportView(object):
 

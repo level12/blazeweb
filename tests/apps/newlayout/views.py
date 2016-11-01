@@ -1,7 +1,8 @@
-from blazeweb.globals import settings, user, rg
+from blazeweb.globals import user, rg
 from blazeweb.utils import abort
-from blazeweb.views import View, asview
+from blazeweb.views import View
 from blazeweb.wrappers import Response
+
 
 class AppLevelView(View):
     def init(self):
@@ -9,6 +10,7 @@ class AppLevelView(View):
 
     def default(self, v1=None, v2=None):
         return 'alv: %s, %s' % (v1, v2)
+
 
 class Index(View):
     def default(self, tname):
@@ -19,6 +21,7 @@ class Index(View):
         rg.session['foo'] = 'bar2'
         self.render_template()
 
+
 class Abort(View):
     def default(self, tname):
         if tname == 'int':
@@ -28,10 +31,11 @@ class Abort(View):
         if tname == 'str':
             abort('test & str')
         if tname == 'other':
-            abort({'foo':'bar', 'b&z': 1})
+            abort({'foo': 'bar', 'b&z': 1})
         if tname == 'dabort':
-            dabort([])
+            dabort([])  # noqa
         assert False
+
 
 class EventTest(View):
     def default(self):
