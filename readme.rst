@@ -1,11 +1,14 @@
 BlazeWeb
 ########
 
-.. image:: https://codecov.io/gh/blazelibs/blazeweb/branch/master/graph/badge.svg
-  :target: https://codecov.io/gh/blazelibs/blazeweb
+.. image:: https://ci.appveyor.com/api/projects/status/4b6d40cr79s5p41f?svg=true
+    :target: https://ci.appveyor.com/project/level12/blazeweb
 
-.. image:: https://circleci.com/gh/blazelibs/blazeweb.svg?style=svg
+.. image:: https://circleci.com/gh/blazelibs/blazeweb.svg?style=shield
     :target: https://circleci.com/gh/blazelibs/blazeweb
+
+.. image:: https://codecov.io/gh/blazelibs/blazeweb/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/blazelibs/blazeweb
 
 Intro
 -----
