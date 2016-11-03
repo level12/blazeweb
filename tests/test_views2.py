@@ -533,6 +533,8 @@ def test_view_redirect():
     r = ta.get('/news?sendby=303')
     assert r.status_int == 303
 
+    eh.reset()
+
 
 def test_templating():
 

@@ -102,9 +102,10 @@ if six.PY2:
             res = env.run('pip', 'uninstall', projname, '-y', expect_error=True)
             assert not res.stdout
             if template is not None:
-                result = run_blazeweb('project', '-t', template, '--no-interactive', projname)
+                result = run_blazeweb('project', '-t', template, '--no-interactive', projname,
+                                      expect_stderr=is_win)
             else:
-                result = run_blazeweb('project', '--no-interactive', projname)
+                result = run_blazeweb('project', '--no-interactive', projname, expect_stderr=is_win)
             eq_(len(result.files_created), file_count)
             setup_args = ['python', 'setup.py', 'develop']
             if is_win:

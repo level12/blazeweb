@@ -1,10 +1,8 @@
 import os
 
-from scripttest import TestFileEnvironment
-
 from blazeweb.routing import current_url
 from blazeweb.testing import inrequest
-from .scripting_helpers import env, here, script_test_path, base_environ, apps_path
+from .scripting_helpers import BWTestFileEnvironment, env, here, base_environ, apps_path
 
 from newlayout.application import make_wsgi
 
@@ -53,11 +51,19 @@ def test_nose_component_app_package_by_command_line():
 
 
 def test_nose_component_app_package_by_environ():
+    import minimock
+    import tempfile
+    from minimal2.config.settings import Default
+    new_script_test_path = tempfile.mkdtemp()
+    Default.get_storage_dir = minimock.Mock('get_storage_dir')
+    Default.get_storage_dir.mock_returns = os.path.join(new_script_test_path, 'minimal2')
+
     base_environ['BLAZEWEB_APP_PACKAGE'] = 'minimal2'
-    newenv = TestFileEnvironment(script_test_path, environ=base_environ)
+    newenv = BWTestFileEnvironment(new_script_test_path, environ=base_environ)
     res = newenv.run('nosetests', 'minimal2', expect_error=True, cwd=apps_path)
     assert 'Ran 1 test in' in res.stderr, res.stderr
     assert 'OK' in res.stderr, res.stderr
+    minimock.restore()
 
 
 def test_nose_component_profile_choosing():

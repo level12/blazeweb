@@ -524,6 +524,7 @@ Bcc: </p>
         lh = logging_handler('blazeweb.mail')
         send_mail('test text email', 'email content', ['test@example.com'])
         assert 'email.is_live = False' in lh.messages['warning'][0]
+        lh.reset()
 
     def test_email_log_entry(self):
         settings.email.is_live = False
@@ -531,6 +532,7 @@ Bcc: </p>
         send_mail('test text email', 'email content', ['test@example.com'])
         assert 'Email sent: "test text email" to "test@example.com"' \
             in lh.messages['info'][0], lh.messages['info']
+        lh.reset()
 
     def test_email_log_entry_multiple_senders(self):
         settings.email.is_live = False
@@ -541,6 +543,7 @@ Bcc: </p>
             'test2@example.com;test3@example.com;test4@example.com;test5@example.com;' \
             'test6@example.com;test7@example.com;test8@example.com;test9@example.com;' \
             'test10@example.com;t"' in lh.messages['info'][0], lh.messages['info']
+        lh.reset()
 
     @mockmail
     def test_mockmail(self, mm_tracker=None):
@@ -597,6 +600,7 @@ Bcc: </p>
         _mail_programmers('programmers email subject', 'email body')
         assert 'mail_programmers() used but settings.emails.programmers is empty' in \
             lh.messages['warning'][0]
+        lh.reset()
 
     def test_mail_admins(self):
         settings.email.subject_prefix = '[webapp] '
@@ -614,6 +618,7 @@ Bcc: </p>
 
         _mail_admins('admins email subject', 'email body')
         assert 'mail_admins() used but settings.emails.admins is empty' in lh.messages['warning'][0]
+        lh.reset()
 
     def test_nofrom(self):
         settings.emails.from_default = ''
