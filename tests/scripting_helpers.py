@@ -33,7 +33,9 @@ base_environ = environ.copy()
 base_environ['PYTHONPATH'] = apps_path
 
 if not is_win:
-    BWTestFileEnvironment = TestFileEnvironment
+    class BWTestFileEnvironment(TestFileEnvironment):
+        def clear(self, force=True):
+            super(BWTestFileEnvironment, self).clear(force=force)
 else:
     # Windows throws scripttest some curveballs when it comes to cleaning up folders. Use force
     # on clear to prevent scripttest checking to see if it created the directory (since we know
