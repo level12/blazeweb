@@ -1,11 +1,11 @@
 from os import path
 import os
 
+import six
 from werkzeug.routing import Rule
 from blazeutils.config import QuickSettings
 from blazeutils.datastructures import OrderedDict
 
-from blazeweb.globals import settings
 
 class EnabledSettings(QuickSettings):
     """
@@ -22,20 +22,20 @@ class EnabledSettings(QuickSettings):
         return len(self.keys())
 
     def iteritems(self, showinactive=False):
-        for k,v in self._data.iteritems():
+        for k, v in six.iteritems(self._data):
             try:
-                if showinactive or v.enabled == True:
-                    yield k,v
-            except AttributeError, e:
+                if showinactive or v.enabled is True:
+                    yield k, v
+            except AttributeError as e:
                 if "object has no attribute 'enabled'" not in str(e):
                     raise
 
     def __iter__(self):
         for v in self._data.values():
             try:
-                if v.enabled == True:
+                if v.enabled is True:
                     yield v
-            except AttributeError, e:
+            except AttributeError as e:
                 if "object has no attribute 'enabled'" not in str(e):
                     raise
 
@@ -43,18 +43,19 @@ class EnabledSettings(QuickSettings):
         return key in self.todict()
 
     def keys(self, showinactive=False):
-        return [k for k,v in self.iteritems(showinactive)]
+        return [k for k, v in self.iteritems(showinactive)]
 
     def values(self, showinactive=False):
-        return [v for k,v in self.iteritems(showinactive)]
+        return [v for k, v in self.iteritems(showinactive)]
 
     def todict(self, showinactive=False):
         if showinactive:
             return self._data
         d = OrderedDict()
-        for k,v in self.iteritems():
+        for k, v in self.iteritems():
             d[k] = v
         return d
+
 
 class DefaultSettings(QuickSettings):
     # child classes should define the following
@@ -81,11 +82,11 @@ class DefaultSettings(QuickSettings):
         self.routing.static_prefix = 'static/'
 
         # the settings for the Werkzeug routing Map object:
-        self.routing.map.default_subdomain=''
-        self.routing.map.charset='utf-8'
-        self.routing.map.strict_slashes=True
-        self.routing.map.redirect_defaults=True
-        self.routing.map.converters=None
+        self.routing.map.default_subdomain = ''
+        self.routing.map.charset = 'utf-8'
+        self.routing.map.strict_slashes = True
+        self.routing.map.redirect_defaults = True
+        self.routing.map.converters = None
 
         #######################################################################
         # DIRECTORIES required by PYSVMT
@@ -100,8 +101,8 @@ class DefaultSettings(QuickSettings):
         #######################################################################
         # SESSIONS
         #######################################################################
-        #beaker session options
-        #http://beaker.groovie.org/configuration.html
+        # beaker session options
+        # http://beaker.groovie.org/configuration.html
         self.beaker.enabled = True
         self.beaker.type = 'dbm'
         self.beaker.data_dir = path.join(self.dirs.tmp, 'session_cache')
@@ -179,8 +180,8 @@ class DefaultSettings(QuickSettings):
         # a default reply-to header if one is not specified
         self.emails.reply_to = ''
 
-        ### recipient defaults.  Should be a list of email addresses
-        ### ('foo@example.com', 'bar@example.com')
+        # recipient defaults.  Should be a list of email addresses
+        # ('foo@example.com', 'bar@example.com')
 
         # will always add theses cc's to every email sent
         self.emails.cc_always = None
@@ -223,8 +224,8 @@ class DefaultSettings(QuickSettings):
         # OTHER DEFAULTS
         #######################################################################
         self.default.charset = 'utf-8'
-        self.default.file_mode = 0640
-        self.default.dir_mode = 0750
+        self.default.file_mode = 0o640
+        self.default.dir_mode = 0o750
 
         #######################################################################
         # ERROR DOCUMENTS
@@ -255,7 +256,7 @@ class DefaultSettings(QuickSettings):
         self.logs.enabled = True
         # logs will be logged using RotatingFileHandler
         # maximum log file size is 50MB
-        self.logs.max_bytes = 1024*1024*50
+        self.logs.max_bytes = 1024 * 1024 * 50
         # maximum number of log files to keep around
         self.logs.backup_count = 10
         # will log all WARN and above logs to errors.log in the logs directory
@@ -331,10 +332,10 @@ class DefaultSettings(QuickSettings):
         cvalue.append(package)
 
     def get_storage_dir(self):
-        ## files should be stored outside the source directory so that your
-        ## application can be packaged.  We are assuming that you are in
-        ## a virtualenv or have an environ variable setup. If not, then we
-        ## default to the directory above the base directory
+        # files should be stored outside the source directory so that your
+        # application can be packaged.  We are assuming that you are in
+        # a virtualenv or have an environ variable setup. If not, then we
+        # default to the directory above the base directory
         bw_storage = os.getenv('BW_STORAGE_DIR')
         if bw_storage:
             return bw_storage
@@ -348,7 +349,7 @@ class DefaultSettings(QuickSettings):
             changes settings to the defaults for testing
         """
         # nose has good log capturing facilities, so just let it ride
-        self.logs.enabled=False
+        self.logs.enabled = False
         # don't want pesky error messages
         self.logs.null_handler.enabled = True
         # we want exceptions to come all the way to nose
@@ -360,7 +361,7 @@ class DefaultSettings(QuickSettings):
 
         self.exception_handling = None
         self.debugger.enabled = True
-        self.static_files.location  = 'source'
+        self.static_files.location = 'source'
         self.auto_abort_as_builtin = True
 
         if override_email:
@@ -369,6 +370,7 @@ class DefaultSettings(QuickSettings):
     def add_route(self, route, endpoint, *args, **kwargs):
         kwargs['endpoint'] = endpoint
         self.routing.routes.append(Rule(route, *args, **kwargs))
+
 
 class ComponentSettings(object):
     def __init__(self, app_settings):

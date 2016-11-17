@@ -20,6 +20,7 @@ __all__ = [
     'copy_static_files',
 ]
 
+
 class Error(EnvironmentError):
     pass
 
@@ -27,6 +28,7 @@ try:
     WindowsError
 except NameError:
     WindowsError = None
+
 
 def mkdirs(newdir, mode=NotGiven):
     """
@@ -42,10 +44,11 @@ def mkdirs(newdir, mode=NotGiven):
     if os.path.isdir(newdir):
         pass
     elif os.path.isfile(newdir):
-        raise OSError("a file with the same name as the desired " \
+        raise OSError("a file with the same name as the desired "
                       "dir, '%s', already exists." % newdir)
     else:
         os.makedirs(newdir, mode)
+
 
 def copy_static_files(delete_existing=False):
     """
@@ -81,6 +84,7 @@ def copy_static_files(delete_existing=False):
             targetpath = path.join(statroot, targetpath)
 
             copytree(srcpath, targetpath)
+
 
 def copytree(src, dst, symlinks=False, ignore=None):
     """Recursively copy a directory tree using copy2().
@@ -130,19 +134,19 @@ def copytree(src, dst, symlinks=False, ignore=None):
             else:
                 copy2(srcname, dstname)
             # XXX What about devices, sockets etc.?
-        except (IOError, os.error), why:
+        except (IOError, os.error) as why:
             errors.append((srcname, dstname, str(why)))
         # catch the Error from the recursive copytree so that we can
         # continue with other files
-        except Error, err:
+        except Error as err:
             errors.extend(err.args[0])
     try:
         copystat(src, dst)
-    except OSError, why:
+    except OSError as why:
         if WindowsError is not None and isinstance(why, WindowsError):
             # Copying file access times may fail on Windows
             pass
         else:
             errors.extend((src, dst, str(why)))
     if errors:
-        raise Error, errors
+        raise Error(errors)

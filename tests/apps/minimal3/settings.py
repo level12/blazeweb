@@ -2,6 +2,7 @@ from os import path
 from blazeweb.config import DefaultSettings
 from blazeweb.events import settings_connect
 
+
 class Settings(DefaultSettings):
     def init(self):
         self.dirs.base = path.dirname(__file__)

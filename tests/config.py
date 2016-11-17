@@ -7,6 +7,7 @@ from blazeweb.globals import settings
 from blazeutils import prependsitedir
 prependsitedir(__file__, 'apps')
 
+
 class Testruns(DefaultSettings):
     def init(self):
         self.dirs.base = path.dirname(__file__)
@@ -39,13 +40,16 @@ class Testruns(DefaultSettings):
     def get_storage_dir(self):
         return path.join(self.dirs.base, 'test-output', self.app_package)
 
+
 def make_wsgi(settings_cls=Testruns, **kwargs):
     return WSGIApp(settings_cls())
+
 
 def init_settings(customsettings=None):
     if customsettings:
         settings._push_object(customsettings)
     return settings._push_object(Testruns())
+
 
 def destroy_settings():
     settings._pop_object()

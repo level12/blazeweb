@@ -32,7 +32,7 @@ required_packages = [
     'nose>=0.11',
     'Paste>=1.7',
     'PasteScript>=1.7',
-    'WebHelpers>=1.0',
+    'WebHelpers2',
     'Werkzeug>=0.6',
 ]
 
@@ -55,13 +55,13 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',
-        'Programming Language :: Python :: 2.5',
-        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
         'Topic :: Internet :: WWW/HTTP'
     ],
     license='BSD',
-    packages=find_packages(exclude=['ez_setup']),
+    packages=find_packages(exclude=['tests']),
     include_package_data=True,
     install_requires=required_packages,
     extras_require={'develop': develop_requires},
