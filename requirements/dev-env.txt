@@ -1,9 +1,10 @@
 -r common.txt
 
+codecov
 coverage
 docutils
 flake8
 scripttest
 tox
 webtest
-
+wheel
