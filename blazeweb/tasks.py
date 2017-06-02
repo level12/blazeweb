@@ -1,9 +1,13 @@
 from __future__ import print_function
 from decorator import decorator
 from blazeutils import tolist, OrderedDict
+import logging
 import six
 
+from blazeweb.globals import ag
 from blazeweb.hierarchy import gatherobjs
+
+log = logging.getLogger(__name__)
 
 
 def _attributes(f, *args, **kwargs):
@@ -47,6 +51,8 @@ def run_tasks(tasks, print_call=True, test_only=False, *args, **kwargs):
     tasks = tolist(tasks)
     retval = OrderedDict()
     for task in tasks:
+        log.application('task {}: starting'.format(task))
+
         # split off the attribute if it is present:
         if ':' in task:
             task, attr = task.split(':', 1)
@@ -102,12 +108,20 @@ def run_tasks(tasks, print_call=True, test_only=False, *args, **kwargs):
             if test_only:
                 callable_retval = 'test_only=True'
             else:
-                callable_retval = call_tuple[2]()
+                try:
+                    callable_retval = call_tuple[2]()
+                except Exception as e:
+                    log.application('task {}: an exception occurred')
+                    ag.app.handle_exception(e)
+                    raise
             retval[task].append((
                 call_tuple[0],
                 call_tuple[1],
                 callable_retval
             ))
+
+        log.application('task {}: completed'.format(task))
+
     if print_call and test_only:
         print('*** NOTICE: test_only=True, no actions called ***')
     return retval
