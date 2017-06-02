@@ -21,3 +21,6 @@ class StackedObjectProxy(PasteSOP):
                     'expected (%s)' % (popped, obj))
         except AttributeError:
             raise AssertionError('No object has been registered for this thread')
+
+    def __bool__(self):
+        return bool(self._current_obj())
