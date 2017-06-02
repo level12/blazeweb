@@ -108,19 +108,25 @@ def exception_with_context():
         formats the last exception as a string and adds context about the
         request.
     """
-    post_data = werkzeug_multi_dict_conv(rg.request.form)
+    has_request = len(rg._object_stack())
+    if has_request:
+        post_data = werkzeug_multi_dict_conv(rg.request.form)
+
+        # Remove HTTP_COOKIE from the environment since it may contain sensitive info.  It will get
+        # filtered and inserted next.
+        environ = rg.environ.copy()
+        if 'HTTP_COOKIE' in environ:
+            del environ['HTTP_COOKIE']
+            environ['blazeweb.cookies'] = exception_context_filter(rg.request.cookies)
+    else:
+        post_data = {}
+        environ = {}
     post_data = exception_context_filter(post_data)
 
-    # Remove HTTP_COOKIE from the environment since it may contain sensitive info.  It will get
-    # filtered and inserted next.
-    environ = rg.environ.copy()
-    if 'HTTP_COOKIE' in environ:
-        del environ['HTTP_COOKIE']
-        environ['blazeweb.cookies'] = exception_context_filter(rg.request.cookies)
-
     retval = '\n== TRACE ==\n\n%s' % format_exc()
-    retval += '\n\n== ENVIRON ==\n\n%s' % pformat(environ, 4)
-    retval += '\n\n== POST ==\n\n%s\n\n' % pformat(post_data, 4)
+    if has_request:
+        retval += '\n\n== ENVIRON ==\n\n%s' % pformat(environ, 4)
+        retval += '\n\n== POST ==\n\n%s\n\n' % pformat(post_data, 4)
     return retval
 
 
