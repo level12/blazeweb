@@ -1,10 +1,11 @@
 Change Log
 ----------
 
-0.5.1 released <in development>
+0.5.1 released 2017-06-02
 =========================
 
-* ?
+* fixed StackedObjectProxy boolean conversion for python 3
+* added logging and exception handling for all task executions
 
 0.5.0 released 2016-11-23
 =========================
