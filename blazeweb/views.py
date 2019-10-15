@@ -6,10 +6,10 @@ from blazeutils.sentinels import NotGiven
 from blazeutils.helpers import tolist
 from blazeutils.strings import case_cw2us
 import six
-from werkzeug import MultiDict, validate_arguments, ArgumentValidationError, \
-    abort
-from werkzeug.exceptions import BadRequest
+from werkzeug.datastructures import MultiDict
+from werkzeug.exceptions import BadRequest, abort
 from werkzeug.routing import Rule
+from werkzeug.utils import ArgumentValidationError, validate_arguments
 
 from blazeweb.globals import ag, rg, user, settings
 from blazeutils.jsonh import jsonmod, assert_have_json

@@ -85,17 +85,17 @@ class Html(View):
 
 class Redirect(View):
     def default(self):
-        redirect('some/other/page')
+        redirect('/some/other/page')
 
 
 class PermRedirect(View):
     def default(self):
-        redirect('some/other/page', permanent=True)
+        redirect('/some/other/page', permanent=True)
 
 
 class CustRedirect(View):
     def default(self):
-        redirect('some/other/page', code=303)
+        redirect('/some/other/page', code=303)
 
 
 class HttpExceptionRaise(View):

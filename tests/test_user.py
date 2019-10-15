@@ -1,6 +1,7 @@
 import unittest
 
-from werkzeug import Client, BaseResponse
+from werkzeug import Client
+from werkzeug.wrappers.base_response import BaseResponse
 
 from blazeweb.users import User, UserProxy
 

@@ -8,7 +8,7 @@ from blazeweb.utils import registry_has_object
 
 class BaseRequest(wz.Request):
     # we want mutable request objects
-    parameter_storage_class = wz.MultiDict
+    parameter_storage_class = wz.datastructures.MultiDict
 
 
 class Request(BaseRequest):
@@ -43,7 +43,7 @@ class Request(BaseRequest):
         if registry_has_object(rg):
             rg.request = self
 
-    @wz.cached_property
+    @wz.utils.cached_property
     def json(self):
         """If the mimetype is `application/json` this will contain the
         parsed JSON data.
@@ -52,7 +52,7 @@ class Request(BaseRequest):
         if self.mimetype.endswith(('+json', '/json')):
             return jsonmod.loads(six.text_type(self.data, self.charset))
 
-    @wz.cached_property
+    @wz.utils.cached_property
     def decoded(self):
         return six.text_type(self.data, self.charset)
 

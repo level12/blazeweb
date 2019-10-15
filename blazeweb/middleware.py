@@ -7,8 +7,10 @@ import time
 from beaker.middleware import SessionMiddleware
 from blazeutils import randchars, pformat, tolist
 from paste.registry import RegistryManager
-from werkzeug import EnvironHeaders, LimitedStream, \
-    SharedDataMiddleware, DebuggedApplication
+from werkzeug.datastructures import EnvironHeaders
+from werkzeug.debug import DebuggedApplication
+from werkzeug.middleware.shared_data import SharedDataMiddleware
+from werkzeug.wsgi import LimitedStream
 
 from blazeweb import routing
 from blazeweb.hierarchy import findfile, FileNotFound

@@ -31,5 +31,5 @@ def send_to_index(sender, endpoint, urlargs):
         rg.newlayout_events_send_to_index = True
         forward('Index', tname='index')
     elif 'request-hijack/redirect' in rg.request.url:
-        redirect('index/index')
+        redirect('/index/index')
 signal('blazeweb.response_cycle.started').connect(send_to_index)

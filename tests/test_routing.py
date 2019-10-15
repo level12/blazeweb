@@ -2,7 +2,9 @@ from tests import config
 import unittest
 
 from nose.tools import eq_
-from werkzeug import Client, BaseResponse, create_environ
+from werkzeug import Client
+from werkzeug.test import create_environ
+from werkzeug.wrappers.base_response import BaseResponse
 
 from blazeweb.globals import settings
 from blazeweb.routing import (

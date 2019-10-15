@@ -2,8 +2,9 @@ from formencode.validators import Int, String, Email, Number
 from nose.tools import eq_
 from blazeutils.testing import logging_handler
 from webtest import TestApp
-from werkzeug import run_wsgi_app, Headers
+from werkzeug import Headers
 from werkzeug.exceptions import BadRequest, HTTPException
+from werkzeug.test import run_wsgi_app
 
 from blazeutils.jsonh import jsonmod
 from blazeweb.globals import rg, user
@@ -546,7 +547,7 @@ def test_templating():
     r = ta.get('/index/index2.html')
     assert b'index2: 1' in r.body, r
     # test a global
-    assert b'curl: http://localhost:80/index/index2.html' in r.body, r
+    assert b'curl: http://localhost/index/index2.html' in r.body, r
     # test a filter
     assert b'markdown: <p><strong>cool</strong></p>' in r.body, r
     # test embedded content

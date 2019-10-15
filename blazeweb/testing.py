@@ -3,8 +3,11 @@ from __future__ import with_statement
 from decorator import decorator
 from nose.tools import make_decorator
 from webhelpers2.html import tools
-from werkzeug import Client as WClient, BaseRequest, BaseResponse, \
-    cached_property, create_environ, run_wsgi_app
+from werkzeug import Client as WClient
+from werkzeug.test import create_environ, run_wsgi_app
+from werkzeug.utils import cached_property
+from werkzeug.wrappers.base_request import BaseRequest
+from werkzeug.wrappers.base_response import BaseResponse
 
 from blazeweb.application import ResponseContext, RequestManager
 from blazeweb.globals import ag, user

@@ -1,9 +1,10 @@
 import unittest
 
 from blazewebtestapp.applications import make_wsgi
-from werkzeug import Client, BaseResponse
+from werkzeug import Client
 from blazeweb.testing import TestApp
 from nose.tools import eq_
+from werkzeug.wrappers.base_response import BaseResponse
 import os
 from time import sleep
 

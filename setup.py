@@ -11,7 +11,10 @@ except ImportError:
 develop_requires = [
     'WebTest',
     'ScriptTest',
+    'coverage',
     'docutils',
+    'minimock',
+    'nose',
 ]
 
 cdir = os.path.abspath(os.path.dirname(__file__))
@@ -28,12 +31,10 @@ required_packages = [
     'html2text>=2.35',
     'jinja2>=2.5',
     'markdown2>=1.0.1',
-    'minimock',
-    'nose>=0.11',
     'Paste>=1.7',
     'PasteScript>=1.7',
     'WebHelpers2',
-    'Werkzeug>=0.6',
+    'Werkzeug>=0.15.0',
 ]
 
 try:

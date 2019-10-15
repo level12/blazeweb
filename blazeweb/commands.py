@@ -7,8 +7,8 @@ import re
 from blazeutils.helpers import pprint
 import six
 from werkzeug.serving import run_simple
-from werkzeug import Client, BaseResponse
-from werkzeug.script import make_shell
+from werkzeug import Client
+from werkzeug.wrappers.base_response import BaseResponse
 
 from blazeweb.globals import ag, settings
 from blazeweb.hierarchy import list_component_mappings
@@ -359,3 +359,40 @@ class ComponentMapCommand(pscmd.Command):
 
     def command(self):
         pprint(list_component_mappings(inc_apps=True))
+
+
+def make_shell(init_func=None, banner=None, use_ipython=True):
+    """Returns an action callback that spawns a new interactive
+    python shell.
+
+    :param init_func: an optional initialization function that is
+                      called before the shell is started.  The return
+                      value of this function is the initial namespace.
+    :param banner: the banner that is displayed before the shell.  If
+                   not specified a generic banner is used instead.
+    :param use_ipython: if set to `True` ipython is used if available.
+    """
+    if banner is None:
+        banner = 'Interactive Werkzeug Shell'
+    if init_func is None:
+        init_func = dict
+
+    def action(ipython=use_ipython):
+        """Start a new interactive python session."""
+        namespace = init_func()
+        if ipython:
+            try:
+                try:
+                    from IPython.frontend.terminal.embed import InteractiveShellEmbed
+                    sh = InteractiveShellEmbed(banner1=banner)
+                except ImportError:
+                    from IPython.Shell import IPShellEmbed
+                    sh = IPShellEmbed(banner=banner)
+            except ImportError:
+                pass
+            else:
+                sh(global_ns={}, local_ns=namespace)
+                return
+        from code import interact
+        interact(banner, local=namespace)
+    return action

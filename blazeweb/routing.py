@@ -1,8 +1,9 @@
 from blazeweb.globals import settings, rg
 from blazeweb.utils import registry_has_object
-from werkzeug import Href, MultiDict
+from werkzeug.datastructures import MultiDict
 from werkzeug.routing import Rule
-from werkzeug.wrappers import BaseRequest
+from werkzeug.urls import Href
+from werkzeug.wrappers.base_request import BaseRequest
 
 __all__ = [
     'Rule',
