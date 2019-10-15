@@ -1,11 +1,15 @@
 Change Log
 ----------
 
-0.5.2 released 2019-10-15
+0.6.0 released 2019-10-15
 =========================
 
 * resolve breakage/deprecation from library updates
 * support Werkzeug 0.15+
+
+0.5.2 released 2017-06-09
+=========================
+* fixed a bug in task exception handling
 
 0.5.1 released 2017-06-02
 =========================

@@ -17,7 +17,7 @@ from blazeweb.logs import create_handlers_from_settings
 from blazeweb.mail import mail_programmers
 from blazeweb.templating import default_engine
 from blazeweb.users import UserProxy
-from blazeweb.utils import exception_with_context, abort, _Redirect
+from blazeweb.utils import exception_with_context, abort, _Redirect, registry_has_object
 from blazeweb.utils.filesystem import mkdirs, copy_static_files
 from blazeweb.views import _RouteToTemplate, _Forward
 from blazeweb.wrappers import Request
@@ -361,7 +361,7 @@ class WSGIApp(object):
             except Exception as e:
                 log.exception('exception when trying to email exception')
         if 'handle' in self.settings.exception_handling:
-            if rg.exception_handler:
+            if registry_has_object(rg) and rg.exception_handler:
                 return rg.exception_handler(e)
             else:
                 endpoint = self.settings.error_docs.get(500)
