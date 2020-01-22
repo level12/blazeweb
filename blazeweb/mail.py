@@ -204,7 +204,7 @@ class SMTPConnection(object):
                 self.connection.sendmail(
                     email_message.from_email,
                     recipients,
-                    email_message.message().as_string())
+                    email_message.message().as_bytes())
             else:
                 log.warn('email.is_live = False, email getting skipped')
             log_recipients = ';'.join(recipients)
