@@ -1,6 +1,11 @@
 Change Log
 ----------
 
+0.6.1 released 2020-01-27
+=========================
+
+* fix sending mail with unicode chars
+
 0.6.0 released 2019-10-15
 =========================
 
