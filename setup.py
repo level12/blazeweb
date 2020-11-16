@@ -34,7 +34,7 @@ required_packages = [
     'Paste>=1.7',
     'PasteScript>=1.7',
     'WebHelpers2',
-    'Werkzeug>=0.15.0',
+    'Werkzeug>=1.0.0',
 ]
 
 try:

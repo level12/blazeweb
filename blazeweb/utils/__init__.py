@@ -58,7 +58,7 @@ def abort(send):
         response = Response(response_body % escape(send))
     else:
         response = Response(response_body % ('<pre>%s</pre>' % escape(pformat(send))))
-    werkzeug.abort(response)
+    werkzeug.exceptions.abort(response)
 
 
 def werkzeug_multi_dict_conv(md):
@@ -149,7 +149,7 @@ def redirect(location, permanent=False, code=302):
     if permanent:
         code = 301
     log.debug('%d redirct to %s' % (code, location))
-    raise _Redirect(werkzeug.redirect(location, code))
+    raise _Redirect(werkzeug.utils.redirect(location, code))
 
 
 def sess_regenerate_id():

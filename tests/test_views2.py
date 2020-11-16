@@ -2,7 +2,7 @@ from formencode.validators import Int, String, Email, Number
 from nose.tools import eq_
 from blazeutils.testing import logging_handler
 from webtest import TestApp
-from werkzeug import Headers
+from werkzeug.datastructures import Headers
 from werkzeug.exceptions import BadRequest, HTTPException
 from werkzeug.test import run_wsgi_app
 
