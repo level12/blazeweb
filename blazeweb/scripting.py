@@ -150,7 +150,7 @@ def load_current_app(app_name=None, profile=None):
              'Is the CWD a blazeweb application?'))
     try:
         pkg_pymod = __import__(app_name, globals(), locals(), [''])
-    except ImportError as e:
+    except ImportError:
         raise UsageError(
             ('Could not import name "%s".  '
              'Is the CWD a blazeweb application?') % app_name)

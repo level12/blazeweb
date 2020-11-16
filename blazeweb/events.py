@@ -47,10 +47,7 @@ def clear_old_beaker_sessions(sender):
         import datetime as dt
         import os
         session_path = settings.beaker.data_dir
-        cutoff = (
-            dt.datetime.now() -
-            dt.timedelta(seconds=settings.beaker.timeout)
-        )
+        cutoff = dt.datetime.now() - dt.timedelta(seconds=settings.beaker.timeout)
 
         for root, dirnames, filenames in os.walk(session_path):
             for filename in filenames:
