@@ -34,7 +34,7 @@ required_packages = [
     'Paste>=1.7',
     'PasteScript>=1.7',
     'WebHelpers2',
-    'Werkzeug>=0.15.0',
+    'Werkzeug>=1.0.0',
 ]
 
 try:
@@ -56,9 +56,9 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
         'Topic :: Internet :: WWW/HTTP'
     ],
     license='BSD',

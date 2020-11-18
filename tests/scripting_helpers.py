@@ -5,10 +5,7 @@ import time
 
 from scripttest import TestFileEnvironment
 
-if 'Windows' == platform.system():
-    is_win = True
-else:
-    is_win = False
+is_win = platform.system() == 'Windows'
 
 here = path.dirname(path.abspath(__file__))
 script_test_path = path.join(here, 'test-output')

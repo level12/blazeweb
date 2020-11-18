@@ -358,7 +358,7 @@ class WSGIApp(object):
         if 'email' in self.settings.exception_handling:
             try:
                 mail_programmers('exception encountered', exception_with_context())
-            except Exception as e:
+            except Exception:
                 log.exception('exception when trying to email exception')
         if 'handle' in self.settings.exception_handling:
             if registry_has_object(rg) and rg.exception_handler:

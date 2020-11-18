@@ -1,5 +1,6 @@
 import six
 import werkzeug as wz
+from blazeutils.decorators import deprecate
 
 from blazeutils.jsonh import jsonmod, assert_have_json
 from blazeweb.globals import rg
@@ -19,7 +20,7 @@ class Request(BaseRequest):
 
     @classmethod
     def from_values(cls, data, method='POST', bind_to_context=False, **kwargs):
-        env = wz.EnvironBuilder(method=method, data=data, **kwargs).get_environ()
+        env = wz.test.EnvironBuilder(method=method, data=data, **kwargs).get_environ()
         return cls(env, bind_to_context=bind_to_context)
 
     def replace_http_args(self, method='POST', *args, **kwargs):
@@ -55,6 +56,15 @@ class Request(BaseRequest):
     @wz.utils.cached_property
     def decoded(self):
         return six.text_type(self.data, self.charset)
+
+    @property
+    @deprecate('is_xhr property is deprecated')
+    def is_xhr(self):
+        """
+        Copied from an old version of werkzeug. It was removed in the 1.0 release.
+        https://github.com/pallets/werkzeug/blob/f1d15a2/werkzeug/wrappers.py#L687
+        """
+        return self.environ.get('HTTP_X_REQUESTED_WITH', '').lower() == 'xmlhttprequest'
 
 
 class Response(wz.Response):

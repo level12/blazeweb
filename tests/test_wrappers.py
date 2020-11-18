@@ -3,6 +3,8 @@ from io import BytesIO
 import six
 
 from blazeutils.jsonh import jsonmod
+from blazeutils.testing import emits_deprecation
+
 from blazeweb.globals import rg
 from blazeweb.testing import inrequest
 from blazeweb.wrappers import Request
@@ -96,3 +98,16 @@ class TestRequest(object):
         data = req.json
         assert data['a'] == u'\u2153', data['a']
         assert isinstance(data['a'], six.text_type)
+
+    @emits_deprecation(*(['is_xhr property is deprecated'] * 3))
+    def test_is_xhr_property(self):
+        req = Request.from_values(None, method='GET',
+                                  headers={'X-Requested-With': 'XMLHttpRequest'})
+        assert req.is_xhr is True
+
+        req = Request.from_values(None, method='GET',
+                                  headers={'X-Requested-With': 'Foo'})
+        assert req.is_xhr is False
+
+        req = Request.from_values(None, method='GET')
+        assert req.is_xhr is False

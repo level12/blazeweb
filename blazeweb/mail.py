@@ -151,7 +151,7 @@ class SMTPConnection(object):
             if self.username and self.password:
                 self.connection.login(self.username, self.password)
             return True
-        except:
+        except:  # noqa
             if not self.fail_silently:
                 raise
 
@@ -164,7 +164,7 @@ class SMTPConnection(object):
                 # This happens when calling quit() on a TLS connection
                 # sometimes.
                 self.connection.close()
-            except:
+            except:  # noqa
                 if self.fail_silently:
                     return
                 raise
@@ -210,7 +210,7 @@ class SMTPConnection(object):
             log_recipients = ';'.join(recipients)
             log_recipients = log_recipients if len(log_recipients) < 200 else log_recipients[0:200]
             log.info('Email sent: "%s" to "%s"', email_message.subject, log_recipients)
-        except:
+        except:  # noqa
             if not self.fail_silently:
                 raise
             return False

@@ -44,8 +44,7 @@ def test_bad_profile():
 
 def test_blazeweb_usage():
     result = run_blazeweb()
-    script_name = 'bw-script.py' if is_win else 'bw'
-    assert 'Usage: ' + script_name + ' [global_options] COMMAND [command_options]' \
+    assert 'Usage: bw [global_options] COMMAND [command_options]' \
         in result.stdout, result.stdout
     assert 'SETTINGS_PROFILE' not in result.stdout
     assert 'jinja-convert' in result.stdout
